@@ -1,0 +1,4 @@
+Visual Leak Detector Version 2.5 installed.
+    Outputting the report to the debugger and to D:\Personal Work\FluxEngine\FluxEngine\memory_leak_report.txt
+No memory leaks detected.
+Visual Leak Detector is now exiting.

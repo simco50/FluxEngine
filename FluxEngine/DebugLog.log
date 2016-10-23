@@ -1,0 +1,210 @@
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 11:57:56
+[11:57:56][INFO] Finding possible adapters...
+[11:57:56][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[11:57:56][INFO] 	Possible outputs:
+[11:57:56][INFO] 	0. 1920 x 1080
+[11:57:56][INFO] 	1. 3840 x 1080
+[11:57:56][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[11:57:56][INFO] 	Possible outputs:
+[11:57:56][INFO] 		None
+[11:57:56][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[11:57:56][INFO] 	Possible outputs:
+[11:57:56][INFO] 		None
+[11:57:56][INFO] Using adapter: NVIDIA Quadro K3100M
+[11:57:56][INFO] [FluxEngine Initialization] 563.256 ms
+[11:57:57][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 1.10377 ms
+[11:57:57][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 71.6582 ms
+[11:57:57][INFO] [./Resources/Meshes/Cube.flux loaded.] 0.775333 ms
+[11:57:57][INFO] [./Resources/Shaders/Skybox.fx loaded.] 35.8544 ms
+[11:57:57][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 2.58345 ms
+[11:57:57][INFO] [./Resources/Meshes/patrick.flux loaded.] 0.964356 ms
+[11:57:58][INFO] [CreateSoftBody] 1480.28 ms
+[11:57:59][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 99.7606 ms
+[11:57:59][INFO] [./Resources/Textures/patrick.tga loaded.] 7.94792 ms
+[11:57:59][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 0.994291 ms
+[11:57:59][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 30.5258 ms
+[11:57:59][INFO] [Scene Initialization] 2566.06 ms
+
+--------------FLUX ENGINE LOG END---------------
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 12:00:28
+[12:00:28][INFO] Finding possible adapters...
+[12:00:28][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[12:00:28][INFO] 	Possible outputs:
+[12:00:28][INFO] 	0. 1920 x 1080
+[12:00:28][INFO] 	1. 3840 x 1080
+[12:00:28][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[12:00:28][INFO] 	Possible outputs:
+[12:00:28][INFO] 		None
+[12:00:28][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[12:00:28][INFO] 	Possible outputs:
+[12:00:28][INFO] 		None
+[12:00:28][INFO] Using adapter: NVIDIA Quadro K3100M
+[12:00:29][INFO] [FluxEngine Initialization] 663.005 ms
+[12:00:29][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 1.06742 ms
+[12:00:29][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 80.5919 ms
+[12:00:29][INFO] [./Resources/Meshes/Cube.flux loaded.] 1.33898 ms
+[12:00:29][INFO] [./Resources/Shaders/Skybox.fx loaded.] 32.5679 ms
+[12:00:29][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 2.72585 ms
+[12:00:29][INFO] [./Resources/Meshes/patrick.flux loaded.] 0.965211 ms
+[12:00:31][INFO] [CreateSoftBody] 1615.6 ms
+[12:00:31][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 99.3821 ms
+[12:00:31][INFO] [./Resources/Textures/patrick.tga loaded.] 8.94221 ms
+[12:00:31][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 0.862574 ms
+[12:00:31][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 31.3251 ms
+[12:00:31][INFO] [Scene Initialization] 2732.69 ms
+
+--------------FLUX ENGINE LOG END---------------
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 12:03:12
+[12:03:13][INFO] Finding possible adapters...
+[12:03:13][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[12:03:13][INFO] 	Possible outputs:
+[12:03:13][INFO] 	0. 1920 x 1080
+[12:03:13][INFO] 	1. 3840 x 1080
+[12:03:13][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[12:03:13][INFO] 	Possible outputs:
+[12:03:13][INFO] 		None
+[12:03:13][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[12:03:13][INFO] 	Possible outputs:
+[12:03:13][INFO] 		None
+[12:03:13][INFO] Using adapter: NVIDIA Quadro K3100M
+[12:03:13][INFO] [FluxEngine Initialization] 544.648 ms
+[12:03:13][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 1.08025 ms
+[12:03:13][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 70.9398 ms
+[12:03:13][INFO] [./Resources/Meshes/Cube.flux loaded.] 0.87797 ms
+[12:03:13][INFO] [./Resources/Shaders/Skybox.fx loaded.] 27.9402 ms
+[12:03:13][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 2.39485 ms
+[12:03:13][INFO] [./Resources/Meshes/patrick.flux loaded.] 1.1042 ms
+[12:03:15][INFO] [CreateSoftBody] 1457.78 ms
+[12:03:15][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 103.5 ms
+[12:03:15][INFO] [./Resources/Textures/patrick.tga loaded.] 8.16858 ms
+[12:03:15][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 0.913893 ms
+[12:03:15][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 32.2065 ms
+[12:03:16][INFO] [Scene Initialization] 2530.65 ms
+[12:03:23][INFO] Picked particle 71.
+
+--------------FLUX ENGINE LOG END---------------
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 12:03:42
+[12:03:42][INFO] Finding possible adapters...
+[12:03:42][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[12:03:42][INFO] 	Possible outputs:
+[12:03:42][INFO] 	0. 1920 x 1080
+[12:03:43][INFO] 	1. 3840 x 1080
+[12:03:43][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[12:03:43][INFO] 	Possible outputs:
+[12:03:43][INFO] 		None
+[12:03:43][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[12:03:43][INFO] 	Possible outputs:
+[12:03:43][INFO] 		None
+[12:03:43][INFO] Using adapter: NVIDIA Quadro K3100M
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 12:05:25
+[12:05:25][INFO] Finding possible adapters...
+[12:05:25][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[12:05:25][INFO] 	Possible outputs:
+[12:05:25][INFO] 	0. 1920 x 1080
+[12:05:25][INFO] 	1. 3840 x 1080
+[12:05:25][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[12:05:25][INFO] 	Possible outputs:
+[12:05:25][INFO] 		None
+[12:05:25][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[12:05:25][INFO] 	Possible outputs:
+[12:05:25][INFO] 		None
+[12:05:25][INFO] Using adapter: NVIDIA Quadro K3100M
+[12:05:25][INFO] [FluxEngine Initialization] 583.827 ms
+[12:05:25][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 1.74097 ms
+[12:05:25][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 80.3785 ms
+[12:05:25][INFO] [./Resources/Meshes/Cube.flux loaded.] 1.36336 ms
+[12:05:25][INFO] [./Resources/Shaders/Skybox.fx loaded.] 34.7296 ms
+[12:05:25][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 2.96662 ms
+[12:05:26][INFO] [./Resources/Meshes/patrick.flux loaded.] 0.968204 ms
+[12:05:27][INFO] [CreateSoftBody] 1480.91 ms
+[12:05:27][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 104.361 ms
+[12:05:28][INFO] [./Resources/Textures/patrick.tga loaded.] 10.3813 ms
+[12:05:28][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 0.87241 ms
+[12:05:28][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 36.0288 ms
+[12:05:28][INFO] [Scene Initialization] 2596.31 ms
+
+--------------FLUX ENGINE LOG END---------------
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 13:14:43
+[13:14:43][INFO] Finding possible adapters...
+[13:14:43][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[13:14:43][INFO] 	Possible outputs:
+[13:14:43][INFO] 	0. 1920 x 1080
+[13:14:43][INFO] 	1. 3840 x 1080
+[13:14:43][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[13:14:43][INFO] 	Possible outputs:
+[13:14:43][INFO] 		None
+[13:14:43][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[13:14:43][INFO] 	Possible outputs:
+[13:14:43][INFO] 		None
+[13:14:43][INFO] Using adapter: NVIDIA Quadro K3100M
+[13:14:43][INFO] [FluxEngine Initialization] 588.635 ms
+[13:14:43][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 4.28978 ms
+[13:14:43][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 97.544 ms
+[13:14:43][INFO] [./Resources/Meshes/Cube.flux loaded.] 4.37531 ms
+[13:14:43][INFO] [./Resources/Shaders/Skybox.fx loaded.] 38.2843 ms
+[13:14:43][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 5.44743 ms
+[13:14:44][INFO] [./Resources/Meshes/patrick.flux loaded.] 3.93183 ms
+[13:14:45][INFO] [CreateSoftBody] 1629.64 ms
+[13:14:46][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 185.398 ms
+[13:14:46][INFO] [./Resources/Textures/patrick.tga loaded.] 77.0539 ms
+[13:14:46][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 44.8419 ms
+[13:14:46][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 88.4487 ms
+[13:14:46][INFO] [Scene Initialization] 3035.18 ms
+
+--------------FLUX ENGINE LOG END---------------
+
+-------------FLUX ENGINE LOG START--------------
+
+Date: 23-10-2016
+Time: 13:43:03
+[13:43:03][INFO] Finding possible adapters...
+[13:43:03][INFO] Adapter [0]: NVIDIA Quadro K3100M VRAM: 3072.000000 mb
+[13:43:03][INFO] 	Possible outputs:
+[13:43:03][INFO] 	0. 1920 x 1080
+[13:43:03][INFO] 	1. 3840 x 1080
+[13:43:03][INFO] Adapter [1]: Intel(R) HD Graphics 4600 VRAM: 112.500000 mb
+[13:43:03][INFO] 	Possible outputs:
+[13:43:03][INFO] 		None
+[13:43:03][INFO] Adapter [2]: Microsoft Basic Render Driver VRAM: 0.000000 mb
+[13:43:03][INFO] 	Possible outputs:
+[13:43:03][INFO] 		None
+[13:43:03][INFO] Using adapter: NVIDIA Quadro K3100M
+[13:43:03][INFO] [FluxEngine Initialization] 561.16 ms
+[13:43:03][INFO] [./Resources/Meshes/unit_plane.flux loaded.] 1.79528 ms
+[13:43:04][INFO] [./Resources/Shaders/Default_Forward.fx loaded.] 79.9757 ms
+[13:43:04][INFO] [./Resources/Meshes/Cube.flux loaded.] 0.783031 ms
+[13:43:04][INFO] [./Resources/Shaders/Skybox.fx loaded.] 28.7339 ms
+[13:43:04][INFO] [./Resources/Textures/MinecraftSkybox.dds loaded.] 2.34653 ms
+[13:43:04][INFO] [./Resources/Meshes/patrick.flux loaded.] 1.33513 ms
+[13:43:05][INFO] [CreateSoftBody] 1616.6 ms
+[13:43:06][INFO] [./Resources/Shaders/Flex/FlexSoftBody.fx loaded.] 111.595 ms
+[13:43:06][INFO] [./Resources/Textures/patrick.tga loaded.] 9.37243 ms
+[13:43:06][INFO] [./Resources/Meshes/FlexDebugSphere.flux loaded.] 0.971626 ms
+[13:43:06][INFO] [./Resources/Shaders/FleX/FlexDebug.fx loaded.] 35.4891 ms
+[13:43:06][INFO] [Scene Initialization] 2817.34 ms
+
+--------------FLUX ENGINE LOG END---------------

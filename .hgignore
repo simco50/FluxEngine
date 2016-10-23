@@ -1,0 +1,8 @@
+syntax: glob
+*/.vs/
+*/Debug/
+*.db
+*/ipch/
+*/Release/
+Libraries/
+OLD/

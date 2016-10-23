@@ -1,0 +1,21 @@
+#include "stdafx.h"
+
+#include "Managers/GameManager.h"
+
+
+int main()
+{
+	wWinMain(GetModuleHandle(nullptr), nullptr, nullptr, SW_SHOW);
+}
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nShowCmd)
+{
+	UNREFERENCED_PARAMETER(pCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+
+	GameManager::GetInstance()->Run(hInstance);
+	GameManager::DestroyInstance();
+
+	return 0;
+}
