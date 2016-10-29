@@ -5,8 +5,8 @@
 #include "../../Materials/Flex/FlexSoftbodyMaterial.h"
 #include "../../Graphics/MeshFilter.h"
 
-FlexSoftbody::FlexSoftbody(const wstring& filePath, SoftbodyDesc* m_pSoftbodyDesc, FlexHelper::FlexData* pFlexData): 
-FlexBody(filePath, pFlexData), m_pSoftbodyDesc(m_pSoftbodyDesc)
+FlexSoftbody::FlexSoftbody(const wstring& filePath, SoftbodyDesc* m_pSoftbodyDesc, FlexSystem* pFlexSystem):
+FlexBody(filePath, pFlexSystem), m_pSoftbodyDesc(m_pSoftbodyDesc)
 {
 }
 
@@ -20,7 +20,7 @@ void FlexSoftbody::Initialize()
 {
 	LoadAndCreateBody();
 
-	m_pMaterial = new FlexSoftbodyMaterial(m_pFlexData, m_pMeshInstance);
+	m_pMaterial = new FlexSoftbodyMaterial(m_pFlexSystem, m_pMeshInstance);
 	m_pMaterial->Initialize(m_pGameContext);
 	CreateSkinningBuffer();
 
@@ -58,6 +58,11 @@ void FlexSoftbody::Render()
 	}
 }
 
+void FlexSoftbody::SetTexture(const wstring& filePath)
+{
+	m_pMaterial->SetTexture(ResourceManager::Load<Texture>(filePath));
+}
+
 void FlexSoftbody::CreateSkinningBuffer()
 {
 	m_pSkinVertexBuffer.Reset();
@@ -82,11 +87,6 @@ void FlexSoftbody::CreateSkinningBuffer()
 	}
 	initData.pSysMem = vertices.data();
 	HR(m_pGameContext->Engine->D3Device->CreateBuffer(&bd, &initData, m_pSkinVertexBuffer.GetAddressOf()))
-}
-
-void FlexSoftbody::SetTexture(Texture* pTexture)
-{
-	m_pMaterial->SetTexture(pTexture);
 }
 
 void FlexSoftbody::LoadAndCreateBody()

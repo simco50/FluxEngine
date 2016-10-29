@@ -19,11 +19,21 @@ GameObject::~GameObject()
 
 void GameObject::AddComponent(ComponentBase* pComponent)
 {
+	for (ComponentBase* pComp : m_pComponents)
+	{
+		if (pComponent == pComp)
+		{
+			DebugLog::Log(L"GameObject::AddComponent() > Cannot add the same component twice!", LogType::WARNING);
+			return;
+		}
+	}
+
 	pComponent->m_pGameObject = this;
 	m_pComponents.push_back(pComponent);
 
 	if(m_IsInitialized)
 		pComponent->BaseInitialize(m_pGameContext);
+
 }
 
 void GameObject::AddChild(GameObject* pChild)
@@ -90,6 +100,7 @@ void GameObject::BaseUpdate()
 void GameObject::BaseRender()
 {
 	Render();
+
 	for (size_t i = 0; i < m_pChildren.size(); i++)
 		m_pChildren[i]->BaseRender();
 	for (size_t i = 0; i < m_pComponents.size(); i++)

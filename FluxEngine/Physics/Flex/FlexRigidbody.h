@@ -1,13 +1,11 @@
 #pragma once
 #include "FlexBody.h"
 
-struct FlexSolver;
 class Texture;
 class FlexRigidbodyMaterial;
 
 namespace FlexHelper
 {
-	struct FlexData;
 	struct FlexMeshInstance;
 }
 
@@ -30,7 +28,7 @@ struct RigidbodyDesc
 class FlexRigidbody : public FlexBody
 {
 public:
-	FlexRigidbody(const wstring &filePath, RigidbodyDesc* desc, FlexHelper::FlexData* pFlexData);
+	FlexRigidbody(const wstring &filePath, RigidbodyDesc* desc, FlexSystem* pFlexSystem);
 	~FlexRigidbody();
 
 	void Initialize();

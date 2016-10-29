@@ -1,18 +1,18 @@
 #pragma once
 #include "..\Scenegraph\GameObject.h"
 
-struct FlexSolver;
 class Texture;
+class FlexSystem;
+
 namespace FlexHelper
 {
-	struct FlexData;
 	struct FlexMeshInstance;
 }
 
 class FlexBody : public GameObject
 {
 public:
-	FlexBody(const wstring& filePath, FlexHelper::FlexData* pFlexData);
+	FlexBody(const wstring& filePath, FlexSystem* pFlexSystem);
 	virtual ~FlexBody();
 
 	virtual void Initialize() = 0;
@@ -25,7 +25,7 @@ protected:
 	void AddBodyFlexData(FlexExtAsset* pAsset, const int phase);
 
 	FlexHelper::FlexMeshInstance* m_pMeshInstance = nullptr;
-	FlexHelper::FlexData* m_pFlexData;
+	FlexSystem* m_pFlexSystem;
 	wstring m_FilePath;
 };
 

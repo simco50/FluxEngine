@@ -167,6 +167,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FlexSystem.h" />
     <ClInclude Include="Materials\DefaultQuadMaterial.h" />
     <ClInclude Include="Materials\Flex\FlexRigidbodyMaterial.h" />
     <ClInclude Include="Materials\Flex\FlexSoftbodyMaterial.h" />
@@ -180,6 +181,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Physics\Flex\FlexHelper.h" />
     <ClInclude Include="Helpers\BinaryReader.h" />
     <ClInclude Include="Rendering\QuadRenderer.h" />
+    <ClInclude Include="Rendering\SpriteRenderer.h" />
     <ClInclude Include="WWW\HttpHelper.h" />
     <ClInclude Include="Materials\Deferred\BasicMaterial_Deferred.h" />
     <ClInclude Include="Components\AudioSource.h" />
@@ -225,6 +227,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="WWW\md5.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FlexSystem.cpp" />
     <ClCompile Include="Materials\DefaultQuadMaterial.cpp" />
     <ClCompile Include="Materials\Flex\FlexRigidbodyMaterial.cpp" />
     <ClCompile Include="Materials\Flex\FlexSoftbodyMaterial.cpp" />
@@ -236,6 +239,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Game\SoftBodyScene.cpp" />
     <ClCompile Include="Helpers\BinaryReader.cpp" />
     <ClCompile Include="Rendering\QuadRenderer.cpp" />
+    <ClCompile Include="Rendering\SpriteRenderer.cpp" />
     <ClCompile Include="WWW\HttpHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Materials\Deferred\BasicMaterial_Deferred.cpp" />

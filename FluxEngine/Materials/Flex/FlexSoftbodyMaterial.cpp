@@ -3,6 +3,7 @@
 #include "../../Physics/Flex/FlexHelper.h"
 #include "../../Components/CameraComponent.h"
 #include "../../Graphics/Texture.h"
+#include "../../FlexSystem.h"
 
 ID3DX11EffectVectorVariable* FlexSoftbodyMaterial::m_pLightDirectionVar = nullptr;
 ID3DX11EffectVectorVariable* FlexSoftbodyMaterial::m_pColorVar = nullptr;
@@ -14,8 +15,8 @@ ID3DX11EffectVectorVariable* FlexSoftbodyMaterial::m_pRigidRotationsVar = nullpt
 ID3DX11EffectScalarVariable* FlexSoftbodyMaterial::m_pUseDiffuseTextureVar = nullptr;
 ID3DX11EffectShaderResourceVariable* FlexSoftbodyMaterial::m_pDiffuseTextureVar = nullptr;
 
-FlexSoftbodyMaterial::FlexSoftbodyMaterial(FlexHelper::FlexData* pFlexData, FlexHelper::FlexMeshInstance* pMeshInstance):
-m_pMeshInstance(pMeshInstance), m_pFlexData(pFlexData)
+FlexSoftbodyMaterial::FlexSoftbodyMaterial(FlexSystem* pFlexSystem, FlexHelper::FlexMeshInstance* pMeshInstance):
+m_pMeshInstance(pMeshInstance), m_pFlexSystem(pFlexSystem)
 {
 	m_MaterialDesc.EffectName = L"./Resources/Shaders/Flex/FlexSoftBody.fx";
 }
@@ -49,8 +50,8 @@ void FlexSoftbodyMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
 	m_pViewInverseVar->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewInverse()));
 
 	m_pRigidRestPosesVar->SetFloatVectorArray((float*)m_pMeshInstance->RigidRestPoses.data(), 0, m_pMeshInstance->RigidRestPoses.size());
-	m_pRigidRotationsVar->SetFloatVectorArray((float*)&m_pFlexData->RigidRotations[m_pMeshInstance->Offset], 0, m_pMeshInstance->RigidRestPoses.size());
-	m_pRigidTranslationsVar->SetFloatVectorArray((float*)&m_pFlexData->RigidTranslations[m_pMeshInstance->Offset], 0, m_pMeshInstance->RigidRestPoses.size());
+	m_pRigidRotationsVar->SetFloatVectorArray((float*)&m_pFlexSystem->RigidRotations[m_pMeshInstance->Offset], 0, m_pMeshInstance->RigidRestPoses.size());
+	m_pRigidTranslationsVar->SetFloatVectorArray((float*)&m_pFlexSystem->RigidTranslations[m_pMeshInstance->Offset], 0, m_pMeshInstance->RigidRestPoses.size());
 	if (m_pTexture) m_pDiffuseTextureVar->SetResource(m_pTexture->GetResourceView());
 	m_pUseDiffuseTextureVar->SetBool(m_pTexture ? true : false);
 }

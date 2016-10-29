@@ -4,6 +4,7 @@
 #include "../Scenegraph/GameObject.h"
 #include "TransformComponent.h"
 #include "../Math/SimpleMath.h"
+#include "MeshComponent.h"
 
 CameraComponent::CameraComponent()
 {
@@ -52,7 +53,7 @@ void CameraComponent::Update()
 		float viewHeight = m_Size;
 		projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
-
+	
 	XMVECTOR worldPos = XMLoadFloat3(&m_pGameObject->GetTransform()->GetWorldPosition());
 	XMVECTOR lookAt = XMLoadFloat3(&m_pGameObject->GetTransform()->GetForward());
 	XMVECTOR upDirection = XMLoadFloat3(&m_pGameObject->GetTransform()->GetUp());
@@ -65,6 +66,12 @@ void CameraComponent::Update()
 	XMStoreFloat4x4(&m_Projection, projection);
 	XMStoreFloat4x4(&m_ViewProjection, view * projection);
 	XMStoreFloat4x4(&m_ViewProjectionInverse, viewProjInv);
+
+	if (m_FrustumCulling)
+	{
+		BoundingFrustum frustrum(projection);
+		frustrum.Transform(m_Frustum, viewInv);
+	}
 }
 
 void CameraComponent::SetViewport(float x, float y, float width, float height)
@@ -98,6 +105,15 @@ void CameraComponent::GetMouseRay(Vector3& startPoint, Vector3& direction)
 
 	direction = farPoint - nearPoint;
 	direction.Normalize();
+}
+
+bool CameraComponent::IsInFrustum(MeshComponent* pObj) const
+{
+	if (m_FrustumCulling == false)
+		return true;
+	if (pObj == nullptr)
+		return true;
+	return m_Frustum.Intersects(pObj->GetBoundingBox());
 }
 
 void CameraComponent::Render()

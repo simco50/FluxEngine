@@ -20,6 +20,7 @@ void Skybox::Initialize()
 	m_pMaterial->Initialize(m_pGameContext);
 	SetTexture(ResourceManager::Load<Texture>(L"./Resources/Textures/MinecraftSkybox.dds"));
 	pMesh->SetMaterial(m_pMaterial.get());
+	pMesh->SetFrustumCulling(false);
 }
 
 void Skybox::Update()

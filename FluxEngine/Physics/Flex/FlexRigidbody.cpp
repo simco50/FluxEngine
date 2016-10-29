@@ -5,8 +5,8 @@
 #include "../../Materials/Flex/FlexRigidbodyMaterial.h"
 #include "../../Graphics/MeshFilter.h"
 
-FlexRigidbody::FlexRigidbody(const wstring &filePath, RigidbodyDesc* m_pRigidbodyDesc, FlexHelper::FlexData* pFlexData) : 
-FlexBody(filePath, pFlexData), m_pRigidbodyDesc(m_pRigidbodyDesc)
+FlexRigidbody::FlexRigidbody(const wstring &filePath, RigidbodyDesc* m_pRigidbodyDesc, FlexSystem* pFlexSystem) :
+FlexBody(filePath, pFlexSystem), m_pRigidbodyDesc(m_pRigidbodyDesc)
 {
 }
 
@@ -20,7 +20,7 @@ FlexRigidbody::~FlexRigidbody()
 void FlexRigidbody::Initialize()
 {
 	LoadAndCreateBody();
-	m_pMaterial = new FlexRigidbodyMaterial(m_pFlexData, m_pMeshInstance);
+	m_pMaterial = new FlexRigidbodyMaterial(m_pFlexSystem, m_pMeshInstance);
 	m_pMaterial->Initialize(m_pGameContext);
 	m_pMeshInstance->pMeshFilter->CreateBuffers(m_pMaterial);
 }

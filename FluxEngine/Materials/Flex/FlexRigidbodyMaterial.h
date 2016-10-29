@@ -2,16 +2,16 @@
 #include "..\Material.h"
 
 class Texture;
+class FlexSystem;
 namespace FlexHelper
 {
-	struct FlexData;
 	struct FlexMeshInstance;
 }
 
 class FlexRigidbodyMaterial : public Material
 {
 public:
-	FlexRigidbodyMaterial(FlexHelper::FlexData* pFlexData, FlexHelper::FlexMeshInstance* pMeshInstance);
+	FlexRigidbodyMaterial(FlexSystem* pFlexSystem, FlexHelper::FlexMeshInstance* pMeshInstance);
 	~FlexRigidbodyMaterial();
 	void SetTexture(Texture* pTexture) { m_pTexture = pTexture; }
 
@@ -21,7 +21,7 @@ protected:
 
 private:
 	FlexHelper::FlexMeshInstance* m_pMeshInstance;
-	FlexHelper::FlexData* m_pFlexData;
+	FlexSystem* m_pFlexSystem;
 
 	static ID3DX11EffectVectorVariable* m_pLightDirectionVar;
 	static ID3DX11EffectVectorVariable* m_pColorVar;

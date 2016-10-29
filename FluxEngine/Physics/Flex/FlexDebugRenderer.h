@@ -1,18 +1,13 @@
 #pragma once
 #include "../Scenegraph/GameObject.h"
 
-namespace FlexHelper 
-{
-	struct FlexData;
-}
-
-struct FlexSolver;
+class FlexSystem;
 class MeshFilter;
 
 class FlexDebugRenderer : public GameObject
 {
 public:
-	FlexDebugRenderer(FlexSolver* pFlexSolver, FlexHelper::FlexData* pFlexData, const int maxParticles = 1000);
+	FlexDebugRenderer(FlexSystem* pFlexSystem);
 	~FlexDebugRenderer();
 
 	void Initialize();
@@ -37,9 +32,8 @@ private:
 	bool m_Enabled = false;
 
 	//Flex systems
-	FlexSolver* m_pFlexSolver;
-	size_t m_ParticleCount = 0;
-	FlexHelper::FlexData* m_pFlexData;
+	int m_ParticleCount = 0;
+	FlexSystem* m_pFlexSystem;
 
 	//D3D Rendering objects
 	Unique_COM<ID3D11Buffer> m_pVertexBuffer;
@@ -51,7 +45,7 @@ private:
 
 	MeshFilter* m_pMeshFilter = nullptr;
 
-	size_t m_MaxParticles;
+	int m_MaxParticles = -1;
 
 	//Shader variables
 	ID3DX11EffectVectorVariable* m_pLightDirectionVar = nullptr;

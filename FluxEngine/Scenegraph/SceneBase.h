@@ -6,6 +6,7 @@ class ShadowMapper;
 class SceneBase
 {
 public:
+
 	SceneBase();
 	virtual ~SceneBase();
 
@@ -35,6 +36,5 @@ private:
 	void BaseInitialize(EngineContext* pEngineContext);
 	void BaseUpdate();
 	void BaseRender();
-
 	DeferredRenderer* m_pDeferredRenderer = nullptr;
 };

@@ -1,13 +1,11 @@
 #pragma once
-namespace FlexHelper 
-{
-	struct FlexData;
-}
+
+class FlexSystem;
 
 class FlexMousePicker
 {
 public:
-	FlexMousePicker(GameContext* pGameContext, FlexHelper::FlexData* pFlexData);
+	FlexMousePicker(GameContext* pGameContext, FlexSystem* pFlexSystem);
 	~FlexMousePicker();
 
 	void Update();
@@ -19,7 +17,7 @@ private:
 	int m_PickedParticle = -1;
 	float m_MouseT = 0.0f;
 
-	FlexHelper::FlexData* m_pFlexData = nullptr;
+	FlexSystem* m_pFlexSystem;
 	GameContext* m_pGameContext = nullptr;
 };
 

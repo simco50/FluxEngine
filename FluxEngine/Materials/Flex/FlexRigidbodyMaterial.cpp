@@ -3,6 +3,7 @@
 #include "../../Graphics/Texture.h"
 #include "../../Components/CameraComponent.h"
 #include "../../Physics/Flex/FlexHelper.h"
+#include "../../FlexSystem.h"
 
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pLightDirectionVar = nullptr;
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pColorVar = nullptr;
@@ -14,8 +15,8 @@ ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pRigidRotationVar = nullpt
 ID3DX11EffectScalarVariable* FlexRigidbodyMaterial::m_pUseDiffuseTextureVar = nullptr;
 ID3DX11EffectShaderResourceVariable* FlexRigidbodyMaterial::m_pDiffuseTextureVar = nullptr;
 
-FlexRigidbodyMaterial::FlexRigidbodyMaterial(FlexHelper::FlexData* pFlexData, FlexHelper::FlexMeshInstance* pMeshInstance) :
-	m_pMeshInstance(pMeshInstance), m_pFlexData(pFlexData)
+FlexRigidbodyMaterial::FlexRigidbodyMaterial(FlexSystem* pFlexSystem, FlexHelper::FlexMeshInstance* pMeshInstance) :
+	m_pMeshInstance(pMeshInstance), m_pFlexSystem(pFlexSystem)
 {
 	m_MaterialDesc.EffectName = L"./Resources/Shaders/Flex/FlexRigidBody.fx";
 }
@@ -51,6 +52,6 @@ void FlexRigidbodyMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
 	m_pUseDiffuseTextureVar->SetBool(m_pTexture ? true : false);
 
 	m_pRigidRestPoseVar->SetFloatVector((float*)&m_pMeshInstance->RigidRestPoses[0]);
-	m_pRigidRotationVar->SetFloatVector((float*)&m_pFlexData->RigidRotations[m_pMeshInstance->Offset]);
-	m_pRigidTranslationVar->SetFloatVector((float*)&m_pFlexData->RigidTranslations[m_pMeshInstance->Offset]);
+	m_pRigidRotationVar->SetFloatVector((float*)&m_pFlexSystem->RigidRotations[m_pMeshInstance->Offset]);
+	m_pRigidTranslationVar->SetFloatVector((float*)&m_pFlexSystem->RigidTranslations[m_pMeshInstance->Offset]);
 }

@@ -2,12 +2,11 @@
 #include "FlexBody.h"
 
 class FlexSoftbodyMaterial;
-struct FlexSolver;
 class Texture;
+class FlexSystem;
 
 namespace FlexHelper
 {
-	struct FlexData;
 	struct FlexMeshInstance;
 }
 
@@ -49,7 +48,7 @@ struct SoftbodyDesc
 class FlexSoftbody : public FlexBody
 {
 public:
-	FlexSoftbody(const wstring &filePath, SoftbodyDesc* desc, FlexHelper::FlexData* pFlexData);
+	FlexSoftbody(const wstring &filePath, SoftbodyDesc* desc, FlexSystem* pFlexSystem);
 	~FlexSoftbody();
 
 	void Initialize();
@@ -57,7 +56,7 @@ public:
 	void Update();
 	void Render();
 
-	void SetTexture(Texture* pTexture);
+	void SetTexture(const wstring& filePath);
 
 private:
 	struct FlexSkinVertex

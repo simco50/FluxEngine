@@ -1,17 +1,17 @@
 #pragma once
 #include "..\Material.h"
 
+class FlexSystem;
 class Texture;
 namespace FlexHelper
 {
-	struct FlexData;
 	struct FlexMeshInstance;
 }
 
 class FlexSoftbodyMaterial : public Material
 {
 public:
-	FlexSoftbodyMaterial(FlexHelper::FlexData* pFlexData, FlexHelper::FlexMeshInstance* pMeshInstance);
+	FlexSoftbodyMaterial(FlexSystem* pFlexSystem, FlexHelper::FlexMeshInstance* pMeshInstance);
 	~FlexSoftbodyMaterial();
 	void SetTexture(Texture* pTexture) { m_pTexture = pTexture; }
 
@@ -22,7 +22,7 @@ protected:
 
 private:
 	FlexHelper::FlexMeshInstance* m_pMeshInstance;
-	FlexHelper::FlexData* m_pFlexData;
+	FlexSystem* m_pFlexSystem;
 
 	static ID3DX11EffectVectorVariable* m_pLightDirectionVar;
 	static ID3DX11EffectVectorVariable* m_pColorVar;

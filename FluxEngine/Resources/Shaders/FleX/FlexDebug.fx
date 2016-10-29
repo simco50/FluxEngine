@@ -9,7 +9,7 @@ float gShininess = 6.0f;
 struct VS_INPUT{
 	float3 pos : POSITION;
 	float3 normal : NORMAL;
-	float3 wPos : WORLDPOS;
+	float4 wPos : WORLDPOS;
 };
 struct VS_OUTPUT{
 	float4 pos : SV_POSITION;
@@ -35,7 +35,7 @@ RasterizerState NoCulling
 VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
-	output.wPos = input.pos * gScale + input.wPos;
+	output.wPos = input.pos * gScale + input.wPos.xyz;
 	output.pos = mul(float4(output.wPos, 1), gViewProj);
 	output.normal = normalize(input.normal);
 	return output;

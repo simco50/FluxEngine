@@ -3,9 +3,9 @@
 #include "../Graphics/MeshFilter.h"
 #include "../Components/CameraComponent.h"
 #include "FlexHelper.h"
+#include "../../FlexSystem.h"
 
-FlexDebugRenderer::FlexDebugRenderer(FlexSolver* pFlexSolver, FlexHelper::FlexData* pFlexData, const int maxParticles) : 
-m_pFlexSolver(pFlexSolver), m_pFlexData(pFlexData), m_MaxParticles(maxParticles)
+FlexDebugRenderer::FlexDebugRenderer(FlexSystem* pFlexSystem) : m_pFlexSystem(pFlexSystem)
 {
 }
 
@@ -40,22 +40,18 @@ void FlexDebugRenderer::Update()
 		return;
 
 	//Request the active particles from the solver
-	m_ParticleCount = flexGetActiveCount(m_pFlexSolver);
+	m_ParticleCount = m_pFlexSystem->Positions.size();
 
-	if ((size_t)m_ParticleCount > m_MaxParticles)
+	if (m_ParticleCount > m_MaxParticles)
 	{
 		DebugLog::Log(L"FlexDebugRenderer -> Buffer too small! Recreating buffer with appropriate size.", LogType::WARNING);
 		m_MaxParticles = m_ParticleCount;
 		CreateInstanceData();
 	}
 
-	vector<Vector3> positions(m_ParticleCount);
-	for (size_t i = 0; i < m_ParticleCount; i++)
-		positions[i] = Vector3(m_pFlexData->Positions[i].x, m_pFlexData->Positions[i].y, m_pFlexData->Positions[i].z);
-
 	D3D11_MAPPED_SUBRESOURCE mappedResouce;
 	m_pGameContext->Engine->D3DeviceContext->Map(m_pInstanceBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResouce);
-	memcpy(mappedResouce.pData, positions.data(), sizeof(Vector3) * positions.size());
+	memcpy(mappedResouce.pData, m_pFlexSystem->Positions.data(), sizeof(Vector4) * m_pFlexSystem->Positions.size());
 	m_pGameContext->Engine->D3DeviceContext->Unmap(m_pInstanceBuffer.Get(), 0);
 }
 
@@ -70,7 +66,7 @@ void FlexDebugRenderer::Render()
 	UpdateShaderVariables();
 
 	ID3D11Buffer* vbs[] = { m_pVertexBuffer.Get(), m_pInstanceBuffer.Get() };
-	UINT stride[2] = { sizeof(VertexPosNorm), sizeof(Vector3) };
+	UINT stride[2] = { sizeof(VertexPosNorm), sizeof(Vector4) };
 	UINT offset[2] = { 0,0 };
 	m_pGameContext->Engine->D3DeviceContext->IASetVertexBuffers(0, 2, vbs, stride, offset);
 
@@ -112,7 +108,7 @@ void FlexDebugRenderer::UpdateShaderVariables()
 {
 	m_pColorVar->SetFloatVector(reinterpret_cast<const float*>(&m_Color));
 	m_pVPVar->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewProjection()));
-	m_pScaleVar->SetFloat(m_pFlexData->Params.mRadius * 0.5f * m_Scale);
+	m_pScaleVar->SetFloat(m_pFlexSystem->Params.mRadius * 0.5f * m_Scale);
 	m_pViewInverseVar->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewInverse()));
 }
 
@@ -127,7 +123,7 @@ void FlexDebugRenderer::CreateInputLayout()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		//Input Slot 1 (Instance Data)
-		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 	};
 	UINT numElements = sizeof(elementDesc) / sizeof(elementDesc[0]);
 
@@ -179,12 +175,14 @@ void FlexDebugRenderer::CreateInstanceData()
 {
 	m_pInstanceBuffer.Reset();
 
+	m_MaxParticles = m_pFlexSystem->Positions.size();
+
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.MiscFlags = 0;
-	bd.StructureByteStride = sizeof(Vector3);
+	bd.StructureByteStride = sizeof(Vector4);
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bd.ByteWidth = sizeof(XMFLOAT3) * m_MaxParticles;
+	bd.ByteWidth = sizeof(XMFLOAT4) * m_MaxParticles;
 	HR(m_pGameContext->Engine->D3Device->CreateBuffer(&bd, nullptr, m_pInstanceBuffer.GetAddressOf()))
 }

@@ -8,3 +8,4 @@ Libraries/
 OLD/
 *.log
 memory_leak_report.txt
+*.opendb

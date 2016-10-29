@@ -1,6 +1,8 @@
 #pragma once
 #include "ComponentBase.h"
 
+class MeshComponent;
+
 class CameraComponent : public ComponentBase
 {
 public:
@@ -22,6 +24,10 @@ public:
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction);
+
+	void SetFrustumCulling(const bool enabled) { m_FrustumCulling = enabled; }
+	bool FrustumCulling() const { return m_FrustumCulling; }
+	bool IsInFrustum(MeshComponent* pObj) const;
 
 protected:
 	void Initialize();
@@ -49,5 +55,8 @@ private:
 	float m_VpY = 0.0f;
 	float m_VpWidth = 1.0f;
 	float m_VpHeight = 1.0f;
+
+	bool m_FrustumCulling = true;
+	BoundingFrustum m_Frustum;
 };
 

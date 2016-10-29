@@ -2,6 +2,9 @@
 #include "MeshComponent.h"
 #include "../Graphics/MeshFilter.h"
 #include "../Materials/Material.h"
+#include "../Scenegraph/GameObject.h"
+#include "TransformComponent.h"
+#include "CameraComponent.h"
 
 using namespace std;
 
@@ -36,12 +39,15 @@ void MeshComponent::Initialize()
 		m_pMeshFilter->Initialize(m_pGameContext);
 		if (m_pMaterial)
 			m_pMeshFilter->CreateBuffers(m_pMaterial);
+
+		BoundingOrientedBox::CreateFromPoints(m_LocalBoundingBox, m_pMeshFilter->VertexCount(), (Vector3*)m_pMeshFilter->GetVertexData("POSITION").pData, sizeof(Vector3));
 	}
 }
 
 void MeshComponent::Update()
 {
-
+	if(m_pGameContext->Scene->Cameras[0]->FrustumCulling() && m_FrustumCulling)
+		m_LocalBoundingBox.Transform(m_BoundingBox, XMLoadFloat4x4(&m_pGameObject->GetTransform()->GetWorldMatrix()));
 }
 
 void MeshComponent::Render()
@@ -50,8 +56,7 @@ void MeshComponent::Render()
 		DebugLog::Log(L"MeshComponent::Render() -> Material not set", LogType::WARNING);
 	else if(!m_pMeshFilter)
 		DebugLog::Log(L"MeshComponent::Render() -> No MeshFilter", LogType::WARNING);
-
-	else
+	else if (!m_FrustumCulling || m_pGameContext->Scene->CurrentCamera->IsInFrustum(this))
 	{
 		m_pMaterial->Update(this);
 		m_pGameContext->Engine->D3DeviceContext->IASetIndexBuffer(m_pMeshFilter->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);

@@ -182,7 +182,7 @@ HRESULT FluxCore::MakeWindow()
 
 HRESULT FluxCore::EnumAdapters()
 {
-	//Create the factory
+	//Create the factor
 	HR(CreateDXGIFactory(IID_PPV_ARGS(m_pFactory.GetAddressOf())));
 
 	//Enumerate over the adapters
@@ -196,12 +196,12 @@ HRESULT FluxCore::EnumAdapters()
 	while (m_pFactory->EnumAdapters(adapterCount, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_ADAPTER_DESC desc;
-		pAdapter->GetDesc(&desc);;
+		pAdapter->GetDesc(&desc);
 		DebugLog::LogFormat(LogType::INFO, L"Adapter [%i]: %s VRAM: %f mb", adapterCount, desc.Description, desc.DedicatedVideoMemory / 1048576.0f);
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
 
-		LogOutputs(pAdapter, false);
+		LogOutputs(pAdapter, true);
 	}
 	m_pAdapter = pAdapters[0];
 
