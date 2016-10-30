@@ -17,7 +17,7 @@ SceneBase::~SceneBase()
 		SafeDelete(m_pChildren[i]);
 
 	SafeDelete(m_GameContext.Scene->Input);
-	//SafeDelete(m_SceneContext.ShadowMapper);
+	SafeDelete(m_SceneContext.ShadowMapper);
 	SafeDelete(m_pDeferredRenderer);
 }
 
@@ -41,8 +41,8 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	m_SceneContext.Input = new InputManager();
 	m_SceneContext.Input->Initialize();
 
-	/*m_SceneContext.ShadowMapper = new ShadowMapper();
-	m_SceneContext.ShadowMapper->Initialize(m_pGameContext);*/
+	m_SceneContext.ShadowMapper = new ShadowMapper();
+	m_SceneContext.ShadowMapper->Initialize(m_pGameContext);
 
 	Initialize();
 
@@ -115,7 +115,7 @@ void SceneBase::SetPaused(const bool paused)
 void SceneBase::OnResize()
 {
 	if (m_pDeferredRenderer)
-	m_pDeferredRenderer->CreateGBuffer();
+		m_pDeferredRenderer->CreateGBuffer();
 
 	for (CameraComponent *pCamera : m_pGameContext->Scene->Cameras)
 		pCamera->UpdateViewport();

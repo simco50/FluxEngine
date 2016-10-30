@@ -3,7 +3,7 @@
 #include "../Graphics/MeshFilter.h"
 #include "../Components/CameraComponent.h"
 #include "FlexHelper.h"
-#include "../../FlexSystem.h"
+#include "FlexSystem.h"
 
 FlexDebugRenderer::FlexDebugRenderer(FlexSystem* pFlexSystem) : m_pFlexSystem(pFlexSystem)
 {

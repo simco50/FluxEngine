@@ -18,7 +18,7 @@ void GameManager::PrepareGame()
 	m_EngineContext.GameSettings.Width = 1240;
 	m_EngineContext.GameSettings.Height = 720;
 	m_EngineContext.GameSettings.ClearColor = (XMFLOAT4)Colors::SteelBlue;
-	m_EngineContext.GameSettings.MSAA = true;
+	m_EngineContext.GameSettings.MSAA = false;
 	m_EngineContext.GameSettings.Title = L"FluxEngine v0.9";
 	m_EngineContext.GameSettings.VerticalSync = true;
 	m_EngineContext.GameSettings.UseDeferredRendering = false;

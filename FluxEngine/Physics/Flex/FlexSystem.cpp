@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "FlexSystem.h"
-#include "Graphics/MeshFilter.h"
 
 FlexSystem::FlexSystem()
 {
@@ -10,6 +9,8 @@ FlexSystem::FlexSystem()
 
 FlexSystem::~FlexSystem()
 {
+	if(pFlexSolver)
+		flexDestroySolver(pFlexSolver);
 }
 
 void FlexSystem::InitializeSolver()
@@ -24,54 +25,40 @@ void FlexSystem::FetchData()
 	flexGetVelocities(pFlexSolver, (float*)Velocities.data(), Velocities.size(), MemoryType);
 }
 
-void FlexSystem::Update(int substeps, float deltaTime)
+void FlexSystem::UpdateSolver(int substeps, float deltaTime)
 {
 	flexUpdateSolver(pFlexSolver, deltaTime, substeps, nullptr);
 }
 
 void FlexSystem::UpdateData()
 {
-	flexSetParticles(pFlexSolver, (float*)Positions.data(), Positions.size(), MemoryType);
-	flexSetVelocities(pFlexSolver, (float*)Velocities.data(), Velocities.size(), MemoryType);
 	flexSetParams(pFlexSolver, &Params);
-}
 
-void FlexSystem::CreateTriangleMesh(MeshFilter* pMeshFilter)
-{
-	FlexTriangleMesh* pMesh = flexCreateTriangleMesh();
+	const int numParticles = Positions.size();
 
-	Vector3* pPositionData = (Vector3*)pMeshFilter->GetVertexData("POSITION").pData;
-	Vector3 minExtents(FLT_MAX);
-	Vector3 maxExtents(-FLT_MAX);
-	for (int i = 0; i < pMeshFilter->VertexCount(); i++)
+	flexSetParticles(pFlexSolver, (float*)Positions.data(), numParticles, MemoryType);
+	flexSetVelocities(pFlexSolver, (float*)Velocities.data(), numParticles, MemoryType);
+
+	//Convex shapes
+	if (ShapePositions.size() > 0)
 	{
-		minExtents = Vector3(min(pPositionData[i].x, minExtents.x), min(pPositionData[i].y, minExtents.y), min(pPositionData[i].z, minExtents.z));
-		maxExtents = Vector3(max(pPositionData[i].x, minExtents.x), max(pPositionData[i].y, minExtents.y), max(pPositionData[i].z, minExtents.z));
+		flexSetShapes(pFlexSolver,
+			ShapeGeometry.data(),
+			ShapeGeometry.size(),
+			(float*)ShapeAabbMin.data(),
+			(float*)ShapeAabbMax.data(),
+			ShapeStarts.data(),
+			(float*)ShapePositions.data(),
+			(float*)ShapeRotations.data(),
+			(float*)ShapePrevPositions.data(),
+			(float*)ShapePrevRotations.data(),
+			ShapeFlags.data(),
+			ShapeStarts.size(),
+			MemoryType
+		);
 	}
 
-	flexUpdateTriangleMesh(pMesh,
-	                       (float*)pMeshFilter->GetVertexData("POSITION").pData,
-	                       (int*)pMeshFilter->GetVertexData("INDEX").pData,
-	                       pMeshFilter->VertexCount(),
-	                       pMeshFilter->IndexCount() / 3,
-	                       (float*)&minExtents,
-	                       (float*)&maxExtents,
-	                       MemoryType
-	);
-
-	FlexCollisionGeometry geometry;
-	geometry.mTriMesh.mMesh = pMesh;
-	geometry.mTriMesh.mScale = 1.0f;
-
-	ShapeStarts.push_back(ShapeGeometry.size());
-	ShapeAabbMin.push_back(Vector4(minExtents.x, minExtents.y, minExtents.z, 0.0f));
-	ShapeAabbMax.push_back(Vector4(maxExtents.x, maxExtents.y, maxExtents.z, 0.0f));
-	ShapePositions.push_back(Vector4(0, 0, 0, 0.0f));
-	ShapeRotations.push_back(Quaternion());
-	ShapePrevPositions.push_back(Vector4(0, 0, 0, 0.0f));
-	ShapePrevRotations.push_back(Quaternion());
-	ShapeGeometry.push_back(geometry);
-	ShapeFlags.push_back(flexMakeShapeFlags(eFlexShapeTriangleMesh, false));
+	flexSetPhases(pFlexSolver, Phases.data(), numParticles, MemoryType);
 }
 
 void FlexSystem::UploadFlexData()
@@ -146,6 +133,8 @@ void FlexSystem::UploadFlexData()
 
 	RestPositions.insert(RestPositions.begin(), Positions.begin(), Positions.end());
 	flexSetRestParticles(pFlexSolver, (float*)RestPositions.data(), numParticles, MemoryType);
+
+	DebugLog::LogFormat(LogType::INFO, L"FlexSystem::UploadFlexData() > Flex data uploaded successfully: %i particles", Positions.size());
 }
 
 void FlexSystem::SetDefaultParams()

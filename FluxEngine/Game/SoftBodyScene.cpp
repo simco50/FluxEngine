@@ -16,7 +16,11 @@
 #include "../Components/AudioSource.h"
 #include "../Graphics/Texture.h"
 #include "../Graphics/RenderTarget.h"
-#include "../FlexSystem.h"
+#include "../Physics/Flex/FlexSystem.h"
+#include "../Physics/Flex/FlexTriangleMeshCollider.h"
+#include "../Graphics/MeshFilter.h"
+
+class FlexTriangleMeshCollider;
 
 SoftBodyScene::SoftBodyScene()
 {}
@@ -36,7 +40,6 @@ void SoftBodyScene::Initialize()
 	MeshComponent* pMeshComponent = new MeshComponent(L"./Resources/Meshes/unit_plane.flux");
 	m_pGroundMaterial = make_unique<DefaultMaterial>();
 	m_pGroundMaterial->Initialize(m_pGameContext);
-	m_pGroundMaterial->SetColor(Vector4(0.5f, 0.8f, 1.0f, 1.0f));
 	pMeshComponent->SetMaterial(m_pGroundMaterial.get());
 	pGroundPlane->AddComponent(pMeshComponent);
 	pGroundPlane->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
@@ -50,18 +53,29 @@ void SoftBodyScene::Initialize()
 	flexInit(FLEX_VERSION, FlexHelper::FlexMessageCallback);
 	m_pFlexSystem = new FlexSystem();
 
-	m_pFlexSystem->CreateTriangleMesh(ResourceManager::Load<MeshFilter>(L"./Resources/Meshes/truck.flux"));
-	GameObject* pPatrick = new GameObject();
-	MeshComponent* pPatrickMesh = new MeshComponent(L"./Resources/Meshes/truck.flux");
-	pPatrickMesh->SetMaterial(m_pGroundMaterial.get());
-	pPatrick->AddComponent(pPatrickMesh);
-	AddChild(pPatrick);
+	FlexTriangleMeshCollider* pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
+	m_pCollision = new GameObject();
+	MeshComponent* pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/spinner.flux");
+	pSpinnerMesh->SetMaterial(m_pGroundMaterial.get());
+	m_pCollision->AddComponent(pTriangleMeshCollider);
+	m_pCollision->AddComponent(pSpinnerMesh);
+	AddChild(m_pCollision);
+	m_pCollision->GetTransform()->SetPosition(0, 5, 0);
+
+	GameObject* pContainer = new GameObject();
+	pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
+	pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/container.flux");
+	pSpinnerMesh->SetMaterial(m_pGroundMaterial.get());
+	pContainer->AddComponent(pTriangleMeshCollider);
+	pContainer->AddComponent(pSpinnerMesh);
+	AddChild(pContainer);
+	pContainer->GetTransform()->SetPosition(0, 5, 0);
 
 	//Set default flex params
 	m_pFlexSystem->SetDefaultParams();
 	m_pFlexSystem->CreateGroundPlane(Vector3(0, 1, 0), 0.0f);
 
-	m_pFlexSystem->Params.mRadius = 0.05f;
+	m_pFlexSystem->Params.mRadius = 0.08f;
 	m_pFlexSystem->Params.mDynamicFriction = 0.35f;
 	m_pFlexSystem->Params.mNumIterations = 4;
 
@@ -85,16 +99,16 @@ void SoftBodyScene::Initialize()
 		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
 		AddChild(pSoftbody);
 		pSoftbody->SetTexture(L"./Resources/Textures/patrick.tga");
-		pSoftbody->SetPosition(Vector3(0.0f, 6.0f+4*i, 0.0f));
+		pSoftbody->SetPosition(Vector3(0.0f, 3.0f * i + 10.0f, 0.0f));
 	}
-
+	
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_SIMULATE, Pressed, 'F'));
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(RESTART, Pressed, 'R'));
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_TELEPORT, Pressed, 'T'));
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_DEBUG, Pressed, 'O'));
 
 	m_pFlexSystem->UploadFlexData();
-	m_pFlexSystem->Update();
+	m_pFlexSystem->UpdateSolver();
 	m_pFlexMousePicker = new FlexMousePicker(m_pGameContext, m_pFlexSystem);
 	m_pFlexDebugRenderer = new FlexDebugRenderer(m_pFlexSystem);
 	AddChild(m_pFlexDebugRenderer);
@@ -102,6 +116,8 @@ void SoftBodyScene::Initialize()
 
 void SoftBodyScene::Update()
 {
+	m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
+
 	if (m_pGameContext->Scene->Input->IsActionTriggered(RESTART))
 		GameManager::GetInstance()->LoadScene(new SoftBodyScene());
 	if (m_pGameContext->Scene->Input->IsActionTriggered(FLEX_SIMULATE))
@@ -110,7 +126,7 @@ void SoftBodyScene::Update()
 	}
 	if (m_FlexUpdate)
 	{
-		m_pFlexSystem->Update(3, 1.0f / 60.0f);
+		m_pFlexSystem->UpdateSolver(3, 1.0f / 60.0f);
 	}
 	if(m_pGameContext->Scene->Input->IsActionTriggered(FLEX_DEBUG))
 	{

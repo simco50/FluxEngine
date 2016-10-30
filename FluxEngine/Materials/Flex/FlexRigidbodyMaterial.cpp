@@ -3,7 +3,7 @@
 #include "../../Graphics/Texture.h"
 #include "../../Components/CameraComponent.h"
 #include "../../Physics/Flex/FlexHelper.h"
-#include "../../FlexSystem.h"
+#include "../Physics/Flex/FlexSystem.h"
 
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pLightDirectionVar = nullptr;
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pColorVar = nullptr;

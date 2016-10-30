@@ -2,7 +2,7 @@
 #include "FlexMousePicker.h"
 #include "FlexHelper.h"
 #include "../../Components/CameraComponent.h"
-#include "../../FlexSystem.h"
+#include "FlexSystem.h"
 
 FlexMousePicker::FlexMousePicker(GameContext* pGameContext, FlexSystem* pFlexSystem): m_pFlexSystem(pFlexSystem), m_pGameContext(pGameContext)
 {

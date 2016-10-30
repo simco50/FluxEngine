@@ -11,7 +11,7 @@ public:
 
 	void FetchData();
 
-	void Update(int substeps = 3, float deltaTime = 1.0f / 60.0f);
+	void UpdateSolver(int substeps = 3, float deltaTime = 1.0f / 60.0f);
 
 	void UpdateData();
 
@@ -79,8 +79,6 @@ public:
 	* [out]param localPositions
 	*/
 	void CalculateRigidOffsets(const int numRigids, Vector3* localPositions);
-
-	void CreateTriangleMesh(MeshFilter* pMeshFilter);
 
 	void UploadFlexData();
 };

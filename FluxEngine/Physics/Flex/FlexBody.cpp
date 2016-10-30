@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FlexBody.h"
 #include "FlexHelper.h"
-#include "../../FlexSystem.h"
+#include "FlexSystem.h"
 
 FlexBody::FlexBody(const wstring& filePath, FlexSystem* pFlexSystem):
 	m_pFlexSystem(pFlexSystem), m_FilePath(filePath)

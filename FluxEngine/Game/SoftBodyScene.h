@@ -6,6 +6,7 @@ class DefaultMaterial;
 class GameObject;
 class FlexMousePicker;
 class FlexDebugRenderer;
+class BasicMaterial_Deferred;
 
 class FlexSystem;
 
@@ -29,8 +30,9 @@ public:
 	void Render();
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
+	GameObject* m_pCollision = nullptr;
 
-	FlexSystem* m_pFlexSystem;
+	FlexSystem* m_pFlexSystem = nullptr;
 	FlexDebugRenderer* m_pFlexDebugRenderer = nullptr;
 	FlexMousePicker* m_pFlexMousePicker = nullptr;
 

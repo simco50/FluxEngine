@@ -1,9 +1,6 @@
 #pragma once
-#include "../../Graphics/MeshFilter.h"
 
-#pragma warning(push)
-#pragma warning(disable: 4505)
-
+class MeshFilter;
 
 namespace FlexHelper
 {
@@ -20,7 +17,7 @@ namespace FlexHelper
 		vector<float> SkinningWeights;
 	};
 
-	static void FlexMessageCallback(FlexErrorSeverity type, const char* msg, const char* file, int line)
+	inline void FlexMessageCallback(FlexErrorSeverity type, const char* msg, const char* file, int line)
 	{
 		UNREFERENCED_PARAMETER(file);
 		UNREFERENCED_PARAMETER(line);
@@ -48,4 +45,3 @@ namespace FlexHelper
 		}
 	}
 }
-#pragma warning(pop)

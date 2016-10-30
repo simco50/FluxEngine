@@ -102,7 +102,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	return float4( finalColor, gColor.a );
 }
 
-technique11 Default
+technique11 Forward_Tech
 {
     pass P0
     {

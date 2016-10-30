@@ -20,6 +20,8 @@ public:
 
 	void SetFrustumCulling(const bool enabled) { m_FrustumCulling = enabled; }
 
+	MeshFilter* GetMeshFilter() { return m_pMeshFilter; }
+
 protected:
 	void Initialize();
 	void Update();
