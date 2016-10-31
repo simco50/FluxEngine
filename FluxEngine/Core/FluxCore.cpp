@@ -57,10 +57,11 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 	InitializeHighDefinitionMouse();
 
-	ResourceManager::Initialize(m_pDevice.Get());
 	timer.Stop();
 
+	ResourceManager::Initialize(m_pDevice.Get());
 	Initialize(&m_EngineContext);
+	GameTimer::Reset();
 
 	//Game loop
 	MSG msg;
@@ -92,6 +93,8 @@ void FluxCore::GameLoop()
 	m_pDefaultRenderTarget->ClearColor();
 	m_pDefaultRenderTarget->ClearDepth();
 
+	GameTimer::Tick();
+	CalculateFrameStats();
 	//Update the game
 	Update();
 
@@ -201,7 +204,7 @@ HRESULT FluxCore::EnumAdapters()
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
 
-		LogOutputs(pAdapter, true);
+		LogOutputs(pAdapter, false);
 	}
 	m_pAdapter = pAdapters[0];
 
@@ -537,3 +540,43 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 #pragma endregion WNDPROC
+
+void FluxCore::CalculateFrameStats() const
+{
+	// Code computes the average frames per second, and also the 
+	// average time it takes to render one frame.  These stats 
+	// are appended to the window caption bar.
+
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCnt++;
+
+	// Compute averages over one second period.
+	if ((GameTimer::GameTime() - timeElapsed) >= 1.0f)
+	{
+		int fps = frameCnt; // fps = frameCnt / 1
+		float mspf = 1000.0f / (float)fps;
+
+		wstring fpsStr = to_wstring(fps);
+		wstring mspfStr = to_wstring(mspf);
+
+		wstring windowText = m_EngineContext.GameSettings.Title +
+			L"\t FPS: " + fpsStr +
+			L"\t MS: " + mspfStr;
+
+		SetWindowText(m_EngineContext.Hwnd, windowText.c_str());
+
+		// Reset for next average.
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
+}
+
+void FluxCore::OnPause(const bool paused)
+{
+	if (paused)
+		GameTimer::Stop();
+	else
+		GameTimer::Start();
+}

@@ -33,7 +33,7 @@ void AudioListener::Update()
 	listenerPosition.y = pos.y;
 	listenerPosition.z = pos.z;
 
-	float dt = m_pGameContext->Scene->GameTimer.DeltaTime();
+	float dt = GameTimer::DeltaTime();
 	FMOD_VECTOR velocity;
 	velocity.x = (listenerPosition.x - m_LastPosition.x) / dt;
 	velocity.y = (listenerPosition.y - m_LastPosition.y) / dt;

@@ -34,7 +34,7 @@ void FreeCamera::Update()
 
 void FreeCamera::KeyboardMouse()
 {
-	float dt = m_pGameContext->Scene->GameTimer.DeltaTime();
+	float dt = GameTimer::DeltaTime();
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);
@@ -65,7 +65,7 @@ void FreeCamera::KeyboardMouse()
 
 void FreeCamera::Controller()
 {
-	float dt = m_pGameContext->Scene->GameTimer.DeltaTime();
+	float dt = GameTimer::DeltaTime();
 
 	XMFLOAT2 leftStick = m_pGameContext->Scene->Input->GetThumbstickPosition();
 	XMFLOAT2 rightStick = m_pGameContext->Scene->Input->GetThumbstickPosition(false);

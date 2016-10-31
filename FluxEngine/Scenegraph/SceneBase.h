@@ -16,7 +16,6 @@ public:
 	virtual void LateUpdate() {}
 
 	void AddChild(GameObject* pChild);
-	void SetPaused(const bool paused);
 	void OnResize();
 
 	SceneContext* GetSceneContext() const { return m_pGameContext->Scene; }

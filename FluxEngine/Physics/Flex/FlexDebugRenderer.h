@@ -29,6 +29,13 @@ private:
 	void CreateVertexBuffer();
 	void CreateInstanceData();
 
+	struct DebugParticle
+	{
+		Vector3 Position;
+		int Phase;
+	};
+	vector<DebugParticle> m_Particles;
+
 	bool m_Enabled = false;
 
 	//Flex systems

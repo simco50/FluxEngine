@@ -19,6 +19,7 @@
 #include "../Physics/Flex/FlexSystem.h"
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Graphics/MeshFilter.h"
+#include "../Managers/MaterialManager.h"
 
 class FlexTriangleMeshCollider;
 
@@ -38,8 +39,10 @@ void SoftBodyScene::Initialize()
 	//Create the ground plane
 	GameObject* pGroundPlane = new GameObject();
 	MeshComponent* pMeshComponent = new MeshComponent(L"./Resources/Meshes/unit_plane.flux");
+
 	m_pGroundMaterial = make_unique<DefaultMaterial>();
 	m_pGroundMaterial->Initialize(m_pGameContext);
+	m_pGroundMaterial->SetColor(Vector4(0.0f, 0.8f, 0.6f, 1.0f));
 	pMeshComponent->SetMaterial(m_pGroundMaterial.get());
 	pGroundPlane->AddComponent(pMeshComponent);
 	pGroundPlane->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
@@ -53,29 +56,34 @@ void SoftBodyScene::Initialize()
 	flexInit(FLEX_VERSION, FlexHelper::FlexMessageCallback);
 	m_pFlexSystem = new FlexSystem();
 
+	m_pDefaultMaterial = make_unique<DefaultMaterial>();
+	m_pDefaultMaterial->Initialize(m_pGameContext);
+	m_pDefaultMaterial->SetColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f));
 	FlexTriangleMeshCollider* pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
 	m_pCollision = new GameObject();
 	MeshComponent* pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/spinner.flux");
-	pSpinnerMesh->SetMaterial(m_pGroundMaterial.get());
+	pSpinnerMesh->SetMaterial(m_pDefaultMaterial.get());
 	m_pCollision->AddComponent(pTriangleMeshCollider);
 	m_pCollision->AddComponent(pSpinnerMesh);
 	AddChild(m_pCollision);
 	m_pCollision->GetTransform()->SetPosition(0, 5, 0);
+	m_pCollision->GetTransform()->SetScale(3, 3, 3);
 
 	GameObject* pContainer = new GameObject();
 	pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
 	pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/container.flux");
-	pSpinnerMesh->SetMaterial(m_pGroundMaterial.get());
+	pSpinnerMesh->SetMaterial(m_pDefaultMaterial.get());
 	pContainer->AddComponent(pTriangleMeshCollider);
 	pContainer->AddComponent(pSpinnerMesh);
 	AddChild(pContainer);
 	pContainer->GetTransform()->SetPosition(0, 5, 0);
+	pContainer->GetTransform()->SetScale(3, 3, 3);
 
 	//Set default flex params
 	m_pFlexSystem->SetDefaultParams();
 	m_pFlexSystem->CreateGroundPlane(Vector3(0, 1, 0), 0.0f);
 
-	m_pFlexSystem->Params.mRadius = 0.08f;
+	m_pFlexSystem->Params.mRadius = 0.07f;
 	m_pFlexSystem->Params.mDynamicFriction = 0.35f;
 	m_pFlexSystem->Params.mNumIterations = 4;
 
@@ -86,7 +94,7 @@ void SoftBodyScene::Initialize()
 	sDesc.SurfaceSampling = 1.0f;
 	sDesc.ClusterSpacing = 2.75f;
 	sDesc.ClusterRadius = 3.0f;
-	sDesc.ClusterStiffness = 0.15f;
+	sDesc.ClusterStiffness = 0.05f;
 	sDesc.LinkRadius = 0.0f;
 	sDesc.LinkStiffness = 1.0f;
 	sDesc.Phase = flexMakePhase(0, 0);
@@ -99,7 +107,7 @@ void SoftBodyScene::Initialize()
 		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
 		AddChild(pSoftbody);
 		pSoftbody->SetTexture(L"./Resources/Textures/patrick.tga");
-		pSoftbody->SetPosition(Vector3(0.0f, 3.0f * i + 10.0f, 0.0f));
+		pSoftbody->SetPosition(Vector3(0.0f,10.0f * i + 10.0f, 0.0f));
 	}
 	
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_SIMULATE, Pressed, 'F'));

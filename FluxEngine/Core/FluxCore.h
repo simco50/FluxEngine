@@ -27,6 +27,7 @@ protected:
 private:
 	LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+
 	HRESULT RegisterWindowClass();
 	HRESULT MakeWindow();
 	HRESULT EnumAdapters();
@@ -36,7 +37,8 @@ private:
 	void InitializeHighDefinitionMouse();
 	void CreateSwapChain();
 	void CleanupD3D();
-	virtual void OnPause(const bool paused) = 0;
+	void OnPause(const bool paused);
+	void CalculateFrameStats() const;
 
 	void GameLoop();
 	virtual void PrepareGame() = 0;

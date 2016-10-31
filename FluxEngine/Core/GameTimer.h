@@ -5,24 +5,24 @@ public:
 	GameTimer();
 	~GameTimer();
 
-	float GameTime() const;
-	float DeltaTime() const;
+	static float GameTime();
+	static float DeltaTime();
 
-	void Reset();
-	void Start();
-	void Stop();
-	void Tick();
+	static void Reset();
+	static void Start();
+	static void Stop();
+	static void Tick();
 
 private:
-	double m_SecondsPerCount = 0.0f;
-	double m_DeltaTime = 1.0f;
+	static double m_SecondsPerCount;
+	static double m_DeltaTime;
 
-	__int64 m_BaseTime = 0;
-	__int64 m_PausedTime = 0;
-	__int64 m_StopTime = 0;
-	__int64 m_PrevTime = 0;
-	__int64 m_CurrTime = 0;
+	static __int64 m_BaseTime;
+	static __int64 m_PausedTime;
+	static __int64 m_StopTime;
+	static __int64 m_PrevTime;
+	static __int64 m_CurrTime;
 
-	bool m_IsStopped = false;
+	static bool m_IsStopped;
 };
 

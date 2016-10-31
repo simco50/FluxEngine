@@ -167,6 +167,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Managers\MaterialManager.h" />
     <ClInclude Include="Physics\Flex\FlexSystem.h" />
     <ClInclude Include="Physics\Flex\FlexTriangleMeshCollider.h" />
     <ClInclude Include="Materials\DefaultQuadMaterial.h" />
@@ -201,7 +202,6 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Core\GeneralStructs.h" />
     <ClInclude Include="Rendering\GBufferMaterial.h" />
     <ClInclude Include="Rendering\DeferredRenderer.h" />
-    <ClInclude Include="Materials\Forward\DiffuseMaterial.h" />
     <ClInclude Include="Helpers\SmartInterface.h" />
     <ClInclude Include="Materials\Forward\DefaultMaterial.h" />
     <ClInclude Include="Helpers\Singleton.h" />
@@ -228,6 +228,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="WWW\md5.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Managers\MaterialManager.cpp" />
     <ClCompile Include="Physics\Flex\FlexSystem.cpp" />
     <ClCompile Include="Physics\Flex\FlexTriangleMeshCollider.cpp" />
     <ClCompile Include="Materials\DefaultQuadMaterial.cpp" />
@@ -260,7 +261,6 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Core\GeneralStructs.cpp" />
     <ClCompile Include="Rendering\GBufferMaterial.cpp" />
     <ClCompile Include="Rendering\DeferredRenderer.cpp" />
-    <ClCompile Include="Materials\Forward\DiffuseMaterial.cpp" />
     <ClCompile Include="Materials\Forward\DefaultMaterial.cpp" />
     <ClCompile Include="Materials\Material.cpp" />
     <ClCompile Include="Content\MeshLoader.cpp" />

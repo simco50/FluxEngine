@@ -12,14 +12,11 @@ public:
 	void LoadScene(SceneBase* pScene);
 	void LoadSceneClean(SceneBase* pScene);
 
-	void CalculateFrameStats() const;
-
 private:
 	void PrepareGame();
 	void Initialize(EngineContext* pEngineContext);
 	void Render();
 	void Update();
-	void OnPause(const bool paused);
 	void OnResize();
 	EngineContext* m_pEngineContext = nullptr;
 	SceneBase* m_pActiveScene = nullptr;

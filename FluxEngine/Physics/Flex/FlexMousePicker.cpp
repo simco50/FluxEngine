@@ -44,7 +44,7 @@ void FlexMousePicker::Update()
 		m_pGameContext->Scene->Cameras[0]->GetMouseRay(origin, direction);
 		m_MousePos = origin + direction * m_MouseT;
 
-		Vector3 p = Vector3::Lerp(Vector3(m_pFlexSystem->Positions[m_PickedParticle].x, m_pFlexSystem->Positions[m_PickedParticle].y, m_pFlexSystem->Positions[m_PickedParticle].z), m_MousePos, 10.0f * m_pGameContext->Scene->GameTimer.DeltaTime());
+		Vector3 p = Vector3::Lerp(Vector3(m_pFlexSystem->Positions[m_PickedParticle].x, m_pFlexSystem->Positions[m_PickedParticle].y, m_pFlexSystem->Positions[m_PickedParticle].z), m_MousePos, 10.0f * GameTimer::DeltaTime());
 		Vector3 delta = p - Vector3(m_pFlexSystem->Positions[m_PickedParticle].x, m_pFlexSystem->Positions[m_PickedParticle].y, m_pFlexSystem->Positions[m_PickedParticle].z);
 
 		m_pFlexSystem->Positions[m_PickedParticle].x = p.x;

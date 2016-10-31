@@ -30,6 +30,8 @@ public:
 	void Render();
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
+	unique_ptr<DefaultMaterial> m_pDefaultMaterial;
+
 	GameObject* m_pCollision = nullptr;
 
 	FlexSystem* m_pFlexSystem = nullptr;

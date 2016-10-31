@@ -32,6 +32,8 @@ void FlexDebugRenderer::Initialize()
 
 	//Get shader variables
 	LoadShaderVariables();
+
+	m_Particles.resize(m_pFlexSystem->Positions.size());
 }
 
 void FlexDebugRenderer::Update()
@@ -49,9 +51,17 @@ void FlexDebugRenderer::Update()
 		CreateInstanceData();
 	}
 
+	for (size_t i = 0; i < m_ParticleCount; i++)
+	{
+		m_Particles[i].Position.x = m_pFlexSystem->Positions[i].x;
+		m_Particles[i].Position.y = m_pFlexSystem->Positions[i].y;
+		m_Particles[i].Position.z = m_pFlexSystem->Positions[i].z;
+		m_Particles[i].Phase = m_pFlexSystem->Phases[i] & eFlexPhaseGroupMask;
+	}
+
 	D3D11_MAPPED_SUBRESOURCE mappedResouce;
 	m_pGameContext->Engine->D3DeviceContext->Map(m_pInstanceBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResouce);
-	memcpy(mappedResouce.pData, m_pFlexSystem->Positions.data(), sizeof(Vector4) * m_pFlexSystem->Positions.size());
+	memcpy(mappedResouce.pData, m_Particles.data(), sizeof(DebugParticle) * m_Particles.size());
 	m_pGameContext->Engine->D3DeviceContext->Unmap(m_pInstanceBuffer.Get(), 0);
 }
 
@@ -66,14 +76,11 @@ void FlexDebugRenderer::Render()
 	UpdateShaderVariables();
 
 	ID3D11Buffer* vbs[] = { m_pVertexBuffer.Get(), m_pInstanceBuffer.Get() };
-	UINT stride[2] = { sizeof(VertexPosNorm), sizeof(Vector4) };
+	UINT stride[2] = { sizeof(VertexPosNorm), sizeof(DebugParticle) };
 	UINT offset[2] = { 0,0 };
 	m_pGameContext->Engine->D3DeviceContext->IASetVertexBuffers(0, 2, vbs, stride, offset);
-
 	m_pGameContext->Engine->D3DeviceContext->IASetInputLayout(m_pInputLayout.Get());
-
 	m_pGameContext->Engine->D3DeviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 	m_pGameContext->Engine->D3DeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	D3DX11_TECHNIQUE_DESC techDesc;
@@ -123,7 +130,8 @@ void FlexDebugRenderer::CreateInputLayout()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		//Input Slot 1 (Instance Data)
-		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "PHASE", 0, DXGI_FORMAT_R32_SINT, 1, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 	};
 	UINT numElements = sizeof(elementDesc) / sizeof(elementDesc[0]);
 
@@ -180,9 +188,9 @@ void FlexDebugRenderer::CreateInstanceData()
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.MiscFlags = 0;
-	bd.StructureByteStride = sizeof(Vector4);
+	bd.StructureByteStride = sizeof(DebugParticle);
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bd.ByteWidth = sizeof(XMFLOAT4) * m_MaxParticles;
+	bd.ByteWidth = sizeof(DebugParticle) * m_MaxParticles;
 	HR(m_pGameContext->Engine->D3Device->CreateBuffer(&bd, nullptr, m_pInstanceBuffer.GetAddressOf()))
 }

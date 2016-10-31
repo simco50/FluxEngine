@@ -5,6 +5,7 @@ class InputManager;
 class CameraComponent;
 class RenderTarget;
 class ShadowMapper;
+class MaterialManager;
 
 enum class WindowStyle
 {
@@ -30,11 +31,11 @@ struct GameSettings
 
 struct SceneContext
 {
-	GameTimer GameTimer;
 	CameraComponent* CurrentCamera = nullptr;
 	vector<CameraComponent*> Cameras;
 	InputManager* Input = nullptr;
 	ShadowMapper* ShadowMapper = nullptr;
+	MaterialManager* MaterialManager = nullptr;
 };
 
 struct EngineContext

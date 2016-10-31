@@ -5,6 +5,7 @@
 #include "../Prefabs/FreeCamera.h"
 #include "../Rendering/DeferredRenderer.h"
 #include "../Rendering/ShadowMapper.h"
+#include "../Managers/MaterialManager.h"
 
 SceneBase::SceneBase()
 {
@@ -19,6 +20,7 @@ SceneBase::~SceneBase()
 	SafeDelete(m_GameContext.Scene->Input);
 	SafeDelete(m_SceneContext.ShadowMapper);
 	SafeDelete(m_pDeferredRenderer);
+	SafeDelete(m_SceneContext.MaterialManager);
 }
 
 void SceneBase::BaseInitialize(EngineContext* pEngineContext)
@@ -37,12 +39,14 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	pCamera->GetCamera()->SetActive(true);
 
 	//Set scene specific objects
-	m_SceneContext.GameTimer.Reset();
 	m_SceneContext.Input = new InputManager();
 	m_SceneContext.Input->Initialize();
 
 	m_SceneContext.ShadowMapper = new ShadowMapper();
 	m_SceneContext.ShadowMapper->Initialize(m_pGameContext);
+
+	m_SceneContext.MaterialManager = new MaterialManager();
+	m_SceneContext.MaterialManager->Initialize(m_pGameContext);
 
 	Initialize();
 
@@ -60,7 +64,6 @@ void SceneBase::BaseUpdate()
 {
 	//Update scene specific objects
 	m_SceneContext.Input->Update();
-	m_SceneContext.GameTimer.Tick();
 
 	Update();
 	for (size_t i = 0; i < m_pChildren.size(); i++)
@@ -99,17 +102,6 @@ void SceneBase::AddChild(GameObject* pChild)
 	pChild->BaseInitialize(&m_GameContext);
 	pChild->m_pScene = this;
 	m_pChildren.push_back(pChild);
-}
-
-void SceneBase::SetPaused(const bool paused)
-{
-	if (paused == m_Paused)
-		return;
-	m_Paused = paused;
-	if (paused)
-		m_pGameContext->Scene->GameTimer.Stop();
-	else
-		m_pGameContext->Scene->GameTimer.Start();
 }
 
 void SceneBase::OnResize()
