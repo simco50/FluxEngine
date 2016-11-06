@@ -6,7 +6,6 @@ FlexSystem::FlexSystem()
 	RigidOffsets.push_back(0);
 }
 
-
 FlexSystem::~FlexSystem()
 {
 	if(pFlexSolver)
@@ -15,6 +14,12 @@ FlexSystem::~FlexSystem()
 
 void FlexSystem::InitializeSolver()
 {
+	if (pFlexSolver)
+	{
+		DebugLog::Log(L"FlexSolver already initialized, reinitializing...", LogType::WARNING);
+		flexDestroySolver(pFlexSolver);
+		pFlexSolver = nullptr;
+	}
 	pFlexSolver = flexCreateSolver(Positions.size(), 0);
 }
 
@@ -57,13 +62,16 @@ void FlexSystem::UpdateData()
 			MemoryType
 		);
 	}
-
 	flexSetPhases(pFlexSolver, Phases.data(), numParticles, MemoryType);
 }
 
 void FlexSystem::UploadFlexData()
 {
-	InitializeSolver();
+	if(pFlexSolver == nullptr)
+	{
+		DebugLog::Log(L"FlexSystem::UploadFlexData() > Solver not yet initialized!", LogType::ERROR);
+		return;
+	}
 
 	//Adjust the flex params
 	Params.mRadius *= 1.5f;
@@ -231,26 +239,21 @@ void FlexSystem::AdjustParams()
 void FlexSystem::CalculateRigidOffsets(const int numRigids, Vector3* localPositions)
 {
 	int count = 0;
-
 	for (int r = 0; r < numRigids; ++r)
 	{
 		const int startIndex = RigidOffsets[r];
 		const int endIndex = RigidOffsets[r + 1];
-
 		const int clusterSize = endIndex - startIndex;
-
 		Vector3 average = Vector3();
 		for (int i = startIndex; i < endIndex; ++i)
 		{
-			const int rigidIndex = RigidIndices[i];
+			int rigidIndex = RigidIndices[i];
 			average = average + Vector3((float*)&Positions[rigidIndex]);
 		}
-
 		average = average / float(clusterSize);
-
 		for (int i = startIndex; i < endIndex; ++i)
 		{
-			const int rigidIdx = RigidIndices[i];
+			int rigidIdx = RigidIndices[i];
 			//Subtract the average position from the particle position to get the local position
 			localPositions[count++] = Vector3((float*)&Positions[rigidIdx]) - average;
 		}

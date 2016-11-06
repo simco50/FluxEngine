@@ -23,7 +23,8 @@ struct VS_INPUT{
 	float3 wPos : WORLDPOS;
 	int phase : PHASE;
 };
-struct VS_OUTPUT{
+struct VS_OUTPUT
+{
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
 	float3 wPos : W_POSITION;

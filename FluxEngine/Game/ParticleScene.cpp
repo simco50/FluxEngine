@@ -1,0 +1,110 @@
+#include "stdafx.h"
+#include "ParticleScene.h"
+#include "../Scenegraph/GameObject.h"
+#include "../Components/MeshComponent.h"
+#include "../Prefabs/Skybox.h"
+
+#include "../Materials/Forward/DefaultMaterial.h"
+#include "../Components/TransformComponent.h"
+#include <ctime>
+#include "../Managers/GameManager.h"
+#include "../Physics/Flex/FlexSoftbody.h"
+#include "../Managers/SoundManager.h"
+#include "../Physics/Flex/FlexMousePicker.h"
+#include "../Physics/Flex/FlexDebugRenderer.h"
+#include "../Materials/Deferred/BasicMaterial_Deferred.h"
+#include "../Components/AudioSource.h"
+#include "../Graphics/Texture.h"
+#include "../Graphics/RenderTarget.h"
+#include "../Physics/Flex/FlexSystem.h"
+#include "../Physics/Flex/FlexTriangleMeshCollider.h"
+#include "../Graphics/MeshFilter.h"
+#include "../Managers/MaterialManager.h"
+
+class FlexTriangleMeshCollider;
+
+ParticleScene::ParticleScene()
+{}
+
+ParticleScene::~ParticleScene()
+{
+	delete m_pSystem;
+	flexShutdown();
+}
+
+void ParticleScene::Initialize()
+{
+	//Create the ground plane
+	GameObject* pGroundPlane = new GameObject();
+	MeshComponent* pMeshComponent = new MeshComponent(L"./Resources/Meshes/unit_plane.flux");
+
+	m_pGroundMaterial = make_unique<DefaultMaterial>();
+	m_pGroundMaterial->Initialize(m_pGameContext);
+	m_pGroundMaterial->SetColor(Vector4(0.0f, 0.7f, 1.0f, 1.0f));
+	pMeshComponent->SetMaterial(m_pGroundMaterial.get());
+	pGroundPlane->AddComponent(pMeshComponent);
+	pGroundPlane->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	pGroundPlane->GetTransform()->SetScale(200.0f, 200.0f, 200.0f);
+	AddChild(pGroundPlane);
+
+	//Add a skybox
+	Skybox* pSky = new Skybox();
+	AddChild(pSky);
+
+	flexInit(FLEX_VERSION);
+
+	m_pSystem = new FlexSystem();
+	m_pSystem->SetDefaultParams();
+	m_pSystem->CreateGroundPlane();
+
+	vector<Vector4> particles;
+	vector<Vector3> velocities;
+	vector<int> indices;
+	vector<int> phases;
+
+	m_pSystem->Params.mRadius = 0.7f;
+	m_pSystem->Params.mDynamicFriction = 0.35f;
+	m_pSystem->Params.mNumIterations = 4;
+	
+	int i = 0;
+	for (size_t x = 0; x < 10; x++)
+	{
+		for (size_t y = 0; y < 10; y++)
+		{
+			for (size_t z = 0; z < 10; z++)
+			{
+				m_pSystem->Positions.push_back(Vector4(x, y + 2, z, 1));
+				m_pSystem->Velocities.push_back(Vector3());
+
+				m_pSystem->Phases.push_back(flexMakePhase(rand() % 3, eFlexPhaseSelfCollide));
+				++i;
+			}
+		}
+	}
+	m_pSystem->AdjustParams();
+	m_pSystem->UploadFlexData();
+
+
+	FlexDebugRenderer* pFlexDebugRenderer = new FlexDebugRenderer(m_pSystem);
+	pFlexDebugRenderer->ToggleDebugging();
+	AddChild(pFlexDebugRenderer);
+}
+
+void ParticleScene::Update()
+{
+	//m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
+
+	m_pSystem->UpdateSolver(3, 1.0f / 60.0f);
+	
+	m_pSystem->FetchData();
+}
+
+void ParticleScene::LateUpdate()
+{
+	//Update data
+	m_pSystem->UpdateData();
+}
+
+void ParticleScene::Render()
+{
+}

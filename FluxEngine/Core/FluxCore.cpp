@@ -32,12 +32,14 @@ void FluxCore::CleanupD3D()
 	m_pSwapChain->SetFullscreenState(false, nullptr);
 
 	//Detail check for unreleased live objects
-	/*Unique_COM<ID3D11Debug> pDebug;
+	/*
+	Unique_COM<ID3D11Debug> pDebug;
 	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
 	if (pDebug.Get() != nullptr)
 	{
 		pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	}*/
+	}
+	*/
 }
 
 int FluxCore::Run(HINSTANCE hInstance)

@@ -20,6 +20,7 @@
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Graphics/MeshFilter.h"
 #include "../Managers/MaterialManager.h"
+#include "../Physics/Flex/FlexRigidbody.h"
 
 class FlexTriangleMeshCollider;
 
@@ -56,7 +57,7 @@ void SoftBodyScene::Initialize()
 	flexInit(FLEX_VERSION, FlexHelper::FlexMessageCallback);
 	m_pFlexSystem = new FlexSystem();
 
-	m_pDefaultMaterial = make_unique<DefaultMaterial>();
+	/*m_pDefaultMaterial = make_unique<DefaultMaterial>();
 	m_pDefaultMaterial->Initialize(m_pGameContext);
 	m_pDefaultMaterial->SetColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f));
 	FlexTriangleMeshCollider* pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
@@ -67,7 +68,6 @@ void SoftBodyScene::Initialize()
 	m_pCollision->AddComponent(pSpinnerMesh);
 	AddChild(m_pCollision);
 	m_pCollision->GetTransform()->SetPosition(0, 5, 0);
-	m_pCollision->GetTransform()->SetScale(3, 3, 3);
 
 	GameObject* pContainer = new GameObject();
 	pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
@@ -76,8 +76,7 @@ void SoftBodyScene::Initialize()
 	pContainer->AddComponent(pTriangleMeshCollider);
 	pContainer->AddComponent(pSpinnerMesh);
 	AddChild(pContainer);
-	pContainer->GetTransform()->SetPosition(0, 5, 0);
-	pContainer->GetTransform()->SetScale(3, 3, 3);
+	pContainer->GetTransform()->SetPosition(0, 5, 0);*/
 
 	//Set default flex params
 	m_pFlexSystem->SetDefaultParams();
@@ -93,7 +92,7 @@ void SoftBodyScene::Initialize()
 	sDesc.VolumeSampling = 4.0f;
 	sDesc.SurfaceSampling = 1.0f;
 	sDesc.ClusterSpacing = 2.75f;
-	sDesc.ClusterRadius = 3.0f;
+	sDesc.ClusterRadius = .0f;
 	sDesc.ClusterStiffness = 0.05f;
 	sDesc.LinkRadius = 0.0f;
 	sDesc.LinkStiffness = 1.0f;
@@ -101,13 +100,13 @@ void SoftBodyScene::Initialize()
 	sDesc.SkinningFalloff = 2.0f;
 	sDesc.SkinningMaxDistance = 100.0f;
 
-	for (size_t i = 0; i < 1; i++)
+	for (size_t i = 0; i < 10; i++)
 	{
 		sDesc.Phase = flexMakePhase(i, 0);
 		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
 		AddChild(pSoftbody);
 		pSoftbody->SetTexture(L"./Resources/Textures/patrick.tga");
-		pSoftbody->SetPosition(Vector3(0.0f,10.0f * i + 10.0f, 0.0f));
+		pSoftbody->SetPosition(Vector3(0.0f, 4.0f * i + 10.0f, 0.0f));
 	}
 	
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_SIMULATE, Pressed, 'F'));
@@ -115,6 +114,7 @@ void SoftBodyScene::Initialize()
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_TELEPORT, Pressed, 'T'));
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_DEBUG, Pressed, 'O'));
 
+	m_pFlexSystem->InitializeSolver();
 	m_pFlexSystem->UploadFlexData();
 	m_pFlexSystem->UpdateSolver();
 	m_pFlexMousePicker = new FlexMousePicker(m_pGameContext, m_pFlexSystem);
@@ -124,7 +124,7 @@ void SoftBodyScene::Initialize()
 
 void SoftBodyScene::Update()
 {
-	m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
+	//m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
 
 	if (m_pGameContext->Scene->Input->IsActionTriggered(RESTART))
 		GameManager::GetInstance()->LoadScene(new SoftBodyScene());
@@ -134,7 +134,7 @@ void SoftBodyScene::Update()
 	}
 	if (m_FlexUpdate)
 	{
-		m_pFlexSystem->UpdateSolver(3, 1.0f / 60.0f);
+		m_pFlexSystem->UpdateSolver(3, 1.0f / 60);
 	}
 	if(m_pGameContext->Scene->Input->IsActionTriggered(FLEX_DEBUG))
 	{

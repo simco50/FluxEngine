@@ -184,6 +184,8 @@ void FlexDebugRenderer::CreateInstanceData()
 	m_pInstanceBuffer.Reset();
 
 	m_MaxParticles = m_pFlexSystem->Positions.size();
+	if (m_MaxParticles == 0)
+		m_MaxParticles = 1;
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
