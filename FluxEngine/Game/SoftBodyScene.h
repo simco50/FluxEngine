@@ -1,21 +1,18 @@
 #pragma once
 #include "../Scenegraph/SceneBase.h"
-#include "../Physics/Flex/FlexHelper.h"
 
 class DefaultMaterial;
 class GameObject;
 class FlexMousePicker;
 class FlexDebugRenderer;
 class BasicMaterial_Deferred;
+class UI_Canvas;
 
 class FlexSystem;
 
 enum InputID
 {
-	RESTART,
-	FLEX_DEBUG,
-	FLEX_SIMULATE,
-	FLEX_TELEPORT,
+	FLEX_UI
 };
 
 class SoftBodyScene : public SceneBase
@@ -39,5 +36,8 @@ private:
 	FlexMousePicker* m_pFlexMousePicker = nullptr;
 
 	bool m_FlexUpdate = false;
+
+	UI_Canvas* m_pCanvas = nullptr;
+	float m_Nr = 0;
 };
 

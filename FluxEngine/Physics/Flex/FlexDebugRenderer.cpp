@@ -51,7 +51,7 @@ void FlexDebugRenderer::Update()
 		CreateInstanceData();
 	}
 
-	for (size_t i = 0; i < m_ParticleCount; i++)
+	for (int i = 0; i < m_ParticleCount; i++)
 	{
 		m_Particles[i].Position.x = m_pFlexSystem->Positions[i].x;
 		m_Particles[i].Position.y = m_pFlexSystem->Positions[i].y;

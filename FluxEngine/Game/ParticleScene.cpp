@@ -20,6 +20,7 @@
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Graphics/MeshFilter.h"
 #include "../Managers/MaterialManager.h"
+#include "../Physics/Flex/FlexFluidRenderer.h"
 
 class FlexTriangleMeshCollider;
 
@@ -65,15 +66,17 @@ void ParticleScene::Initialize()
 	m_pSystem->Params.mRadius = 0.7f;
 	m_pSystem->Params.mDynamicFriction = 0.35f;
 	m_pSystem->Params.mNumIterations = 4;
+	m_pSystem->Params.mFluid = true;
+	m_pSystem->Params.mFluidRestDistance = 0.8f;
 	
 	int i = 0;
-	for (size_t x = 0; x < 10; x++)
+	for (int x = 0; x < 10; x++)
 	{
-		for (size_t y = 0; y < 10; y++)
+		for (int y = 0; y < 10; y++)
 		{
-			for (size_t z = 0; z < 10; z++)
+			for (int z = 0; z < 10; z++)
 			{
-				m_pSystem->Positions.push_back(Vector4(x, y + 2, z, 1));
+				m_pSystem->Positions.push_back(Vector4((float)x, (float)y + 10.0f, (float)z, 1.0f));
 				m_pSystem->Velocities.push_back(Vector3());
 
 				m_pSystem->Phases.push_back(flexMakePhase(rand() % 3, eFlexPhaseSelfCollide));
@@ -82,20 +85,16 @@ void ParticleScene::Initialize()
 		}
 	}
 	m_pSystem->AdjustParams();
+	m_pSystem->InitializeSolver();
 	m_pSystem->UploadFlexData();
 
-
-	FlexDebugRenderer* pFlexDebugRenderer = new FlexDebugRenderer(m_pSystem);
-	pFlexDebugRenderer->ToggleDebugging();
-	AddChild(pFlexDebugRenderer);
+	m_pFluidRenderer = new FlexFluidRenderer(m_pSystem);
+	AddChild(m_pFluidRenderer);
 }
 
 void ParticleScene::Update()
 {
-	//m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
-
 	m_pSystem->UpdateSolver(3, 1.0f / 60.0f);
-	
 	m_pSystem->FetchData();
 }
 

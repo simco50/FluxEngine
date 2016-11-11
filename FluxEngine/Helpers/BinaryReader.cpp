@@ -54,7 +54,6 @@ bool BinaryReader::IsOpen() const
 {
 	if(!(m_pStream != nullptr && m_pStream->is_open()))
 	{
-		DebugLog::Log(L"BinaryReader::IsOpen() --> Failed!");
 		return false;
 	}
 	return true;
@@ -69,4 +68,34 @@ string BinaryReader::ReadString()
 		ss << Read<char>();
 	}
 	return ss.str();
+}
+
+wstring BinaryReader::ReadLongString()
+{
+	if (m_pStream == nullptr)
+		DebugLog::Log(L"BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+
+	auto stringLength = Read<UINT>();
+
+	wstringstream ss;
+	for (UINT i = 0; i<stringLength; ++i)
+	{
+		ss << Read<wchar_t>();
+	}
+
+	return (wstring)ss.str();
+}
+
+wstring BinaryReader::ReadNullString()
+{
+	if (m_pStream == nullptr)
+	{
+		DebugLog::Log(L"BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+		return L"";
+	}
+
+	string buff;
+	getline(*m_pStream, buff, '\0');
+
+	return wstring(buff.begin(), buff.end());
 }

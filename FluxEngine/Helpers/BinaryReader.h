@@ -27,6 +27,8 @@ public:
 	}
 
 	string ReadString();
+	wstring ReadLongString();
+	wstring ReadNullString();
 
 private:
 	unique_ptr<ifstream> m_pStream;

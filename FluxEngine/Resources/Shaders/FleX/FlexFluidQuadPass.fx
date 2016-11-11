@@ -1,9 +1,14 @@
 texture2D gDepth;
 float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
+float4x4 gViewInv : VIEWINV;
+float4x4 gProjInv : PROJINV;
+
+float gSpecularStrength = 1.0f;
+float gShininess = 8.0f;
 
 struct VS_INPUT
 {
-	float3 pos : POSITION;
+	 float3 pos : POSITION;
 };
 
 struct VS_OUTPUT
@@ -46,18 +51,28 @@ float2 texOffset( int u, int v )
     return float2( u * 1.0f/width, v * 1.0f/height );
 }
 
+float3 WorldPosFromDepth(float depth, float2 texCoord) 
+{
+    float z = depth * 2.0 - 1.0;
+    float4 clipSpacePosition = float4(texCoord * 2.0 - 1.0, z, 1.0);
+    float4 viewSpacePosition = mul(gProjInv, clipSpacePosition);
+    viewSpacePosition /= viewSpacePosition.w;
+    float4 worldSpacePosition = mul(gViewInv, viewSpacePosition);
+    return worldSpacePosition.xyz;
+}
+
 float blur(float2 texCoord)
 {
 	float sum;
 	float x, y;
-	for (y = -2; y <=2; y += 1.0f)
+	for (y = -1; y <=1; y += 1.0f)
     {
-        for (x = -2; x <= 2; x += 1.0f)
+        for (x = -1; x <= 1; x += 1.0f)
         {
-            sum += gDepth.Sample(samLinear, texCoord + texOffset(x,y) );
+            sum += gDepth.Sample(samLinear, texCoord + texOffset(x,y) ).r;
         }
     }
-    sum /= 25.0f;
+    sum /= 9.0f;
     return sum;
 }
 
@@ -80,22 +95,31 @@ float3 normal_from_depth(float depth, float2 texcoords) {
 
 float4 PS(VS_OUTPUT input) : SV_TARGET
 {
-	float2 texCoord = (input.pos + 1) / 2.0f;
+	float2 texCoord = (input.pos.xy + 1) / 2.0f;
 	float depth = gDepth.Sample(samLinear, input.texCoord).r;
 	clip(depth == 1 ? -1 : 1);
-	float3 normal = normal_from_depth(depth, input.texCoord);
+
+  float3 normal = normal_from_depth(depth, input.texCoord);
+
+  float3 viewDirection = normalize(WorldPosFromDepth(depth, texCoord) - gViewInv[3].xyz);
+
+  float3 hv = -normalize(gLightDirection + viewDirection);
+  float specularStrength = dot(normal, hv);
+  specularStrength = gSpecularStrength * pow(saturate(specularStrength), gShininess);
+
+
 	return float4(0,0.2,0.7,1) * saturate(dot(normal, gLightDirection));
 }
 
 technique11 Default
 {
-    pass P0
-    {
+  pass P0
+  {
 		SetRasterizerState(RS);
 		SetDepthStencilState(DSS, 0);
 
-        SetVertexShader( CompileShader( vs_4_0, VS() ) );
+    SetVertexShader( CompileShader( vs_4_0, VS() ) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_4_0, PS() ) );
-    }
+    SetPixelShader( CompileShader( ps_4_0, PS() ) );
+  }
 }

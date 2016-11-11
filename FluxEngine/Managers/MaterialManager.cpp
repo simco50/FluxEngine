@@ -6,7 +6,6 @@ MaterialManager::MaterialManager()
 {
 }
 
-
 MaterialManager::~MaterialManager()
 {
 	for (size_t i = 0; i < m_Materials.size(); i++)

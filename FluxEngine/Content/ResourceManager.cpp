@@ -5,6 +5,7 @@
 #include "EffectLoader.h"
 #include "MeshLoader.h"
 #include "TextureLoader.h"
+#include "SpriteFontLoader.h"
 
 vector<Loader*> ResourceManager::m_Loaders = vector<Loader*>();
 ID3D11Device* ResourceManager::m_pDevice = nullptr;
@@ -46,6 +47,7 @@ void ResourceManager::Initialize(ID3D11Device* pDevice)
 		AddLoader(new EffectLoader());
 		AddLoader(new MeshLoader());
 		AddLoader(new TextureLoader());
+		AddLoader(new SpriteFontLoader());
 	}
 }
 
