@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "GameManager.h"
 #include "../Scenegraph/SceneBase.h"
-#include "../Game/SoftBodyScene.h"
-//#include "../Game/ParticleScene.h"
+//#include "../Game/SoftBodyScene.h"
+#include "../Game/ParticleScene.h"
 
 GameManager::GameManager()
 {
@@ -30,7 +30,7 @@ void GameManager::Initialize(EngineContext* pEngineContext)
 	m_pEngineContext = pEngineContext;
 
 	//Add initial scene
-	m_pActiveScene = new SoftBodyScene();
+	m_pActiveScene = new ParticleScene();
 	m_pActiveScene->BaseInitialize(pEngineContext);
 	m_SceneInitialized = true;
 }

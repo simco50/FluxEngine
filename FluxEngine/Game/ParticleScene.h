@@ -7,7 +7,7 @@ class FlexMousePicker;
 class FlexDebugRenderer;
 class BasicMaterial_Deferred;
 
-class FlexFluidRenderer;
+class FluidRenderer;
 
 struct FlexSolver;
 
@@ -34,6 +34,6 @@ public:
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
 	FlexSystem* m_pSystem = nullptr;
-	FlexFluidRenderer* m_pFluidRenderer = nullptr;
+	FluidRenderer* m_pFluidRenderer = nullptr;
 };
 

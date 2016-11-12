@@ -21,6 +21,7 @@
 #include "../Graphics/MeshFilter.h"
 #include "../Managers/MaterialManager.h"
 #include "../Physics/Flex/FlexFluidRenderer.h"
+#include "../Physics/Flex/FluidRenderer.h"
 
 class FlexTriangleMeshCollider;
 
@@ -66,8 +67,9 @@ void ParticleScene::Initialize()
 	m_pSystem->Params.mRadius = 0.7f;
 	m_pSystem->Params.mDynamicFriction = 0.35f;
 	m_pSystem->Params.mNumIterations = 4;
-	m_pSystem->Params.mFluid = true;
-	m_pSystem->Params.mFluidRestDistance = 0.8f;
+	m_pSystem->Params.mCollisionDistance = m_pSystem->Params.mRadius;
+	//m_pSystem->Params.mFluid = true;
+	//m_pSystem->Params.mFluidRestDistance = 0.8f;
 	
 	int i = 0;
 	for (int x = 0; x < 10; x++)
@@ -88,7 +90,7 @@ void ParticleScene::Initialize()
 	m_pSystem->InitializeSolver();
 	m_pSystem->UploadFlexData();
 
-	m_pFluidRenderer = new FlexFluidRenderer(m_pSystem);
+	m_pFluidRenderer = new FluidRenderer(m_pSystem);
 	AddChild(m_pFluidRenderer);
 }
 

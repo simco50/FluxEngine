@@ -171,6 +171,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Game\Objects\UI_Objects.h" />
     <ClInclude Include="Game\ParticleScene.h" />
     <ClInclude Include="Physics\Flex\FlexFluidRenderer.h" />
+    <ClInclude Include="Physics\Flex\FluidRenderer.h" />
     <ClInclude Include="UI\SpriteFont.h" />
     <ClInclude Include="UI\SpriteRenderer.h" />
     <ClInclude Include="Managers\MaterialManager.h" />
@@ -243,6 +244,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Content\SpriteFontLoader.cpp" />
     <ClCompile Include="Game\ParticleScene.cpp" />
     <ClCompile Include="Physics\Flex\FlexFluidRenderer.cpp" />
+    <ClCompile Include="Physics\Flex\FluidRenderer.cpp" />
     <ClCompile Include="UI\SpriteFont.cpp" />
     <ClCompile Include="UI\SpriteRenderer.cpp" />
     <ClCompile Include="Managers\MaterialManager.cpp" />
