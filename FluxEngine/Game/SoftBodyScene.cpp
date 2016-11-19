@@ -20,6 +20,7 @@
 #include "../UI/TextRenderer.h"
 #include "Objects/UI_Objects.h"
 #include "../Physics/Flex/FlexHelper.h"
+#include "../Graphics/MeshFilter.h"
 
 SoftBodyScene::SoftBodyScene()
 {}
@@ -81,7 +82,7 @@ void SoftBodyScene::Initialize()
 	m_pFlexSystem->SetDefaultParams();
 	m_pFlexSystem->CreateGroundPlane(Vector3(0, 1, 0), 0.0f);
 
-	m_pFlexSystem->Params.mRadius = 0.05f;
+	m_pFlexSystem->Params.mRadius = 0.06f;
 	m_pFlexSystem->Params.mDynamicFriction = 0.35f;
 	m_pFlexSystem->Params.mNumIterations = 4;
 
@@ -98,6 +99,22 @@ void SoftBodyScene::Initialize()
 	sDesc.Phase = flexMakePhase(0, 0);
 	sDesc.SkinningFalloff = 2.0f;
 	sDesc.SkinningMaxDistance = 100.0f;
+
+	/*MeshFilter* pDragon = ResourceManager::Load<MeshFilter>(L"./Resources/Meshes/dragon.flux");
+	Vector3* pos = (Vector3*)pDragon->GetVertexData("POSITION").pData;
+	for (size_t i = 0; i < pDragon->VertexCount(); i++)
+	{
+		pos[i] = pos[i] * 10;
+	}
+
+	for (size_t i = 0; i < 5; i++)
+	{
+		sDesc.Phase = flexMakePhase(i, 0);
+		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/dragon.flux", &sDesc, m_pFlexSystem);
+		AddChild(pSoftbody);
+		//pSoftbody->SetTexture(L"./Resources/Textures/Patrick.tga");
+		pSoftbody->SetPosition(Vector3(0.0f, 4.0f * i + 10.0f, 0.0f));
+	}*/
 
 	for (size_t i = 0; i < 5; i++)
 	{

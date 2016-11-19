@@ -20,7 +20,7 @@ void GameManager::PrepareGame()
 	m_EngineContext.GameSettings.Height = 720;
 	m_EngineContext.GameSettings.ClearColor = (XMFLOAT4)Colors::SteelBlue;
 	m_EngineContext.GameSettings.MSAA = true;
-	m_EngineContext.GameSettings.Title = L"FluxEngine v0.9.1";
+	m_EngineContext.GameSettings.Title = L"Nvidia Flex - Softbody Rendering";
 	m_EngineContext.GameSettings.VerticalSync = true;
 	m_EngineContext.GameSettings.UseDeferredRendering = false;
 }
@@ -30,6 +30,7 @@ void GameManager::Initialize(EngineContext* pEngineContext)
 	m_pEngineContext = pEngineContext;
 
 	//Add initial scene
+	//m_pActiveScene = new SoftBodyScene();
 	m_pActiveScene = new ParticleScene();
 	m_pActiveScene->BaseInitialize(pEngineContext);
 	m_SceneInitialized = true;

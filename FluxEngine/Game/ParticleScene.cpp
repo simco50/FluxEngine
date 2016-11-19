@@ -20,7 +20,6 @@
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Graphics/MeshFilter.h"
 #include "../Managers/MaterialManager.h"
-#include "../Physics/Flex/FlexFluidRenderer.h"
 #include "../Physics/Flex/FluidRenderer.h"
 
 class FlexTriangleMeshCollider;
