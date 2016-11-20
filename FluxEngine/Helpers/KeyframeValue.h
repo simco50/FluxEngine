@@ -1,4 +1,5 @@
 #pragma once
+
 template <typename T>
 struct KeyframeValue
 {
@@ -62,6 +63,7 @@ struct KeyframeValue
 		}
 		return T();
 	}
+
 private:
 	map<float, T> Values;
 };

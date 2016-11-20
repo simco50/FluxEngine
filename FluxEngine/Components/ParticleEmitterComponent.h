@@ -5,26 +5,53 @@
 struct ParticleEmitterSettings
 {
 	ParticleEmitterSettings() :
-		Size(1.0f),
 		Lifetime(1.0f),
+		LifetimeVariance(0.0f),
+		StartVelocity(0.0f),
+		StartVelocityVariance(0.0f),
+		Size(1.0f),
 		Velocity(Vector3()),
-		EmitterRange(10.0f),
-		Color((Vector3)Colors::White),
-		Transparany(1)
+		LocalVelocity(Vector3()),
+		Color(Vector3(1, 1, 1)),
+		Transparany(1),
+		Rotation(0.0f)
 	{}
+
 	float Lifetime;
-	float EmitterRange;
+	float LifetimeVariance;
+
+	float StartVelocity;
+	float StartVelocityVariance;
+
 	KeyframeValue<float> Size;
 	KeyframeValue<Vector3> Velocity;
+	KeyframeValue<Vector3> LocalVelocity;
 	KeyframeValue<Vector3> Color;
 	KeyframeValue<float> Transparany;
+	KeyframeValue<float> Rotation;
+	bool RandomStartRotation = true;
+
+	enum class ShapeType
+	{
+		CIRCLE,
+		SPHERE,
+		CONE,
+		EDGE,
+	};
+	struct Shape
+	{
+		ShapeType ShapeType = ShapeType::SPHERE;
+		float Radius = 1.0f;
+		bool EmitFromShell = false;
+		bool EmitFromVolume = false;
+		float Angle = 30.0f;
+	};
+	Shape Shape;
 };
 
 struct ParticleVertex
 {
-public:
-
-	ParticleVertex(Vector3 pos = Vector3(0, 0, 0), Vector4 col = (Vector4)Colors::White, float size = 5.0f, float rotation = 0) :
+	ParticleVertex(Vector3 pos = Vector3(), Vector4 col = (Vector4)Colors::White, float size = 5.0f, float rotation = 0) :
 		Position(pos),
 		Color(col),
 		Size(size),
@@ -39,14 +66,27 @@ public:
 class Particle;
 class Texture;
 
+enum ParticleSortingMode
+{
+	OldestFirst,
+	YoungestFirst,
+	ByDistance,
+};
+
 class ParticleEmitterComponent : public ComponentBase
 {
 public:
-	//Constructor, particle texture path and max particles
-	ParticleEmitterComponent(const wstring& assetFile, int particleCount = 50);
+	ParticleEmitterComponent(const wstring& assetFile, int emission, int maxParticles, bool playOnAwake = true);
 	~ParticleEmitterComponent(void);
 
 	ParticleEmitterSettings* GetSettings() { return &m_Settings; }
+	void SetEmission(const int emission) { m_Emission = emission; }
+	void SetMaxParticles(const int maxParticles);
+	void Reset() { m_Timer = 0.0f; }
+	void Play() { m_Playing = true; }
+	void Stop() { m_Playing = false; }
+	void SetLoop(bool loop) { m_Loop = loop; }
+	void SetSortingMode(ParticleSortingMode mode) { m_SortingMode = mode; }
 
 protected:
 	void Initialize();
@@ -54,44 +94,37 @@ protected:
 	void Render();
 
 private:
+	void LoadEffect();
+	void CreateVertexBuffer();
+	void CreateBlendState();
+
+	bool m_PlayOnAwake;
+	bool m_Playing = false;
 	bool m_Loop = true;
-	float m_Duration = 1.0f;
+	float m_Duration = 3.0f;
 	float m_Timer = 0.0f;
 
-	//Method to load effect-related stuff
-	void LoadEffect();
-	//Method to create the vertex buffer
-	void CreateVertexBuffer();
-
-	//The actual vertex buffer, containing ParticleVertex information for each Particle
-	ID3D11Buffer* m_pVertexBuffer = nullptr;
-
-	//The effect we'll use to render the particles
-	ID3DX11Effect *m_pEffect = nullptr;
-	//The default technique
-	ID3DX11EffectTechnique *m_pDefaultTechnique = nullptr;
-	//Shader matrix variables
-	ID3DX11EffectMatrixVariable *m_pWvpVariable = nullptr, *m_pViewInverseVariable = nullptr;
-	//Shader texture variable
-	ID3DX11EffectShaderResourceVariable *m_pTextureVariable = nullptr;
-	//ShaderResourceView, containing the particle texture
-	Texture *m_pParticleTexture = nullptr;
-
-	//Vertex input layout variables
-	ID3D11InputLayout *m_pInputLayout = nullptr;
-	UINT m_pInputLayoutSize = 0;
-
-	//Vector of particle pointers
 	vector<Particle*> m_Particles;
-	//The settings for this particle system
 	ParticleEmitterSettings m_Settings = ParticleEmitterSettings();
-	//The total amount of particles (m_Particles.size() == m_ParticleCount)
 	int m_ParticleCount = 0;
-	//The active particles for a certain frame
+	int m_MaxParticles;
+	int m_BufferSize = 0;
+	float m_ParticleSpawnTimer = 0.0f;
+	int m_Emission;
 	int m_ActiveParticles = 0;
-	//Total seconds since the last particle initialisation
-	float m_LastParticleInit = 0.0f;
-	//string containing the path to the particle texture
+	ParticleSortingMode m_SortingMode = ByDistance;
+
+	Unique_COM<ID3D11Buffer> m_pVertexBuffer;
+	Unique_COM<ID3D11BlendState> m_pBlendState;
+
+	ID3DX11Effect *m_pEffect = nullptr;
+	ID3DX11EffectTechnique *m_pTechnique = nullptr;
+	Unique_COM<ID3D11InputLayout> m_pInputLayout;
+	ID3DX11EffectMatrixVariable *m_pViewProjectionVariable = nullptr;
+	ID3DX11EffectMatrixVariable *m_pWorldVariable = nullptr;
+	ID3DX11EffectMatrixVariable* m_pViewInverseVariable = nullptr;
+	ID3DX11EffectShaderResourceVariable *m_pTextureVariable = nullptr;
+	Texture *m_pParticleTexture = nullptr;
 	wstring m_AssetFile;
 
 private:

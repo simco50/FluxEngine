@@ -173,7 +173,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Game\ParticleScene.h" />
     <ClInclude Include="Graphics\Particle.h" />
     <ClInclude Include="Helpers\KeyframeValue.h" />
-    <ClInclude Include="MathHelp.h" />
+    <ClInclude Include="Helpers\MathHelp.h" />
     <ClInclude Include="Physics\Flex\FluidRenderer.h" />
     <ClInclude Include="UI\SpriteFont.h" />
     <ClInclude Include="UI\SpriteRenderer.h" />

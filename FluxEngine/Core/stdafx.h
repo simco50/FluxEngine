@@ -136,7 +136,7 @@ if(! variable->IsValid()) DebugLog::Log(stream.str(), LogType::ERROR);}
 
 #define BIND_AND_CHECK_NAME(variable, name, as)\
 variable = m_pEffect->GetVariableByName(#name)->as();\
-if(! variable->IsValid()) DebugLog::Log(L"Variable with name #name not found", LogType::ERROR);
+if(! variable->IsValid()) DebugLog::LogFormat(LogType::ERROR, L"Variable with name '%s' not found", L#name);
 
 //Utility methods
 template<typename T>
