@@ -167,9 +167,13 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Components\ParticleEmitterComponent.h" />
     <ClInclude Include="Content\SpriteFontLoader.h" />
     <ClInclude Include="Game\Objects\UI_Objects.h" />
     <ClInclude Include="Game\ParticleScene.h" />
+    <ClInclude Include="Graphics\Particle.h" />
+    <ClInclude Include="Helpers\KeyframeValue.h" />
+    <ClInclude Include="MathHelp.h" />
     <ClInclude Include="Physics\Flex\FluidRenderer.h" />
     <ClInclude Include="UI\SpriteFont.h" />
     <ClInclude Include="UI\SpriteRenderer.h" />
@@ -240,8 +244,10 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="WWW\md5.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Content\SpriteFontLoader.cpp" />
     <ClCompile Include="Game\ParticleScene.cpp" />
+    <ClCompile Include="Graphics\Particle.cpp" />
     <ClCompile Include="Physics\Flex\FluidRenderer.cpp" />
     <ClCompile Include="UI\SpriteFont.cpp" />
     <ClCompile Include="UI\SpriteRenderer.cpp" />

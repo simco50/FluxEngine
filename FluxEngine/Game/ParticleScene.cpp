@@ -21,6 +21,7 @@
 #include "../Graphics/MeshFilter.h"
 #include "../Managers/MaterialManager.h"
 #include "../Physics/Flex/FluidRenderer.h"
+#include "../Components/ParticleEmitterComponent.h"
 
 class FlexTriangleMeshCollider;
 
@@ -29,8 +30,8 @@ ParticleScene::ParticleScene()
 
 ParticleScene::~ParticleScene()
 {
-	delete m_pSystem;
-	flexShutdown();
+	//delete m_pSystem;
+	//flexShutdown();
 }
 
 void ParticleScene::Initialize()
@@ -52,7 +53,34 @@ void ParticleScene::Initialize()
 	Skybox* pSky = new Skybox();
 	AddChild(pSky);
 
-	flexInit(FLEX_VERSION);
+	GameObject* pObj = new GameObject();
+	ParticleEmitterComponent* pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/Smoke.png");
+	ParticleEmitterSettings* pSettings = pEmitter->GetSettings();
+
+	pObj->GetTransform()->Translate(0, 5, 0);
+
+	pObj->AddComponent(pEmitter);
+	AddChild(pObj);
+	pSettings->EmitterRange = 1.0f;
+
+	pSettings->Color.Add(0.0f, Vector3(1, 0, 0));
+	pSettings->Color.Add(0.5f, Vector3(0, 1, 0));
+	pSettings->Color.Add(1.0f, Vector3(0, 0, 1));
+
+	pSettings->Transparany.Add(0.0f, 0);
+	pSettings->Transparany.Add(0.1f, 1.0f);
+	pSettings->Transparany.Add(0.9f, 1.0f);
+	pSettings->Transparany.Add(1.0f, 0.0f);
+
+	pSettings->Velocity.Add(0.0f, Vector3(0, 0, -5));
+	pSettings->Velocity.Add(0.4f, Vector3(0, 0, -5));
+	pSettings->Velocity.Add(1.0f, Vector3(0, -5, 0));
+
+	pSettings->Size.SetConstant(5);
+
+	pSettings->Lifetime = 5;
+
+	/*flexInit(FLEX_VERSION);
 
 	m_pSystem = new FlexSystem();
 	m_pSystem->SetDefaultParams();
@@ -90,19 +118,19 @@ void ParticleScene::Initialize()
 	m_pSystem->UploadFlexData();
 
 	m_pFluidRenderer = new FluidRenderer(m_pSystem);
-	AddChild(m_pFluidRenderer);
+	AddChild(m_pFluidRenderer);*/
 }
 
 void ParticleScene::Update()
 {
-	m_pSystem->UpdateSolver(3, 1.0f / 60.0f);
-	m_pSystem->FetchData();
+	//m_pSystem->UpdateSolver(3, 1.0f / 60.0f);
+	//m_pSystem->FetchData();
 }
 
 void ParticleScene::LateUpdate()
 {
 	//Update data
-	m_pSystem->UpdateData();
+	//m_pSystem->UpdateData();
 }
 
 void ParticleScene::Render()
