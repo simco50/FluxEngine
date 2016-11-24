@@ -6,6 +6,7 @@ class GameObject;
 class FlexMousePicker;
 class FlexDebugRenderer;
 class BasicMaterial_Deferred;
+class ParticleEmitterComponent;
 
 class FluidRenderer;
 
@@ -35,5 +36,7 @@ private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
 	FlexSystem* m_pSystem = nullptr;
 	FluidRenderer* m_pFluidRenderer = nullptr;
+
+	ParticleEmitterComponent* m_pEmitter = nullptr;
 };
 

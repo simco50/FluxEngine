@@ -158,7 +158,7 @@ void ParticleEmitterComponent::Update()
 			p->Init();
 			pBuffer[m_ParticleCount] = p->GetVertexInfo();
 			++m_ParticleCount;
-			m_ParticleSpawnTimer = 0.0f;
+			m_ParticleSpawnTimer -= emissionTime;
 		}
 	}
 	m_pGameContext->Engine->D3DeviceContext->Unmap(m_pVertexBuffer.Get(), 0);

@@ -54,36 +54,28 @@ void ParticleScene::Initialize()
 	AddChild(pSky);
 
 	GameObject* pObj = new GameObject();
-	ParticleEmitterComponent* pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/smoke.png", 100, 5000);
-	ParticleEmitterSettings* pSettings = pEmitter->GetSettings();
+	m_pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/water.png", 100, 5000);
+	ParticleEmitterSettings* pSettings = m_pEmitter->GetSettings();
 	AddChild(pObj);
-	pObj->AddComponent(pEmitter);
+	pObj->AddComponent(m_pEmitter);
 
 	pObj->GetTransform()->Translate(0, 5, 0);
 
 	pSettings->Transparany.SetConstant(1.0f);
 
-	pSettings->Size.Add(0, 1);
-	pSettings->Size.Add(0.9f, 4);
-	pSettings->Size.Add(1, 3);
+	pSettings->Size.SetConstant(2);
 
-	pSettings->StartVelocity = 5.0f;
+	pSettings->StartVelocity = 2.0f;
 	pSettings->Shape.ShapeType = ParticleEmitterSettings::ShapeType::CONE;
-	pSettings->Shape.Angle = 10.0f;
+	pSettings->Shape.Angle = 50.0f;
 	pSettings->Shape.Radius = 0.1f;
 	pSettings->Shape.EmitFromShell = true;
 	pSettings->Shape.EmitFromVolume = false;
 	pSettings->Lifetime = 3;
-	pSettings->Velocity.Add(0.0f, Vector3());
-	pSettings->Velocity.Add(0.4f, Vector3());
-	pSettings->Velocity.Add(0.6f, Vector3(0, -9, 0));
-	pSettings->Velocity.Add(1.0f, Vector3(0, -9, 0));
-
-	pSettings->Rotation.Add(0.0f, 0);
-	pSettings->Rotation.Add(0.25f, XM_2PI);
-	pSettings->Rotation.Add(0.5f, 0); 
-	pSettings->Rotation.Add(0.75f, XM_2PI);
-	pSettings->Rotation.Add(1.0f, 0);
+	pSettings->LifetimeVariance = 10;
+	pSettings->Velocity.Add(0, Vector3());
+	pSettings->Velocity.Add(0.5f, Vector3());
+	pSettings->Velocity.Add(1, Vector3(0, -10, 0));
 
 	/*flexInit(FLEX_VERSION);
 
