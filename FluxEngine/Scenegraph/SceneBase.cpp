@@ -8,6 +8,7 @@
 #include "../Managers/MaterialManager.h"
 #include "../UI/SpriteRenderer.h"
 #include "../UI/TextRenderer.h"
+#include "../UI/ImgUI/imgui.h"
 
 SceneBase::SceneBase()
 {

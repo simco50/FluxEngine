@@ -11,7 +11,7 @@ public:
 
 	void FetchData();
 
-	void UpdateSolver(int substeps = 3, float deltaTime = 1.0f / 60.0f);
+	void UpdateSolver(float deltaTime = 1.0f / 60.0f);
 
 	void UpdateData();
 
@@ -19,6 +19,7 @@ public:
 	FlexSolver* pFlexSolver = nullptr;
 
 	FlexParams Params;
+	int Substeps = 3;
 
 	//Position + InvWeight
 	vector<Vector4> Positions;

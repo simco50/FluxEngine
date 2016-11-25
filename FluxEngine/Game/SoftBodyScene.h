@@ -6,7 +6,6 @@ class GameObject;
 class FlexMousePicker;
 class FlexDebugRenderer;
 class BasicMaterial_Deferred;
-class UI_Canvas;
 
 class FlexSystem;
 
@@ -35,9 +34,10 @@ private:
 	FlexDebugRenderer* m_pFlexDebugRenderer = nullptr;
 	FlexMousePicker* m_pFlexMousePicker = nullptr;
 
+	vector<float> deltaTimes;
+
 	bool m_FlexUpdate = false;
 
-	UI_Canvas* m_pCanvas = nullptr;
 	float m_Nr = 0;
 };
 

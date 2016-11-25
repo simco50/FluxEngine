@@ -174,7 +174,14 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Graphics\Particle.h" />
     <ClInclude Include="Helpers\KeyframeValue.h" />
     <ClInclude Include="Helpers\MathHelp.h" />
+    <ClInclude Include="UI\ImgUI\ImgUIDrawer.h" />
     <ClInclude Include="Physics\Flex\FluidRenderer.h" />
+    <ClInclude Include="UI\ImgUI\imconfig.h" />
+    <ClInclude Include="UI\ImgUI\imgui.h" />
+    <ClInclude Include="UI\ImgUI\imgui_internal.h" />
+    <ClInclude Include="UI\ImgUI\stb_rect_pack.h" />
+    <ClInclude Include="UI\ImgUI\stb_textedit.h" />
+    <ClInclude Include="UI\ImgUI\stb_truetype.h" />
     <ClInclude Include="UI\SpriteFont.h" />
     <ClInclude Include="UI\SpriteRenderer.h" />
     <ClInclude Include="Managers\MaterialManager.h" />
@@ -248,7 +255,11 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Content\SpriteFontLoader.cpp" />
     <ClCompile Include="Game\ParticleScene.cpp" />
     <ClCompile Include="Graphics\Particle.cpp" />
+    <ClCompile Include="UI\ImgUI\ImgUIDrawer.cpp" />
     <ClCompile Include="Physics\Flex\FluidRenderer.cpp" />
+    <ClCompile Include="UI\ImgUI\imgui.cpp" />
+    <ClCompile Include="UI\ImgUI\imgui_demo.cpp" />
+    <ClCompile Include="UI\ImgUI\imgui_draw.cpp" />
     <ClCompile Include="UI\SpriteFont.cpp" />
     <ClCompile Include="UI\SpriteRenderer.cpp" />
     <ClCompile Include="Managers\MaterialManager.cpp" />

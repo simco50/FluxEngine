@@ -22,6 +22,7 @@
 #include "../Managers/MaterialManager.h"
 #include "../Physics/Flex/FluidRenderer.h"
 #include "../Components/ParticleEmitterComponent.h"
+#include "../UI/ImgUI/imgui.h"
 
 class FlexTriangleMeshCollider;
 
@@ -54,28 +55,32 @@ void ParticleScene::Initialize()
 	AddChild(pSky);
 
 	GameObject* pObj = new GameObject();
-	m_pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/water.png", 100, 5000);
+	m_pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/smoke.png", 100, 5000);
 	ParticleEmitterSettings* pSettings = m_pEmitter->GetSettings();
 	AddChild(pObj);
 	pObj->AddComponent(m_pEmitter);
 
 	pObj->GetTransform()->Translate(0, 5, 0);
 
-	pSettings->Transparany.SetConstant(1.0f);
+	pSettings->Transparany.Add(0.0f, 0.0f);
+	pSettings->Transparany.Add(0.2f, 1.0f);
+	pSettings->Transparany.Add(0.8f, 1.0f);
+	pSettings->Transparany.Add(1.0f, 0.0f);
 
-	pSettings->Size.SetConstant(2);
+	pSettings->Size.Add(0, 1);
+	pSettings->Size.Add(1, 12);
 
 	pSettings->StartVelocity = 2.0f;
 	pSettings->Shape.ShapeType = ParticleEmitterSettings::ShapeType::CONE;
 	pSettings->Shape.Angle = 50.0f;
-	pSettings->Shape.Radius = 0.1f;
+	pSettings->Shape.Radius = 0.3f;
 	pSettings->Shape.EmitFromShell = true;
 	pSettings->Shape.EmitFromVolume = false;
 	pSettings->Lifetime = 3;
-	pSettings->LifetimeVariance = 10;
-	pSettings->Velocity.Add(0, Vector3());
-	pSettings->Velocity.Add(0.5f, Vector3());
-	pSettings->Velocity.Add(1, Vector3(0, -10, 0));
+	pSettings->LifetimeVariance = 0.5f;
+
+	pSettings->LocalVelocity.Add(0, Vector3());
+	pSettings->LocalVelocity.Add(1, Vector3(-20, 0, -20));
 
 	/*flexInit(FLEX_VERSION);
 

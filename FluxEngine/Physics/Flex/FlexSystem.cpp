@@ -30,9 +30,9 @@ void FlexSystem::FetchData()
 	flexGetVelocities(pFlexSolver, (float*)Velocities.data(), Velocities.size(), MemoryType);
 }
 
-void FlexSystem::UpdateSolver(int substeps, float deltaTime)
+void FlexSystem::UpdateSolver(float deltaTime)
 {
-	flexUpdateSolver(pFlexSolver, deltaTime, substeps, nullptr);
+	flexUpdateSolver(pFlexSolver, deltaTime, Substeps, nullptr);
 }
 
 void FlexSystem::UpdateData()

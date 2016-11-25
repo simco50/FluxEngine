@@ -21,13 +21,13 @@
 #include "Objects/UI_Objects.h"
 #include "../Physics/Flex/FlexHelper.h"
 #include "../Graphics/MeshFilter.h"
+#include "../UI/ImgUI/imgui.h"
 
 SoftBodyScene::SoftBodyScene()
 {}
 
 SoftBodyScene::~SoftBodyScene()
 {
-	SafeDelete(m_pCanvas);
 	SafeDelete(m_pFlexMousePicker);
 	SafeDelete(m_pFlexSystem);
 
@@ -134,52 +134,23 @@ void SoftBodyScene::Initialize()
 	m_pFlexDebugRenderer = new FlexDebugRenderer(m_pFlexSystem);
 	AddChild(m_pFlexDebugRenderer);
 
-	m_pCanvas = new UI_Canvas(m_pGameContext);
-	m_pCanvas->AddElement(new UI_Image(L"./Resources/Textures/UI/Background.png", Vector2()));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 50.0f), &m_pFlexSystem->Params.mGravity[0], -20, 20, L"Gravity X"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 90.0f), &m_pFlexSystem->Params.mGravity[1], -20, 20, L"Gravity Y"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 130.0f), &m_pFlexSystem->Params.mGravity[2], -20, 20, L"Gravity Z"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 170.0f), &m_pFlexSystem->Params.mPlasticCreep, 0, 1, L"Plastic Creep"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 210.0f), &m_pFlexSystem->Params.mDynamicFriction, 0.0f, 1.0f, L"Dynamic Friction"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 250.0f), &m_pFlexSystem->Params.mParticleFriction, 0.0f, 1.0f, L"Particle Friction"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 290.0f), &m_pFlexSystem->Params.mCollisionDistance, 0.01f, 4.0f, L"Collision Distance"));
-	m_pCanvas->AddElement(new UI_Slider<float>(Vector2(20.0f, 330.0f), &m_pFlexSystem->Params.mRestitution, 0.0f, 1.0f, L"Restitution"));
-	m_pCanvas->AddElement(new UI_Checkbox(Vector2(30.0f, 370.0f), &m_pFlexSystem->Params.mFluid, L"Fluid"));
-	m_pCanvas->AddElement(new UI_Checkbox(Vector2(30.0f, 460.0f), &m_FlexUpdate, L"Simulate"));
-	m_pCanvas->AddElement(new UI_Button(Vector2(20.0f, 480.0f), [this]() {m_pFlexDebugRenderer->ToggleDebugging(); }, L"Toggle debug"));
-	m_pCanvas->AddElement(new UI_Button(Vector2(20.0f, 520.0f), []() {GameManager::GetInstance()->LoadScene(new SoftBodyScene()); }, L"Restart scene"));
+	m_pGameContext->Scene->Input->CursorVisible(false);
+
 }
 
 void SoftBodyScene::Update()
 {
 	m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
-
 	
 	if (m_FlexUpdate)
 	{
-		m_pFlexSystem->UpdateSolver(10, 1.0f / 60);
-	}
-	if (m_pGameContext->Scene->Input->IsActionTriggered(FLEX_UI))
-	{
-		m_pCanvas->ToggleActive();
+		m_pFlexSystem->UpdateSolver(1.0f / 60);
 	}
 
 	//Fetch data
 	m_pFlexSystem->FetchData();
 	m_pFlexMousePicker->Update();
 
-	if (m_pCanvas->IsActive())
-	{
-		wstringstream stream = wstringstream();
-		stream << L"Particles - " << m_pFlexSystem->Positions.size();
-		TextRenderer::GetInstance()->DrawText(ResourceManager::Load<SpriteFont>(L"./Resources/Fonts/Consolas_22.fnt"), stream.str(), Vector2(20.0f, 570.0f));
-		stream = wstringstream();
-		stream << L"Triangle meshes - " << m_pFlexSystem->ShapeGeometry.size();
-		TextRenderer::GetInstance()->DrawText(ResourceManager::Load<SpriteFont>(L"./Resources/Fonts/Consolas_22.fnt"), stream.str(), Vector2(20.0f, 590.0f));
-		stream = wstringstream();
-		stream << L"Rigid count - " << m_pFlexSystem->RigidTranslations.size();
-		TextRenderer::GetInstance()->DrawText(ResourceManager::Load<SpriteFont>(L"./Resources/Fonts/Consolas_22.fnt"), stream.str(), Vector2(20.0f, 610.0f));
-	}
 }
 
 void SoftBodyScene::LateUpdate()
@@ -190,5 +161,49 @@ void SoftBodyScene::LateUpdate()
 
 void SoftBodyScene::Render()
 {
-	m_pCanvas->Update();
+	//m_pCanvas->Update();
+
+	ImGui::BeginMainMenuBar();
+	if (ImGui::BeginMenu("File"))
+	{
+		if (ImGui::MenuItem("Exit"))
+			PostQuitMessage(0);
+		ImGui::EndMenu();
+	}
+	ImGui::EndMainMenuBar();
+
+	ImGui::Begin("Nvidia FleX");
+
+	ImGui::Separator();
+	ImGui::SliderInt("Substeps", &m_pFlexSystem->Substeps, 0, 10);
+	ImGui::SliderInt("Iterations", &m_pFlexSystem->Params.mNumIterations, 0, 10);
+	ImGui::Separator();
+	ImGui::SliderFloat("Gravity X", &m_pFlexSystem->Params.mGravity[0], -10, 10);
+	ImGui::SliderFloat("Gravity Y", &m_pFlexSystem->Params.mGravity[1], -10, 10);
+	ImGui::SliderFloat("Gravity Z", &m_pFlexSystem->Params.mGravity[2], -10, 10);
+	ImGui::Separator();
+	ImGui::SliderFloat("Radius", &m_pFlexSystem->Params.mRadius, 0, 4);
+	ImGui::SliderFloat("Soid Radius", &m_pFlexSystem->Params.mSolidRestDistance, 0, 4);
+	ImGui::SliderFloat("Fluid Radius", &m_pFlexSystem->Params.mFluidRestDistance, 0, 4);
+	ImGui::Separator();
+	ImGui::SliderFloat("Dynamic Friction", &m_pFlexSystem->Params.mDynamicFriction, 0, 1);
+	ImGui::SliderFloat("Static Friction", &m_pFlexSystem->Params.mStaticFriction, 0, 1);
+	ImGui::SliderFloat("Particle Friction", &m_pFlexSystem->Params.mParticleFriction, 0, 1);
+	ImGui::SliderFloat("Restitution", &m_pFlexSystem->Params.mRestitution, 0, 1);
+	ImGui::SliderFloat("Damping", &m_pFlexSystem->Params.mDamping, 0, 1);
+	ImGui::SliderFloat("Plastic Creep", &m_pFlexSystem->Params.mPlasticCreep, 0, 1);
+
+	ImGui::Separator();
+	ImGui::Text("Particle Count: %i", m_pFlexSystem->Positions.size());
+	ImGui::Text("Rigid Count: %i", m_pFlexSystem->RigidTranslations.size());
+	ImGui::Text("Collision Meshes: %i", m_pFlexSystem->ShapeGeometry.size());
+		
+	ImGui::PlotLines("Frame times", GameTimer::GetFrameTimes().data() , GameTimer::GetFrameTimes().size(), 0.2f, nullptr, 0.0f, 0.05f, ImVec2(0, 80));
+
+	ImGui::Checkbox("Simulate", &m_FlexUpdate);
+	if (ImGui::Button("Restart scene"))
+		GameManager::GetInstance()->LoadScene(new SoftBodyScene());
+	if (ImGui::Button("Toggle debugging"))
+		m_pFlexDebugRenderer->ToggleDebugging();
+	ImGui::End();
 }

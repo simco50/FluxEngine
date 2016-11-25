@@ -10,11 +10,13 @@ __int64 GameTimer::m_CurrTime = 0;
 double GameTimer::m_SecondsPerCount = 0.0;
 double GameTimer::m_DeltaTime = 0.0;
 
+vector<float> GameTimer::m_FrameTimes(100);
+
 bool GameTimer::m_IsStopped = false;
 
 GameTimer::GameTimer()
 {
-	
+
 }
 
 GameTimer::~GameTimer()
@@ -34,6 +36,10 @@ void GameTimer::Tick()
 	m_CurrTime = currTime;
 
 	m_DeltaTime = (m_CurrTime - m_PrevTime) * m_SecondsPerCount;
+
+	for (size_t i = 1; i < m_FrameTimes.size(); i++)
+		m_FrameTimes[i - 1] = m_FrameTimes[i];
+	m_FrameTimes[m_FrameTimes.size() - 1] = m_DeltaTime;
 
 	m_PrevTime = m_CurrTime;
 
