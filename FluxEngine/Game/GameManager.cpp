@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "GameManager.h"
 #include "../Scenegraph/SceneBase.h"
-#include "../Game/SoftBodyScene.h"
-//#include "../Game/ParticleScene.h"
+#include "Scenes/SoftBodyScene.h"
+#include "Scenes/ParticleScene.h"
 
 GameManager::GameManager()
 {
@@ -10,7 +10,7 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	SafeDelete(m_pActiveScene);
+	SafeDelete(m_pScenes[0]);
 }
 
 void GameManager::PrepareGame()
@@ -30,8 +30,9 @@ void GameManager::Initialize(EngineContext* pEngineContext)
 	m_pEngineContext = pEngineContext;
 
 	//Add initial scene
-	m_pActiveScene = new SoftBodyScene();
-	//m_pActiveScene = new ParticleScene();
+	//m_pScenes.push_back(new SoftBodyScene());
+	m_pScenes.push_back(new ParticleScene());
+	m_pActiveScene = m_pScenes[0];
 	m_pActiveScene->BaseInitialize(pEngineContext);
 	m_SceneInitialized = true;
 }

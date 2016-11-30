@@ -8,17 +8,12 @@
 #include "../Debugging/DebugLog.h"
 #include "../Graphics/Texture.h"
 #include "CameraComponent.h"
-#include <minwinbase.h>
 
-ParticleEmitterComponent::ParticleEmitterComponent(const wstring& assetFile, int emission, int maxParticles, bool playOnAwake) :
-	m_MaxParticles(maxParticles),
-	m_Emission(emission),
-	m_AssetFile(assetFile),
-	m_PlayOnAwake(playOnAwake)
+ParticleEmitterComponent::ParticleEmitterComponent(ParticleSystem* pSystem) : m_pParticleSystem(pSystem)
 {
-	m_Particles.resize(maxParticles);
-	for (int i = 0; i < maxParticles; i++)
-		m_Particles[i] = new Particle(&m_Settings);
+	m_Particles.resize(m_pParticleSystem->MaxParticles);
+	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
+		m_Particles[i] = new Particle(m_pParticleSystem);
 }
 
 
@@ -29,18 +24,21 @@ ParticleEmitterComponent::~ParticleEmitterComponent(void)
 	m_Particles.clear();
 }
 
-void ParticleEmitterComponent::SetMaxParticles(const int maxParticles)
+void ParticleEmitterComponent::SetSystem(ParticleSystem* pSettings)
 {
-	m_MaxParticles = maxParticles;
-	CreateVertexBuffer();
+	m_pParticleSystem = pSettings;
+	Initialize();
 }
 
 void ParticleEmitterComponent::Initialize()
 {
+	if (m_pParticleSystem == nullptr)
+		return;
+
 	LoadEffect();
 	CreateVertexBuffer();
 	CreateBlendState();
-	m_pParticleTexture = ResourceManager::Load<Texture>(m_AssetFile);
+	m_pParticleTexture = ResourceManager::Load<Texture>(m_pParticleSystem->ImagePath);
 
 	if (m_PlayOnAwake)
 		Play();
@@ -74,7 +72,7 @@ void ParticleEmitterComponent::CreateVertexBuffer()
 {
 	m_pVertexBuffer.Reset();
 
-	m_BufferSize = m_MaxParticles;
+	m_BufferSize = m_pParticleSystem->MaxParticles;
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -102,15 +100,11 @@ void ParticleEmitterComponent::CreateBlendState()
 	HR(m_pGameContext->Engine->D3Device->CreateBlendState(&blendDesc, m_pBlendState.GetAddressOf()))
 }
 
-/*bool ParticleEmitterComponent::SortByCameraDistance(Particle* p1, Particle* p2)
-{
-	float d1 = Vector3::DistanceSquared(p1->GetVertexInfo().Position, m_pGameContext->Scene->CurrentCamera->GetTransform()->GetWorldPosition());
-	float d2 = Vector3::DistanceSquared(p2->GetVertexInfo().Position, m_pGameContext->Scene->CurrentCamera->GetTransform()->GetWorldPosition());
-	return d1 > d2;
-}*/
-
 void ParticleEmitterComponent::Update()
 {
+	if (m_pParticleSystem == nullptr)
+		return;
+
 	if (m_Playing == false)
 		return;
 
@@ -122,7 +116,7 @@ void ParticleEmitterComponent::Update()
 	if (m_ActiveParticles == 0 && update == false)
 		return;
 
-	float emissionTime = 1.0f / m_Emission;
+	float emissionTime = 1.0f / m_pParticleSystem->Emission;
 	m_ParticleSpawnTimer += GameTimer::DeltaTime();
 
 	m_ActiveParticles = 0;
@@ -131,7 +125,7 @@ void ParticleEmitterComponent::Update()
 	m_pGameContext->Engine->D3DeviceContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	ParticleVertex* pBuffer = static_cast<ParticleVertex*>(mappedResource.pData);
 
-	if (m_SortingMode == ParticleSortingMode::ByDistance)
+	if (m_pParticleSystem->SortingMode == ParticleSortingMode::ByDistance)
 	{
 		sort(m_Particles.begin(), m_Particles.end(), [this](Particle* p1, Particle* p2)
 		{
@@ -141,7 +135,7 @@ void ParticleEmitterComponent::Update()
 			return d1 > d2;
 		});
 	}
-	bool oldFirst = m_SortingMode == ParticleSortingMode::OldestFirst;
+	bool oldFirst = m_pParticleSystem->SortingMode == ParticleSortingMode::OldestFirst;
 	
 	for (size_t i = 0; i < m_Particles.size(); i++)
 	{
@@ -166,12 +160,15 @@ void ParticleEmitterComponent::Update()
 
 void ParticleEmitterComponent::Render()
 {
+	if (m_pParticleSystem == nullptr)
+		return;
+
 	if (m_Playing == false)
 		return;
 
-	if(m_MaxParticles > m_BufferSize)
+	if(m_pParticleSystem->MaxParticles > m_BufferSize)
 	{
-		m_BufferSize = m_MaxParticles;
+		m_BufferSize = m_pParticleSystem->MaxParticles;
 		DebugLog::Log(L"ParticleEmitterComponent::Render() > VertexBuffer too small! Increasing size...", LogType::WARNING);
 		CreateVertexBuffer();
 	}

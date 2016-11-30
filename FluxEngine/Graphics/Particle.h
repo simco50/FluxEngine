@@ -1,11 +1,11 @@
 #pragma once
-#include "../Components/ParticleEmitterComponent.h"
+#include "../Graphics/ParticleSystem.h"
 struct GameContext;
 
 class Particle
 {
 public:
-	Particle(ParticleEmitterSettings* emitterSettings);
+	Particle(ParticleSystem* emitterSettings);
 	~Particle(void);
 
 	void Update();
@@ -18,7 +18,7 @@ public:
 private:
 	void GetPositionAndDirection(Vector3& position, Vector3& direction);
 	ParticleVertex m_VertexInfo = ParticleVertex();
-	ParticleEmitterSettings* m_pEmitterSettings;
+	ParticleSystem* m_pEmitterSettings;
 	bool m_IsActive = false;
 	float m_LifeTimer = 0.0f;
 	float m_InitSize = 0.0f;

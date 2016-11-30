@@ -5,7 +5,7 @@
 #include "../Helpers/MathHelp.h"
 #include "../Helpers/BinaryReader.h"
 
-Particle::Particle(ParticleEmitterSettings* emitterSettings) :
+Particle::Particle(ParticleSystem* emitterSettings) :
 	m_pEmitterSettings(emitterSettings)
 {
 }
@@ -72,7 +72,7 @@ void Particle::Reset()
 void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 {
 	direction = Vector3(randF(0, 1), 0, 0);
-	if (m_pEmitterSettings->Shape.ShapeType == ParticleEmitterSettings::ShapeType::CIRCLE)
+	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::CIRCLE)
 	{
 		Matrix randomMatrix;
 		randomMatrix = XMMatrixRotationRollPitchYaw(randF(-XM_PI, XM_PI), randF(-XM_PI, XM_PI), 0);
@@ -83,7 +83,7 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 		position = m_pEmitterSettings->Shape.Radius * direction;
 		return;
 	}
-	if (m_pEmitterSettings->Shape.ShapeType == ParticleEmitterSettings::ShapeType::SPHERE)
+	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::SPHERE)
 	{
 		Matrix randomMatrix;
 		randomMatrix = XMMatrixRotationRollPitchYaw(randF(-XM_PI, XM_PI), randF(-XM_PI, XM_PI), randF(-XM_PI, XM_PI));
@@ -94,7 +94,7 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 		position = m_pEmitterSettings->Shape.Radius * direction;
 		return;
 	}
-	if (m_pEmitterSettings->Shape.ShapeType == ParticleEmitterSettings::ShapeType::CONE)
+	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::CONE)
 	{
 		Matrix randomMatrix;
 		randomMatrix = XMMatrixRotationRollPitchYaw(randF(-XM_PI, XM_PI), randF(-XM_PI, XM_PI), 0);
@@ -117,7 +117,7 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 		direction.Normalize();
 		return;
 	}
-	if (m_pEmitterSettings->Shape.ShapeType == ParticleEmitterSettings::ShapeType::EDGE)
+	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::EDGE)
 	{
 		position = Vector3(randF(-m_pEmitterSettings->Shape.Radius, m_pEmitterSettings->Shape.Radius), 0, 0);
 		direction = Vector3(0, 0, 1);

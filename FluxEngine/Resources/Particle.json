@@ -1,0 +1,78 @@
+{
+  "Lifetime": 1.0,
+  "LifetimeVariance": 0.0,
+  "Emission": 100,
+  "MaxParticles": 1000,
+  "StartVelocity": 10.0,
+  "StartVelocityVariance": 0.0,
+  "Size": {
+    "Keys": {
+      "0": 1.0,
+      "1": 1.0
+    }
+  },
+  "Veloctiy": {
+    "Keys": {
+      "0": {
+        "X": 0.0,
+        "Y": 20.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      }
+    }
+  },
+  "LocalVelocity": {
+    "Keys": {
+      "0": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      }
+    }
+  },
+  "Color": {
+    "Keys": {
+      "0": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "1": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      }
+    }
+  },
+  "Transparancy": {
+    "Keys": {
+      "0": 1.0,
+      "1": 1.0
+    }
+  },
+  "Rotation": {
+    "Keys": {
+      "0": 1.0,
+      "1": 1.0
+    }
+  },
+  "RandomStartRotation": false,
+  "Shape": {
+    "ShapeType": 2,
+    "Radius": 1.0,
+    "EmitFromShell": false,
+    "EmitFromVolume": false,
+    "Angle": 30.0
+  },
+  "SortingMode": 2,
+  "ImagePath": "./Resources/Textures/Smoke.png"
+}

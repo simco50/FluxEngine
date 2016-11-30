@@ -7,7 +7,7 @@
 #include "../Materials/Forward/DefaultMaterial.h"
 #include "../Components/TransformComponent.h"
 #include <ctime>
-#include "../Managers/GameManager.h"
+#include "../Game/GameManager.h"
 #include "../Physics/Flex/FlexSoftbody.h"
 #include "../Managers/SoundManager.h"
 #include "../Physics/Flex/FlexMousePicker.h"
@@ -16,9 +16,6 @@
 #include "../Physics/Flex/FlexSystem.h"
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Physics/Flex/FlexRigidbody.h"
-#include "../UI/SpriteRenderer.h"
-#include "../UI/TextRenderer.h"
-#include "Objects/UI_Objects.h"
 #include "../Physics/Flex/FlexHelper.h"
 #include "../Graphics/MeshFilter.h"
 #include "../UI/ImgUI/imgui.h"

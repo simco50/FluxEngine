@@ -6,8 +6,6 @@
 #include "../Rendering/DeferredRenderer.h"
 #include "../Rendering/ShadowMapper.h"
 #include "../Managers/MaterialManager.h"
-#include "../UI/SpriteRenderer.h"
-#include "../UI/TextRenderer.h"
 #include "../UI/ImgUI/imgui.h"
 
 SceneBase::SceneBase()
@@ -114,9 +112,6 @@ void SceneBase::OnResize()
 
 	for (CameraComponent *pCamera : m_pGameContext->Scene->Cameras)
 		pCamera->UpdateViewport();
-
-	SpriteRenderer::GetInstance()->MakeTransform();
-	TextRenderer::GetInstance()->MakeTransform();
 }
 
 GameObject* SceneBase::FindObject(const wstring& name)

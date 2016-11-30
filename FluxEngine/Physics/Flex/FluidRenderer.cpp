@@ -88,6 +88,8 @@ void FluidRenderer::Render()
 	//Set the quad variables
 	m_pDepthMap->SetResource(m_pParticleRenderTarget->GetColorSRV());
 	m_pFluidEffect->GetVariableByName("gProjInv")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewProjectionInverse()));
+	m_pFluidEffect->GetVariableByName("gView")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetView()));
+	m_pFluidEffect->GetVariableByName("gProj")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetProjection()));
 
 	//Set the default rendertarget
 	pRtv = m_pGameContext->Engine->DefaultRenderTarget->GetRenderTargetView();
@@ -113,6 +115,8 @@ void FluidRenderer::CreateRenderTarget()
 	desc.Height = m_pGameContext->Engine->GameSettings.Height;
 	desc.ColorBuffer = true;
 	desc.ColorSRV = true;
+	desc.DepthBuffer = true;
+	desc.DepthSRV = true;
 	m_pParticleRenderTarget = new RenderTarget(m_pGameContext->Engine);
 	m_pParticleRenderTarget->Create(&desc);
 }

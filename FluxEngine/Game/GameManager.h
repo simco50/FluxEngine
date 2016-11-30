@@ -23,4 +23,6 @@ private:
 	SceneBase* m_pOldScene = nullptr;
 
 	bool m_SceneInitialized = false;
+
+	vector<SceneBase*> m_pScenes;
 };

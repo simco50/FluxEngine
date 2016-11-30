@@ -3,6 +3,9 @@ float gScale = 1.0f;
 float4x4 gViewProj : VIEWPROJ;
 float4x4 gViewInv : VIEWINV;
 
+float4x4 gView : VIEW;
+float4x4 gProj : PROJ;
+
 struct VS_DATA
 {
 	float3 pos : POSITION;
@@ -11,9 +14,8 @@ struct VS_DATA
 struct GS_DATA
 {
 	float4 pos : SV_POSITION;
-	float3 eyeSpacePos : WORLDPOS;
+	float3 wPos : WORLDPOS;
 	float2 texCoord: TEXCOORD0;
-	float3x3 rotation : ROTATION;
 };
 
 DepthStencilState DSS
@@ -39,13 +41,14 @@ VS_DATA Main_VS(VS_DATA input)
 	return input;
 }
 
-void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float2 texCoord, float3x3 rotation)
+void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float3 offset, float2 texCoord)
 {
 	GS_DATA data = (GS_DATA)0;
-	data.pos = mul(float4(pos, 1.0f), gViewProj);
+	offset = mul(offset, (float3x3)gViewInv);
+	float3 cornerPos = pos + offset;
+	data.wPos = pos;
+	data.pos = mul(float4(cornerPos, 1.0f), gViewProj);
 	data.texCoord = texCoord;
-	data.eyeSpacePos = pos;
-	data.rotation = rotation;
 
 	triStream.Append(data);
 }
@@ -60,31 +63,14 @@ void Main_GS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	bottomLeft = float3(-gScale / 2.0f, -gScale / 2.0f, 0.0f);
 	bottomRight = float3(gScale / 2.0f, -gScale / 2.0f, 0.0f);
 
-	topLeft = mul(topLeft, (float3x3)gViewInv);
-	topRight = mul(topRight, (float3x3)gViewInv);
-	bottomLeft = mul(bottomLeft, (float3x3)gViewInv);
-	bottomRight = mul(bottomRight, (float3x3)gViewInv);
-
-	float3 right = normalize(topRight - topLeft);
-	float3 up = normalize(topRight - bottomRight);
-	float3 fwd = normalize(cross(up, right));
-	float3x3 rotation = transpose(float3x3(right, up, fwd));
-
-	topLeft += vertex[0].pos;
-	topRight += vertex[0].pos;
-	bottomLeft += vertex[0].pos;
-	bottomRight += vertex[0].pos;
-
-	CreateVertex(triStream, bottomLeft, float2(0, 1), rotation);
-	CreateVertex(triStream, topLeft, float2(0, 0), rotation);
-	CreateVertex(triStream, bottomRight, float2(1, 1), rotation);
-	CreateVertex(triStream, topRight, float2(1, 0), rotation);
+	CreateVertex(triStream, vertex[0].pos, bottomLeft, float2(0, 1));
+	CreateVertex(triStream, vertex[0].pos, topLeft, float2(0, 0));
+	CreateVertex(triStream, vertex[0].pos, bottomRight, float2(1, 1));
+	CreateVertex(triStream, vertex[0].pos, topRight, float2(1, 0));
 }
 
 float4 Main_PS(GS_DATA input) : SV_TARGET
 {
-
-
 	//Calculate the normal
 	float3 normal;
 	normal.xy = input.texCoord * 2.0f - 1.0f;
@@ -94,10 +80,10 @@ float4 Main_PS(GS_DATA input) : SV_TARGET
 	normal.z = sqrt(1.0f - r2);
 
 	//calculate the depth
-	float3 pixelPos = float3(input.eyeSpacePos + normalize(normal) * gScale);
-	float4 clipSpacePos = mul(float4(pixelPos, 1.0f), gViewProj);
-	float d = saturate(1.0f - (clipSpacePos.z / 200.0f));
-	return float4(d, 0, 0, 0);
+	float4 worldPos = float4(input.wPos + normalize(normal) * gScale, 1.0f);
+	float4 clipPos = mul(worldPos, gViewProj);
+	float d = clipPos.z / 200.0f;
+	return float4(d, 0, 0, 1);
 }
 
 technique11 Default

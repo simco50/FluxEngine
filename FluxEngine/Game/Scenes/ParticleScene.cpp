@@ -7,7 +7,7 @@
 #include "../Materials/Forward/DefaultMaterial.h"
 #include "../Components/TransformComponent.h"
 #include <ctime>
-#include "../Managers/GameManager.h"
+#include "../Game/GameManager.h"
 #include "../Physics/Flex/FlexSoftbody.h"
 #include "../Managers/SoundManager.h"
 #include "../Physics/Flex/FlexMousePicker.h"
@@ -54,33 +54,12 @@ void ParticleScene::Initialize()
 	Skybox* pSky = new Skybox();
 	AddChild(pSky);
 
+	ParticleSystem* pSettings = ResourceManager::Load<ParticleSystem>(L"./Resources/Particle.json");
+
 	GameObject* pObj = new GameObject();
-	m_pEmitter = new ParticleEmitterComponent(L"./Resources/Textures/smoke.png", 100, 5000);
-	ParticleEmitterSettings* pSettings = m_pEmitter->GetSettings();
-	AddChild(pObj);
+	m_pEmitter = new ParticleEmitterComponent(pSettings);
 	pObj->AddComponent(m_pEmitter);
-
-	pObj->GetTransform()->Translate(0, 5, 0);
-
-	pSettings->Transparany.Add(0.0f, 0.0f);
-	pSettings->Transparany.Add(0.2f, 1.0f);
-	pSettings->Transparany.Add(0.8f, 1.0f);
-	pSettings->Transparany.Add(1.0f, 0.0f);
-
-	pSettings->Size.Add(0, 1);
-	pSettings->Size.Add(1, 12);
-
-	pSettings->StartVelocity = 2.0f;
-	pSettings->Shape.ShapeType = ParticleEmitterSettings::ShapeType::CONE;
-	pSettings->Shape.Angle = 50.0f;
-	pSettings->Shape.Radius = 0.3f;
-	pSettings->Shape.EmitFromShell = true;
-	pSettings->Shape.EmitFromVolume = false;
-	pSettings->Lifetime = 3;
-	pSettings->LifetimeVariance = 0.5f;
-
-	pSettings->LocalVelocity.Add(0, Vector3());
-	pSettings->LocalVelocity.Add(1, Vector3(-20, 0, -20));
+	AddChild(pObj);
 
 	/*flexInit(FLEX_VERSION);
 
@@ -125,7 +104,7 @@ void ParticleScene::Initialize()
 
 void ParticleScene::Update()
 {
-	//m_pSystem->UpdateSolver(3, 1.0f / 60.0f);
+	//m_pSystem->UpdateSolver(1.0f / 60.0f);
 	//m_pSystem->FetchData();
 }
 
@@ -137,4 +116,5 @@ void ParticleScene::LateUpdate()
 
 void ParticleScene::Render()
 {
+
 }

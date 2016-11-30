@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "InputManager.h"
-#include "GameManager.h"
+#include "../Game/GameManager.h"
 
 bool InputManager::m_MouseMove = false;
 XMFLOAT2 InputManager::m_MouseMovement;

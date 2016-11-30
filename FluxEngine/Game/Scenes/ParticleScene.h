@@ -14,14 +14,6 @@ struct FlexSolver;
 
 class FlexSystem;
 
-enum InputID
-{
-	RESTART,
-	FLEX_DEBUG,
-	FLEX_SIMULATE,
-	FLEX_TELEPORT,
-};
-
 class ParticleScene : public SceneBase
 {
 public:
@@ -32,6 +24,14 @@ public:
 	void Update();
 	void LateUpdate();
 	void Render();
+
+	enum InputID
+	{
+		RESTART,
+		FLEX_DEBUG,
+		FLEX_SIMULATE,
+		FLEX_TELEPORT,
+	};
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
 	FlexSystem* m_pSystem = nullptr;

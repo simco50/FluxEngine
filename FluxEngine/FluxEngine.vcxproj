@@ -168,12 +168,13 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Components\ParticleEmitterComponent.h" />
-    <ClInclude Include="Content\SpriteFontLoader.h" />
-    <ClInclude Include="Game\Objects\UI_Objects.h" />
-    <ClInclude Include="Game\ParticleScene.h" />
+    <ClInclude Include="Content\ParticleSystemLoader.h" />
+    <ClInclude Include="Game\Scenes\ParticleScene.h" />
     <ClInclude Include="Graphics\Particle.h" />
+    <ClInclude Include="Helpers\json.hpp" />
     <ClInclude Include="Helpers\KeyframeValue.h" />
     <ClInclude Include="Helpers\MathHelp.h" />
+    <ClInclude Include="Graphics\ParticleSystem.h" />
     <ClInclude Include="UI\ImgUI\ImgUIDrawer.h" />
     <ClInclude Include="Physics\Flex\FluidRenderer.h" />
     <ClInclude Include="UI\ImgUI\imconfig.h" />
@@ -182,8 +183,6 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="UI\ImgUI\stb_rect_pack.h" />
     <ClInclude Include="UI\ImgUI\stb_textedit.h" />
     <ClInclude Include="UI\ImgUI\stb_truetype.h" />
-    <ClInclude Include="UI\SpriteFont.h" />
-    <ClInclude Include="UI\SpriteRenderer.h" />
     <ClInclude Include="Managers\MaterialManager.h" />
     <ClInclude Include="Physics\Flex\FlexSystem.h" />
     <ClInclude Include="Physics\Flex\FlexTriangleMeshCollider.h" />
@@ -195,18 +194,11 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Physics\Flex\FlexBody.h" />
     <ClInclude Include="Physics\Flex\FlexRigidbody.h" />
     <ClInclude Include="Physics\Flex\FlexSoftbody.h" />
-    <ClInclude Include="Game\SoftBodyScene.h" />
+    <ClInclude Include="Game\Scenes\SoftBodyScene.h" />
     <ClInclude Include="Math\SimpleMath.h" />
     <ClInclude Include="Physics\Flex\FlexHelper.h" />
     <ClInclude Include="Helpers\BinaryReader.h" />
     <ClInclude Include="Rendering\QuadRenderer.h" />
-    <ClInclude Include="UI\TextRenderer.h" />
-    <ClInclude Include="Game\Objects\UI_Slider.h" />
-    <ClInclude Include="Game\Objects\UI_Element.h" />
-    <ClInclude Include="Game\Objects\UI_Canvas.h" />
-    <ClInclude Include="Game\Objects\UI_Image.h" />
-    <ClInclude Include="Game\Objects\UI_Checkbox.h" />
-    <ClInclude Include="Game\Objects\UI_Button.h" />
     <ClInclude Include="WWW\HttpHelper.h" />
     <ClInclude Include="Materials\Deferred\BasicMaterial_Deferred.h" />
     <ClInclude Include="Components\AudioSource.h" />
@@ -220,7 +212,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Core\FluxCore.h" />
     <ClInclude Include="Debugging\DebugLog.h" />
-    <ClInclude Include="Managers\GameManager.h" />
+    <ClInclude Include="Game\GameManager.h" />
     <ClInclude Include="Components\MeshComponent.h" />
     <ClInclude Include="Core\GeneralStructs.h" />
     <ClInclude Include="Rendering\GBufferMaterial.h" />
@@ -252,16 +244,14 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components\ParticleEmitterComponent.cpp" />
-    <ClCompile Include="Content\SpriteFontLoader.cpp" />
-    <ClCompile Include="Game\ParticleScene.cpp" />
+    <ClCompile Include="Content\ParticleSystemLoader.cpp" />
+    <ClCompile Include="Game\Scenes\ParticleScene.cpp" />
     <ClCompile Include="Graphics\Particle.cpp" />
     <ClCompile Include="UI\ImgUI\ImgUIDrawer.cpp" />
     <ClCompile Include="Physics\Flex\FluidRenderer.cpp" />
     <ClCompile Include="UI\ImgUI\imgui.cpp" />
     <ClCompile Include="UI\ImgUI\imgui_demo.cpp" />
     <ClCompile Include="UI\ImgUI\imgui_draw.cpp" />
-    <ClCompile Include="UI\SpriteFont.cpp" />
-    <ClCompile Include="UI\SpriteRenderer.cpp" />
     <ClCompile Include="Managers\MaterialManager.cpp" />
     <ClCompile Include="Physics\Flex\FlexSystem.cpp" />
     <ClCompile Include="Physics\Flex\FlexTriangleMeshCollider.cpp" />
@@ -273,16 +263,9 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Physics\Flex\FlexBody.cpp" />
     <ClCompile Include="Physics\Flex\FlexRigidbody.cpp" />
     <ClCompile Include="Physics\Flex\FlexSoftbody.cpp" />
-    <ClCompile Include="Game\SoftBodyScene.cpp" />
+    <ClCompile Include="Game\Scenes\SoftBodyScene.cpp" />
     <ClCompile Include="Helpers\BinaryReader.cpp" />
     <ClCompile Include="Rendering\QuadRenderer.cpp" />
-    <ClCompile Include="UI\TextRenderer.cpp" />
-    <ClCompile Include="Game\Objects\UI_Slider.cpp" />
-    <ClCompile Include="Game\Objects\UI_Element.cpp" />
-    <ClCompile Include="Game\Objects\UI_Canvas.cpp" />
-    <ClCompile Include="Game\Objects\UI_Image.cpp" />
-    <ClCompile Include="Game\Objects\UI_Checkbox.cpp" />
-    <ClCompile Include="Game\Objects\UI_Button.cpp" />
     <ClCompile Include="WWW\HttpHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Materials\Deferred\BasicMaterial_Deferred.cpp" />
@@ -296,7 +279,7 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     <ClCompile Include="Managers\InputManager.cpp" />
     <ClCompile Include="Core\FluxCore.cpp" />
     <ClCompile Include="Debugging\DebugLog.cpp" />
-    <ClCompile Include="Managers\GameManager.cpp" />
+    <ClCompile Include="Game\GameManager.cpp" />
     <ClCompile Include="Components\MeshComponent.cpp" />
     <ClCompile Include="Core\GeneralStructs.cpp" />
     <ClCompile Include="Rendering\GBufferMaterial.cpp" />

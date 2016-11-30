@@ -4,8 +4,6 @@
 #include "../Managers/SoundManager.h"
 #include "../Graphics/RenderTarget.h"
 #include <minwinbase.h>
-#include "../UI/SpriteRenderer.h"
-#include "../UI/TextRenderer.h"
 #include "../Graphics/Texture.h"
 #include "../UI/ImgUI/imgui.h"
 #include "../UI/ImgUI/ImgUIDrawer.h"
@@ -29,8 +27,6 @@ FluxCore::~FluxCore()
 	SoundManager::DestroyInstance();
 	ResourceManager::Release();
 	DebugLog::Release();
-	SpriteRenderer::DestroyInstance();
-	TextRenderer::DestroyInstance();
 
 	m_pUIDrawer->Shutdown();
 	SafeDelete(m_pUIDrawer);
@@ -72,8 +68,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 	ResourceManager::Initialize(m_pDevice.Get());
 	Initialize(&m_EngineContext);
-	SpriteRenderer::GetInstance()->InitRenderer(&m_EngineContext);
-	TextRenderer::GetInstance()->InitRenderer(&m_EngineContext);
 
 	GameTimer::Reset();
 
@@ -124,7 +118,6 @@ void FluxCore::GameLoop()
 
 	//Update FMOD
 	SoundManager::GetInstance()->GetSystem()->update();
-	TextRenderer::GetInstance()->Draw();
 
 	m_pSwapChain->Present(m_EngineContext.GameSettings.VerticalSync ? 1 : 0, 0);
 }

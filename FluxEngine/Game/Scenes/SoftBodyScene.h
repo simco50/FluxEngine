@@ -9,11 +9,6 @@ class BasicMaterial_Deferred;
 
 class FlexSystem;
 
-enum InputID
-{
-	FLEX_UI
-};
-
 class SoftBodyScene : public SceneBase
 {
 public:
@@ -24,6 +19,11 @@ public:
 	void Update();
 	void LateUpdate();
 	void Render();
+
+	enum InputID
+	{
+		FLEX_UI
+	};
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
 	unique_ptr<DefaultMaterial> m_pDefaultMaterial;
