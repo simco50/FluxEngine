@@ -21,8 +21,8 @@ private:
 
 	EngineContext* m_pEngineContext = nullptr;
 
-	unsigned int m_VertexBufferSize = 1000;
-	unsigned int m_IndexBufferSize = 1000;
+	int m_VertexBufferSize = 1000;
+	int m_IndexBufferSize = 1000;
 	Unique_COM<ID3D11Buffer> m_pVertexBuffer;
 	Unique_COM<ID3D11Buffer> m_pIndexBuffer;
 	Unique_COM<ID3D11InputLayout> m_pInputLayout;

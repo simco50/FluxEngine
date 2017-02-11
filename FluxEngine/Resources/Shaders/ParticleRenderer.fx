@@ -3,6 +3,8 @@ float4x4 gViewProj : VIEWPROJ;
 float4x4 gViewInverse : VIEWINV;
 Texture2D gParticleTexture;
 
+float PI = 3.141592;
+
 SamplerState samPoint
 {
     Filter = MIN_MAG_MIP_POINT;
@@ -13,7 +15,21 @@ SamplerState samPoint
 DepthStencilState DisableDepthWriting
 {
 	DepthEnable = TRUE;
-	DepthWriteMask = ZERO;
+	DepthFunc = ALWAYS;
+};
+
+BlendState AdditiveBlending
+{
+	BlendEnable[0] = TRUE;
+	SrcBlend = SRC_ALPHA;
+    DestBlend = ONE;
+};
+
+BlendState AlphaBlending
+{
+	BlendEnable[0] = TRUE;
+	SrcBlend = SRC_ALPHA;
+    DestBlend = INV_SRC_ALPHA;
 };
 
 RasterizerState BackCulling
@@ -41,13 +57,13 @@ VS_DATA MainVS(VS_DATA input)
 	return input;
 }
 
-void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float2 texCoord, float4 col, float2x2 uvRotation)
+void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 origin, float3 offset, float2 texCoord, float4 col, float2x2 rotation)
 {
 	GS_DATA data = (GS_DATA)0;
+	offset = float3(mul(offset.xy, rotation), offset.z);
+	offset = mul(offset, (float3x3)gViewInverse);
+	float3 pos = offset + origin;
 	data.Position = mul(float4(pos, 1.0f), gViewProj);
-	texCoord -= float2(0.5f,0.5f);
-	texCoord = mul(texCoord, uvRotation);
-	texCoord += float2(0.5f,0.5f);
 	data.TexCoord = texCoord;
 	data.Color = col;
 	triStream.Append(data);
@@ -56,31 +72,20 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float2 te
 [maxvertexcount(4)]
 void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 {
-	float3 topLeft, topRight, bottomLeft, bottomRight;
-	float size = vertex[0].Size;
 	float3 origin = mul(float4(vertex[0].Position, 1), gWorld).xyz;
 
-	topLeft = float3(-size / 2.0f, size / 2.0f, 0.0f);
-	topRight = float3(size / 2.0f, size / 2.0f, 0.0f);
-	bottomLeft = float3(-size / 2.0f, -size / 2.0f, 0.0f);
-	bottomRight = float3(size / 2.0f, -size / 2.0f, 0.0f);
+	float3 topLeft = float3(-vertex[0].Size / 2.0f, vertex[0].Size / 2.0f, 0.0f);
+	float3 topRight = float3(vertex[0].Size / 2.0f, vertex[0].Size / 2.0f, 0.0f);
+	float3 bottomLeft = float3(-vertex[0].Size / 2.0f, -vertex[0].Size / 2.0f, 0.0f);
+	float3 bottomRight = float3(vertex[0].Size / 2.0f, -vertex[0].Size / 2.0f, 0.0f);
 
-	topLeft = mul(topLeft, (float3x3)gViewInverse);
-	topRight = mul(topRight, (float3x3)gViewInverse);
-	bottomLeft = mul(bottomLeft, (float3x3)gViewInverse);
-	bottomRight = mul(bottomRight, (float3x3)gViewInverse);
+	float rad = vertex[0].Rotation * PI / 180.0f;
+	float2x2 rotation = {cos(rad), -sin(rad), sin(rad), cos(rad)};
 
-	topLeft += origin;
-	topRight += origin;
-	bottomLeft += origin;
-	bottomRight += origin;
-
-	float2x2 uvRotation = {cos(vertex[0].Rotation), - sin(vertex[0].Rotation), sin(vertex[0].Rotation), cos(vertex[0].Rotation)};
-
-	CreateVertex(triStream,bottomLeft, float2(0,1), vertex[0].Color, uvRotation);
-	CreateVertex(triStream,topLeft, float2(0,0), vertex[0].Color, uvRotation);
-	CreateVertex(triStream,bottomRight, float2(1,1), vertex[0].Color, uvRotation);
-	CreateVertex(triStream,topRight, float2(1,0), vertex[0].Color, uvRotation);
+	CreateVertex(triStream, origin, bottomLeft, float2(0,1), vertex[0].Color, rotation);
+	CreateVertex(triStream, origin, topLeft, float2(0,0), vertex[0].Color, rotation);
+	CreateVertex(triStream, origin, bottomRight, float2(1,1), vertex[0].Color, rotation);
+	CreateVertex(triStream, origin, topRight, float2(1,0), vertex[0].Color, rotation);
 }
 
 float4 MainPS(GS_DATA input) : SV_TARGET 
@@ -89,12 +94,26 @@ float4 MainPS(GS_DATA input) : SV_TARGET
 	return input.Color * result;
 }
 
-technique10 Default 
+technique10 AlphaBlendingTechnique 
 {
 	pass p0 
 	{
 		SetVertexShader(CompileShader(vs_4_0, MainVS()));
 		SetGeometryShader(CompileShader(gs_4_0, MainGS()));
+		SetBlendState(AlphaBlending,float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+		SetPixelShader(CompileShader(ps_4_0, MainPS()));
+		SetRasterizerState(BackCulling);       
+		SetDepthStencilState(DisableDepthWriting, 0);
+	}
+}
+
+technique10 AdditiveBlendingTechnique 
+{
+	pass p0 
+	{
+		SetVertexShader(CompileShader(vs_4_0, MainVS()));
+		SetGeometryShader(CompileShader(gs_4_0, MainGS()));
+		SetBlendState(AdditiveBlending,float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 		SetPixelShader(CompileShader(ps_4_0, MainPS()));
 		SetRasterizerState(BackCulling);       
 		SetDepthStencilState(DisableDepthWriting, 0);

@@ -130,7 +130,7 @@ void ImgUIDrawer::Render()
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
-	for (size_t n = 0; n < draw_data->CmdListsCount; n++)
+	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)

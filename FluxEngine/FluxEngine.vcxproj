@@ -72,16 +72,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(LIBS)\Nvidia Flex 1.0.0\include;$(LIBS)\DX_Tex\include;$(LIBS)\DX_Effects11\include;$(LIBS)\Fmod\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LIBS)\DX_Tex\lib;$(LIBS)\DX_Effects11\lib;$(LIBS)\lib\win32;$(LIBS)\Nvidia Flex 1.0.0\lib\win32;$(LIBS)\Fmod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\Libraries\Nvidia Flex 1.0.0\include;..\Libraries\DX_Tex\include;..\Libraries\DX_Effects11\include;..\Libraries\Fmod\inc;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Libraries\DX_Tex\lib;..\Libraries\DX_Effects11\lib;..\Libraries\Nvidia Flex 1.0.0\lib\win32;..\Libraries\Fmod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(LIBS)\Nvidia Flex 1.0.0\include;$(LIBS)\DX_Tex\include;$(LIBS)\DX_Effects11\include;$(LIBS)\Fmod\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LIBS)\Nvidia Flex 1.0.0\lib\win32;$(LIBS)\DX_Tex\lib;$(LIBS)\DX_Effects11\lib;$(LIBS)\Fmod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\Libraries\Nvidia Flex 1.0.0\include;..\Libraries\DX_Tex\include;..\Libraries\DX_Effects11\include;..\Libraries\Fmod\inc;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Libraries\Nvidia Flex 1.0.0\lib\win32;..\Libraries\DX_Tex\lib;..\Libraries\DX_Effects11\lib;..\Libraries\Fmod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -103,10 +103,10 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(FLUX_LIBS)\Fmod\bin\fmod.dll" "$(OutDir)" /y /D
-copy "$(FLEX)\bin\win32\cudart32_70.dll" "$(OutDir)" /y /D
-copy "$(FLEX)\bin\win32\flexDebug_x86.dll" "$(OutDir)" /y /D
-copy "$(FLEX)\bin\win32\flexExtDebug_x86.dll" "$(OutDir)" /y /D</Command>
+      <Command>copy "..\Libraries\Fmod\bin\fmod.dll" "$(OutDir)" /y /D
+copy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\cudart32_70.dll" "$(OutDir)" /y /D
+copy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\flexDebug_x86.dll" "$(OutDir)" /y /D
+copy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\flexExtDebug_x86.dll" "$(OutDir)" /y /D</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -143,10 +143,10 @@ copy "$(FLEX)\bin\win32\flexExtDebug_x86.dll" "$(OutDir)" /y /D</Command>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(FLUX_LIBS)\Fmod\bin\fmod.dll" "$(OutDir)" /y /D
-xcopy "$(FLEX)\bin\win32\cudart32_70.dll" "$(OutDir)" /y /D
-xcopy "$(FLEX)\bin\win32\flexRelease_x86.dll" "$(OutDir)" /y /D
-xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
+      <Command>xcopy "..\Libraries\Fmod\bin\fmod.dll" "$(OutDir)" /y /D
+xcopy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\cudart32_70.dll" "$(OutDir)" /y /D
+xcopy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\flexRelease_x86.dll" "$(OutDir)" /y /D
+xcopy "..\Libraries\Nvidia Flex 1.0.0\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,7 +169,11 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
   <ItemGroup>
     <ClInclude Include="Components\ParticleEmitterComponent.h" />
     <ClInclude Include="Content\ParticleSystemLoader.h" />
+    <ClInclude Include="Game\Scenes\CollisionDemoScene.h" />
+    <ClInclude Include="Game\Scenes\DaeLogoScene.h" />
+    <ClInclude Include="Game\Scenes\ParameterDemoScene.h" />
     <ClInclude Include="Game\Scenes\ParticleScene.h" />
+    <ClInclude Include="Game\Scenes\StressTestScene.h" />
     <ClInclude Include="Graphics\Particle.h" />
     <ClInclude Include="Helpers\json.hpp" />
     <ClInclude Include="Helpers\KeyframeValue.h" />
@@ -245,7 +249,11 @@ xcopy "$(FLEX)\bin\win32\flexExtRelease_x86.dll" "$(OutDir)" /y /D</Command>
   <ItemGroup>
     <ClCompile Include="Components\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Content\ParticleSystemLoader.cpp" />
+    <ClCompile Include="Game\Scenes\CollisionDemoScene.cpp" />
+    <ClCompile Include="Game\Scenes\DaeLogoScene.cpp" />
+    <ClCompile Include="Game\Scenes\ParameterDemoScene.cpp" />
     <ClCompile Include="Game\Scenes\ParticleScene.cpp" />
+    <ClCompile Include="Game\Scenes\StressTestScene.cpp" />
     <ClCompile Include="Graphics\Particle.cpp" />
     <ClCompile Include="UI\ImgUI\ImgUIDrawer.cpp" />
     <ClCompile Include="Physics\Flex\FluidRenderer.cpp" />

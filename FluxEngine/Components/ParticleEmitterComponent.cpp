@@ -14,6 +14,7 @@ ParticleEmitterComponent::ParticleEmitterComponent(ParticleSystem* pSystem) : m_
 	m_Particles.resize(m_pParticleSystem->MaxParticles);
 	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
 		m_Particles[i] = new Particle(m_pParticleSystem);
+	m_BufferSize = m_pParticleSystem->MaxParticles;
 }
 
 
@@ -27,20 +28,31 @@ ParticleEmitterComponent::~ParticleEmitterComponent(void)
 void ParticleEmitterComponent::SetSystem(ParticleSystem* pSettings)
 {
 	m_pParticleSystem = pSettings;
-	Initialize();
+	if (m_pParticleSystem->ImagePath == L"")
+		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
+	CreateVertexBuffer();
+	m_pParticleTexture = ResourceManager::Load<Texture>(m_pParticleSystem->ImagePath);
+	m_BurstIterator = m_pParticleSystem->Bursts.begin();
+	Reset();
+}
+
+void ParticleEmitterComponent::Reset()
+{
+	m_Timer = 0.0f;
+	m_pParticleSystem->PlayOnAwake ? m_Playing = true : m_Playing = false;
+	for (Particle* p : m_Particles)
+		p->Reset();
 }
 
 void ParticleEmitterComponent::Initialize()
 {
-	if (m_pParticleSystem == nullptr)
-		return;
-
+	if (m_pParticleSystem->ImagePath == L"")
+		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	LoadEffect();
 	CreateVertexBuffer();
-	CreateBlendState();
 	m_pParticleTexture = ResourceManager::Load<Texture>(m_pParticleSystem->ImagePath);
-
-	if (m_PlayOnAwake)
+	m_BurstIterator = m_pParticleSystem->Bursts.begin();
+	if (m_pParticleSystem->PlayOnAwake)
 		Play();
 }
 
@@ -48,6 +60,8 @@ void ParticleEmitterComponent::LoadEffect()
 {
 	m_pEffect = ResourceManager::Load<ID3DX11Effect>(L"./Resources/Shaders/ParticleRenderer.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
+	m_pAlphaBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ALPHABLEND);
+	m_pAdditiveBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ADDITIVE);
 
 	BIND_AND_CHECK_NAME(m_pViewProjectionVariable, gViewProj, AsMatrix);
 	BIND_AND_CHECK_NAME(m_pWorldVariable, gWorld, AsMatrix);
@@ -72,8 +86,6 @@ void ParticleEmitterComponent::CreateVertexBuffer()
 {
 	m_pVertexBuffer.Reset();
 
-	m_BufferSize = m_pParticleSystem->MaxParticles;
-
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.ByteWidth = m_BufferSize * sizeof(ParticleVertex);
@@ -84,70 +96,98 @@ void ParticleEmitterComponent::CreateVertexBuffer()
 	DebugLog::LogHRESULT(L"ParticleEmitterComponent::CreateVertexBuffer...", hr);
 }
 
-void ParticleEmitterComponent::CreateBlendState()
+void ParticleEmitterComponent::SortParticles()
 {
-	m_pBlendState.Reset();
-	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
-	blendDesc.RenderTarget[0].BlendEnable = true;
-	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-	HR(m_pGameContext->Engine->D3Device->CreateBlendState(&blendDesc, m_pBlendState.GetAddressOf()))
+	switch (m_pParticleSystem->SortingMode)
+	{
+	case FrontToBack:
+		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		{
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
+			return d1 > d2;
+		});
+		break;
+	case BackToFront:
+		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		{
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
+			return d1 < d2;
+		});
+	case OldestFirst:
+		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
+		{
+			float lifeTimerA = a->GetLifeTimer();
+			float lifeTimerB = b->GetLifeTimer();
+			return lifeTimerA < lifeTimerB;
+		});
+		break;
+	case YoungestFirst: 
+		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
+		{
+			float lifeTimerA = a->GetLifeTimer();
+			float lifeTimerB = b->GetLifeTimer();
+			return lifeTimerA > lifeTimerB;
+		});
+		break;
+	default: 
+		break;
+	}
 }
 
 void ParticleEmitterComponent::Update()
 {
-	if (m_pParticleSystem == nullptr)
-		return;
-
 	if (m_Playing == false)
 		return;
 
 	m_Timer += GameTimer::DeltaTime();
-	bool update = true;
-	if (m_Timer > m_Duration && m_Loop == false)
-		update = false;
-
-	if (m_ActiveParticles == 0 && update == false)
-		return;
+	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)
+	{
+		m_Timer = 0;
+		m_BurstIterator = m_pParticleSystem->Bursts.begin();
+	}
 
 	float emissionTime = 1.0f / m_pParticleSystem->Emission;
 	m_ParticleSpawnTimer += GameTimer::DeltaTime();
 
-	m_ActiveParticles = 0;
+	SortParticles();
+
 	m_ParticleCount = 0;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	m_pGameContext->Engine->D3DeviceContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	ParticleVertex* pBuffer = static_cast<ParticleVertex*>(mappedResource.pData);
 
-	if (m_pParticleSystem->SortingMode == ParticleSortingMode::ByDistance)
+	if(m_pParticleSystem->MaxParticles > (int)m_Particles.size())
 	{
-		sort(m_Particles.begin(), m_Particles.end(), [this](Particle* p1, Particle* p2)
-		{
-
-			float d1 = Vector3::DistanceSquared(p1->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(p2->GetVertexInfo().Position, m_pGameContext->Scene->Cameras[0]->GetTransform()->GetWorldPosition());
-			return d1 > d2;
-		});
+		int startIdx = m_Particles.size();
+		m_Particles.resize(m_pParticleSystem->MaxParticles);
+		for (int i = startIdx; i < m_pParticleSystem->MaxParticles; i++)
+			m_Particles[i] = new Particle(m_pParticleSystem);
 	}
-	bool oldFirst = m_pParticleSystem->SortingMode == ParticleSortingMode::OldestFirst;
-	
-	for (size_t i = 0; i < m_Particles.size(); i++)
+
+	int burstParticles = 0;
+	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
 	{
-		Particle* p = oldFirst ? m_Particles[m_Particles.size() - 1 - i] : m_Particles[i];
+		Particle* p = m_Particles[i];
+		//Update if active
 		if (p->IsActive())
 		{
 			p->Update();
 			pBuffer[m_ParticleCount] = p->GetVertexInfo();
 			++m_ParticleCount;
-			++m_ActiveParticles;
 		}
-		else if(m_ParticleSpawnTimer >= emissionTime && update)
+		//Spawn particle on burst tick
+		else if(m_BurstIterator != m_pParticleSystem->Bursts.end() && m_Timer > m_BurstIterator->first && burstParticles < m_BurstIterator->second)
+		{
+			p->Init();
+			pBuffer[m_ParticleCount] = p->GetVertexInfo();
+			++m_ParticleCount;
+			++burstParticles;
+		}
+
+		//Spawn particle on emission tick
+		else if (m_ParticleSpawnTimer >= emissionTime && m_Timer < m_pParticleSystem->Duration)
 		{
 			p->Init();
 			pBuffer[m_ParticleCount] = p->GetVertexInfo();
@@ -155,20 +195,20 @@ void ParticleEmitterComponent::Update()
 			m_ParticleSpawnTimer -= emissionTime;
 		}
 	}
+	if (burstParticles > 0)
+		++m_BurstIterator;
+
 	m_pGameContext->Engine->D3DeviceContext->Unmap(m_pVertexBuffer.Get(), 0);
 }
 
 void ParticleEmitterComponent::Render()
 {
-	if (m_pParticleSystem == nullptr)
-		return;
-
 	if (m_Playing == false)
 		return;
 
 	if(m_pParticleSystem->MaxParticles > m_BufferSize)
 	{
-		m_BufferSize = m_pParticleSystem->MaxParticles;
+		m_BufferSize = m_pParticleSystem->MaxParticles + 500;
 		DebugLog::Log(L"ParticleEmitterComponent::Render() > VertexBuffer too small! Increasing size...", LogType::WARNING);
 		CreateVertexBuffer();
 	}
@@ -187,7 +227,17 @@ void ParticleEmitterComponent::Render()
 	UINT offset = 0;
 	m_pGameContext->Engine->D3DeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &strides, &offset);
 
-	m_pGameContext->Engine->D3DeviceContext->OMSetBlendState(m_pBlendState.Get(), nullptr, 0xFFFFFFFF);
+	switch (m_pParticleSystem->BlendMode)
+	{
+	case ALPHABLEND: 
+		m_pTechnique = m_pAlphaBlendingTechnique;
+		break;
+	case ADDITIVE: 
+		m_pTechnique = m_pAdditiveBlendingTechnique;
+		break;
+	default: 
+		break;
+	}
 
 	D3DX11_TECHNIQUE_DESC techDesc;
 	m_pTechnique->GetDesc(&techDesc);

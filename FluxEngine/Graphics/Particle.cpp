@@ -3,7 +3,6 @@
 
 #include "Particle.h"
 #include "../Helpers/MathHelp.h"
-#include "../Helpers/BinaryReader.h"
 
 Particle::Particle(ParticleSystem* emitterSettings) :
 	m_pEmitterSettings(emitterSettings)
@@ -45,9 +44,8 @@ void Particle::Update()
 	m_VertexInfo.Position += movement * deltaTime;
 
 	Vector3 color = m_pEmitterSettings->Color[m_LifeTimer];
-	m_VertexInfo.Color = Vector4(color.x, color.y, color.z, m_pEmitterSettings->Transparany[m_LifeTimer]);
-	m_VertexInfo.Size = m_pEmitterSettings->Size[m_LifeTimer];
-
+	m_VertexInfo.Color = Vector4(color.x, color.y, color.z, m_pEmitterSettings->Transparancy[m_LifeTimer]);
+	m_VertexInfo.Size = m_pEmitterSettings->Size[m_LifeTimer] * m_StartSize;
 	m_VertexInfo.Rotation = m_StartRotation + m_pEmitterSettings->Rotation[m_LifeTimer];
 }
 
@@ -56,10 +54,12 @@ void Particle::Init()
 	m_IsActive = true;
 	m_LifeTimer = 0.0f;
 	GetPositionAndDirection(m_VertexInfo.Position, m_Direction);
-	m_StartRotation = m_pEmitterSettings->RandomStartRotation ? randF(0.0f, XM_2PI) : 0.0f;
 	m_LifeTime = randF(m_pEmitterSettings->Lifetime - m_pEmitterSettings->LifetimeVariance, m_pEmitterSettings->Lifetime + m_pEmitterSettings->LifetimeVariance);
+	if(m_LifeTime < 0) m_LifeTime = 0;
+	m_StartRotation = m_pEmitterSettings->RandomStartRotation ? randF(0.0f, 360.0f) : 0.0f;
 	m_StartVelocity = randF(m_pEmitterSettings->StartVelocity - m_pEmitterSettings->StartVelocityVariance, m_pEmitterSettings->StartVelocity + m_pEmitterSettings->StartVelocityVariance);
-	
+	m_StartSize = randF(m_pEmitterSettings->StartSize - m_pEmitterSettings->StartSizeVariance, m_pEmitterSettings->StartSize + m_pEmitterSettings->StartSizeVariance);
+	if (m_StartSize < 0) m_StartSize = 0;
 	Update();
 }
 
@@ -81,6 +81,7 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 		if (m_pEmitterSettings->Shape.EmitFromShell)
 			direction.Normalize();
 		position = m_pEmitterSettings->Shape.Radius * direction;
+		direction.Normalize();
 		return;
 	}
 	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::SPHERE)
@@ -98,21 +99,22 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 	{
 		Matrix randomMatrix;
 		randomMatrix = XMMatrixRotationRollPitchYaw(randF(-XM_PI, XM_PI), randF(-XM_PI, XM_PI), 0);
-		direction = XMVector3Transform(direction, randomMatrix);
+		position = XMVector3Transform(direction, randomMatrix);
 
 		if (m_pEmitterSettings->Shape.EmitFromShell)
-			direction.Normalize();
+			position.Normalize();
+		position *= m_pEmitterSettings->Shape.Radius;
 
-		Vector3 originPosition = direction;
-		position = originPosition;
-		position.y += randF(0, m_pEmitterSettings->Lifetime);
-		float offset = position.y * tan(m_pEmitterSettings->Shape.Angle * XM_PI / 180.0f);
-		position.x += offset * direction.x;
-		position.z += offset * direction.z;
-		direction = position - originPosition;
+		direction = Vector3();
+		direction.y += randF(0, m_pEmitterSettings->Lifetime);
+		float offset = direction.y * tan(m_pEmitterSettings->Shape.Angle * XM_PI / 180.0f);
+		direction.x += offset * position.x;
+		direction.z += offset * position.z;
 
-		if (!m_pEmitterSettings->Shape.EmitFromVolume)
-			position = originPosition;
+		if (m_pEmitterSettings->Shape.EmitFromVolume)
+		{
+			position += direction;
+		}
 
 		direction.Normalize();
 		return;

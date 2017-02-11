@@ -6,7 +6,6 @@
 
 #include "../Materials/Forward/DefaultMaterial.h"
 #include "../Components/TransformComponent.h"
-#include <ctime>
 #include "../Game/GameManager.h"
 #include "../Physics/Flex/FlexSoftbody.h"
 #include "../Managers/SoundManager.h"
@@ -16,9 +15,8 @@
 #include "../Physics/Flex/FlexSystem.h"
 #include "../Physics/Flex/FlexTriangleMeshCollider.h"
 #include "../Physics/Flex/FlexRigidbody.h"
-#include "../Physics/Flex/FlexHelper.h"
-#include "../Graphics/MeshFilter.h"
 #include "../UI/ImgUI/imgui.h"
+#include "../../Components/CameraComponent.h"
 
 SoftBodyScene::SoftBodyScene()
 {}
@@ -27,59 +25,65 @@ SoftBodyScene::~SoftBodyScene()
 {
 	SafeDelete(m_pFlexMousePicker);
 	SafeDelete(m_pFlexSystem);
-
-
-	flexShutdown();
 }
 
 void SoftBodyScene::Initialize()
 {
+	//Add a skybox
+	Skybox* pSky = new Skybox();
+	AddChild(pSky);
+	pSky->SetTexture(ResourceManager::Load<Texture>(L"./Resources/GradWork/Skyboxes/skybox_spongebob.dds"));
+
 	//Create the ground plane
 	GameObject* pGroundPlane = new GameObject();
 	MeshComponent* pMeshComponent = new MeshComponent(L"./Resources/Meshes/unit_plane.flux");
 
 	m_pGroundMaterial = make_unique<DefaultMaterial>();
+	m_pGroundMaterial->SetDiffuseTexture(L"./Resources/GradWork/textures/ground_spongebob.png");
 	m_pGroundMaterial->Initialize(m_pGameContext);
-	m_pGroundMaterial->SetColor(Vector4(0.0f, 0.8f, 0.6f, 1.0f));
 	pMeshComponent->SetMaterial(m_pGroundMaterial.get());
 	pGroundPlane->AddComponent(pMeshComponent);
 	pGroundPlane->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	pGroundPlane->GetTransform()->SetScale(200.0f, 200.0f, 200.0f);
+	pGroundPlane->GetTransform()->SetScale(30.0f, 30.0f, 30.0f);
 	AddChild(pGroundPlane);
 
-	//Add a skybox
-	Skybox* pSky = new Skybox();
-	AddChild(pSky);
-
-	flexInit(FLEX_VERSION, FlexHelper::FlexMessageCallback);
 	m_pFlexSystem = new FlexSystem();
+	InitializeMaterials();
 
-	m_pDefaultMaterial = make_unique<DefaultMaterial>();
-	m_pDefaultMaterial->Initialize(m_pGameContext);
-	m_pDefaultMaterial->SetColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f));
+	//Patrick house
 	FlexTriangleMeshCollider* pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
-	m_pCollision = new GameObject();
-	MeshComponent* pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/spinner.flux");
-	pSpinnerMesh->SetMaterial(m_pDefaultMaterial.get());
-	m_pCollision->AddComponent(pTriangleMeshCollider);
-	m_pCollision->AddComponent(pSpinnerMesh);
-	AddChild(m_pCollision);
-	m_pCollision->GetTransform()->SetPosition(0, 5, 0);
+	GameObject* pCollisionObject = new GameObject();
+	MeshComponent* pMesh = new MeshComponent(L"./Resources/GradWork/Meshes/patrick_house.flux");
+	pMesh->SetMaterial(m_pMaterials[PATRICK_HOUSE]);
+	pCollisionObject->AddComponent(pTriangleMeshCollider);
+	pCollisionObject->AddComponent(pMesh);
+	AddChild(pCollisionObject);
+	pCollisionObject->GetTransform()->Translate(-10, 0, 0);
 
-	GameObject* pContainer = new GameObject();
+	//Spongebob house
 	pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
-	pSpinnerMesh = new MeshComponent(L"./Resources/Meshes/container.flux");
-	pSpinnerMesh->SetMaterial(m_pDefaultMaterial.get());
-	pContainer->AddComponent(pTriangleMeshCollider);
-	pContainer->AddComponent(pSpinnerMesh);
-	AddChild(pContainer);
-	pContainer->GetTransform()->SetPosition(0, 5, 0);
+	pCollisionObject = new GameObject();
+	pMesh = new MeshComponent(L"./Resources/GradWork/Meshes/squidward_house.flux");
+	pMesh->SetMaterial(m_pMaterials[SQUIDWARD_HOUSE]);
+	pCollisionObject->AddComponent(pTriangleMeshCollider);
+	pCollisionObject->AddComponent(pMesh);
+	AddChild(pCollisionObject);
+	pCollisionObject->GetTransform()->Translate(0, 0, 0);
 
+	//Squidward house
+	pTriangleMeshCollider = new FlexTriangleMeshCollider(m_pFlexSystem);
+	pCollisionObject = new GameObject();
+	pMesh = new MeshComponent(L"./Resources/GradWork/Meshes/spongebob_house.flux");
+	pMesh->SetMaterial(m_pMaterials[SPONGEBOB_HOUSE]);
+	pCollisionObject->AddComponent(pTriangleMeshCollider);
+	pCollisionObject->AddComponent(pMesh);
+	AddChild(pCollisionObject);
+	pCollisionObject->GetTransform()->Translate(10, 0, 0);
 	//Set default flex params
 	m_pFlexSystem->SetDefaultParams();
 	m_pFlexSystem->CreateGroundPlane(Vector3(0, 1, 0), 0.0f);
 
-	m_pFlexSystem->Params.mRadius = 0.06f;
+	m_pFlexSystem->Params.mRadius = 0.07f;
 	m_pFlexSystem->Params.mDynamicFriction = 0.35f;
 	m_pFlexSystem->Params.mNumIterations = 4;
 
@@ -88,40 +92,36 @@ void SoftBodyScene::Initialize()
 	sDesc.Radius = m_pFlexSystem->Params.mRadius;
 	sDesc.VolumeSampling = 4.0f;
 	sDesc.SurfaceSampling = 1.0f;
-	sDesc.ClusterSpacing = 2.75f;
-	sDesc.ClusterRadius = 2.5f;
+	sDesc.ClusterSpacing = 3.0f;
+	sDesc.ClusterRadius = 2.7f;
 	sDesc.ClusterStiffness = 0.05f;
 	sDesc.LinkRadius = 0.0f;
 	sDesc.LinkStiffness = 1.0f;
 	sDesc.Phase = flexMakePhase(0, 0);
 	sDesc.SkinningFalloff = 2.0f;
 	sDesc.SkinningMaxDistance = 100.0f;
+	sDesc.Phase = flexMakePhase(0, 0);
+	FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/gradwork/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
+	AddChild(pSoftbody);
+	pSoftbody->SetTexture(L"./Resources/gradwork/textures/patrick.jpg");
+	pSoftbody->SetPosition(Vector3(0, 9.0f, -5.0f));
 
-	/*MeshFilter* pDragon = ResourceManager::Load<MeshFilter>(L"./Resources/Meshes/dragon.flux");
-	Vector3* pos = (Vector3*)pDragon->GetVertexData("POSITION").pData;
-	for (size_t i = 0; i < pDragon->VertexCount(); i++)
-	{
-		pos[i] = pos[i] * 10;
-	}
+	sDesc.ClusterRadius = 3.0f;
+	sDesc.ClusterStiffness = 0.2f;
+	sDesc.Phase = flexMakePhase(0, 0);
+	pSoftbody = new FlexSoftbody(L"./Resources/gradwork/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
+	AddChild(pSoftbody);
+	pSoftbody->SetTexture(L"./Resources/gradwork/textures/patrick_orange.jpg");
+	pSoftbody->SetPosition(Vector3(0, 12.0f, -5.0f));
 
-	for (size_t i = 0; i < 5; i++)
-	{
-		sDesc.Phase = flexMakePhase(i, 0);
-		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/dragon.flux", &sDesc, m_pFlexSystem);
-		AddChild(pSoftbody);
-		//pSoftbody->SetTexture(L"./Resources/Textures/Patrick.tga");
-		pSoftbody->SetPosition(Vector3(0.0f, 4.0f * i + 10.0f, 0.0f));
-	}*/
+	sDesc.ClusterRadius = 3.0f;
+	sDesc.ClusterStiffness = 0.8f;
+	sDesc.Phase = flexMakePhase(0, 0);
+	pSoftbody = new FlexSoftbody(L"./Resources/gradwork/Meshes/patrick.flux", &sDesc, m_pFlexSystem);
+	AddChild(pSoftbody);
+	pSoftbody->SetTexture(L"./Resources/gradwork/textures/patrick_red.jpg");
+	pSoftbody->SetPosition(Vector3(0, 15.0f, -5.0f));
 
-	for (size_t i = 0; i < 5; i++)
-	{
-		sDesc.Phase = flexMakePhase(i, 0);
-		FlexSoftbody* pSoftbody = new FlexSoftbody(L"./Resources/Meshes/Patrick.flux", &sDesc, m_pFlexSystem);
-		AddChild(pSoftbody);
-		pSoftbody->SetTexture(L"./Resources/Textures/Patrick.tga");
-		pSoftbody->SetPosition(Vector3(0.0f, 4.0f * i + 10.0f, 0.0f));
-	}
-	
 	m_pGameContext->Scene->Input->AddInputAction(InputAction(FLEX_UI, Pressed, 'U'));
 
 	m_pFlexSystem->InitializeSolver();
@@ -132,22 +132,34 @@ void SoftBodyScene::Initialize()
 	AddChild(m_pFlexDebugRenderer);
 
 	m_pGameContext->Scene->Input->CursorVisible(false);
+}
 
+void SoftBodyScene::InitializeMaterials()
+{
+	DefaultMaterial* pMaterial = new DefaultMaterial();
+	pMaterial->Initialize(m_pGameContext);
+	pMaterial->SetDiffuseTexture(L"./Resources/GradWork/Textures/Patrick_House.jpg");
+	m_pMaterials.push_back(pMaterial);
+
+	pMaterial = new DefaultMaterial();
+	pMaterial->Initialize(m_pGameContext);
+	pMaterial->SetDiffuseTexture(L"./Resources/GradWork/Textures/Spongebob_House.jpg");
+	m_pMaterials.push_back(pMaterial);
+
+	pMaterial = new DefaultMaterial();
+	pMaterial->Initialize(m_pGameContext);
+	pMaterial->SetDiffuseTexture(L"./Resources/GradWork/Textures/Squidward_House.jpg");
+	m_pMaterials.push_back(pMaterial);
 }
 
 void SoftBodyScene::Update()
 {
-	m_pCollision->GetTransform()->Rotate(100 * 0.016f, 0, 0);
-	
 	if (m_FlexUpdate)
-	{
 		m_pFlexSystem->UpdateSolver(1.0f / 60);
-	}
 
 	//Fetch data
 	m_pFlexSystem->FetchData();
 	m_pFlexMousePicker->Update();
-
 }
 
 void SoftBodyScene::LateUpdate()
@@ -158,8 +170,6 @@ void SoftBodyScene::LateUpdate()
 
 void SoftBodyScene::Render()
 {
-	//m_pCanvas->Update();
-
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
@@ -189,17 +199,19 @@ void SoftBodyScene::Render()
 	ImGui::SliderFloat("Restitution", &m_pFlexSystem->Params.mRestitution, 0, 1);
 	ImGui::SliderFloat("Damping", &m_pFlexSystem->Params.mDamping, 0, 1);
 	ImGui::SliderFloat("Plastic Creep", &m_pFlexSystem->Params.mPlasticCreep, 0, 1);
+	ImGui::SliderFloat("Adhesion", &m_pFlexSystem->Params.mAdhesion, 0, 2);
 
 	ImGui::Separator();
 	ImGui::Text("Particle Count: %i", m_pFlexSystem->Positions.size());
 	ImGui::Text("Rigid Count: %i", m_pFlexSystem->RigidTranslations.size());
 	ImGui::Text("Collision Meshes: %i", m_pFlexSystem->ShapeGeometry.size());
 		
-	ImGui::PlotLines("Frame times", GameTimer::GetFrameTimes().data() , GameTimer::GetFrameTimes().size(), 0.2f, nullptr, 0.0f, 0.05f, ImVec2(0, 80));
+	ImGui::PlotLines("Frame times", GameTimer::GetFrameTimes().data() , 
+		GameTimer::GetFrameTimes().size(), 1, nullptr, 0.0f, 0.05f, ImVec2(0, 80));
 
 	ImGui::Checkbox("Simulate", &m_FlexUpdate);
 	if (ImGui::Button("Restart scene"))
-		GameManager::GetInstance()->LoadScene(new SoftBodyScene());
+		GameManager::GetInstance()->ReloadScene(new SoftBodyScene());
 	if (ImGui::Button("Toggle debugging"))
 		m_pFlexDebugRenderer->ToggleDebugging();
 	ImGui::End();

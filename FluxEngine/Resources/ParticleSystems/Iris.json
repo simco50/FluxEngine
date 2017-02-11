@@ -1,0 +1,111 @@
+{
+  "Version": 2,
+  "Duration": 1.0,
+  "Loop": true,
+  "Lifetime": 4.00000048,
+  "LifetimeVariance": 0.0,
+  "StartVelocity": 2.4,
+  "StartVelocityVariance": 0.0,
+  "StartSize": 0.9999998,
+  "StartSizeVariance": 0.0,
+  "RandomStartRotation": false,
+  "PlayOnAwake": true,
+  "MaxParticles": 748,
+  "Emission": 80,
+  "Bursts": {},
+  "Shape": {
+    "ShapeType": 2,
+    "Radius": 1.30000007,
+    "EmitFromShell": true,
+    "EmitFromVolume": false,
+    "Angle": 45.0
+  },
+  "Size": {
+    "Keys": {
+      "0": 1.6,
+      "0.6": 3.0,
+      "1": 7.6
+    },
+    "Constant": 1.0
+  },
+  "Velocity": {
+    "Keys": {
+      "0.6": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "0.8": {
+        "X": 0.0,
+        "Y": -10.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": -10.0,
+        "Z": 0.0
+      }
+    },
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "LocalVelocity": {
+    "Keys": {
+      "1": {
+        "X": 5.0,
+        "Y": 5.0,
+        "Z": 0.0
+      }
+    },
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "Color": {
+    "Keys": {
+      "0.3": {
+        "X": 1.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "0.6": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 1.0
+      }
+    },
+    "Constant": {
+      "X": 1.0,
+      "Y": 1.0,
+      "Z": 1.0
+    }
+  },
+  "Transparancy": {
+    "Keys": {
+      "0": 0.0,
+      "0.2": 1.0,
+      "0.9": 1.0,
+      "1": 5.551115E-17
+    },
+    "Constant": 1.0
+  },
+  "Rotation": {
+    "Keys": {
+      "1": 360.0
+    },
+    "Constant": 0.0
+  },
+  "SortingMode": 0,
+  "BlendMode": 1,
+  "ImagePath": "D:\\Personal Work\\D3D Engine\\FluxEngine\\Resources\\Textures\\Water.png"
+}

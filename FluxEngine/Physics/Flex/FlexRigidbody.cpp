@@ -60,9 +60,9 @@ void FlexRigidbody::LoadAndCreateBody()
 	CreateRigidBody();
 }
 
-void FlexRigidbody::SetTexture(Texture* pTexture)
+void FlexRigidbody::SetTexture(const wstring& filePath)
 {
-	m_pMaterial->SetTexture(pTexture);
+	m_pMaterial->SetTexture(ResourceManager::Load<Texture>(filePath));
 }
 
 void FlexRigidbody::CreateRigidBody()

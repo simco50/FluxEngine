@@ -15,6 +15,8 @@ public:
 	bool IsActive() { return m_IsActive; }
 	void Reset();
 
+	float GetLifeTimer() const { return m_LifeTimer; }
+
 private:
 	void GetPositionAndDirection(Vector3& position, Vector3& direction);
 	ParticleVertex m_VertexInfo = ParticleVertex();
@@ -27,5 +29,6 @@ private:
 
 	float m_LifeTime = 0;
 	float m_StartVelocity = 0;
+	float m_StartSize = 0;
 };
 

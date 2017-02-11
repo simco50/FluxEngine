@@ -3,11 +3,9 @@
 template <typename T>
 struct KeyframeValue
 {
-	KeyframeValue(T defaultValue)
-	{
-		Values[0.0f] = defaultValue;
-		Values[1.0f] = defaultValue;
-	}
+	KeyframeValue() : ConstantValue(T()) {}
+
+	KeyframeValue(T defaultValue) : ConstantValue(defaultValue) {}
 
 	void Add(float key, T value)
 	{
@@ -26,8 +24,7 @@ struct KeyframeValue
 	void SetConstant(T value)
 	{
 		Values.clear();
-		Values[0] = value;
-		Values[1] = value;
+		ConstantValue = value;
 	}
 
 	void Move(float source, float target)
@@ -44,26 +41,43 @@ struct KeyframeValue
 
 	T operator[](float interpValue)
 	{
+		//If the value is constant
+		if(Values.size() == 0)
+			return ConstantValue;
+		//If there is only one keyframe
+		if(Values.size() == 1)
+		{
+			auto it = Values.begin();
+			if (interpValue >= it->first)
+				return it->second;
+			float blendA = (it->first - interpValue) / it->first;
+			T result = (ConstantValue * blendA) + (it->second * (1 - blendA));
+			return result;
+		}
+
+		//If there is more than one key
+		if(interpValue < Values.begin()->first)
+			return Values.begin()->second;
+
 		for (auto value = Values.begin(); value != Values.end(); ++value)
 		{
+			if (value->first == interpValue)
+				return value->second;
 			if (value->first > interpValue)
 			{
 				auto v2 = value;
 				auto v1 = --value;
-				if (v1 == --Values.begin())
-				{
-					v1 = --Values.end();
-				}
-
 				float length = abs(v2->first - v1->first);
 				float blendA = (v2->first - interpValue) / length;
 				T result = (v1->second * blendA) + (v2->second * (1 - blendA));
 				return result;
 			}
 		}
-		return T();
+		return Values.rbegin()->second;
 	}
 
+	//Using extra constant value for performance reasons
+	T ConstantValue;
 private:
 	map<float, T> Values;
 };

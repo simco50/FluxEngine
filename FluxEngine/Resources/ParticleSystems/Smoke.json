@@ -1,0 +1,96 @@
+{
+  "Version": 2,
+  "Duration": 2.00000024,
+  "Loop": true,
+  "Lifetime": 3.00000048,
+  "LifetimeVariance": 0.0,
+  "StartVelocity": 1.4000001,
+  "StartVelocityVariance": 0.0,
+  "StartSize": 1.0,
+  "StartSizeVariance": 0.200000033,
+  "RandomStartRotation": true,
+  "PlayOnAwake": true,
+  "MaxParticles": 300,
+  "Emission": 100,
+  "Bursts": {},
+  "Shape": {
+    "ShapeType": 3,
+    "Radius": 1.20000017,
+    "EmitFromShell": false,
+    "EmitFromVolume": false,
+    "Angle": 70.0
+  },
+  "Size": {
+    "Keys": {
+      "0": 0.2,
+      "0.7": 1.0,
+      "1": 2.0
+    },
+    "Constant": 1.0
+  },
+  "Velocity": {
+    "Keys": {
+      "0.5": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 3.0,
+        "Z": 0.0
+      }
+    },
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "LocalVelocity": {
+    "Keys": {},
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "Color": {
+    "Keys": {
+      "0": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      }
+    },
+    "Constant": {
+      "X": 1.0,
+      "Y": 1.0,
+      "Z": 1.0
+    }
+  },
+  "Transparancy": {
+    "Keys": {
+      "0": 0.0,
+      "0.2": 1.0,
+      "0.7": 1.0,
+      "1": 0.0
+    },
+    "Constant": 1.0
+  },
+  "Rotation": {
+    "Keys": {
+      "0": 0.0,
+      "1": 360.0
+    },
+    "Constant": 0.0
+  },
+  "SortingMode": 0,
+  "BlendMode": 0,
+  "ImagePath": "D:\\Personal Work\\D3D Engine\\FluxEngine\\Resources\\Textures\\Smoke.png"
+}

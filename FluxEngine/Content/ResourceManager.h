@@ -34,6 +34,25 @@ public:
 	}
 
 	template<class T>
+	static T* Reload(const wstring& assetFile)
+	{
+		const type_info& ti = typeid(T);
+		for (Loader* loader : m_Loaders)
+		{
+			const type_info& loadertype = loader->GetType();
+			if (loadertype == ti)
+			{
+				T* pObj = (static_cast<ResourceLoader<T>*>(loader))->GetContent_Reload(assetFile);
+				return pObj;
+			}
+		}
+		wstringstream stream;
+		stream << L"No appropriate ResourceLoader found for: " << assetFile;
+		DebugLog::Log(stream.str(), LogType::ERROR);
+		return nullptr;
+	}
+
+	template<class T>
 	static T* Load_Unmanaged(const wstring& assetFile)
 	{
 		const type_info& ti = typeid(T);

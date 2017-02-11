@@ -16,7 +16,7 @@ FlexDebugRenderer::~FlexDebugRenderer()
 
 void FlexDebugRenderer::Initialize()
 {
-	m_pMeshFilter = ResourceManager::Load<MeshFilter>(L"./Resources/Meshes/FlexDebugSphere.flux");
+	m_pMeshFilter = ResourceManager::Load<MeshFilter>(L"./Resources/GradWork/Meshes/FlexDebugSphere.flux");
 	m_pMeshFilter->Initialize(m_pGameContext);
 
 	CreateInputLayout();

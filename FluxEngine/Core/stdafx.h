@@ -138,6 +138,8 @@ if(! variable->IsValid()) DebugLog::Log(stream.str(), LogType::ERROR);}
 variable = m_pEffect->GetVariableByName(#name)->as();\
 if(! variable->IsValid()) DebugLog::LogFormat(LogType::ERROR, L"Variable with name '%s' not found", L#name);
 
+#define ERROR_TEXTURE L"./Resources/Textures/ErrorTexture.jpg"
+
 //Utility methods
 template<typename T>
 inline void SafeDelete(T*& object)

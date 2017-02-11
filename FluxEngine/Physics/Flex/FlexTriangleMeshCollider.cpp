@@ -29,33 +29,24 @@ void FlexTriangleMeshCollider::Initialize()
 
 	FlexTriangleMesh* pMesh = flexCreateTriangleMesh();
 
-	Vector3* pPositionData = (Vector3*)pMeshFilter->GetVertexData("POSITION").pData;
-	Vector3 minExtents(FLT_MAX);
-	Vector3 maxExtents(-FLT_MAX);
-	for (int i = 0; i < pMeshFilter->VertexCount(); i++)
-	{
-		minExtents = Vector3(min(pPositionData[i].x, minExtents.x), min(pPositionData[i].y, minExtents.y), min(pPositionData[i].z, minExtents.z));
-		maxExtents = Vector3(max(pPositionData[i].x, minExtents.x), max(pPositionData[i].y, minExtents.y), max(pPositionData[i].z, minExtents.z));
-	}
+	BoundingBox::CreateFromPoints(m_BoundingBox, pMeshFilter->VertexCount(), (XMFLOAT3*)pMeshFilter->GetVertexData("POSITION").pData, sizeof(XMFLOAT3));
+
+	Vector3 min = m_BoundingBox.Center - m_BoundingBox.Extents;
+	Vector3 max = m_BoundingBox.Center + m_BoundingBox.Extents;
 
 	flexUpdateTriangleMesh(pMesh,
 		(float*)pMeshFilter->GetVertexData("POSITION").pData,
 		(int*)pMeshFilter->GetVertexData("INDEX").pData,
 		pMeshFilter->VertexCount(),
 		pMeshFilter->IndexCount() / 3,
-		(float*)&minExtents,
-		(float*)&maxExtents,
+		(float*)&min,
+		(float*)&max,
 		m_pFlexSystem->MemoryType
 	);
 
 	FlexCollisionGeometry geometry;
 	geometry.mTriMesh.mMesh = pMesh;
 	geometry.mTriMesh.mScale = 1.0f;
-
-	BoundingBox::CreateFromPoints(m_BoundingBox, pMeshFilter->VertexCount(), (XMFLOAT3*)pMeshFilter->GetVertexData("POSITION").pData, sizeof(XMFLOAT3));
-
-	Vector3 min = m_BoundingBox.Center - m_BoundingBox.Extents;
-	Vector3 max = m_BoundingBox.Center + m_BoundingBox.Extents;
 
 	m_ShapeIdx = m_pFlexSystem->ShapeGeometry.size();
 	m_pFlexSystem->ShapeStarts.push_back(m_ShapeIdx);
@@ -72,7 +63,7 @@ void FlexTriangleMeshCollider::Initialize()
 void FlexTriangleMeshCollider::Update()
 {
 	BoundingBox bounds;
-	m_BoundingBox.Transform(bounds, XMLoadFloat4x4(&m_pTransformComponent->GetWorldMatrix()));
+	m_BoundingBox.Transform(bounds, Matrix(m_pTransformComponent->GetWorldMatrix()));
 
 	m_pFlexSystem->ShapePrevPositions[m_ShapeIdx] = m_pFlexSystem->ShapePositions[m_ShapeIdx];
 	Vector3 worldPos = m_pTransformComponent->GetWorldPosition();

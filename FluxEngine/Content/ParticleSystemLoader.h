@@ -11,5 +11,8 @@ public:
 
 	ParticleSystem* LoadContent(const wstring& assetFile) override;
 	void Destroy(ParticleSystem* objToDestroy) override;
+
+private:
+	static const int VERSION = 2;
 };
 

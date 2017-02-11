@@ -1,4 +1,4 @@
-float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
+float3 gLightDirection = float3(0, 0, 1);
 float gScale = 1.0f;
 float4x4 gViewProj : VIEWPROJ;
 float4x4 gViewInv : VIEWINV;
@@ -44,9 +44,8 @@ VS_DATA Main_VS(VS_DATA input)
 void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float3 offset, float2 texCoord)
 {
 	GS_DATA data = (GS_DATA)0;
-	offset = mul(offset, (float3x3)gViewInv);
-	float3 cornerPos = pos + offset;
-	data.wPos = pos;
+	data.wPos = mul(float4(pos, 1), gView);
+	float3 cornerPos = pos + mul(offset, (float3x3)gViewInv);
 	data.pos = mul(float4(cornerPos, 1.0f), gViewProj);
 	data.texCoord = texCoord;
 
@@ -71,18 +70,22 @@ void Main_GS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 
 float4 Main_PS(GS_DATA input) : SV_TARGET
 {
-	//Calculate the normal
+	//float de = input.pos.z;
+	//return float4(de, 0, 0, 1);
+
+	//Calculate the view space normal
 	float3 normal;
 	normal.xy = input.texCoord * 2.0f - 1.0f;
 	float r2 = dot(normal.xy, normal.xy);
 	//Clip if the pixel falls out the sphere
 	clip(r2 > 1.0f ? -1 : 1);
-	normal.z = sqrt(1.0f - r2);
+	normal.z = -sqrt(1.0f - r2);
+	normal = normalize(normal);
 
 	//calculate the depth
-	float4 worldPos = float4(input.wPos + normalize(normal) * gScale, 1.0f);
-	float4 clipPos = mul(worldPos, gViewProj);
-	float d = clipPos.z / 200.0f;
+	float4 pixelPos = float4(input.wPos + normal * gScale, 1.0f);
+	float4 clipPos = mul(pixelPos, gProj);
+	float d = (clipPos.z - 1.0f) / (100.0f - 1.0f);
 	return float4(d, 0, 0, 1);
 }
 

@@ -35,7 +35,7 @@ public:
 	void Update();
 	void Render();
 
-	void SetTexture(Texture* pTexture);
+	void SetTexture(const wstring& filePath);
 
 private:
 	void CreateRigidBody();

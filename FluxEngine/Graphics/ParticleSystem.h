@@ -17,43 +17,41 @@ struct ParticleVertex
 
 enum ParticleSortingMode
 {
+	FrontToBack,
+	BackToFront,
 	OldestFirst,
 	YoungestFirst,
-	ByDistance,
+};
+
+enum BlendMode
+{
+	ALPHABLEND = 0,
+	ADDITIVE = 1,
 };
 
 struct ParticleSystem
 {
-	ParticleSystem() :
-		Lifetime(1.0f),
-		LifetimeVariance(0.0f),
-		StartVelocity(0.0f),
-		StartVelocityVariance(0.0f),
-		Size(1.0f),
-		Velocity(Vector3()),
-		LocalVelocity(Vector3()),
-		Color(Vector3(1, 1, 1)),
-		Transparany(1),
-		Rotation(0.0f)
-	{}
-	~ParticleSystem()
-	{}
+	ParticleSystem() {}
+	~ParticleSystem() {}
 
-	float Lifetime;
-	float LifetimeVariance;
-	int Emission = 10;
-	int MaxParticles = 100;
-	float StartVelocity;
-	float StartVelocityVariance;
-
-	KeyframeValue<float> Size;
-	KeyframeValue<Vector3> Velocity;
-	KeyframeValue<Vector3> LocalVelocity;
-	KeyframeValue<Vector3> Color;
-	KeyframeValue<float> Transparany;
-	KeyframeValue<float> Rotation;
+	//General
+	float Duration = 1.0f;
+	bool Loop = true;
+	float Lifetime = 1.0f;
+	float LifetimeVariance = 0.0f;
+	float StartVelocity = 1.0f;
+	float StartVelocityVariance = 0.0f;
+	float StartSize = 1.0f;
+	float StartSizeVariance = 0.0f;
 	bool RandomStartRotation = true;
+	bool PlayOnAwake = true;
+	int MaxParticles = 100;
 
+	//Emission
+	int Emission = 10;
+	map<float, int> Bursts;
+
+	//Shape
 	enum class ShapeType
 	{
 		CIRCLE,
@@ -71,6 +69,16 @@ struct ParticleSystem
 	};
 	Shape Shape;
 
-	ParticleSortingMode SortingMode = ByDistance;
+	//Animation
+	KeyframeValue<float> Size = 1.0f;
+	KeyframeValue<Vector3> Velocity = Vector3();
+	KeyframeValue<Vector3> LocalVelocity = Vector3();
+	KeyframeValue<Vector3> Color = Vector3(1.0f, 1.0f, 1.0f);
+	KeyframeValue<float> Transparancy = 1.0f;
+	KeyframeValue<float> Rotation = 0.0f;
+
+	//Rendering
+	ParticleSortingMode SortingMode = FrontToBack;
+	BlendMode BlendMode = ALPHABLEND;
 	wstring ImagePath = L"";
 };

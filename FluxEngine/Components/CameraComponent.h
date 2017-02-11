@@ -29,6 +29,9 @@ public:
 	bool FrustumCulling() const { return m_FrustumCulling; }
 	bool IsInFrustum(MeshComponent* pObj) const;
 
+	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
+	void SetOrthographicSize(float size) { m_Size = size; }
+
 protected:
 	void Initialize();
 	void Update();
@@ -38,7 +41,7 @@ private:
 	float m_Size = 50.0f;
 	float m_FoV = 60.0f;
 
-	float m_NearPlane = 0.1f;
+	float m_NearPlane = 1.0f;
 	float m_FarPlane = 200.0f;
 
 	XMFLOAT4X4 m_View;

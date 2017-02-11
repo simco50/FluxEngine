@@ -9,8 +9,14 @@ public:
 	GameManager();
 	~GameManager();
 	
-	void LoadScene(SceneBase* pScene);
-	void LoadSceneClean(SceneBase* pScene);
+	void AddScene(SceneBase* pScene);
+	void LoadScene(const int index);
+	void ReloadScene(SceneBase* pScene);
+
+	int GetCurrentScene() const { return m_ActiveScene; }
+
+protected:
+	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
 	void PrepareGame();
@@ -18,9 +24,9 @@ private:
 	void Render();
 	void Update();
 	void OnResize();
+
 	EngineContext* m_pEngineContext = nullptr;
-	SceneBase* m_pActiveScene = nullptr;
-	SceneBase* m_pOldScene = nullptr;
+	int m_ActiveScene = -1;
 
 	bool m_SceneInitialized = false;
 

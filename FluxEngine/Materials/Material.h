@@ -28,6 +28,7 @@ public:
 	virtual ~Material();
 
 	void Initialize(GameContext* pGameContext);
+	bool IsInitialized() const { return m_IsInitialized; }
 
 	void LoadEffect();
 	void Update(MeshComponent* pMeshComponent);

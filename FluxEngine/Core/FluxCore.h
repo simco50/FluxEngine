@@ -24,9 +24,9 @@ protected:
 	bool m_Paused = false;
 
 	virtual void OnResize();
+	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 	HRESULT RegisterWindowClass();

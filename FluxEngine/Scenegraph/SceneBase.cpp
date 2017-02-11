@@ -7,8 +7,9 @@
 #include "../Rendering/ShadowMapper.h"
 #include "../Managers/MaterialManager.h"
 #include "../UI/ImgUI/imgui.h"
+#include "../Components/TransformComponent.h"
 
-SceneBase::SceneBase()
+SceneBase::SceneBase(const wstring& name) : m_SceneName(name)
 {
 }
 
@@ -18,7 +19,8 @@ SceneBase::~SceneBase()
 	for (size_t i = 0; i < m_pChildren.size(); i++)
 		SafeDelete(m_pChildren[i]);
 
-	SafeDelete(m_GameContext.Scene->Input);
+	if(m_GameContext.Scene)
+		SafeDelete(m_GameContext.Scene->Input);
 	SafeDelete(m_SceneContext.ShadowMapper);
 	SafeDelete(m_pDeferredRenderer);
 	SafeDelete(m_SceneContext.MaterialManager);
@@ -26,6 +28,9 @@ SceneBase::~SceneBase()
 
 void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 {
+	if (m_Initialized) 
+		return;
+
 	PerfTimer timer(L"Scene Initialization");
 
 	//Set general engine pointer
@@ -38,6 +43,8 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	AddChild(pCamera);
 	m_GameContext.Scene->Cameras.push_back(pCamera->GetCamera());
 	pCamera->GetCamera()->SetActive(true);
+	pCamera->GetTransform()->SetRotation(25.0f, 0, 0);
+	pCamera->GetTransform()->Translate(0, 12, -20);
 
 	//Set scene specific objects
 	m_SceneContext.Input = new InputManager();
@@ -57,6 +64,7 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 		m_pDeferredRenderer->Initialize(m_pGameContext);
 		m_pDeferredRenderer->CreateGBuffer();
 	}
+	m_Initialized = true;
 
 	timer.Stop();
 }

@@ -1,5 +1,5 @@
 texture2D gDepth;
-float4x4 gProjInv : VIEWPROJINV;
+float4x4 gViewProjInv : VIEWPROJINV;
 float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
 
 struct VS_INPUT
@@ -53,31 +53,18 @@ float3 toWorld(float2 texCoord)
 	float x = texCoord.x * 2 - 1;
 	float y = (1 - texCoord.y) * 2 - 1;
 	float4 projectedPos = float4(x, y, z, 1);
-	float4 pos = mul(projectedPos, gProjInv);
-	return pos.xyz * 200.0f;
+	float4 pos = mul(projectedPos, gViewProjInv);
+	projectedPos.xyz /= projectedPos.w;
+	return pos.xyz;
 }
 
 
 float4 PS(VS_OUTPUT input) : SV_TARGET
 {
 	float4 depth = gDepth.Sample(samLinear, input.texCoord);
-	clip(depth.g != 0 ? -1 : 1);
+	clip(depth.g == 0 ? 1 : -1);
 
-	//return depth;
-
-	float3 pos = toWorld(input.texCoord);
-	float3 ddx = toWorld(input.texCoord + texOffset(-1, 0)) - pos;
-	float3 ddy = toWorld(input.texCoord + texOffset(0, 1)) - pos;
-	float3 normal = cross(ddx, ddy);
-	normal = normalize(normal);
-
-	float diffuse = dot(normal, -gLightDirection);
-	float3 color = float3(1, 1, 1) * diffuse;
-	return float4(color, 1.0f);
-
-	///float3 normal = normal_from_depth(d, input.texCoord);
-
-	///return float4(normal,1);
+	return float4(depth.x, depth.x, depth.x , 1);
 }
 
 technique11 Default

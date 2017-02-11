@@ -36,15 +36,14 @@ void GameTimer::Tick()
 	m_CurrTime = currTime;
 
 	m_DeltaTime = (m_CurrTime - m_PrevTime) * m_SecondsPerCount;
-
-	for (size_t i = 1; i < m_FrameTimes.size(); i++)
-		m_FrameTimes[i - 1] = m_FrameTimes[i];
-	m_FrameTimes[m_FrameTimes.size() - 1] = m_DeltaTime;
-
 	m_PrevTime = m_CurrTime;
 
 	if (m_DeltaTime < 0.0f)
 		m_DeltaTime = 0.0f;
+
+	for (size_t i = 1; i < m_FrameTimes.size(); i++)
+		m_FrameTimes[i - 1] = m_FrameTimes[i];
+	m_FrameTimes[m_FrameTimes.size() - 1] = (float)m_DeltaTime;
 }
 
 float GameTimer::GameTime()

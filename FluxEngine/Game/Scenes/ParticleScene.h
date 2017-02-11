@@ -34,8 +34,10 @@ public:
 	};
 private:
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
-	FlexSystem* m_pSystem = nullptr;
-	FluidRenderer* m_pFluidRenderer = nullptr;
+	FlexSystem* m_pFlexSystem = nullptr;
+	FlexDebugRenderer* m_pFlexDebugRenderer = nullptr;
+	FlexMousePicker* m_pFlexMousePicker = nullptr;
+	bool m_FlexUpdate = false;
 
 	ParticleEmitterComponent* m_pEmitter = nullptr;
 };

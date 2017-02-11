@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "FluidRenderer.h"
 #include "../Components/CameraComponent.h"
-#include "FlexHelper.h"
 #include "FlexSystem.h"
 #include "../../Graphics/RenderTarget.h"
 #include <minwinbase.h>
@@ -42,7 +41,7 @@ void FluidRenderer::Update()
 	}
 
 	vector<Vector3> particles(m_ParticleCount);
-	for (size_t i = 0; i < m_ParticleCount; i++)
+	for (int i = 0; i < m_ParticleCount; i++)
 		particles[i] = Vector3(m_pFlexSystem->Positions[i].x, m_pFlexSystem->Positions[i].y, m_pFlexSystem->Positions[i].z);
 
 	D3D11_MAPPED_SUBRESOURCE resource;
@@ -60,6 +59,11 @@ void FluidRenderer::Render()
 	//Set the variables
 	m_pViewInverseVar->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewInverse()));
 	m_pVPVar->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewProjection()));
+
+	m_pEffect->GetVariableByName("gProj")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetProjection()));
+	m_pEffect->GetVariableByName("gView")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetView()));
+
+
 	m_pScaleVar->SetFloat(m_pFlexSystem->Params.mRadius * m_Scale);
 	//Clear the rendertarget
 	m_pParticleRenderTarget->ClearColor();
@@ -87,9 +91,7 @@ void FluidRenderer::Render()
 
 	//Set the quad variables
 	m_pDepthMap->SetResource(m_pParticleRenderTarget->GetColorSRV());
-	m_pFluidEffect->GetVariableByName("gProjInv")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewProjectionInverse()));
-	m_pFluidEffect->GetVariableByName("gView")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetView()));
-	m_pFluidEffect->GetVariableByName("gProj")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetProjection()));
+	m_pFluidEffect->GetVariableByName("gViewProjInv")->AsMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_pGameContext->Scene->CurrentCamera->GetViewProjectionInverse()));
 
 	//Set the default rendertarget
 	pRtv = m_pGameContext->Engine->DefaultRenderTarget->GetRenderTargetView();

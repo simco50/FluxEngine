@@ -52,7 +52,6 @@ public:
 	~FlexSoftbody();
 
 	void Initialize();
-	void CreateSkinningBuffer();
 	void Update();
 	void Render();
 
@@ -65,6 +64,7 @@ private:
 		int indices[4];
 	};
 
+	void CreateSkinningBuffer();
 	void LoadAndCreateBody();
 	void CreateSoftbody();
 

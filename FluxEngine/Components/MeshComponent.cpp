@@ -38,7 +38,14 @@ void MeshComponent::Initialize()
 	{
 		m_pMeshFilter->Initialize(m_pGameContext);
 		if (m_pMaterial)
+		{ 
+			if(m_pMaterial->IsInitialized() == false)
+			{
+				DebugLog::Log(L"[MeshComponent::Initialize()] > Material not yet initialized!", LogType::ERROR);
+				return;
+			}
 			m_pMeshFilter->CreateBuffers(m_pMaterial);
+		}
 
 		BoundingOrientedBox::CreateFromPoints(m_LocalBoundingBox, m_pMeshFilter->VertexCount(), (Vector3*)m_pMeshFilter->GetVertexData("POSITION").pData, sizeof(Vector3));
 	}

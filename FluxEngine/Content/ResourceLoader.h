@@ -61,6 +61,20 @@ public:
 		return content;
 	}
 
+	T* GetContent_Reload(const wstring& assetFile)
+	{
+		for (auto it = m_contentReferences.begin(); it != m_contentReferences.end(); ++it)
+		{
+			if (it->first.compare(assetFile) == 0)
+			{
+				SafeDelete(it->second);
+				m_contentReferences.erase(it);
+				break;
+			}
+		}
+		return GetContent(assetFile);
+	}
+
 	T* GetContent_Unmanaged(const wstring& assetFile)
 	{
 		wstringstream stream;

@@ -25,6 +25,15 @@ public:
 		FLEX_UI
 	};
 private:
+	enum MaterialID : int
+	{
+		PATRICK_HOUSE,
+		SPONGEBOB_HOUSE,
+		SQUIDWARD_HOUSE
+	};
+
+	void InitializeMaterials();
+
 	unique_ptr<DefaultMaterial> m_pGroundMaterial;
 	unique_ptr<DefaultMaterial> m_pDefaultMaterial;
 
@@ -33,6 +42,8 @@ private:
 	FlexSystem* m_pFlexSystem = nullptr;
 	FlexDebugRenderer* m_pFlexDebugRenderer = nullptr;
 	FlexMousePicker* m_pFlexMousePicker = nullptr;
+
+	vector<DefaultMaterial*> m_pMaterials;
 
 	vector<float> deltaTimes;
 
