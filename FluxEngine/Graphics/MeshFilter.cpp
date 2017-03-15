@@ -34,7 +34,7 @@ void MeshFilter::CreateBuffers(const ILDesc* ILDesc)
 	int vertexStride = ILDesc->VertexStride;
 	if (ILDesc->VertexStride == 0)
 	{
-		DebugLog::Log(L"MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0", LogType::ERROR);
+		Console::Log("MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0", LogType::ERROR);
 		return;
 	}
 
@@ -52,7 +52,7 @@ void MeshFilter::CreateBuffers(const ILDesc* ILDesc)
 					string m = string(ILDesc->InputLayoutDesc[e].SemanticName);
 					wstring msg = wstring(m.begin(), m.end());
 
-					DebugLog::LogFormat(LogType::WARNING, L"MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
+					Console::LogFormat(LogType::WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
 				}
 				//Get the stride of the required dummy data
 				int size;
@@ -114,7 +114,7 @@ MeshFilter::VertexData& MeshFilter::GetVertexData(const string& semantic)
 {
 	auto it = m_VertexData.find(semantic);
 	if (it == m_VertexData.end())
-		DebugLog::LogFormat(LogType::ERROR, L"MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", wstring(semantic.begin(), semantic.end()).c_str());
+		Console::LogFormat(LogType::ERROR, "MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", semantic.c_str());
 	return it->second;
 }
 

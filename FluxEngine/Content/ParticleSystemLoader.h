@@ -9,7 +9,7 @@ public:
 	ParticleSystemLoader();
 	~ParticleSystemLoader();
 
-	ParticleSystem* LoadContent(const wstring& assetFile) override;
+	ParticleSystem* LoadContent(const string& assetFile) override;
 	void Destroy(ParticleSystem* objToDestroy) override;
 
 private:

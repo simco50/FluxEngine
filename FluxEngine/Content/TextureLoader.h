@@ -8,7 +8,7 @@ public:
 	TextureLoader();
 	~TextureLoader();
 
-	Texture* LoadContent(const wstring& assetFile) override;
+	Texture* LoadContent(const string& assetFile) override;
 	void Destroy(Texture* objToDestroy) override;
 };
 

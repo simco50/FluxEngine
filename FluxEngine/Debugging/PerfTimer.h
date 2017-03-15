@@ -2,7 +2,7 @@
 class PerfTimer
 {
 public:
-	PerfTimer(const wstring& source = L"");
+	PerfTimer(const string& source = "");
 	~PerfTimer();
 
 	float Stop();
@@ -13,6 +13,6 @@ private:
 	__int64 m_StartTime = 0;
 	__int64 m_StopTime = 0;
 
-	wstring m_Source;
+	string m_Source;
 };
 

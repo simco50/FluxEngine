@@ -8,10 +8,10 @@ SoundManager::SoundManager()
 	FMOD_RESULT result;
 
 	result = FMOD::System_Create(&m_pSystem);
-	DebugLog::LogFmodResult(result);
+	Console::LogFmodResult(result);
 
 	result = m_pSystem->init(512, FMOD_INIT_NORMAL, nullptr);
-	DebugLog::LogFmodResult(result);
+	Console::LogFmodResult(result);
 }
 
 SoundManager::~SoundManager()
@@ -27,7 +27,7 @@ FMOD::Sound* SoundManager::LoadSound(const std::string& filePath, const FMOD_MOD
 
 	FMOD::Sound* pSound = nullptr;
 	FMOD_RESULT result = m_pSystem->createSound(filePath.c_str(), mode, exInfo, &pSound);
-	DebugLog::LogFmodResult(result);
+	Console::LogFmodResult(result);
 	m_Sounds[filePath] = pSound;
 	return pSound;
 }

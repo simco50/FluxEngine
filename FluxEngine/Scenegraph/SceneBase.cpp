@@ -6,10 +6,9 @@
 #include "../Rendering/DeferredRenderer.h"
 #include "../Rendering/ShadowMapper.h"
 #include "../Managers/MaterialManager.h"
-#include "../UI/ImgUI/imgui.h"
 #include "../Components/TransformComponent.h"
 
-SceneBase::SceneBase(const wstring& name) : m_SceneName(name)
+SceneBase::SceneBase(const string& name) : m_SceneName(name)
 {
 }
 
@@ -31,7 +30,7 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	if (m_Initialized) 
 		return;
 
-	PerfTimer timer(L"Scene Initialization");
+	PerfTimer timer("Scene Initialization");
 
 	//Set general engine pointer
 	m_GameContext.Engine = pEngineContext;
@@ -122,7 +121,7 @@ void SceneBase::OnResize()
 		pCamera->UpdateViewport();
 }
 
-GameObject* SceneBase::FindObject(const wstring& name)
+GameObject* SceneBase::FindObject(const string& name)
 {
 	for (GameObject* pObject : m_pChildren)
 	{

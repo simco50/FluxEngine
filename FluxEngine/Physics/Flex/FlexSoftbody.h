@@ -48,14 +48,14 @@ struct SoftbodyDesc
 class FlexSoftbody : public FlexBody
 {
 public:
-	FlexSoftbody(const wstring &filePath, SoftbodyDesc* desc, FlexSystem* pFlexSystem);
+	FlexSoftbody(const string &filePath, SoftbodyDesc* desc, FlexSystem* pFlexSystem);
 	~FlexSoftbody();
 
 	void Initialize();
 	void Update();
 	void Render();
 
-	void SetTexture(const wstring& filePath);
+	void SetTexture(const string& filePath);
 
 private:
 	struct FlexSkinVertex

@@ -9,7 +9,7 @@ class MeshComponent : public ComponentBase
 public:
 	MeshComponent();
 	MeshComponent(MeshFilter* pMeshFilter);
-	MeshComponent(const wstring& meshPath);
+	MeshComponent(const string& meshPath);
 	~MeshComponent();
 
 	void SetMaterial(Material* pMaterial);

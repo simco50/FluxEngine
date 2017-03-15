@@ -3,7 +3,7 @@
 #include "../../Graphics/Texture.h"
 #include "../../Components/CameraComponent.h"
 #include "../../Physics/Flex/FlexHelper.h"
-#include "../Physics/Flex/FlexSystem.h"
+#include "../../Physics/Flex/FlexSystem.h"
 
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pLightDirectionVar = nullptr;
 ID3DX11EffectVectorVariable* FlexRigidbodyMaterial::m_pColorVar = nullptr;
@@ -18,7 +18,7 @@ ID3DX11EffectShaderResourceVariable* FlexRigidbodyMaterial::m_pDiffuseTextureVar
 FlexRigidbodyMaterial::FlexRigidbodyMaterial(FlexSystem* pFlexSystem, FlexHelper::FlexMeshInstance* pMeshInstance) :
 	m_pMeshInstance(pMeshInstance), m_pFlexSystem(pFlexSystem)
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/Flex/FlexRigidBody.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/Flex/FlexRigidBody.fx";
 }
 
 

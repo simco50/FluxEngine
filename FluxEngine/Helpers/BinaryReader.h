@@ -5,7 +5,7 @@ public:
 	BinaryReader();
 	~BinaryReader();
 
-	void Open(const wstring& filePath);
+	void Open(const string& filePath);
 	void Close();
 
 	unsigned int GetPosition() const;
@@ -27,8 +27,8 @@ public:
 	}
 
 	string ReadString();
-	wstring ReadLongString();
-	wstring ReadNullString();
+	string ReadLongString();
+	string ReadNullString();
 
 private:
 	unique_ptr<ifstream> m_pStream;

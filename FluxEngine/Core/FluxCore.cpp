@@ -3,10 +3,8 @@
 #include "../resource.h"
 #include "../Managers/SoundManager.h"
 #include "../Graphics/RenderTarget.h"
-#include <minwinbase.h>
-#include "../Graphics/Texture.h"
-#include "../UI/ImgUI/imgui.h"
-#include "../UI/ImgUI/ImgUIDrawer.h"
+#include "../UI/ImgUIDrawer.h"
+#include "../Physics/PhysX/PhysicsCore.h"
 
 using namespace std;
 
@@ -26,7 +24,10 @@ FluxCore::~FluxCore()
 	CleanupD3D();
 	SoundManager::DestroyInstance();
 	ResourceManager::Release();
-	DebugLog::Release();
+	Console::Release();
+
+	m_pPhysicsCore->Finalize();
+	delete m_pPhysicsCore;
 
 	m_pUIDrawer->Shutdown();
 	SafeDelete(m_pUIDrawer);
@@ -49,8 +50,8 @@ void FluxCore::CleanupD3D()
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
-	PerfTimer timer(L"FluxEngine Initialization");
-	DebugLog::Initialize();
+	PerfTimer timer("FluxEngine Initialization");
+	Console::Initialize();
 
 	PrepareGame();
 
@@ -70,6 +71,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 	Initialize(&m_EngineContext);
 
 	GameTimer::Reset();
+
+	m_pPhysicsCore = new PhysicsCore();
+	m_pPhysicsCore->Initialize();
 
 	m_pUIDrawer = new ImgUIDrawer();
 	m_pUIDrawer->Initialize(&m_EngineContext);
@@ -105,6 +109,8 @@ void FluxCore::GameLoop()
 	m_pDefaultRenderTarget->ClearColor();
 	m_pDefaultRenderTarget->ClearDepth();
 
+	m_pPhysicsCore->Update();
+
 	CalculateFrameStats();
 	//Update the game
 	Update();
@@ -126,7 +132,7 @@ void FluxCore::GameLoop()
 
 HRESULT FluxCore::RegisterWindowClass()
 {
-	WNDCLASS wc;
+	WNDCLASSA wc;
 
 	wc.hInstance = m_hInstance;
 	wc.cbClsExtra = 0;
@@ -140,7 +146,7 @@ HRESULT FluxCore::RegisterWindowClass()
 	wc.lpszClassName = m_WindowClassName.c_str();
 	wc.lpszMenuName = nullptr;
 
-	if (!RegisterClass(&wc))
+	if (!RegisterClassA(&wc))
 	{
 		auto error = GetLastError();
 		return HRESULT_FROM_WIN32(error);
@@ -168,7 +174,7 @@ HRESULT FluxCore::MakeWindow()
 	int x = (screenWidth - windowRect.right) / 2;
 	int y = (screenHeight - windowRect.bottom) / 2;
 
-	m_EngineContext.Hwnd = CreateWindow(
+	m_EngineContext.Hwnd = CreateWindowA(
 		m_WindowClassName.c_str(),
 		m_EngineContext.GameSettings.Title.c_str(),
 		windowStyle,
@@ -204,7 +210,7 @@ HRESULT FluxCore::EnumAdapters()
 	HR(CreateDXGIFactory(IID_PPV_ARGS(m_pFactory.GetAddressOf())));
 
 	//Enumerate over the adapters
-	DebugLog::Log(L"Finding possible adapters...");
+	Console::Log("Finding possible adapters...");
 
 	vector<IDXGIAdapter*> pAdapters;
 
@@ -215,7 +221,7 @@ HRESULT FluxCore::EnumAdapters()
 	{
 		DXGI_ADAPTER_DESC desc;
 		pAdapter->GetDesc(&desc);
-		DebugLog::LogFormat(LogType::INFO, L"Adapter [%i]: %s VRAM: %f mb", adapterCount, desc.Description, desc.DedicatedVideoMemory / 1048576.0f);
+		Console::LogFormat(LogType::INFO, "Adapter [%i]: %s VRAM: %f mb", adapterCount, desc.Description, desc.DedicatedVideoMemory / 1048576.0f);
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
 
@@ -225,34 +231,34 @@ HRESULT FluxCore::EnumAdapters()
 
 	DXGI_ADAPTER_DESC desc;
 	m_pAdapter->GetDesc(&desc);
-	DebugLog::LogFormat(LogType::INFO, L"Using adapter: %s", desc.Description);
+	Console::LogFormat(LogType::INFO, "Using adapter: %s", desc.Description);
 	return S_OK;
 }
 
 void FluxCore::LogOutputs(IDXGIAdapter* pAdapter, bool logDisplayModes)
 {
-	DebugLog::Log(L"\tPossible outputs:");
+	Console::Log("\tPossible outputs:");
 	IDXGIOutput* pOutput;
 	UINT outputCount = 0;
 	while (pAdapter->EnumOutputs(outputCount, &pOutput) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_OUTPUT_DESC desc;
 		pOutput->GetDesc(&desc);
-		wstringstream stream;
-		stream << L"\t" << outputCount << L". " << desc.DesktopCoordinates.right << " x " << desc.DesktopCoordinates.bottom;
-		DebugLog::Log(stream.str());
+		stringstream stream;
+		stream << "\t" << outputCount << ". " << desc.DesktopCoordinates.right << " x " << desc.DesktopCoordinates.bottom;
+		Console::Log(stream.str());
 		++outputCount;
 
 		if(logDisplayModes)
 			LogDisplayModes(pOutput);
 	}
 	if(outputCount == 0)
-		DebugLog::Log(L"\t\tNone");
+		Console::Log("\t\tNone");
 }
 
 void FluxCore::LogDisplayModes(IDXGIOutput* pOutput)
 {
-	DebugLog::Log(L"\t\tPossible display modes:");
+	Console::Log("\t\tPossible display modes:");
 	UINT displayModeCount = 0;
 	UINT flags = 0;
 	pOutput->GetDisplayModeList(m_BackBufferFormat, flags, &displayModeCount, nullptr);
@@ -261,7 +267,7 @@ void FluxCore::LogDisplayModes(IDXGIOutput* pOutput)
 	int index = 0;
 	for (DXGI_MODE_DESC mode : displayModes)
 	{
-		DebugLog::LogFormat(LogType::INFO, L"\t\t\t %i. Width: %i | Height: %i | RefreshRate: %f", index, mode.Width, mode.Height, round((float)mode.RefreshRate.Numerator / mode.RefreshRate.Denominator));
+		Console::LogFormat(LogType::INFO, "\t\t\t %i. Width: %i | Height: %i | RefreshRate: %f", index, mode.Width, mode.Height, round((float)mode.RefreshRate.Numerator / mode.RefreshRate.Denominator));
 		index++;
 	}
 }
@@ -290,7 +296,7 @@ HRESULT FluxCore::InitializeD3D()
 
 	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
 	{
-		DebugLog::Log(L"Feature Level 11_0 not supported!", LogType::ERROR);
+		Console::Log("Feature Level 11_0 not supported!", LogType::ERROR);
 		return E_FAIL;
 	}
 
@@ -515,20 +521,20 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (m_EngineContext.GameSettings.UseDeferredRendering)
 			{
-				DebugLog::Log(L"Can't enable MSAA with Deferred Rendering!", LogType::WARNING);
+				Console::Log("Can't enable MSAA with Deferred Rendering!", LogType::WARNING);
 				return 0;
 			}
 			SetMSAA(!m_EngineContext.GameSettings.MSAA);
-			wstringstream stream;
-			stream << L"MSAA " << (m_EngineContext.GameSettings.MSAA ? L"Enabled" : L"Disabled");
-			DebugLog::Log(stream.str());
+			stringstream stream;
+			stream << "MSAA " << (m_EngineContext.GameSettings.MSAA ? "Enabled" : "Disabled");
+			Console::Log(stream.str());
 		}
 		else if ((int)wParam == VK_F3)
 		{
 			m_EngineContext.GameSettings.VerticalSync = !m_EngineContext.GameSettings.VerticalSync;
-			wstringstream stream;
-			stream << L"Vertical Sync " << (m_EngineContext.GameSettings.VerticalSync ? L"Enabled" : L"Disabled");
-			DebugLog::Log(stream.str());
+			stringstream stream;
+			stream << "Vertical Sync " << (m_EngineContext.GameSettings.VerticalSync ? "Enabled" : "Disabled");
+			Console::Log(stream.str());
 		}
 		return 0;
 
@@ -611,14 +617,10 @@ void FluxCore::CalculateFrameStats() const
 		int fps = frameCnt; // fps = frameCnt / 1
 		float mspf = 1000.0f / (float)fps;
 
-		wstring fpsStr = to_wstring(fps);
-		wstring mspfStr = to_wstring(mspf);
-
-		wstring windowText = m_EngineContext.GameSettings.Title +
-			L"\t FPS: " + fpsStr +
-			L"\t MS: " + mspfStr;
-
-		SetWindowText(m_EngineContext.Hwnd, windowText.c_str());
+		stringstream str;
+		str << m_EngineContext.GameSettings.Title << "\t FPS: " << fps << "\t MS: " << mspf;
+		string title = str.str();
+		SetWindowTextA(m_EngineContext.Hwnd, str.str().c_str());
 
 		// Reset for next average.
 		frameCnt = 0;

@@ -6,7 +6,7 @@
 EffectLoader::EffectLoader(void){}
 EffectLoader::~EffectLoader(void){}
 
-ID3DX11Effect* EffectLoader::LoadContent(const wstring& assetFile)
+ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 {
 	HRESULT hr;
 	ID3D10Blob* pErrorBlob = nullptr;
@@ -18,7 +18,8 @@ ID3DX11Effect* EffectLoader::LoadContent(const wstring& assetFile)
 	shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
-	hr = D3DX11CompileEffectFromFile(assetFile.c_str(),
+	wstring path = wstring(assetFile.begin(), assetFile.end());
+	hr = D3DX11CompileEffectFromFile(path.c_str(),
 		nullptr,
 		nullptr,
 		shaderFlags,
@@ -33,22 +34,22 @@ ID3DX11Effect* EffectLoader::LoadContent(const wstring& assetFile)
 		{
 			char *errors = (char*)pErrorBlob->GetBufferPointer();
  
-			wstringstream ss;
+			stringstream ss;
 			for(unsigned int i = 0; i < pErrorBlob->GetBufferSize(); i++)
 				ss<<errors[i];
  
-			OutputDebugStringW(ss.str().c_str());
+			OutputDebugStringA(ss.str().c_str());
 			pErrorBlob->Release();
 			pErrorBlob = nullptr;
 
-			DebugLog::Log(ss.str(), LogType::ERROR);
+			Console::Log(ss.str(), LogType::ERROR);
 		}
 		else
 		{
-			wstringstream ss;
+			stringstream ss;
 			ss<<"EffectLoader: Failed to CreateEffectFromFile!\nPath: ";
 			ss<<assetFile;
-			DebugLog::LogHRESULT(ss.str(), hr);
+			Console::LogHRESULT(ss.str(), hr);
 			return nullptr;
 		}
 	}

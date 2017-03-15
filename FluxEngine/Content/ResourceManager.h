@@ -15,7 +15,7 @@ public:
 	~ResourceManager(void);
 
 	template<class T> 
-	static T* Load(const wstring& assetFile)
+	static T* Load(const string& assetFile)
 	{
 		const type_info& ti = typeid(T);
 		for(Loader* loader:m_Loaders)
@@ -27,14 +27,14 @@ public:
 				return pObj;
 			}
 		}
-		wstringstream stream;
-		stream << L"No appropriate ResourceLoader found for: " << assetFile;
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "No appropriate ResourceLoader found for: " << assetFile;
+		Console::Log(stream.str(), LogType::ERROR);
 		return nullptr;
 	}
 
 	template<class T>
-	static T* Reload(const wstring& assetFile)
+	static T* Reload(const string& assetFile)
 	{
 		const type_info& ti = typeid(T);
 		for (Loader* loader : m_Loaders)
@@ -46,14 +46,14 @@ public:
 				return pObj;
 			}
 		}
-		wstringstream stream;
-		stream << L"No appropriate ResourceLoader found for: " << assetFile;
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "No appropriate ResourceLoader found for: " << assetFile;
+		Console::Log(stream.str(), LogType::ERROR);
 		return nullptr;
 	}
 
 	template<class T>
-	static T* Load_Unmanaged(const wstring& assetFile)
+	static T* Load_Unmanaged(const string& assetFile)
 	{
 		const type_info& ti = typeid(T);
 		for (Loader* loader : m_Loaders)
@@ -65,9 +65,9 @@ public:
 				return pObj;
 			}
 		}
-		wstringstream stream;
-		stream << L"No appropriate ResourceLoader found for: " << assetFile;
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "No appropriate ResourceLoader found for: " << assetFile;
+		Console::Log(stream.str(), LogType::ERROR);
 		return nullptr;
 	}
 

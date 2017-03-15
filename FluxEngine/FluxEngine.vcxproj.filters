@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Components">
+      <UniqueIdentifier>{6B7DD516-5735-1764-C03C-F0BFAC13B254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{60013234-CCE0-B0CF-D5F8-3BA641571731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugging">
+      <UniqueIdentifier>{51835CA9-BDED-1020-062C-C2C572D5EE74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{7FA9857C-6BE0-860D-14CD-6C1000E3020F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes">
+      <UniqueIdentifier>{CF35DC29-3BEB-541F-C4DF-4EF630944B23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{1653CE33-0220-293F-2B39-17E717655ECD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{D8389B9D-4418-1A39-4D30-A50FB98E809A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{B34CFEBD-9F19-59C9-C832-4771B45E8E57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Materials">
+      <UniqueIdentifier>{67E8C255-D352-77CC-1C91-2872883A5521}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Materials\Deferred">
+      <UniqueIdentifier>{F7DF299C-E3C3-EAF1-4C24-E5443827D573}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Materials\Flex">
+      <UniqueIdentifier>{E5FB915F-D1C9-8565-BA5D-F68BA6CA61CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Materials\Forward">
+      <UniqueIdentifier>{8B85FD13-F79B-FBA9-4013-87CBAC68CC31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{AFF4887C-9B2B-8A0D-4418-7010302E060F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{888B590D-F46A-D8A8-FD82-637F69E13E0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Flex">
+      <UniqueIdentifier>{A6BBC0CA-921E-506F-3BA4-882527E61BF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\PhysX">
+      <UniqueIdentifier>{B3488B23-1F09-075A-E843-50D754C34B36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Prefabs">
+      <UniqueIdentifier>{A8F43B23-14D4-BABE-1DEC-4595894A2120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{E3AE1F7C-4F19-D4F2-9857-85980401B247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenegraph">
+      <UniqueIdentifier>{25CADACD-1182-1C1B-7A89-F5766660B70B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{83755900-6F01-880B-D8AF-880BC45A880B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WWW">
+      <UniqueIdentifier>{8A30880B-F639-887C-7FB5-9E7CEBBD937C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Components\AudioListener.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\AudioSource.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\CameraComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\ComponentBase.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\MeshComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\ParticleEmitterComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\TransformComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\EffectLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\MeshLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\ParticleSystemLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\ResourceLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\ResourceManager.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\TextureLoader.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\FluxCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GameTimer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GeneralStructs.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\stdafx.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\Console.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\PerfTimer.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameManager.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\CollisionDemoScene.h">
+      <Filter>Game\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\MeshFilter.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Particle.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ParticleSystem.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RenderTarget.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\BinaryReader.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\KeyframeValue.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\MathHelp.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\ShaderStructs.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Singleton.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\SmartInterface.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\VertexStructures.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\InputManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\MaterialManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\SoundManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\DefaultQuadMaterial.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\Deferred\BasicMaterial_Deferred.h">
+      <Filter>Materials\Deferred</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\Flex\FlexRigidbodyMaterial.h">
+      <Filter>Materials\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\Flex\FlexSoftbodyMaterial.h">
+      <Filter>Materials\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\Forward\DefaultMaterial.h">
+      <Filter>Materials\Forward</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\Material.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\SkyboxMaterial.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\SimpleMath.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexBody.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexDebugRenderer.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexHelper.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexMousePicker.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexRigidbody.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexSoftbody.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexSystem.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FlexTriangleMeshCollider.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Flex\FluidRenderer.h">
+      <Filter>Physics\Flex</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysX\PhysicsCore.h">
+      <Filter>Physics\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysX\PhysxCallbacks.h">
+      <Filter>Physics\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysX\SimulationShaderFilter.h">
+      <Filter>Physics\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="Prefabs\FreeCamera.h">
+      <Filter>Prefabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Prefabs\Skybox.h">
+      <Filter>Prefabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\DeferredRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GBufferMaterial.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\QuadRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\ShadowMapMaterial.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\ShadowMapper.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenegraph\GameObject.h">
+      <Filter>Scenegraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenegraph\SceneBase.h">
+      <Filter>Scenegraph</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\ImgUIDrawer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="WWW\Http.h">
+      <Filter>WWW</Filter>
+    </ClInclude>
+    <ClInclude Include="WWW\md5.h">
+      <Filter>WWW</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Components\AudioListener.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\AudioSource.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\CameraComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\ComponentBase.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\MeshComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\ParticleEmitterComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Components\TransformComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\EffectLoader.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\MeshLoader.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\ParticleSystemLoader.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\ResourceManager.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\TextureLoader.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\FluxCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GameTimer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GeneralStructs.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\stdafx.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugging\Console.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugging\PerfTimer.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\CollisionDemoScene.cpp">
+      <Filter>Game\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\MeshFilter.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Particle.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RenderTarget.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Texture.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\BinaryReader.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\InputManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\MaterialManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\SoundManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\DefaultQuadMaterial.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\Deferred\BasicMaterial_Deferred.cpp">
+      <Filter>Materials\Deferred</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\Flex\FlexRigidbodyMaterial.cpp">
+      <Filter>Materials\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\Flex\FlexSoftbodyMaterial.cpp">
+      <Filter>Materials\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\Forward\DefaultMaterial.cpp">
+      <Filter>Materials\Forward</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\Material.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\SkyboxMaterial.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexBody.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexDebugRenderer.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexMousePicker.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexRigidbody.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexSoftbody.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexSystem.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FlexTriangleMeshCollider.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Flex\FluidRenderer.cpp">
+      <Filter>Physics\Flex</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\PhysX\PhysicsCore.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="Prefabs\FreeCamera.cpp">
+      <Filter>Prefabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Prefabs\Skybox.cpp">
+      <Filter>Prefabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\DeferredRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GBufferMaterial.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\QuadRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\ShadowMapMaterial.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\ShadowMapper.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenegraph\GameObject.cpp">
+      <Filter>Scenegraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenegraph\SceneBase.cpp">
+      <Filter>Scenegraph</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\ImgUIDrawer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="WWW\Http.cpp">
+      <Filter>WWW</Filter>
+    </ClCompile>
+    <ClCompile Include="WWW\md5.cpp">
+      <Filter>WWW</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>

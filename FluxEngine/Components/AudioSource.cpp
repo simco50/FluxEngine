@@ -51,7 +51,7 @@ void AudioSource::Play()
 {
 	if (m_pSound == nullptr)
 	{
-		DebugLog::Log(L"AudioSource::Play() -> Sound is not set");
+		Console::Log("AudioSource::Play() -> Sound is not set");
 		return;
 	}
 
@@ -62,7 +62,7 @@ void AudioSource::PlayOneShot(FMOD::Sound* pSound)
 {
 	if (m_pSound == nullptr)
 	{
-		DebugLog::Log(L"AudioSource::PlayOneShot() -> Sound is nullptr");
+		Console::Log("AudioSource::PlayOneShot() -> Sound is nullptr");
 		return;
 	}
 
@@ -73,7 +73,7 @@ void AudioSource::Stop()
 {
 	if (m_pChannel == nullptr)
 	{
-		DebugLog::Log(L"AudioSource::Stop() -> Channel is not set", LogType::WARNING);
+		Console::Log("AudioSource::Stop() -> Channel is not set", LogType::WARNING);
 		return;
 	}
 
@@ -84,7 +84,7 @@ void AudioSource::Pause(const bool paused)
 {
 	if (m_pChannel == nullptr)
 	{
-		DebugLog::Log(L"AudioSource::Pause() -> Channel is not set", LogType::WARNING);
+		Console::Log("AudioSource::Pause() -> Channel is not set", LogType::WARNING);
 		return;
 	}
 
@@ -95,7 +95,7 @@ void AudioSource::SetLoop(const bool loop)
 {
 	if (m_pChannel == nullptr)
 	{
-		DebugLog::Log(L"AudioSource::SetLoop() -> Channel is not set", LogType::WARNING);
+		Console::Log("AudioSource::SetLoop() -> Channel is not set", LogType::WARNING);
 		return;
 	}
 

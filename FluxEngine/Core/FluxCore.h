@@ -3,6 +3,7 @@
 class RenderTarget;
 struct GameSettings;
 class ImgUIDrawer;
+class PhysicsCore;
 
 class FluxCore
 {
@@ -27,8 +28,6 @@ protected:
 	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-
-
 	HRESULT RegisterWindowClass();
 	HRESULT MakeWindow();
 	HRESULT EnumAdapters();
@@ -50,7 +49,7 @@ private:
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	std::wstring m_WindowClassName = L"WindowClass1";
+	std::string m_WindowClassName = "WindowClass1";
 
 	//Direct3D
 	Unique_COM<IDXGIAdapter> m_pAdapter;
@@ -71,4 +70,6 @@ private:
 	bool m_Resizing = false;
 
 	ImgUIDrawer* m_pUIDrawer = nullptr;
+
+	PhysicsCore* m_pPhysicsCore = nullptr;
 };

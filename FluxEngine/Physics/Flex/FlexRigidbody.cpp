@@ -5,7 +5,7 @@
 #include "../../Materials/Flex/FlexRigidbodyMaterial.h"
 #include "../../Graphics/MeshFilter.h"
 
-FlexRigidbody::FlexRigidbody(const wstring &filePath, RigidbodyDesc* m_pRigidbodyDesc, FlexSystem* pFlexSystem) :
+FlexRigidbody::FlexRigidbody(const string &filePath, RigidbodyDesc* m_pRigidbodyDesc, FlexSystem* pFlexSystem) :
 FlexBody(filePath, pFlexSystem), m_pRigidbodyDesc(m_pRigidbodyDesc)
 {
 }
@@ -60,17 +60,17 @@ void FlexRigidbody::LoadAndCreateBody()
 	CreateRigidBody();
 }
 
-void FlexRigidbody::SetTexture(const wstring& filePath)
+void FlexRigidbody::SetTexture(const string& filePath)
 {
 	m_pMaterial->SetTexture(ResourceManager::Load<Texture>(filePath));
 }
 
 void FlexRigidbody::CreateRigidBody()
 {
-	PerfTimer perfTimer(L"CreateRigidBody");
+	PerfTimer perfTimer("CreateRigidBody");
 
 	if (m_pRigidbodyDesc->IsValid() == false)
-		DebugLog::Log(L"CreateRigidBody() Failed! RigidbodyDesc not fully initialized!", LogType::ERROR);
+		Console::Log("CreateRigidBody() Failed! RigidbodyDesc not fully initialized!", LogType::ERROR);
 
 	FlexExtAsset* pAsset = flexExtCreateRigidFromMesh(
 		(const float*)m_pMeshInstance->pMeshFilter->GetVertexData("POSITION").pData,

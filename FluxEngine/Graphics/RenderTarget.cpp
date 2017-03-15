@@ -153,7 +153,7 @@ DXGI_FORMAT RenderTarget::GetDepthResourceFormat(DXGI_FORMAT initFormat)
 		resourceFormat = DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS;
 		break;
 	default:
-		DebugLog::Log(L"RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
+		Console::Log("RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
 		break;
 	}
 
@@ -178,7 +178,7 @@ DXGI_FORMAT RenderTarget::GetDepthSRVFormat(DXGI_FORMAT initFormat)
 		srvFormat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
 		break;
 	default:
-		DebugLog::Log(L"RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
+		Console::Log("RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
 		break;
 	}
 
@@ -190,7 +190,7 @@ void RenderTarget::ClearColor()
 	if (m_pRenderTargetView)
 		m_pEngineContext->D3DeviceContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<float*>(&m_pEngineContext->GameSettings.ClearColor));
 	else
-		DebugLog::Log(L"RenderTarget::ClearColor() -> RenderTarget does not have a RenderTargetView", LogType::ERROR);
+		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a RenderTargetView", LogType::ERROR);
 }
 
 void RenderTarget::ClearDepth()
@@ -198,14 +198,14 @@ void RenderTarget::ClearDepth()
 	if (m_pRenderTargetView)
 		m_pEngineContext->D3DeviceContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	else
-		DebugLog::Log(L"RenderTarget::ClearColor() -> RenderTarget does not have a DepthStencilView", LogType::ERROR);
+		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a DepthStencilView", LogType::ERROR);
 }
 
 ID3D11ShaderResourceView* RenderTarget::GetColorSRV() const
 {
 	if (m_pColorSRV)
 		return m_pColorSRV.Get();
-	DebugLog::Log(L"RenderTarget::ClearColor() -> RenderTarget does not have a ColorShaderResourceView", LogType::ERROR);
+	Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a ColorShaderResourceView", LogType::ERROR);
 	return nullptr;
 }
 
@@ -213,6 +213,6 @@ ID3D11ShaderResourceView* RenderTarget::GetDepthSRV() const
 {
 	if (m_pDepthSRV)
 		return m_pDepthSRV.Get();
-	DebugLog::Log(L"RenderTarget::ClearColor() -> RenderTarget does not have a DepthShaderResourceView", LogType::ERROR);
+	Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a DepthShaderResourceView", LogType::ERROR);
 	return nullptr;
 }

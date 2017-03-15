@@ -29,7 +29,7 @@ T* MaterialManager::GetMaterial(int id)
 {
 	if (id >= m_Materials.size())
 	{
-		DebugLog::LogFormat(LogType::ERROR, L"Material with ID %i does not exist!", id);
+		Console::LogFormat(LogType::ERROR, "Material with ID %i does not exist!", id);
 		return;
 	}
 	return static_cast<T*>(m_Materials[id]);

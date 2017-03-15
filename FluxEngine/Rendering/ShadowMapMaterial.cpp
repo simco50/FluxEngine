@@ -4,7 +4,7 @@
 
 ShadowMapMaterial::ShadowMapMaterial() : Material()
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/ShadowMap.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/ShadowMap.fx";
 	m_MaterialDesc.HasWorldMatrix = true;
 }
 

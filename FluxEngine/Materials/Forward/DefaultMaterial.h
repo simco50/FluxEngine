@@ -13,7 +13,7 @@ public:
 	void UpdateShaderVariables(MeshComponent* pMeshComponent) override;
 
 	void SetColor(const Vector4 &color) { m_Color = color; }
-	void SetDiffuseTexture(const wstring& filePath);
+	void SetDiffuseTexture(const string& filePath);
 
 private:
 

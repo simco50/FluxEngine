@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FlexDebugRenderer.h"
-#include "../Graphics/MeshFilter.h"
-#include "../Components/CameraComponent.h"
+#include "../../Graphics/MeshFilter.h"
+#include "../../Components/CameraComponent.h"
 #include "FlexHelper.h"
 #include "FlexSystem.h"
 
@@ -16,7 +16,7 @@ FlexDebugRenderer::~FlexDebugRenderer()
 
 void FlexDebugRenderer::Initialize()
 {
-	m_pMeshFilter = ResourceManager::Load<MeshFilter>(L"./Resources/GradWork/Meshes/FlexDebugSphere.flux");
+	m_pMeshFilter = ResourceManager::Load<MeshFilter>("./Resources/GradWork/Meshes/FlexDebugSphere.flux");
 	m_pMeshFilter->Initialize(m_pGameContext);
 
 	CreateInputLayout();
@@ -46,7 +46,7 @@ void FlexDebugRenderer::Update()
 
 	if (m_ParticleCount > m_MaxParticles)
 	{
-		DebugLog::Log(L"FlexDebugRenderer -> Buffer too small! Recreating buffer with appropriate size.", LogType::WARNING);
+		Console::Log("FlexDebugRenderer -> Buffer too small! Recreating buffer with appropriate size.", LogType::WARNING);
 		m_MaxParticles = m_ParticleCount;
 		CreateInstanceData();
 	}
@@ -92,7 +92,7 @@ void FlexDebugRenderer::Render()
 	}
 }
 
-void FlexDebugRenderer::SetMesh(const wstring& path)
+void FlexDebugRenderer::SetMesh(const string& path)
 {
 	m_pMeshFilter = ResourceManager::Load<MeshFilter>(path);
 	m_pMeshFilter->Initialize(m_pGameContext);
@@ -121,7 +121,7 @@ void FlexDebugRenderer::UpdateShaderVariables()
 
 void FlexDebugRenderer::CreateInputLayout()
 {
-	m_pEffect = ResourceManager::Load<ID3DX11Effect>(L"./Resources/Shaders/FleX/FlexDebug.fx");
+	m_pEffect = ResourceManager::Load<ID3DX11Effect>("./Resources/Shaders/FleX/FlexDebug.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 
 	D3D11_INPUT_ELEMENT_DESC elementDesc[] =

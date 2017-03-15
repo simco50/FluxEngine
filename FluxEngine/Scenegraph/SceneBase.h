@@ -6,7 +6,7 @@ class ShadowMapper;
 class SceneBase
 {
 public:
-	SceneBase(const wstring& name = L"");
+	SceneBase(const string& name = "");
 	virtual ~SceneBase();
 
 	virtual void Initialize() = 0;
@@ -20,17 +20,17 @@ public:
 	SceneContext* GetSceneContext() const { return m_pGameContext->Scene; }
 	bool IsInitialized() const { return m_Initialized; }
 
-	wstring GetName() const { return m_SceneName; }
-	void SetName(const wstring& name) { m_SceneName = name; }
+	string GetName() const { return m_SceneName; }
+	void SetName(const string& name) { m_SceneName = name; }
 
 protected:
 	GameContext* m_pGameContext = nullptr;
 	std::vector<GameObject*> m_pChildren;
 
-	GameObject* FindObject(const wstring& name);
+	GameObject* FindObject(const string& name);
 
 private:
-	wstring m_SceneName;
+	string m_SceneName;
 
 	friend class GameManager;
 	bool m_Paused = false;

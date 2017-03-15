@@ -3,7 +3,7 @@
 #include "FlexHelper.h"
 #include "FlexSystem.h"
 
-FlexBody::FlexBody(const wstring& filePath, FlexSystem* pFlexSystem):
+FlexBody::FlexBody(const string& filePath, FlexSystem* pFlexSystem):
 	m_pFlexSystem(pFlexSystem), m_FilePath(filePath)
 {
 }

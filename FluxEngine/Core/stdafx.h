@@ -24,6 +24,30 @@ using namespace std;
 
 #pragma endregion STL
 
+#pragma region
+#include <PxPhysicsAPI.h>
+#if defined(DEBUG) || defined(_DEBUG)
+#pragma comment(lib, "PxTaskDEBUG.lib")
+#pragma comment(lib, "PhysX3DEBUG_x86.lib")
+#pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
+#pragma comment(lib, "PhysXProfileSDKDEBUG.lib")
+#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
+#pragma comment(lib, "PhysX3CharacterKinematicDEBUG_x86.lib")
+#else
+#pragma comment(lib, "PxTask.lib")
+#pragma comment(lib, "PhysX3_x86.lib")
+#pragma comment(lib, "PhysX3Common_x86.lib")
+#pragma comment(lib, "PhysX3Extensions.lib")
+#pragma comment(lib, "PhysXProfileSDK.lib")
+#pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
+#pragma comment(lib, "PhysX3CharacterKinematic_x86.lib")
+#endif
+using namespace physx;
+#pragma endregion PhysX
+
+#include <imgui.h>
+#pragma comment(lib, "imgui.lib")
 
 #pragma region
 
@@ -102,8 +126,7 @@ using namespace DirectX;
 #pragma region
 #undef ERROR
 //Engine core include
-//#include "../Math/FluxMath.h"
-#include "../Debugging/DebugLog.h"
+#include "../Debugging/Console.h"
 #include "GeneralStructs.h"
 #include "GameTimer.h"
 #include "../Helpers/VertexStructures.h"
@@ -122,23 +145,23 @@ using namespace DirectX::SimpleMath;
 //Macros
 #define HR(command)\
 {HRESULT r = command;\
-wstringstream stream;\
+stringstream stream;\
 stream << typeid(*this).name() << "::" << __func__ << "()" << endl;\
 stream << "Line: " << __LINE__  << endl;\
 stream << "Action: " << #command ;\
-DebugLog::LogHRESULT(stream.str(), r);}
+Console::LogHRESULT(stream.str(), r);}
 
 #define BIND_AND_CHECK_SEMANTIC(variable, semantic, as)\
 {variable = m_pEffect->GetVariableBySemantic(semantic)->as();\
-wstringstream stream;\
-stream << L"Variable with semantic '" << semantic << "' not found";\
-if(! variable->IsValid()) DebugLog::Log(stream.str(), LogType::ERROR);}
+stringstream stream;\
+stream << "Variable with semantic '" << semantic << "' not found";\
+if(! variable->IsValid()) Console::Log(stream.str(), LogType::ERROR);}
 
 #define BIND_AND_CHECK_NAME(variable, name, as)\
 variable = m_pEffect->GetVariableByName(#name)->as();\
-if(! variable->IsValid()) DebugLog::LogFormat(LogType::ERROR, L"Variable with name '%s' not found", L#name);
+if(! variable->IsValid()) Console::LogFormat(LogType::ERROR, "Variable with name '%s' not found", L#name);
 
-#define ERROR_TEXTURE L"./Resources/Textures/ErrorTexture.jpg"
+#define ERROR_TEXTURE "./Resources/Textures/ErrorTexture.jpg"
 
 //Utility methods
 template<typename T>

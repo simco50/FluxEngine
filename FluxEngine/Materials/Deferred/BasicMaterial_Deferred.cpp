@@ -4,7 +4,7 @@
 
 BasicMaterial_Deferred::BasicMaterial_Deferred() :Material()
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/BasicMaterial_Deferred.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/BasicMaterial_Deferred.fx";
 	m_MaterialDesc.HasWorldMatrix = true;
 	m_MaterialDesc.HasWvpMatrix = true;
 }

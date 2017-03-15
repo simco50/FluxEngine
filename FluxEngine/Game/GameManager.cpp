@@ -1,12 +1,7 @@
 #include "stdafx.h"
 #include "GameManager.h"
 #include "../Scenegraph/SceneBase.h"
-#include "Scenes/SoftBodyScene.h"
-#include "Scenes/ParticleScene.h"
 #include "../Physics/Flex/FlexHelper.h"
-#include "Scenes/StressTestScene.h"
-#include "Scenes/DaeLogoScene.h"
-#include "Scenes/ParameterDemoScene.h"
 #include "Scenes/CollisionDemoScene.h"
 
 GameManager::GameManager()
@@ -19,7 +14,6 @@ GameManager::~GameManager()
 	{
 		SafeDelete(m_pScenes[i]);
 	}
-	flexShutdown();
 }
 
 void GameManager::PrepareGame()
@@ -29,24 +23,17 @@ void GameManager::PrepareGame()
 	m_EngineContext.GameSettings.Height = 720;
 	m_EngineContext.GameSettings.ClearColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	m_EngineContext.GameSettings.MSAA = true;
-	m_EngineContext.GameSettings.Title = L"Nvidia Flex - Softbody Rendering";
+	m_EngineContext.GameSettings.Title = "Nvidia Flex - Softbody Rendering";
 	m_EngineContext.GameSettings.VerticalSync = true;
 	m_EngineContext.GameSettings.UseDeferredRendering = false;
 }
 
 void GameManager::Initialize(EngineContext* pEngineContext)
 {	
-	flexInit(FLEX_VERSION, FlexHelper::FlexMessageCallback);
-
 	m_pEngineContext = pEngineContext;
 
 	//Add initial scene
 	AddScene(new CollisionDemoScene());
-	AddScene(new StressTestScene());
-	AddScene(new ParticleScene());
-	AddScene(new SoftBodyScene());
-	AddScene(new DaeLogoScene());
-	AddScene(new ParameterDemoScene());
 
 	m_ActiveScene = 0;
 	m_pScenes[m_ActiveScene]->BaseInitialize(pEngineContext);
@@ -111,7 +98,7 @@ void GameManager::LoadScene(const int index)
 {
 	if(index >= (int)m_pScenes.size())
 	{
-		DebugLog::LogFormat(LogType::WARNING, L"[GameManager::LoadScene()] > Scene with index '%i' does not exist!", index);
+		Console::LogFormat(LogType::WARNING, "[GameManager::LoadScene()] > Scene with index '%i' does not exist!", index);
 		return;
 	}
 	m_ActiveScene = index;

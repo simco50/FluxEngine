@@ -40,7 +40,7 @@ private:
 
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;
-	wstring m_FilePath;
+	string m_FilePath;
 
 	map<string, VertexData> m_VertexData;
 	void* m_pVertexDataStart = nullptr;

@@ -35,7 +35,7 @@ ParticleSystemLoader::~ParticleSystemLoader()
 {
 }
 
-ParticleSystem* ParticleSystemLoader::LoadContent(const wstring& assetFile)
+ParticleSystem* ParticleSystemLoader::LoadContent(const string& assetFile)
 {
 	std::string s(assetFile.begin(), assetFile.end());
 	ifstream file(s);
@@ -94,13 +94,12 @@ ParticleSystem* ParticleSystemLoader::LoadContent(const wstring& assetFile)
 		//Rendering
 		pSystem->SortingMode = (ParticleSortingMode)data["SortingMode"].get<int>();
 		pSystem->BlendMode = (BlendMode)data["BlendMode"].get<int>();
-		string filePath = data["ImagePath"].get<string>();
-		pSystem->ImagePath = wstring(filePath.begin(), filePath.end());
+		pSystem->ImagePath = data["ImagePath"].get<string>();
 	}
 	catch(exception exception)
 	{
 		string error = exception.what();
-		DebugLog::LogFormat(LogType::ERROR, L"Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());
+		Console::LogFormat(LogType::ERROR, "Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());
 	}
 	return pSystem;
 }

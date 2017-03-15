@@ -19,7 +19,7 @@ struct GameSettings
 	int Width = 1240;
 	int Height = 720;
 	WindowStyle WindowStyle = WindowStyle::WINDOWED;
-	std::wstring Title = L"SirenEngine";
+	std::string Title = "";
 	XMFLOAT4 ClearColor = (XMFLOAT4)Colors::Green;
 	bool MSAA;
 	UINT MsaaQuality = 0;

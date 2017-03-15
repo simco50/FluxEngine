@@ -4,7 +4,7 @@
 
 GBufferMaterial::GBufferMaterial() : Material()
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/Rendering/GBuffer.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/Rendering/GBuffer.fx";
 }
 
 

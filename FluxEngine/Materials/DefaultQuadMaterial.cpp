@@ -3,7 +3,7 @@
 
 DefaultQuadMaterial::DefaultQuadMaterial()
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/Rendering/DefaultQuadRenderer.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/Rendering/DefaultQuadRenderer.fx";
 }
 
 DefaultQuadMaterial::~DefaultQuadMaterial()

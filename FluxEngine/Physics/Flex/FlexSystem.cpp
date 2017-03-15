@@ -16,7 +16,7 @@ void FlexSystem::InitializeSolver()
 {
 	if (pFlexSolver)
 	{
-		DebugLog::Log(L"FlexSolver already initialized, reinitializing...", LogType::WARNING);
+		Console::Log("FlexSolver already initialized, reinitializing...", LogType::WARNING);
 		flexDestroySolver(pFlexSolver);
 		pFlexSolver = nullptr;
 	}
@@ -69,7 +69,7 @@ void FlexSystem::UploadFlexData()
 {
 	if(pFlexSolver == nullptr)
 	{
-		DebugLog::Log(L"FlexSystem::UploadFlexData() > Solver not yet initialized!", LogType::ERROR);
+		Console::Log("FlexSystem::UploadFlexData() > Solver not yet initialized!", LogType::ERROR);
 		return;
 	}
 
@@ -142,7 +142,7 @@ void FlexSystem::UploadFlexData()
 	RestPositions.insert(RestPositions.begin(), Positions.begin(), Positions.end());
 	flexSetRestParticles(pFlexSolver, (float*)RestPositions.data(), numParticles, MemoryType);
 
-	DebugLog::LogFormat(LogType::INFO, L"FlexSystem::UploadFlexData() > Flex data uploaded successfully: %i particles", Positions.size());
+	Console::LogFormat(LogType::INFO, "FlexSystem::UploadFlexData() > Flex data uploaded successfully: %i particles", Positions.size());
 }
 
 void FlexSystem::SetDefaultParams()

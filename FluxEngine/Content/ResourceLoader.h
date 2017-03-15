@@ -33,9 +33,9 @@ public:
 
 	virtual const type_info& GetType() const { return typeid(T); }
 
-	T* GetContent(const wstring& assetFile)
+	T* GetContent(const string& assetFile)
 	{
-		for(pair<wstring, T*> kvp:m_contentReferences)
+		for(pair<string, T*> kvp:m_contentReferences)
 		{
 			if(kvp.first.compare(assetFile)==0)
 				return kvp.second;
@@ -43,25 +43,25 @@ public:
 
 		//Does File Exists?
 		struct _stat buff;
-		int result = _wstat(assetFile.c_str(), &buff);
+		int result = _stat(assetFile.c_str(), &buff);
 		if(result != 0)
 		{
-			wstringstream ss;
-			ss<<"ResourceManager> File not found!\nPath: ";
-			ss<<assetFile;
-			DebugLog::Log(ss.str(), LogType::ERROR);
+			stringstream ss;
+			ss << "ResourceManager> File not found!\nPath: ";
+			ss << assetFile;
+			Console::Log(ss.str(), LogType::ERROR);
 		}
 
-		wstringstream stream;
+		stringstream stream;
 		stream << assetFile << " loaded.";
 		PerfTimer timer(stream.str());
 		T* content = LoadContent(assetFile);
-		if(content!=nullptr)m_contentReferences.insert(pair<wstring,T*>(assetFile, content));
+		if(content!=nullptr)m_contentReferences.insert(pair<string,T*>(assetFile, content));
 		timer.Stop();
 		return content;
 	}
 
-	T* GetContent_Reload(const wstring& assetFile)
+	T* GetContent_Reload(const string& assetFile)
 	{
 		for (auto it = m_contentReferences.begin(); it != m_contentReferences.end(); ++it)
 		{
@@ -75,13 +75,13 @@ public:
 		return GetContent(assetFile);
 	}
 
-	T* GetContent_Unmanaged(const wstring& assetFile)
+	T* GetContent_Unmanaged(const string& assetFile)
 	{
-		wstringstream stream;
+		stringstream stream;
 		stream << assetFile << " loaded";
 		PerfTimer timer(stream.str());
 		T* content = LoadContent(assetFile);
-		DebugLog::LogFormat(LogType::WARNING, L"ResourceManager > Asset '%s' loaded unmanaged.", assetFile.c_str());
+		Console::LogFormat(LogType::WARNING, "ResourceManager > Asset '%s' loaded unmanaged.", assetFile.c_str());
 		timer.Stop();
 		return content;
 	}
@@ -92,7 +92,7 @@ public:
 
 		if(m_loaderReferences<=0)
 		{
-			for(pair<wstring,T*> kvp:m_contentReferences)
+			for(pair<string,T*> kvp:m_contentReferences)
 			{
 				Destroy(kvp.second);
 			}
@@ -102,16 +102,16 @@ public:
 	}
 
 protected:
-	virtual T* LoadContent(const wstring& assetFile) = 0;
+	virtual T* LoadContent(const string& assetFile) = 0;
 	virtual void Destroy(T* objToDestroy) = 0;
 
 private:
-	static unordered_map<wstring, T*> m_contentReferences;
+	static unordered_map<string, T*> m_contentReferences;
 	static int m_loaderReferences;
 };
 
 template<class T>
-unordered_map<wstring, T*> ResourceLoader<T>::m_contentReferences = unordered_map<wstring, T*>();
+unordered_map<string, T*> ResourceLoader<T>::m_contentReferences = unordered_map<string, T*>();
 
 template<class T>
 int ResourceLoader<T>::m_loaderReferences = 0;

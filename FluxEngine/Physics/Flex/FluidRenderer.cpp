@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FluidRenderer.h"
-#include "../Components/CameraComponent.h"
+#include "../../Components/CameraComponent.h"
 #include "FlexSystem.h"
 #include "../../Graphics/RenderTarget.h"
 #include <minwinbase.h>
@@ -36,7 +36,7 @@ void FluidRenderer::Update()
 	m_ParticleCount = m_pFlexSystem->Positions.size();
 	if(m_ParticleCount > m_MaxParticles)
 	{
-		DebugLog::Log(L"FluidRenderer::Update() > Vertexbuffer too small! Recreating...");
+		Console::Log("FluidRenderer::Update() > Vertexbuffer too small! Recreating...");
 		CreateVertexBuffers();
 	}
 
@@ -131,12 +131,12 @@ void FluidRenderer::LoadShaderVariables()
 
 	m_pDepthMap = m_pFluidEffect->GetVariableByName("gDepth")->AsShaderResource();
 	if (m_pDepthMap == nullptr)
-		DebugLog::Log(L"FluidRenderer::LoadShaderVariables() > Variable 'gDepth' not found!", LogType::ERROR);
+		Console::Log("FluidRenderer::LoadShaderVariables() > Variable 'gDepth' not found!", LogType::ERROR);
 }
 
 void FluidRenderer::CreateInputLayouts()
 {
-	m_pEffect = ResourceManager::Load<ID3DX11Effect>(L"./Resources/Shaders/Flex/FlexQuadRenderer.fx");
+	m_pEffect = ResourceManager::Load<ID3DX11Effect>("./Resources/Shaders/Flex/FlexQuadRenderer.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 
 	D3D11_INPUT_ELEMENT_DESC elementDesc[] =
@@ -150,7 +150,7 @@ void FluidRenderer::CreateInputLayouts()
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
 	HR(m_pGameContext->Engine->D3Device->CreateInputLayout(elementDesc, numElements, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()))
 
-	m_pFluidEffect = ResourceManager::Load<ID3DX11Effect>(L"./Resources/Shaders/Flex/FlexFluidRenderer.fx");
+	m_pFluidEffect = ResourceManager::Load<ID3DX11Effect>("./Resources/Shaders/Flex/FlexFluidRenderer.fx");
 	m_pFluidTechnique = m_pFluidEffect->GetTechniqueByIndex(0);
 
 	m_pFluidTechnique->GetPassByIndex(0)->GetDesc(&passDesc);

@@ -12,7 +12,7 @@ void Material::Initialize(GameContext* pGameContext)
 {
 	if (m_IsInitialized)
 	{
-		DebugLog::LogFormat(LogType::WARNING, L"Material using effect: %s and technique: %s is already initialized. Skipping initialization.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
+		Console::LogFormat(LogType::WARNING, "Material using effect: %s and technique: %s is already initialized. Skipping initialization.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
 		return;
 	}
 
@@ -52,7 +52,7 @@ void Material::Update(MeshComponent* pMeshComponent)
 {
 	if(!m_IsInitialized)
 	{
-		DebugLog::LogFormat(LogType::ERROR, L"Material using effect: %s and technique: %s is not initialized.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
+		Console::LogFormat(LogType::ERROR, "Material using effect: %s and technique: %s is not initialized.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
 		return;
 	}
 	auto world = XMMatrixIdentity();

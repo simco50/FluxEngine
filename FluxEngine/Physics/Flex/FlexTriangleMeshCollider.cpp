@@ -19,13 +19,13 @@ void FlexTriangleMeshCollider::Initialize()
 {
 	MeshComponent* pMeshComponent = m_pGameObject->GetComponent<MeshComponent>();
 	if (pMeshComponent == nullptr)
-		DebugLog::Log(L"FlexTriangleMeshCollider::Initialize() > Object has no MeshComponent!", LogType::ERROR);
+		Console::Log("FlexTriangleMeshCollider::Initialize() > Object has no MeshComponent!", LogType::ERROR);
 	MeshFilter* pMeshFilter = pMeshComponent->GetMeshFilter();
 	if (pMeshFilter == nullptr)
-		DebugLog::Log(L"FlexTriangleMeshCollider::Initialize() > Object has no MeshFilter!", LogType::ERROR);
+		Console::Log("FlexTriangleMeshCollider::Initialize() > Object has no MeshFilter!", LogType::ERROR);
 	m_pTransformComponent = m_pGameObject->GetTransform();
 	if (m_pTransformComponent == nullptr)
-		DebugLog::Log(L"FlexTriangleMeshCollider::Initialize() > Object has no TransformComponent!", LogType::ERROR);
+		Console::Log("FlexTriangleMeshCollider::Initialize() > Object has no TransformComponent!", LogType::ERROR);
 
 	FlexTriangleMesh* pMesh = flexCreateTriangleMesh();
 

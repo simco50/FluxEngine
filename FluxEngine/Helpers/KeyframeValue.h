@@ -18,7 +18,7 @@ struct KeyframeValue
 		if (v != Values.end())
 			v->second = value;
 		else
-			DebugLog::LogFormat(LogType::ERROR, L"Keyframe at key %f does not exist!", key);
+			Console::LogFormat(LogType::ERROR, "Keyframe at key %f does not exist!", key);
 	}
 
 	void SetConstant(T value)
@@ -36,7 +36,7 @@ struct KeyframeValue
 			Values.erase(s);
 		}
 		else
-			DebugLog::LogFormat(LogType::ERROR, L"Keyframe at key %f does not exist!", source);
+			Console::LogFormat(LogType::ERROR, "Keyframe at key %f does not exist!", source);
 	}
 
 	T operator[](float interpValue)

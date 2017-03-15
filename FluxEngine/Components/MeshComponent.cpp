@@ -17,7 +17,7 @@ MeshComponent::MeshComponent(MeshFilter* pMeshFilter):
 {
 }
 
-MeshComponent::MeshComponent(const wstring& meshPath)
+MeshComponent::MeshComponent(const string& meshPath)
 {
 	m_pMeshFilter = ResourceManager::Load<MeshFilter>(meshPath);
 }
@@ -41,7 +41,7 @@ void MeshComponent::Initialize()
 		{ 
 			if(m_pMaterial->IsInitialized() == false)
 			{
-				DebugLog::Log(L"[MeshComponent::Initialize()] > Material not yet initialized!", LogType::ERROR);
+				Console::Log("[MeshComponent::Initialize()] > Material not yet initialized!", LogType::ERROR);
 				return;
 			}
 			m_pMeshFilter->CreateBuffers(m_pMaterial);
@@ -60,9 +60,9 @@ void MeshComponent::Update()
 void MeshComponent::Render()
 {
 	if (!m_pMaterial)
-		DebugLog::Log(L"MeshComponent::Render() -> Material not set", LogType::WARNING);
+		Console::Log("MeshComponent::Render() -> Material not set", LogType::WARNING);
 	else if(!m_pMeshFilter)
-		DebugLog::Log(L"MeshComponent::Render() -> No MeshFilter", LogType::WARNING);
+		Console::Log("MeshComponent::Render() -> No MeshFilter", LogType::WARNING);
 	else if (!m_FrustumCulling || m_pGameContext->Scene->CurrentCamera->IsInFrustum(this))
 	{
 		m_pMaterial->Update(this);

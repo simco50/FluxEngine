@@ -8,7 +8,7 @@ ID3DX11EffectScalarVariable* DefaultMaterial::m_pUseDiffuseTextureVar = nullptr;
 
 DefaultMaterial::DefaultMaterial() : Material()
 {
-	m_MaterialDesc.EffectName = L"./Resources/Shaders/Forward/Default_Forward.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/Forward/Default_Forward.fx";
 	m_MaterialDesc.HasWorldMatrix = true;
 	m_MaterialDesc.HasWvpMatrix = true;
 }
@@ -34,7 +34,7 @@ void DefaultMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
 		m_pDiffuseTextureVar->SetResource(m_pDiffuseTexture->GetResourceView());
 }
 
-void DefaultMaterial::SetDiffuseTexture(const wstring& filePath)
+void DefaultMaterial::SetDiffuseTexture(const string& filePath)
 {
 	m_pDiffuseTexture = ResourceManager::Load<Texture>(filePath);
 }

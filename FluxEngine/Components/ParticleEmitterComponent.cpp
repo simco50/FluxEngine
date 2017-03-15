@@ -5,7 +5,7 @@
 #include "../Content/ResourceManager.h"
 #include "../Graphics/Particle.h"
 #include "../Components/TransformComponent.h"
-#include "../Debugging/DebugLog.h"
+#include "../Debugging/Console.h"
 #include "../Graphics/Texture.h"
 #include "CameraComponent.h"
 
@@ -28,7 +28,7 @@ ParticleEmitterComponent::~ParticleEmitterComponent(void)
 void ParticleEmitterComponent::SetSystem(ParticleSystem* pSettings)
 {
 	m_pParticleSystem = pSettings;
-	if (m_pParticleSystem->ImagePath == L"")
+	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	CreateVertexBuffer();
 	m_pParticleTexture = ResourceManager::Load<Texture>(m_pParticleSystem->ImagePath);
@@ -46,7 +46,7 @@ void ParticleEmitterComponent::Reset()
 
 void ParticleEmitterComponent::Initialize()
 {
-	if (m_pParticleSystem->ImagePath == L"")
+	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	LoadEffect();
 	CreateVertexBuffer();
@@ -58,7 +58,7 @@ void ParticleEmitterComponent::Initialize()
 
 void ParticleEmitterComponent::LoadEffect()
 {
-	m_pEffect = ResourceManager::Load<ID3DX11Effect>(L"./Resources/Shaders/ParticleRenderer.fx");
+	m_pEffect = ResourceManager::Load<ID3DX11Effect>("./Resources/Shaders/ParticleRenderer.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 	m_pAlphaBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ALPHABLEND);
 	m_pAdditiveBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ADDITIVE);
@@ -93,7 +93,7 @@ void ParticleEmitterComponent::CreateVertexBuffer()
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0;
 	HRESULT hr = m_pGameContext->Engine->D3Device->CreateBuffer(&bd, nullptr, m_pVertexBuffer.GetAddressOf());
-	DebugLog::LogHRESULT(L"ParticleEmitterComponent::CreateVertexBuffer...", hr);
+	Console::LogHRESULT("ParticleEmitterComponent::CreateVertexBuffer...", hr);
 }
 
 void ParticleEmitterComponent::SortParticles()
@@ -209,7 +209,7 @@ void ParticleEmitterComponent::Render()
 	if(m_pParticleSystem->MaxParticles > m_BufferSize)
 	{
 		m_BufferSize = m_pParticleSystem->MaxParticles + 500;
-		DebugLog::Log(L"ParticleEmitterComponent::Render() > VertexBuffer too small! Increasing size...", LogType::WARNING);
+		Console::Log("ParticleEmitterComponent::Render() > VertexBuffer too small! Increasing size...", LogType::WARNING);
 		CreateVertexBuffer();
 	}
 

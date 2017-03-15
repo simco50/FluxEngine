@@ -1,5 +1,5 @@
 #pragma once
-#include "../Scenegraph/GameObject.h"
+#include "../../Scenegraph/GameObject.h"
 
 class FlexSystem;
 class MeshFilter;
@@ -14,7 +14,7 @@ public:
 	void Update();
 	void Render();
 
-	void SetMesh(const wstring& path);
+	void SetMesh(const string& path);
 	void SetColor(const Vector4& color) { m_Color = color; }
 	void SetScale(const float scale) { m_Scale = scale; }
 

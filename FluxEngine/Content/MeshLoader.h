@@ -8,7 +8,7 @@ public:
 	MeshLoader();
 	~MeshLoader();
 
-	MeshFilter* LoadContent(const wstring& assetFile) override;
+	MeshFilter* LoadContent(const string& assetFile) override;
 	void Destroy(MeshFilter* objToDestroy) override;
 
 private:

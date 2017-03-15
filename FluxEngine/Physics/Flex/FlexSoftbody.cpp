@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "FlexSoftbody.h"
-#include "../Physics/Flex/FlexHelper.h"
-#include "../Graphics/Texture.h"
+#include "../../Physics/Flex/FlexHelper.h"
+#include "../../Graphics/Texture.h"
 #include "../../Materials/Flex/FlexSoftbodyMaterial.h"
 #include "../../Graphics/MeshFilter.h"
 
-FlexSoftbody::FlexSoftbody(const wstring& filePath, SoftbodyDesc* m_pSoftbodyDesc, FlexSystem* pFlexSystem):
+FlexSoftbody::FlexSoftbody(const string& filePath, SoftbodyDesc* m_pSoftbodyDesc, FlexSystem* pFlexSystem):
 FlexBody(filePath, pFlexSystem), m_pSoftbodyDesc(m_pSoftbodyDesc)
 {
 }
@@ -58,7 +58,7 @@ void FlexSoftbody::Render()
 	}
 }
 
-void FlexSoftbody::SetTexture(const wstring& filePath)
+void FlexSoftbody::SetTexture(const string& filePath)
 {
 	m_pMaterial->SetTexture(ResourceManager::Load<Texture>(filePath));
 }
@@ -96,15 +96,15 @@ void FlexSoftbody::LoadAndCreateBody()
 	m_pMeshInstance->pMeshFilter->Initialize(m_pGameContext);
 	CreateSoftbody();
 	if (m_pMeshInstance->RigidRestPoses.size() > MAX_CLUSTERS)
-		DebugLog::LogFormat(LogType::ERROR, L"FlexSoftbody::LoadAndCreateBody() > Mesh '%s' has too many rigid clusters! Max is %i. Try lowering the particle radius", m_FilePath.c_str(), MAX_CLUSTERS);
+		Console::LogFormat(LogType::ERROR, "FlexSoftbody::LoadAndCreateBody() > Mesh '%s' has too many rigid clusters! Max is %i. Try lowering the particle radius", m_FilePath.c_str(), MAX_CLUSTERS);
 }
 
 void FlexSoftbody::CreateSoftbody()
 {
-	PerfTimer perfTimer(L"CreateSoftBody");
+	PerfTimer perfTimer("CreateSoftBody");
 
 	if (m_pSoftbodyDesc->IsValid() == false)
-		DebugLog::Log(L"CreateSoftBody() Failed! SoftbodyDesc not fully initialized!", LogType::ERROR);
+		Console::Log("CreateSoftBody() Failed! SoftbodyDesc not fully initialized!", LogType::ERROR);
 
 	const float radius = m_pSoftbodyDesc->Radius;
 	int vertexCount = m_pMeshInstance->pMeshFilter->GetVertexData("POSITION").Count;

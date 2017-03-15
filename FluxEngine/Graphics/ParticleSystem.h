@@ -80,5 +80,5 @@ struct ParticleSystem
 	//Rendering
 	ParticleSortingMode SortingMode = FrontToBack;
 	BlendMode BlendMode = ALPHABLEND;
-	wstring ImagePath = L"";
+	string ImagePath = "";
 };

@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FluxEngine", "FluxEngine\FluxEngine.vcxproj", "{1AC3682D-067B-AA7A-6F82-83D65B59456B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FluxConverter", "FluxConverter\FluxConverter.vcxproj", "{7C103EBB-E8D0-B9F1-B10B-036F1D8BFECD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1AC3682D-067B-AA7A-6F82-83D65B59456B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1AC3682D-067B-AA7A-6F82-83D65B59456B}.Debug|Win32.Build.0 = Debug|Win32
+		{1AC3682D-067B-AA7A-6F82-83D65B59456B}.Release|Win32.ActiveCfg = Release|Win32
+		{1AC3682D-067B-AA7A-6F82-83D65B59456B}.Release|Win32.Build.0 = Release|Win32
+		{7C103EBB-E8D0-B9F1-B10B-036F1D8BFECD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7C103EBB-E8D0-B9F1-B10B-036F1D8BFECD}.Debug|Win32.Build.0 = Debug|Win32
+		{7C103EBB-E8D0-B9F1-B10B-036F1D8BFECD}.Release|Win32.ActiveCfg = Release|Win32
+		{7C103EBB-E8D0-B9F1-B10B-036F1D8BFECD}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

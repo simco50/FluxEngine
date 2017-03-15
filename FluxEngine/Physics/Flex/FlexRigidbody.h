@@ -28,14 +28,14 @@ struct RigidbodyDesc
 class FlexRigidbody : public FlexBody
 {
 public:
-	FlexRigidbody(const wstring &filePath, RigidbodyDesc* desc, FlexSystem* pFlexSystem);
+	FlexRigidbody(const string &filePath, RigidbodyDesc* desc, FlexSystem* pFlexSystem);
 	~FlexRigidbody();
 
 	void Initialize();
 	void Update();
 	void Render();
 
-	void SetTexture(const wstring& filePath);
+	void SetTexture(const string& filePath);
 
 private:
 	void CreateRigidBody();

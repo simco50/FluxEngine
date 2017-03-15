@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Scenegraph\GameObject.h"
+#include "../../Scenegraph/GameObject.h"
 
 class Texture;
 class FlexSystem;
@@ -12,7 +12,7 @@ namespace FlexHelper
 class FlexBody : public GameObject
 {
 public:
-	FlexBody(const wstring& filePath, FlexSystem* pFlexSystem);
+	FlexBody(const string& filePath, FlexSystem* pFlexSystem);
 	virtual ~FlexBody();
 
 	virtual void Initialize() = 0;
@@ -26,6 +26,6 @@ protected:
 
 	FlexHelper::FlexMeshInstance* m_pMeshInstance = nullptr;
 	FlexSystem* m_pFlexSystem;
-	wstring m_FilePath;
+	string m_FilePath;
 };
 

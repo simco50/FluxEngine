@@ -23,7 +23,7 @@ void GameObject::AddComponent(ComponentBase* pComponent)
 	{
 		if (pComponent == pComp)
 		{
-			DebugLog::Log(L"GameObject::AddComponent() > Cannot add the same component twice!", LogType::WARNING);
+			Console::Log("GameObject::AddComponent() > Cannot add the same component twice!", LogType::WARNING);
 			return;
 		}
 	}
@@ -50,7 +50,7 @@ TransformComponent* GameObject::GetTransform()
 	return m_pTransform;
 }
 
-GameObject* GameObject::Find(const wstring& name)
+GameObject* GameObject::Find(const string& name)
 {
 	for(GameObject* pChild : m_pChildren)
 	{

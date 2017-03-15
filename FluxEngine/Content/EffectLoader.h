@@ -8,7 +8,7 @@ public:
 	virtual ~EffectLoader(void);
 
 protected:
-	virtual ID3DX11Effect* LoadContent(const wstring& assetFile);
+	virtual ID3DX11Effect* LoadContent(const string& assetFile);
 	virtual void Destroy(ID3DX11Effect* objToDestroy);
 
 private:

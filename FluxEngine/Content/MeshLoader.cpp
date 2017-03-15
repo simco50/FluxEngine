@@ -9,15 +9,15 @@ MeshLoader::MeshLoader()
 MeshLoader::~MeshLoader()
 {}
 
-MeshFilter* MeshLoader::LoadContent(const wstring& assetFile)
+MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 {
 	int pointPos = assetFile.rfind(L'.') + 1;
-	wstring extension = assetFile.substr(pointPos, assetFile.length() - pointPos);
-	if(extension != L"flux")
+	string extension = assetFile.substr(pointPos, assetFile.length() - pointPos);
+	if(extension != "flux")
 	{
-		wstringstream stream;
-		stream << L"MeshLoader::LoadContent() -> '" << assetFile << "' has a wrong file extension";
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "MeshLoader::LoadContent() -> '" << assetFile << "' has a wrong file extension";
+		Console::Log(stream.str(), LogType::ERROR);
 		return nullptr;
 	}
 
@@ -29,9 +29,9 @@ MeshFilter* MeshLoader::LoadContent(const wstring& assetFile)
 	char version = pReader->Read<unsigned char>();
 	if(version != SE_VERSION)
 	{
-		wstringstream stream;
-		stream << L"MeshLoader::LoadContent() File '" << assetFile << L"' version mismatch: Expects v" << SE_VERSION << L".0 but is v" << (int)version << L".0";
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "MeshLoader::LoadContent() File '" << assetFile << "' version mismatch: Expects v" << SE_VERSION << ".0 but is v" << (int)version << ".0";
+		Console::Log(stream.str(), LogType::ERROR);
 	}
 	
 	for(;;)

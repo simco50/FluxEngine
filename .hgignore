@@ -4,7 +4,6 @@ syntax: glob
 *.db
 */ipch/
 */Release/
-Libraries/
 OLD/
 *.log
 memory_leak_report.txt

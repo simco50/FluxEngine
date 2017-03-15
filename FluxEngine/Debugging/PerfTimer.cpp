@@ -2,7 +2,7 @@
 #include "PerfTimer.h"
 
 
-PerfTimer::PerfTimer(const wstring& source):
+PerfTimer::PerfTimer(const string& source):
 	m_Source(source)
 {
 	__int64 countsPerSec;
@@ -23,9 +23,9 @@ float PerfTimer::Stop()
 
 	if (m_Source.size() > 0)
 	{
-		wstringstream stream;
-		stream << L"[" << m_Source << L"] " << time << L" ms";
-		DebugLog::Log(stream.str());
+		stringstream stream;
+		stream << "[" << m_Source << "] " << time << " ms";
+		Console::Log(stream.str());
 	}
 
 	return time;

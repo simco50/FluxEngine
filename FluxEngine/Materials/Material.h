@@ -3,8 +3,8 @@ class MeshComponent;
 
 struct MaterialDesc
 {
-	wstring EffectName = L"";
-	wstring TechniqueName = L"";
+	string EffectName = "";
+	string TechniqueName = "";
 	bool HasWorldMatrix = false;
 	bool HasViewMatrix = false;
 	bool HasViewInverseMatrix = false;
@@ -14,7 +14,7 @@ struct MaterialDesc
 	{
 		if (EffectName.size() == 0)
 		{
-			DebugLog::Log(L"Material::Initialize() > MaterialDesc is invalid!", LogType::ERROR);
+			Console::Log("Material::Initialize() > MaterialDesc is invalid!", LogType::ERROR);
 			return false;
 		}
 		return true;

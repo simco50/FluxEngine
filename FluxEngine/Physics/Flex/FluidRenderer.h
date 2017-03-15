@@ -1,5 +1,5 @@
 #pragma once
-#include "../Scenegraph/GameObject.h"
+#include "../../Scenegraph/GameObject.h"
 
 class FlexSystem;
 class MeshFilter;

@@ -14,7 +14,7 @@ Skybox::~Skybox()
 
 void Skybox::Initialize()
 {
-	MeshComponent* pMesh = new MeshComponent(ResourceManager::Load<MeshFilter>(L"./Resources/Meshes/Cube.flux"));
+	MeshComponent* pMesh = new MeshComponent(ResourceManager::Load<MeshFilter>("./Resources/Meshes/Cube.flux"));
 	AddComponent(pMesh);
 	m_pMaterial = make_unique<SkyboxMaterial>();
 	m_pMaterial->Initialize(m_pGameContext);

@@ -20,22 +20,22 @@ struct RENDER_TARGET_DESC
 	{
 		if (DepthSRV && DepthBuffer == false)
 		{
-			DebugLog::Log(L"RENDER_TARGET_DESC::IsValid() -> Can't create DepthSRV without a DepthBuffer", LogType::ERROR);
+			Console::Log("RENDER_TARGET_DESC::IsValid() -> Can't create DepthSRV without a DepthBuffer", LogType::ERROR);
 			return false;
 		}
 		if(ColorSRV && ColorBuffer == false)
 		{
-			DebugLog::Log(L"RENDER_TARGET_DESC::IsValid() -> Can't create ColorSRV without a ColorBuffer", LogType::ERROR);
+			Console::Log("RENDER_TARGET_DESC::IsValid() -> Can't create ColorSRV without a ColorBuffer", LogType::ERROR);
 			return false;
 		}
 		if(Width < 0 || Height < 0)
 		{
-			DebugLog::Log(L"RENDER_TARGET_DESC::IsValid() -> RenderTarget dimensions invalid!", LogType::ERROR);
+			Console::Log("RENDER_TARGET_DESC::IsValid() -> RenderTarget dimensions invalid!", LogType::ERROR);
 			return false;
 		}
 		if(!ColorBuffer && !DepthBuffer)
 		{
-			DebugLog::Log(L"RENDER_TARGET_DESC::IsValid() -> RenderTarget needs at least one buffer to create!", LogType::ERROR);
+			Console::Log("RENDER_TARGET_DESC::IsValid() -> RenderTarget needs at least one buffer to create!", LogType::ERROR);
 			return false;
 		}
 		return true;

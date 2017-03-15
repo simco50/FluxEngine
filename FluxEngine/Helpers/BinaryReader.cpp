@@ -12,15 +12,15 @@ BinaryReader::~BinaryReader()
 	m_pStream.reset();
 }
 
-void BinaryReader::Open(const wstring& filePath)
+void BinaryReader::Open(const string& filePath)
 {
 	m_pStream = make_unique<ifstream>();
 	m_pStream->open(filePath, ios::binary);
 	if(m_pStream->fail())
 	{
-		wstringstream stream;
-		stream << L"BinaryReader::Open() -> File " << filePath << L" not found!" << endl;
-		DebugLog::Log(stream.str(), LogType::ERROR);
+		stringstream stream;
+		stream << "BinaryReader::Open() -> File " << filePath << " not found!" << endl;
+		Console::Log(stream.str(), LogType::ERROR);
 		m_pStream.reset();
 		return;
 	}
@@ -70,32 +70,32 @@ string BinaryReader::ReadString()
 	return ss.str();
 }
 
-wstring BinaryReader::ReadLongString()
+string BinaryReader::ReadLongString()
 {
 	if (m_pStream == nullptr)
-		DebugLog::Log(L"BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+		Console::Log("BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
 
 	auto stringLength = Read<UINT>();
 
-	wstringstream ss;
+	stringstream ss;
 	for (UINT i = 0; i<stringLength; ++i)
 	{
 		ss << Read<wchar_t>();
 	}
 
-	return (wstring)ss.str();
+	return ss.str();
 }
 
-wstring BinaryReader::ReadNullString()
+string BinaryReader::ReadNullString()
 {
 	if (m_pStream == nullptr)
 	{
-		DebugLog::Log(L"BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
-		return L"";
+		Console::Log("BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+		return "";
 	}
 
 	string buff;
 	getline(*m_pStream, buff, '\0');
 
-	return wstring(buff.begin(), buff.end());
+	return buff;
 }

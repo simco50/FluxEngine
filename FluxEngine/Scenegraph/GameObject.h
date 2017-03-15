@@ -22,13 +22,13 @@ public:
 
 	std::vector<GameObject*> GetChildren() const { return m_pChildren; }
 
-	void SetTag(const wstring& tag) { m_Tag = tag; }
-	const wstring& GetTag() const { return m_Tag; }
+	void SetTag(const string& tag) { m_Tag = tag; }
+	const string& GetTag() const { return m_Tag; }
 
-	void SetName(const wstring& name) { m_Name = name; }
-	const wstring& GetName() const { return m_Name; }
+	void SetName(const string& name) { m_Name = name; }
+	const string& GetName() const { return m_Name; }
 
-	GameObject* Find(const wstring& name);
+	GameObject* Find(const string& name);
 
 	template<class T>
 	T* GetComponent()
@@ -54,7 +54,7 @@ public:
 				return;
 			}
 		}
-		DebugLog::Log(L"GameObject::RemoveComponent() -> Object does not have this component!", LogType::WARNING);
+		Console::Log("GameObject::RemoveComponent() -> Object does not have this component!", LogType::WARNING);
 	}
 
 	SceneBase* GetScene();
@@ -71,8 +71,8 @@ private:
 	void BaseUpdate();
 	void BaseRender();
 
-	wstring m_Tag;
-	wstring m_Name;
+	string m_Tag;
+	string m_Name;
 	GameObject* m_pParent = nullptr;
 	SceneBase* m_pScene = nullptr;
 	std::vector<GameObject*> m_pChildren;

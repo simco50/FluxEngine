@@ -23,7 +23,7 @@ void FlexMousePicker::Update()
 		m_PickedParticle = PickParticle(origin, direction, m_MouseT);
 		if (m_PickedParticle != -1)
 		{
-			DebugLog::LogFormat(LogType::INFO, L"Picked particle %i.", m_PickedParticle);
+			Console::LogFormat(LogType::INFO, "Picked particle %i.", m_PickedParticle);
 			m_MousePos = origin + direction * m_MouseT;
 			m_MouseMass = m_pFlexSystem->Positions[m_PickedParticle].w;
 			m_pFlexSystem->Positions[m_PickedParticle].w = 0.0f;
