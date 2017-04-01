@@ -1,6 +1,7 @@
-#include "stdafx.h"
-#include "SimulationShaderFilter.h"
+#include <stdafx.h>
 #include "PhysicsCore.h"
+
+PxMaterial* PhysicsCore::DefaultMaterial = nullptr;
 
 PhysicsCore::PhysicsCore()
 {
@@ -12,53 +13,71 @@ PhysicsCore::~PhysicsCore()
 
 void PhysicsCore::Initialize()
 {
-	m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_AllocatorCallback, m_ErrorCallback);
+	//Foundation
+	m_pFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, m_AllocatorCallback, m_ErrorCallback);
+	if(m_pFoundation == nullptr)
+		Console::Log("PhysicsCore::Initialize() > Failed to create Foundation", LogType::ERROR);
+	//Pvd Connection
+	m_pPvdConnection = PxCreatePvd(*m_pFoundation);
+	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10000);
+	if(m_pPvdConnection->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eALL) == false)
+		Console::Log("PhysicsCore::Initialize() > PVD connection failed", LogType::WARNING);
 
-	m_pProfileZoneManager = &PxProfileZoneManager::createProfileZoneManager(m_pFoundation);
-	if (!m_pProfileZoneManager)
-		Console::Log("Hello", LogType::ERROR);
 
-	bool recordMemoryAllocations = true;
-	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pProfileZoneManager);
+	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), true, m_pPvdConnection);
 	if (!m_pPhysics)
-		Console::Log("Hello", LogType::ERROR);
+		Console::Log("PhysicsCore::Initialize() > Failed to create Physics", LogType::ERROR);
 
-	m_pDefaultCpuDispatcher = PxDefaultCpuDispatcherCreate(1);
+	m_pDefaultCpuDispatcher = PxDefaultCpuDispatcherCreate(4);
 
+	DefaultMaterial = m_pPhysics->createMaterial(1.0f, 1.0f, 0.5f);
+
+	//Create the scene
 	PxSceneDesc sceneDesc = PxSceneDesc(m_pPhysics->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 	sceneDesc.cpuDispatcher = m_pDefaultCpuDispatcher;
 	sceneDesc.gpuDispatcher = nullptr;
-	sceneDesc.filterShader = SimulationFilter::SimulationFilterShader;
+	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 	m_pScene = m_pPhysics->createScene(sceneDesc);
 
-	// check if PvdConnection manager is available on this platform
-	if (m_pPhysics->getPvdConnectionManager() == NULL)
-		return;
+	auto input = PxDefaultFileInputData("Resources/triangleMesh.txt");
+	PxRigidStatic* pRb = PxCreateStatic(*m_pPhysics, PxTransform(PxVec3(0,1.5f,0)), PxTriangleMeshGeometry(m_pPhysics->createTriangleMesh(input)), *DefaultMaterial);
+	m_pScene->addActor(*pRb);
 
-	// setup connection parameters
-	const char*     pvd_host_ip		= "127.0.0.1";  // IP of the PC which is running PVD
-	int             port			= 5425;			// TCP port to connect to, where PVD is listening
-	unsigned int    timeout			= 100;          // timeout in milliseconds to wait for PVD to respond, consoles and remote PCs need a higher timeout.
-	PxVisualDebuggerConnectionFlags connectionFlags = PxVisualDebuggerExt::getAllConnectionFlags();
-
-	// and now try to connect
-	m_pPvdConnection = PxVisualDebuggerExt::createConnection(m_pPhysics->getPvdConnectionManager(), pvd_host_ip, port, timeout, connectionFlags);
+	PxPvdSceneClient* pPvdSceneClient = m_pScene->getScenePvdClient();
+	if (pPvdSceneClient)
+	{
+		pPvdSceneClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+		pPvdSceneClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+		pPvdSceneClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+	}
+	m_pScene->simulate(0.016f);
 }
 
 void PhysicsCore::Update()
 {
-	m_pScene->simulate(GameTimer::DeltaTime());
-	m_pScene->fetchResults(true);
+	if(m_pScene->fetchResults(false))
+	{
+		m_pScene->simulate(GameTimer::DeltaTime());
+	}
 }
 
 void PhysicsCore::Finalize()
 {
-	m_pScene->release();
-	m_pPhysics->release();
+	m_pScene->fetchResults(true);
+
+	if (DefaultMaterial)
+		DefaultMaterial->release();
+	if(m_pScene)
+		m_pScene->release();
+	if (m_pDefaultCpuDispatcher)
+		m_pDefaultCpuDispatcher->release();
+	if (m_pPhysics)
+		m_pPhysics->release();
 	if (m_pPvdConnection)
 		m_pPvdConnection->release();
-	m_pDefaultCpuDispatcher->release();
-	m_pProfileZoneManager->release();
-	m_pFoundation->release();
+	if (m_pPvdTransport)
+		m_pPvdTransport->release();
+	if (m_pFoundation)
+		m_pFoundation->release();
 }

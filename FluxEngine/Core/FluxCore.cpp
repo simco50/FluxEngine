@@ -208,68 +208,17 @@ HRESULT FluxCore::EnumAdapters()
 {
 	//Create the factor
 	HR(CreateDXGIFactory(IID_PPV_ARGS(m_pFactory.GetAddressOf())));
-
-	//Enumerate over the adapters
-	Console::Log("Finding possible adapters...");
-
 	vector<IDXGIAdapter*> pAdapters;
-
 	UINT adapterCount = 0;
 
 	IDXGIAdapter* pAdapter = nullptr;
 	while (m_pFactory->EnumAdapters(adapterCount, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
-		DXGI_ADAPTER_DESC desc;
-		pAdapter->GetDesc(&desc);
-		Console::LogFormat(LogType::INFO, "Adapter [%i]: %s VRAM: %f mb", adapterCount, desc.Description, desc.DedicatedVideoMemory / 1048576.0f);
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
-
-		LogOutputs(pAdapter, false);
 	}
 	m_pAdapter = pAdapters[0];
-
-	DXGI_ADAPTER_DESC desc;
-	m_pAdapter->GetDesc(&desc);
-	Console::LogFormat(LogType::INFO, "Using adapter: %s", desc.Description);
 	return S_OK;
-}
-
-void FluxCore::LogOutputs(IDXGIAdapter* pAdapter, bool logDisplayModes)
-{
-	Console::Log("\tPossible outputs:");
-	IDXGIOutput* pOutput;
-	UINT outputCount = 0;
-	while (pAdapter->EnumOutputs(outputCount, &pOutput) != DXGI_ERROR_NOT_FOUND)
-	{
-		DXGI_OUTPUT_DESC desc;
-		pOutput->GetDesc(&desc);
-		stringstream stream;
-		stream << "\t" << outputCount << ". " << desc.DesktopCoordinates.right << " x " << desc.DesktopCoordinates.bottom;
-		Console::Log(stream.str());
-		++outputCount;
-
-		if(logDisplayModes)
-			LogDisplayModes(pOutput);
-	}
-	if(outputCount == 0)
-		Console::Log("\t\tNone");
-}
-
-void FluxCore::LogDisplayModes(IDXGIOutput* pOutput)
-{
-	Console::Log("\t\tPossible display modes:");
-	UINT displayModeCount = 0;
-	UINT flags = 0;
-	pOutput->GetDisplayModeList(m_BackBufferFormat, flags, &displayModeCount, nullptr);
-	vector<DXGI_MODE_DESC> displayModes(displayModeCount);
-	HR(pOutput->GetDisplayModeList(m_BackBufferFormat, flags, &displayModeCount, &displayModes[0]));
-	int index = 0;
-	for (DXGI_MODE_DESC mode : displayModes)
-	{
-		Console::LogFormat(LogType::INFO, "\t\t\t %i. Width: %i | Height: %i | RefreshRate: %f", index, mode.Width, mode.Height, round((float)mode.RefreshRate.Numerator / mode.RefreshRate.Denominator));
-		index++;
-	}
 }
 
 HRESULT FluxCore::InitializeD3D()

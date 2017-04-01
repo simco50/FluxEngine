@@ -1,30 +1,29 @@
 #pragma once
-#include "../../Core/stdafx.h"
 
 struct FluxPhysxErrorCallback : PxErrorCallback
 {
 	void reportError(PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{
-		UNREFERENCED_PARAMETER(message);
-		UNREFERENCED_PARAMETER(file);
-		UNREFERENCED_PARAMETER(line);
-
+		stringstream str;
+		str << "[" << file << "] (" << line << ") " << message;
+			
 		switch (code)
 		{
-		case PxErrorCode::eNO_ERROR: break;
-		case PxErrorCode::eDEBUG_INFO: break;
-		case PxErrorCode::eDEBUG_WARNING: break;
-		case PxErrorCode::eINVALID_PARAMETER: break;
-		case PxErrorCode::eINVALID_OPERATION: break;
-		case PxErrorCode::eOUT_OF_MEMORY: 
-		case PxErrorCode::eINTERNAL_ERROR: break;
-		case PxErrorCode::eABORT: break;
-		case PxErrorCode::ePERF_WARNING: break;
-		case PxErrorCode::eMASK_ALL: break;
+		case PxErrorCode::eNO_ERROR:
+		case PxErrorCode::eDEBUG_INFO:
+			Console::Log(str.str());
+		case PxErrorCode::eINVALID_PARAMETER:
+		case PxErrorCode::eINVALID_OPERATION:
+		case PxErrorCode::ePERF_WARNING:
+		case PxErrorCode::eDEBUG_WARNING: 
+			Console::LogWarning(str.str());
+			break;
+		case PxErrorCode::eOUT_OF_MEMORY:  
+		case PxErrorCode::eINTERNAL_ERROR:
+		case PxErrorCode::eABORT:
+			Console::LogError(str.str());
 		default: ;
 		}
-
-		cout << message << endl;
 	}
 };
 

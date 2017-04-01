@@ -12,15 +12,15 @@ public:
 	void Finalize();
 
 private:
-	PxProfileZoneManager* m_pProfileZoneManager = nullptr;
 	PxFoundation* m_pFoundation = nullptr;
 	PxPhysics* m_pPhysics = nullptr;
 	PxScene* m_pScene = nullptr;
 	PxDefaultCpuDispatcher* m_pDefaultCpuDispatcher = nullptr;
-
-	PxVisualDebuggerConnection* m_pPvdConnection = nullptr;
-
+	PxPvd* m_pPvdConnection = nullptr;
+	PxPvdTransport* m_pPvdTransport = nullptr;
 	FluxPhysxErrorCallback m_ErrorCallback;
 	FluxPhysxAllocatorCallback m_AllocatorCallback;
+
+	static PxMaterial* DefaultMaterial;
 };
 

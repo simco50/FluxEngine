@@ -125,9 +125,19 @@ void Console::Log(const std::string &message, LogType type)
 
 	if (type == LogType::ERROR)
 	{
-		MessageBoxA(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
+		MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
 		PostQuitMessage(-1);
 	}
+}
+
+void Console::LogWarning(const std::string& message)
+{
+	Log(message, LogType::WARNING);
+}
+
+void Console::LogError(const std::string& message)
+{
+	Log(message, LogType::ERROR);
 }
 
 void Console::LogFormat(LogType type, const char* format, ...)

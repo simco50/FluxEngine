@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "GameManager.h"
 #include "../Scenegraph/SceneBase.h"
-#include "../Physics/Flex/FlexHelper.h"
-#include "Scenes/CollisionDemoScene.h"
+#include "Scenes/DemoScene.h"
 
 GameManager::GameManager()
 {
@@ -10,10 +9,7 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	for (size_t i = 0; i < m_pScenes.size(); i++)
-	{
-		SafeDelete(m_pScenes[i]);
-	}
+	SafeDelete(m_pScenes[0]);
 }
 
 void GameManager::PrepareGame()
@@ -23,7 +19,7 @@ void GameManager::PrepareGame()
 	m_EngineContext.GameSettings.Height = 720;
 	m_EngineContext.GameSettings.ClearColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	m_EngineContext.GameSettings.MSAA = true;
-	m_EngineContext.GameSettings.Title = "Nvidia Flex - Softbody Rendering";
+	m_EngineContext.GameSettings.Title = "FluxEngine";
 	m_EngineContext.GameSettings.VerticalSync = true;
 	m_EngineContext.GameSettings.UseDeferredRendering = false;
 }
@@ -33,7 +29,7 @@ void GameManager::Initialize(EngineContext* pEngineContext)
 	m_pEngineContext = pEngineContext;
 
 	//Add initial scene
-	AddScene(new CollisionDemoScene());
+	AddScene(new DemoScene());
 
 	m_ActiveScene = 0;
 	m_pScenes[m_ActiveScene]->BaseInitialize(pEngineContext);
@@ -77,6 +73,8 @@ LRESULT GameManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			m_ActiveScene = (m_ActiveScene + 1) % m_pScenes.size();
 		}
 		return 0;
+	default:
+		break;
 	}
 
 	return FluxCore::WndProc(hWnd, message, wParam, lParam);
