@@ -61,7 +61,7 @@ bool BinaryReader::IsOpen() const
 
 string BinaryReader::ReadString()
 {
-	unsigned int stringLength = (unsigned int)Read<unsigned int>();
+	int stringLength = (char)Read<char>();
 	stringstream ss;
 	for (size_t i = 0; i < stringLength; ++i)
 	{

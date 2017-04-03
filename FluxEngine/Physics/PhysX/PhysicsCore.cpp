@@ -1,5 +1,6 @@
 #include <stdafx.h>
 #include "PhysicsCore.h"
+#include "../../Graphics/MeshFilter.h"
 
 PxMaterial* PhysicsCore::DefaultMaterial = nullptr;
 
@@ -40,8 +41,11 @@ void PhysicsCore::Initialize()
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 	m_pScene = m_pPhysics->createScene(sceneDesc);
 
-	auto input = PxDefaultFileInputData("Resources/triangleMesh.txt");
-	PxRigidStatic* pRb = PxCreateStatic(*m_pPhysics, PxTransform(PxVec3(0,1.5f,0)), PxTriangleMeshGeometry(m_pPhysics->createTriangleMesh(input)), *DefaultMaterial);
+	MeshFilter* pMeshFilter = ResourceManager::Load<MeshFilter>("./Resources/Meshes/Player.flux");
+	MeshFilter::VertexData pData = pMeshFilter->GetVertexData("CONVEXMESH");
+
+	auto input = PxDefaultMemoryInputData(reinterpret_cast<PxU8*>(pData.pData), pData.Count);
+	PxRigidStatic* pRb = PxCreateStatic(*m_pPhysics, PxTransform(PxVec3(0,1.5f,0)), PxConvexMeshGeometry(m_pPhysics->createConvexMesh(input)), *DefaultMaterial);
 	m_pScene->addActor(*pRb);
 
 	PxPvdSceneClient* pPvdSceneClient = m_pScene->getScenePvdClient();

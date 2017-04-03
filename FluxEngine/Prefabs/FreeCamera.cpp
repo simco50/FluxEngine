@@ -27,8 +27,8 @@ void FreeCamera::Update()
 	{
 		if(m_UseMouseAndKeyboard)
 			KeyboardMouse();
-		if (m_UseController)
-			Controller();
+		/*if (m_UseController)
+			Controller();*/
 	}
 }
 
@@ -46,7 +46,7 @@ void FreeCamera::KeyboardMouse()
 	moveDirection.y += m_pGameContext->Scene->Input->IsKeyboardKeyDown('E') ? 1 : 0;
 
 	XMVECTOR xmMove = XMLoadFloat3(&moveDirection);
-
+	
 	float moveSpeed = m_MoveSpeed;
 	if (m_pGameContext->Scene->Input->IsKeyboardKeyDown(VK_LSHIFT))
 		moveSpeed *= m_ShiftMultiplier;

@@ -26,11 +26,13 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	unique_ptr<BinaryReader> pReader = make_unique<BinaryReader>();
 	pReader->Open(assetFile);
 
-	char version = pReader->Read<unsigned char>();
-	if(version != SE_VERSION)
+	string magic = pReader->ReadString();
+	char minVersion = pReader->Read<char>();
+	char maxVersion = pReader->Read<char>();
+	if(minVersion != SE_VERSION)
 	{
 		stringstream stream;
-		stream << "MeshLoader::LoadContent() File '" << assetFile << "' version mismatch: Expects v" << SE_VERSION << ".0 but is v" << (int)version << ".0";
+		stream << "MeshLoader::LoadContent() File '" << assetFile << "' version mismatch: Expects v" << SE_VERSION << ".0 but is v" << (int)minVersion << ".0";
 		Console::Log(stream.str(), LogType::ERROR);
 	}
 	

@@ -12,6 +12,6 @@ public:
 	void Destroy(MeshFilter* objToDestroy) override;
 
 private:
-	static const int SE_VERSION = 4;
+	static const int SE_VERSION = 5;
 };
 

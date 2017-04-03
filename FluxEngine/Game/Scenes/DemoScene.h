@@ -13,6 +13,6 @@ public:
 	void Render();
 
 private:
-
+	GameObject* m_pGameObject = nullptr;
 	
 };

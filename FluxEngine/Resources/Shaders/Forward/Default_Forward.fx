@@ -12,6 +12,7 @@ struct VS_INPUT{
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD;
 };
+
 struct VS_OUTPUT{
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
@@ -24,6 +25,12 @@ BlendState AlphaBlending
 	SrcBlend = SRC_ALPHA;
     DestBlend = INV_SRC_ALPHA;
 	BlendOp = ADD;
+};
+
+DepthStencilState EnableDepth
+{
+	DepthEnable = TRUE;
+	DepthWriteMask = ALL;
 };
 
 SamplerState samLinear
@@ -76,7 +83,7 @@ technique11 Default
     pass P0
     {
 		SetRasterizerState(BackfaceCull);
-
+		SetDepthStencilState(EnableDepth, 0);
         SetVertexShader( CompileShader( vs_4_0, VS() ) );
 		SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PS() ) );
