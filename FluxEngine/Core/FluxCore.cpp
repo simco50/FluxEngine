@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FluxCore.h"
 #include "../resource.h"
-#include "../Managers/SoundManager.h"
+#include "../Managers/AudioEngine.h"
 #include "../Graphics/RenderTarget.h"
 #include "../UI/ImgUIDrawer.h"
 #include "../Physics/PhysX/PhysicsCore.h"
@@ -22,12 +22,11 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	CleanupD3D();
-	SoundManager::DestroyInstance();
+	AudioEngine::DestroyInstance();
 	ResourceManager::Release();
 	Console::Release();
 
-	m_pPhysicsCore->Finalize();
-	delete m_pPhysicsCore;
+	InputEngine::GetInstance()->DestroyInstance();
 
 	m_pUIDrawer->Shutdown();
 	SafeDelete(m_pUIDrawer);
@@ -36,21 +35,10 @@ FluxCore::~FluxCore()
 void FluxCore::CleanupD3D()
 {
 	m_pSwapChain->SetFullscreenState(false, nullptr);
-
-	//Detail check for unreleased live objects
-	/*
-	Unique_COM<ID3D11Debug> pDebug;
-	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
-	if (pDebug.Get() != nullptr)
-	{
-		pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	}
-	*/
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
-	PerfTimer timer("FluxEngine Initialization");
 	Console::Initialize();
 
 	PrepareGame();
@@ -65,22 +53,18 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 	InitializeHighDefinitionMouse();
 
-	timer.Stop();
-
 	ResourceManager::Initialize(m_pDevice.Get());
 	Initialize(&m_EngineContext);
 
 	GameTimer::Reset();
 
-	m_pPhysicsCore = new PhysicsCore();
-	m_pPhysicsCore->Initialize();
-
 	m_pUIDrawer = new ImgUIDrawer();
 	m_pUIDrawer->Initialize(&m_EngineContext);
 
+	InputEngine::GetInstance()->Initialize();
+
 	//Game loop
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
+	MSG msg = {};
 	while (msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -90,14 +74,10 @@ int FluxCore::Run(HINSTANCE hInstance)
 		}
 		else
 		{
-			if(!m_Paused)
-			{
+			if(!GameTimer::IsPaused())
 				GameLoop();
-			}
 			else
-			{
 				Sleep(100);
-			}
 		}
 	}
 	return msg.wParam;
@@ -109,10 +89,11 @@ void FluxCore::GameLoop()
 	m_pDefaultRenderTarget->ClearColor();
 	m_pDefaultRenderTarget->ClearDepth();
 
-	m_pPhysicsCore->Update();
-
 	CalculateFrameStats();
-	//Update the game
+
+	AudioEngine::GetInstance()->Update();
+	InputEngine::GetInstance()->Update();
+
 	Update();
 
 	m_pUIDrawer->NewFrame();
@@ -122,13 +103,9 @@ void FluxCore::GameLoop()
 
 	m_pUIDrawer->Render();
 
-	//Update FMOD
-	SoundManager::GetInstance()->GetSystem()->update();
 
 	m_pSwapChain->Present(m_EngineContext.GameSettings.VerticalSync ? 1 : 0, 0);
 }
-
-#pragma region
 
 HRESULT FluxCore::RegisterWindowClass()
 {
@@ -199,10 +176,6 @@ HRESULT FluxCore::MakeWindow()
 
 	return S_OK;
 }
-
-#pragma endregion WINDOW
-
-#pragma region
 
 HRESULT FluxCore::EnumAdapters()
 {
@@ -334,23 +307,15 @@ void FluxCore::OnResize()
 
 	//Bind views to the output merger state
 	m_pDeviceContext->OMSetRenderTargets(1, &rtv, m_pDefaultRenderTarget->GetDepthStencilView());
+
+	m_Viewport.Height = m_EngineContext.GameSettings.Height;
+	m_Viewport.Width = m_EngineContext.GameSettings.Width;
+	m_Viewport.MaxDepth = 1.0f;
+	m_Viewport.MinDepth = 0.0f;
+	m_Viewport.TopLeftX = 0;
+	m_Viewport.TopLeftY = 0;
+	m_pDeviceContext->RSSetViewports(1, &m_Viewport);
 }
-
-void FluxCore::SetMSAA(bool value)
-{
-	if (m_EngineContext.GameSettings.MSAA != value)
-	{
-		m_EngineContext.GameSettings.MSAA = value;
-
-		// Recreate the swapchain and buffers with new multisample settings.
-		CreateSwapChain();
-		OnResize();
-	}
-}
-
-#pragma endregion D3D
-
-#pragma region
 
 LRESULT CALLBACK FluxCore::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -370,23 +335,13 @@ LRESULT CALLBACK FluxCore::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam,
 
 LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	ImGuiIO& io = ImGui::GetIO();
 	switch (message)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
 		// We pause the game when the window is deactivated and unpause it 
 		// when it becomes active.  
 	case WM_ACTIVATE:
-		if(LOWORD(wParam) == WA_INACTIVE)
-		{
-			m_Paused = true;
-			OnPause(m_Paused);
-		}
-		else
-		{
-			m_Paused = false;
-			OnPause(m_Paused);
-		}
+		OnPause(LOWORD(wParam) == WA_INACTIVE);
 		return 0;
 
 		// WM_SIZE is sent when the user resizes the window.
@@ -401,15 +356,13 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (wParam == SIZE_MINIMIZED)
 			{
-				m_Paused = true;
-				OnPause(m_Paused);
+				OnPause(true);
 				m_Minimized = true;
 				m_Maximized = false;
 			}
 			else if (wParam == SIZE_MAXIMIZED)
 			{
-				m_Paused = false;
-				OnPause(m_Paused);
+				OnPause(false);
 				m_Minimized = false;
 				m_Maximized = true;
 				OnResize();
@@ -419,16 +372,14 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// Restoring from minimized state?
 				if (m_Minimized)
 				{
-					m_Paused = false;
-					OnPause(m_Paused);
+					OnPause(false);
 					m_Minimized = false;
 					OnResize();
 				}
 				// Restoring from maximized state?
 				else if (m_Maximized)
 				{
-					m_Paused = false;
-					OnPause(m_Paused);
+					OnPause(false);
 					m_Maximized = false;
 					OnResize();
 				}
@@ -443,16 +394,14 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 	case WM_ENTERSIZEMOVE:
-		m_Paused = true;
-		OnPause(m_Paused);
+		OnPause(true);
 		m_Resizing = true;
 		return 0;
 
 		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 		// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
-		m_Paused = false;
-		OnPause(m_Paused);
+		OnPause(false);
 		m_Resizing = false;
 		OnResize();
 		return 0;
@@ -460,31 +409,6 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 	case WM_DESTROY:
 		PostQuitMessage(0);
-		return 0;
-	case WM_KEYDOWN:
-		if (wParam < 256)
-			io.KeysDown[wParam] = 1;
-		if (wParam == VK_ESCAPE)
-			DestroyWindow(m_EngineContext.Hwnd);
-		else if ((int)wParam == VK_F2)
-		{
-			if (m_EngineContext.GameSettings.UseDeferredRendering)
-			{
-				Console::Log("Can't enable MSAA with Deferred Rendering!", LogType::WARNING);
-				return 0;
-			}
-			SetMSAA(!m_EngineContext.GameSettings.MSAA);
-			stringstream stream;
-			stream << "MSAA " << (m_EngineContext.GameSettings.MSAA ? "Enabled" : "Disabled");
-			Console::Log(stream.str());
-		}
-		else if ((int)wParam == VK_F3)
-		{
-			m_EngineContext.GameSettings.VerticalSync = !m_EngineContext.GameSettings.VerticalSync;
-			stringstream stream;
-			stream << "Vertical Sync " << (m_EngineContext.GameSettings.VerticalSync ? "Enabled" : "Disabled");
-			Console::Log(stream.str());
-		}
 		return 0;
 
 	//High-Definition Mouse Movement
@@ -502,52 +426,19 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			float xPosRelative = (float)raw->data.mouse.lLastX;
 			float yPosRelative = (float)raw->data.mouse.lLastY;
-			InputManager::SetMouseMovement(XMFLOAT2(xPosRelative, yPosRelative));
+			InputEngine::GetInstance()->SetMouseMovement(XMFLOAT2(xPosRelative, yPosRelative));
 		}
 		return 0;
 	}
 
-	case WM_LBUTTONDOWN:
-		io.MouseDown[0] = true;
-		return 0;
-	case WM_LBUTTONUP:
-		io.MouseDown[0] = false;
-		return 0;
-	case WM_RBUTTONDOWN:
-		io.MouseDown[1] = true;
-		return 0;
-	case WM_RBUTTONUP:
-		io.MouseDown[1] = false;
-		return 0;
-	case WM_MBUTTONDOWN:
-		io.MouseDown[2] = true;
-		return 0;
-	case WM_MBUTTONUP:
-		io.MouseDown[2] = false;
-		return 0;
-	case WM_MOUSEWHEEL:
-		io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-		return 0;
-	case WM_MOUSEMOVE:
-		io.MousePos.x = (signed short)(lParam);
-		io.MousePos.y = (signed short)(lParam >> 16);
-		return 0;
-	case WM_KEYUP:
-		if (wParam < 256)
-			io.KeysDown[wParam] = 0;
-		return 0;
-	case WM_CHAR:
-		// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-		if (wParam > 0 && wParam < 0x10000)
-			io.AddInputCharacter((unsigned short)wParam);
-		return 0;
 	default:
 		break;
 	}
 
+	m_pUIDrawer->WndProc(message, wParam, lParam);
+
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-#pragma endregion WNDPROC
 
 void FluxCore::CalculateFrameStats() const
 {

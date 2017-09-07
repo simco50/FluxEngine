@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "DemoScene.h"
-#include "../../Components/MeshComponent.h"
+#include "../../Components/MeshRenderer.h"
 #include "../../Scenegraph/GameObject.h"
 #include "../../Materials/Forward/DefaultMaterial.h"
-#include "../../Components/TransformComponent.h"
-#include "../../Components/CameraComponent.h"
+#include "../../Components/Transform.h"
+#include "../../Components/Camera.h"
 
 DemoScene::DemoScene()
 {}
@@ -15,14 +15,15 @@ DemoScene::~DemoScene()
 
 void DemoScene::Initialize()
 {
-	m_pGameObject = new GameObject();
-	MeshComponent* pMesh = new MeshComponent("./Resources/Meshes/Player.flux");
-	DefaultMaterial* pMaterial = new DefaultMaterial();
-	pMaterial->Initialize(m_pGameContext);
-	pMesh->SetMaterial(pMaterial);
-	m_pGameObject->AddComponent(pMesh);
-	
-	AddChild(m_pGameObject);
+	DefaultMaterial* pMat = new DefaultMaterial();
+	pMat->Initialize(m_pGameContext);
+
+	GameObject* pObj = new GameObject();
+	MeshRenderer* pMeshRenderer = new MeshRenderer(ResourceManager::Load<MeshFilter>("Resources/Meshes/bust.flux"));
+	pMeshRenderer->SetMaterial(pMat);
+
+	pObj->AddComponent(pMeshRenderer);
+	AddChild(pObj);
 }
 
 void DemoScene::Update()

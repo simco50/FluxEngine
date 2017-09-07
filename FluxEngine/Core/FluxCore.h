@@ -17,12 +17,9 @@ public:
 	EngineContext& GetEngineContext() { return m_EngineContext; }
 	RenderTarget* GetDefaultRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 
-	void SetMSAA(bool value);
-
 protected:
 	EngineContext m_EngineContext;
 	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
-	bool m_Paused = false;
 
 	virtual void OnResize();
 	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -31,8 +28,6 @@ private:
 	HRESULT RegisterWindowClass();
 	HRESULT MakeWindow();
 	HRESULT EnumAdapters();
-	void LogOutputs(IDXGIAdapter* pAdapter, bool logDisplayModes = false);
-	void LogDisplayModes(IDXGIOutput* pOutput);
 	HRESULT InitializeD3D();
 	void InitializeHighDefinitionMouse();
 	void CreateSwapChain();
@@ -70,6 +65,4 @@ private:
 	bool m_Resizing = false;
 
 	ImgUIDrawer* m_pUIDrawer = nullptr;
-
-	PhysicsCore* m_pPhysicsCore = nullptr;
 };

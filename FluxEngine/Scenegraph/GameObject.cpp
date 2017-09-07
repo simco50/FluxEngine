@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "../Components/ComponentBase.h"
-#include "../Components/TransformComponent.h"
+#include "../Components/Transform.h"
 
 GameObject::GameObject()
 {
-	m_pTransform = new TransformComponent();
+	m_pTransform = new Transform();
 	AddComponent(m_pTransform);
 }
 
@@ -45,7 +45,7 @@ void GameObject::AddChild(GameObject* pChild)
 		pChild->BaseInitialize(m_pGameContext);
 }
 
-TransformComponent* GameObject::GetTransform()
+Transform* GameObject::GetTransform()
 {
 	return m_pTransform;
 }

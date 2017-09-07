@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Skybox.h"
-#include "../Components/MeshComponent.h"
+#include "../Components/MeshRenderer.h"
 #include "../Materials/SkyboxMaterial.h"
 
 Skybox::Skybox()
@@ -14,7 +14,7 @@ Skybox::~Skybox()
 
 void Skybox::Initialize()
 {
-	MeshComponent* pMesh = new MeshComponent(ResourceManager::Load<MeshFilter>("./Resources/Meshes/Cube.flux"));
+	MeshRenderer* pMesh = new MeshRenderer(ResourceManager::Load<MeshFilter>("./Resources/Meshes/Cube.flux"));
 	AddComponent(pMesh);
 	m_pMaterial = make_unique<SkyboxMaterial>();
 	m_pMaterial->Initialize(m_pGameContext);

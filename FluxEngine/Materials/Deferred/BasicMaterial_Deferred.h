@@ -10,7 +10,7 @@ public:
 	~BasicMaterial_Deferred();
 
 	void LoadShaderVariables() override;
-	void UpdateShaderVariables(MeshComponent* pMeshComponent) override;
+	void UpdateShaderVariables(MeshRenderer* pMeshComponent) override;
 
 	void SetDiffuseTexture(Texture* pTexture);
 	void SetNormalTexture(Texture* pTexture);

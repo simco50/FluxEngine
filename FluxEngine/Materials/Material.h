@@ -1,5 +1,5 @@
 #pragma once
-class MeshComponent;
+class MeshRenderer;
 
 struct MaterialDesc
 {
@@ -31,7 +31,7 @@ public:
 	bool IsInitialized() const { return m_IsInitialized; }
 
 	void LoadEffect();
-	void Update(MeshComponent* pMeshComponent);
+	void Update(MeshRenderer* pMeshComponent);
 
 	ID3D11InputLayout* GetInputLayout() const { return m_pInputLayout.Get(); }
 	const ILDesc* GetInputLayoutDesc() const { return &m_InputLayoutDesc; }
@@ -42,7 +42,7 @@ protected:
 	GameContext* m_pGameContext = nullptr;
 
 	virtual void LoadShaderVariables() = 0;
-	virtual void UpdateShaderVariables(MeshComponent* pMeshComponent) = 0;
+	virtual void UpdateShaderVariables(MeshRenderer* pMeshComponent) = 0;
 	virtual void CreateInputLayout();
 
 	MaterialDesc m_MaterialDesc;

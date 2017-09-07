@@ -9,7 +9,7 @@ public:
 
 	void Initialize();
 	void Update();
-	CameraComponent* GetCamera() const { return m_pCamera; }
+	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }
 	void UseController(const bool use) { m_UseController = use; }
@@ -23,7 +23,7 @@ private:
 	float m_MoveSpeed = 10.0f;
 	float m_ShiftMultiplier = 3.0f;
 	float m_RotationSpeed = 30.0f;
-	CameraComponent *m_pCamera = nullptr;
+	Camera *m_pCamera = nullptr;
 
 	bool m_UseMouseAndKeyboard = true;
 	bool m_UseController = true;

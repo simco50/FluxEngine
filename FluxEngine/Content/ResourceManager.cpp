@@ -11,15 +11,6 @@ vector<Loader*> ResourceManager::m_Loaders = vector<Loader*>();
 ID3D11Device* ResourceManager::m_pDevice = nullptr;
 bool ResourceManager::m_IsInitialized = false;
 
-ResourceManager::ResourceManager()
-{
-}
-
-
-ResourceManager::~ResourceManager(void)
-{
-}
-
 void ResourceManager::Release()
 {
 	for(Loader *pLoader : m_Loaders)

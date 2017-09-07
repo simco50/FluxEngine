@@ -17,7 +17,7 @@ void SkyboxMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pTextureVar, gSkybox, AsShaderResource);
 }
 
-void SkyboxMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
+void SkyboxMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
 {
 	UNREFERENCED_PARAMETER(pMeshComponent);
 	m_pTextureVar->SetResource(m_pTexture->GetResourceView());

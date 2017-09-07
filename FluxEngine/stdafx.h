@@ -1,4 +1,7 @@
 #pragma once
+
+#define PHYSX
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -44,6 +47,7 @@ using namespace std;
 using namespace physx;
 #pragma endregion PhysX
 
+
 #include <imgui.h>
 #pragma comment(lib, "imgui.lib")
 
@@ -87,15 +91,15 @@ using namespace DirectX;
 #pragma endregion D3D
 
 #pragma region
-#include <flex.h>
-#include <flexExt.h>
+#include <NvFlex.h>
+#include <NvFlexExt.h>
 
 #ifdef _DEBUG
-#pragma comment(lib, "flexDebug_x86.lib")
-#pragma comment(lib, "flexExtDebug_x86.lib")
+#pragma comment(lib, "NvFlexDebugD3D_x86.lib")
+#pragma comment(lib, "NvFlexExtDebugD3D_x86.lib")
 #else
-#pragma comment(lib, "flexExtRelease_x86.lib")
-#pragma comment(lib, "flexRelease_x86.lib")
+#pragma comment(lib, "NvFlexReleaseD3D_x86.lib")
+#pragma comment(lib, "NvFlexExtReleaseCUDA_x86.lib")
 #endif
 #pragma endregion FLEX
 
@@ -128,7 +132,7 @@ using namespace DirectX;
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
 #include "Helpers/VertexStructures.h"
-#include "Managers/InputManager.h"
+#include "Managers/InputEngine.h"
 #include "Content/ResourceManager.h"
 #include "Helpers/SmartInterface.h"
 #include "Debugging/PerfTimer.h"

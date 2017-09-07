@@ -10,7 +10,7 @@ public:
 	~DefaultMaterial();
 
 	void LoadShaderVariables() override;
-	void UpdateShaderVariables(MeshComponent* pMeshComponent) override;
+	void UpdateShaderVariables(MeshRenderer* pMeshComponent) override;
 
 	void SetColor(const Vector4 &color) { m_Color = color; }
 	void SetDiffuseTexture(const string& filePath);

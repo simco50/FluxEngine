@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "SceneBase.h"
 #include "GameObject.h"
-#include "../Components/CameraComponent.h"
+#include "../Components/Camera.h"
 #include "../Prefabs/FreeCamera.h"
 #include "../Rendering/DeferredRenderer.h"
 #include "../Rendering/ShadowMapper.h"
 #include "../Managers/MaterialManager.h"
-#include "../Components/TransformComponent.h"
+#include "../Components/Transform.h"
 
 SceneBase::SceneBase(const string& name) : m_SceneName(name)
 {
@@ -18,8 +18,6 @@ SceneBase::~SceneBase()
 	for (size_t i = 0; i < m_pChildren.size(); i++)
 		SafeDelete(m_pChildren[i]);
 
-	if(m_GameContext.Scene)
-		SafeDelete(m_GameContext.Scene->Input);
 	SafeDelete(m_SceneContext.ShadowMapper);
 	SafeDelete(m_pDeferredRenderer);
 	SafeDelete(m_SceneContext.MaterialManager);
@@ -40,14 +38,10 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	//Add default camera
 	FreeCamera* pCamera = new FreeCamera();
 	AddChild(pCamera);
-	m_GameContext.Scene->Cameras.push_back(pCamera->GetCamera());
+	m_GameContext.Scene->Camera = pCamera->GetCamera();
 	pCamera->GetCamera()->SetActive(true);
 	pCamera->GetTransform()->SetRotation(25.0f, 0, 0);
 	pCamera->GetTransform()->Translate(0, 12, -20);
-
-	//Set scene specific objects
-	m_SceneContext.Input = new InputManager();
-	m_SceneContext.Input->Initialize();
 
 	m_SceneContext.ShadowMapper = new ShadowMapper();
 	m_SceneContext.ShadowMapper->Initialize(m_pGameContext);
@@ -70,9 +64,6 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 
 void SceneBase::BaseUpdate()
 {
-	//Update scene specific objects
-	m_SceneContext.Input->Update();
-
 	Update();
 	for (size_t i = 0; i < m_pChildren.size(); i++)
 		m_pChildren[i]->BaseUpdate();
@@ -81,28 +72,19 @@ void SceneBase::BaseUpdate()
 
 void SceneBase::BaseRender()
 {	
-	for (CameraComponent* pCamera : m_pGameContext->Scene->Cameras)
-	{
-		m_pGameContext->Engine->D3DeviceContext->RSSetViewports(1, &pCamera->GetViewport());
-		m_pGameContext->Scene->CurrentCamera = pCamera;
+	/*m_SceneContext.ShadowMapper->SetLight(XMFLOAT3(0,0,0), XMFLOAT3(-0.577f, -0.577f, 0.577f));
+	m_SceneContext.ShadowMapper->Begin();
+	for (size_t i = 0; i < m_pChildren.size(); i++)
+		m_SceneContext.ShadowMapper->Render(m_pChildren[i]);
+	m_SceneContext.ShadowMapper->End();*/
 
-		/*m_SceneContext.ShadowMapper->SetLight(XMFLOAT3(0,0,0), XMFLOAT3(-0.577f, -0.577f, 0.577f));
-		m_SceneContext.ShadowMapper->Begin();
-		for (size_t i = 0; i < m_pChildren.size(); i++)
-			m_SceneContext.ShadowMapper->Render(m_pChildren[i]);
-		m_SceneContext.ShadowMapper->End();*/
+	if(m_pDeferredRenderer)
+		m_pDeferredRenderer->Begin();
 
-		if(m_pDeferredRenderer)
-			m_pDeferredRenderer->Begin();
+	for (size_t i = 0; i < m_pChildren.size(); i++)
+		m_pChildren[i]->BaseRender();
 
-		for (size_t i = 0; i < m_pChildren.size(); i++)
-			m_pChildren[i]->BaseRender();
-
-		if(m_pDeferredRenderer)
-			m_pDeferredRenderer->End();
-
-		Render();
-	}
+	Render();
 }
 
 void SceneBase::AddChild(GameObject* pChild)
@@ -116,9 +98,6 @@ void SceneBase::OnResize()
 {
 	if (m_pDeferredRenderer)
 		m_pDeferredRenderer->CreateGBuffer();
-
-	for (CameraComponent *pCamera : m_pGameContext->Scene->Cameras)
-		pCamera->UpdateViewport();
 }
 
 GameObject* SceneBase::FindObject(const string& name)

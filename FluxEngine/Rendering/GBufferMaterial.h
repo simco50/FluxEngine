@@ -21,7 +21,7 @@ public:
 private:
 
 	void LoadShaderVariables() override;
-	void UpdateShaderVariables(MeshComponent* pMeshComponent) override;
+	void UpdateShaderVariables(MeshRenderer* pMeshComponent) override;
 
 	ID3DX11EffectShaderResourceVariable* m_pDiffuseSRV = nullptr;
 	ID3DX11EffectShaderResourceVariable* m_pNormalSRV = nullptr;

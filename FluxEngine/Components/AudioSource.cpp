@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "AudioSource.h"
 #include "../Scenegraph/GameObject.h"
-#include "TransformComponent.h"
-#include "../Managers/SoundManager.h"
+#include "Transform.h"
+#include "../Managers/AudioEngine.h"
 
 AudioSource::AudioSource(const wstring& filePath, const FMOD_MODE& mode): m_Mode(mode), m_FilePath(filePath)
 {
@@ -19,9 +19,9 @@ AudioSource::~AudioSource()
 
 void AudioSource::Initialize()
 {
-	m_pFmodSystem = SoundManager::GetInstance()->GetSystem();
+	m_pFmodSystem = AudioEngine::GetInstance()->GetSystem();
 	if(m_pSound == nullptr)
-		m_pSound = SoundManager::GetInstance()->LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
+		m_pSound = AudioEngine::GetInstance()->LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
 }
 
 void AudioSource::Update()

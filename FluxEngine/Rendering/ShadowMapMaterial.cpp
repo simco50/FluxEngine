@@ -22,7 +22,7 @@ void ShadowMapMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pLightVPV, gLightVP, AsMatrix);
 }
 
-void ShadowMapMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
+void ShadowMapMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
 {
 	UNREFERENCED_PARAMETER(pMeshComponent);
 }

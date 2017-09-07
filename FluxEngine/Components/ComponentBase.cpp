@@ -11,7 +11,7 @@ ComponentBase::~ComponentBase()
 {
 }
 
-TransformComponent* ComponentBase::GetTransform() const
+Transform* ComponentBase::GetTransform() const
 {
 	return m_pGameObject->GetTransform();
 }

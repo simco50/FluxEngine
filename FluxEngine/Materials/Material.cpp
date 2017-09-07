@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Material.h"
-#include "../Components/MeshComponent.h"
-#include "../Components/TransformComponent.h"
-#include "../Components/CameraComponent.h"
+#include "../Components/MeshRenderer.h"
+#include "../Components/Transform.h"
+#include "../Components/Camera.h"
 
 Material::~Material()
 {
@@ -48,7 +48,7 @@ void Material::LoadEffect()
 		BIND_AND_CHECK_SEMANTIC(m_pWvpMatrixVariable, "WorldViewProjection", AsMatrix);
 }
 
-void Material::Update(MeshComponent* pMeshComponent)
+void Material::Update(MeshRenderer* pMeshComponent)
 {
 	if(!m_IsInitialized)
 	{
@@ -58,8 +58,8 @@ void Material::Update(MeshComponent* pMeshComponent)
 	auto world = XMMatrixIdentity();
 	if(pMeshComponent)
 		world = XMLoadFloat4x4(&pMeshComponent->GetTransform()->GetWorldMatrix());
-	auto view = XMLoadFloat4x4(&m_pGameContext->Scene->CurrentCamera->GetView());
-	auto projection = XMLoadFloat4x4(&m_pGameContext->Scene->CurrentCamera->GetProjection());
+	auto view = XMLoadFloat4x4(&m_pGameContext->Scene->Camera->GetView());
+	auto projection = XMLoadFloat4x4(&m_pGameContext->Scene->Camera->GetProjection());
 
 	if (m_pWorldMatrixVariable)
 		m_pWorldMatrixVariable->SetMatrix(reinterpret_cast<float*>(&world));
@@ -67,7 +67,7 @@ void Material::Update(MeshComponent* pMeshComponent)
 		m_pViewMatrixVariable->SetMatrix(reinterpret_cast<float*>(&view));
 	if (m_pViewInverseMatrixVariable)
 	{
-		auto viewInv = XMLoadFloat4x4(&m_pGameContext->Scene->CurrentCamera->GetViewInverse());
+		auto viewInv = XMLoadFloat4x4(&m_pGameContext->Scene->Camera->GetViewInverse());
 		m_pViewInverseMatrixVariable->SetMatrix(reinterpret_cast<float*>(&viewInv));
 	}
 	if (m_pWvpMatrixVariable)

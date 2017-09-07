@@ -1,13 +1,12 @@
 #include "stdafx.h"
 #include "AudioListener.h"
-#include "../Managers/SoundManager.h"
+#include "../Managers/AudioEngine.h"
 #include "../Scenegraph/GameObject.h"
-#include "TransformComponent.h"
+#include "Transform.h"
 
 AudioListener::AudioListener()
 {
 }
-
 
 AudioListener::~AudioListener()
 {
@@ -15,7 +14,7 @@ AudioListener::~AudioListener()
 
 void AudioListener::Initialize()
 {
-	m_pFmodSystem = SoundManager::GetInstance()->GetSystem();
+	m_pFmodSystem = AudioEngine::GetInstance()->GetSystem();
 
 	XMFLOAT3 pos = m_pGameObject->GetTransform()->GetWorldPosition();
 	FMOD_VECTOR listenerPosition;

@@ -1,10 +1,6 @@
-//Precompiled Header [ALWAYS ON TOP IN CPP]
 #include "stdafx.h"
 
 #include "EffectLoader.h"
-
-EffectLoader::EffectLoader(void){}
-EffectLoader::~EffectLoader(void){}
 
 ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 {

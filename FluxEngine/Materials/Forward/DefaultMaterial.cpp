@@ -25,7 +25,7 @@ void DefaultMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pUseDiffuseTextureVar, gUseDiffuseTexture, AsScalar);
 }
 
-void DefaultMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
+void DefaultMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
 {
 	UNREFERENCED_PARAMETER(pMeshComponent);
 	m_pColorVar->SetFloatVector(&m_Color.x);

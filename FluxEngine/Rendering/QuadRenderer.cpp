@@ -24,7 +24,7 @@ void QuadRenderer::Render(Material* pMaterial)
 	UINT offset = 0;
 	m_pGameContext->Engine->D3DeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &strides, &offset);
 
-	m_pGameContext->Engine->D3DeviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	m_pGameContext->Engine->D3DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	D3DX11_TECHNIQUE_DESC techDesc;
 	pMaterial->GetTechnique()->GetDesc(&techDesc);

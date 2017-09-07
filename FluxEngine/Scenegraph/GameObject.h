@@ -1,7 +1,7 @@
 #pragma once
 class SceneBase;
 class ComponentBase;
-class TransformComponent;
+class Transform;
 
 class GameObject
 {
@@ -18,7 +18,7 @@ public:
 	void AddChild(GameObject* pChild);
 
 	GameObject* GetParent() const { return m_pParent; }
-	TransformComponent* GetTransform();
+	Transform* GetTransform();
 
 	std::vector<GameObject*> GetChildren() const { return m_pChildren; }
 
@@ -77,7 +77,7 @@ private:
 	SceneBase* m_pScene = nullptr;
 	std::vector<GameObject*> m_pChildren;
 	std::vector<ComponentBase*> m_pComponents;
-	TransformComponent* m_pTransform = nullptr;
+	Transform* m_pTransform = nullptr;
 
 	bool m_IsInitialized = false;
 };

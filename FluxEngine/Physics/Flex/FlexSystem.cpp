@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FlexSystem.h"
 
-FlexSystem::FlexSystem()
+FlexSystem::FlexSystem(NvFlexLibrary* pFlexLibrary) : pFlexLibrary(pFlexLibrary)
 {
 	RigidOffsets.push_back(0);
 }
@@ -9,7 +9,7 @@ FlexSystem::FlexSystem()
 FlexSystem::~FlexSystem()
 {
 	if(pFlexSolver)
-		flexDestroySolver(pFlexSolver);
+		NvFlexDestroySolver(pFlexSolver);
 }
 
 void FlexSystem::InitializeSolver()
@@ -17,37 +17,37 @@ void FlexSystem::InitializeSolver()
 	if (pFlexSolver)
 	{
 		Console::Log("FlexSolver already initialized, reinitializing...", LogType::WARNING);
-		flexDestroySolver(pFlexSolver);
+		NvFlexDestroySolver(pFlexSolver);
 		pFlexSolver = nullptr;
 	}
-	pFlexSolver = flexCreateSolver(Positions.size(), 0);
+	pFlexSolver = NvFlexCreateSolver(pFlexLibrary, Positions.size(), 0);
 }
 
 void FlexSystem::FetchData()
 {
-	flexGetRigidTransforms(pFlexSolver, (float*)RigidRotations.data(), (float*)RigidTranslations.data(), MemoryType);
-	flexGetParticles(pFlexSolver, (float*)Positions.data(), Positions.size(), MemoryType);
-	flexGetVelocities(pFlexSolver, (float*)Velocities.data(), Velocities.size(), MemoryType);
+	NvFlexGetRigidTransforms(pFlexSolver, (float*)RigidRotations.data(), (float*)RigidTranslations.data());
+	NvFlexGetParticles(pFlexSolver, (float*)Positions.data(), Positions.size());
+	NvFlexGetVelocities(pFlexSolver, (float*)Velocities.data(), Velocities.size());
 }
 
 void FlexSystem::UpdateSolver(float deltaTime)
 {
-	flexUpdateSolver(pFlexSolver, deltaTime, Substeps, nullptr);
+	NvFlexUpdateSolver(pFlexSolver, deltaTime, Substeps, false);
 }
 
 void FlexSystem::UpdateData()
 {
-	flexSetParams(pFlexSolver, &Params);
+	NvFlexSetParams(pFlexSolver, &Params);
 
 	const int numParticles = Positions.size();
 
-	flexSetParticles(pFlexSolver, (float*)Positions.data(), numParticles, MemoryType);
-	flexSetVelocities(pFlexSolver, (float*)Velocities.data(), numParticles, MemoryType);
+	NvFlexSetParticles(pFlexSolver, (float*)Positions.data(), numParticles);
+	NvFlexSetVelocities(pFlexSolver, (float*)Velocities.data(), numParticles);
 
 	//Convex shapes
 	if (ShapePositions.size() > 0)
 	{
-		flexSetShapes(pFlexSolver,
+		NvFlexSetShapes(pFlexSolver,
 			ShapeGeometry.data(),
 			ShapeGeometry.size(),
 			(float*)ShapeAabbMin.data(),
@@ -58,11 +58,10 @@ void FlexSystem::UpdateData()
 			(float*)ShapePrevPositions.data(),
 			(float*)ShapePrevRotations.data(),
 			ShapeFlags.data(),
-			ShapeStarts.size(),
-			MemoryType
+			ShapeStarts.size()
 		);
 	}
-	flexSetPhases(pFlexSolver, Phases.data(), numParticles, MemoryType);
+	NvFlexSetPhases(pFlexSolver, Phases.data(), numParticles);
 }
 
 void FlexSystem::UploadFlexData()
@@ -74,19 +73,19 @@ void FlexSystem::UploadFlexData()
 	}
 
 	//Adjust the flex params
-	Params.mRadius *= 1.5f;
+	Params.radius *= 1.5f;
 	AdjustParams();
-	flexSetParams(pFlexSolver, &Params);
+	NvFlexSetParams(pFlexSolver, &Params);
 
 	const int numParticles = Positions.size();
 
-	flexSetParticles(pFlexSolver, (float*)Positions.data(), numParticles, MemoryType);
-	flexSetVelocities(pFlexSolver, (float*)Velocities.data(), numParticles, MemoryType);
+	NvFlexSetParticles(pFlexSolver, (float*)Positions.data(), numParticles);
+	NvFlexSetVelocities(pFlexSolver, (float*)Velocities.data(), numParticles);
 
 	vector<int> activeIndices(numParticles);
 	for (int i = 0; i < numParticles; i++)
 		activeIndices[i] = i;
-	flexSetActive(pFlexSolver, activeIndices.data(), numParticles, MemoryType);
+	NvFlexSetActive(pFlexSolver, activeIndices.data(), numParticles);
 
 	//Rigids
 	if (RigidOffsets.size() > 1)
@@ -100,7 +99,7 @@ void FlexSystem::UploadFlexData()
 		RigidRotations.resize(RigidOffsets.size() - 1, Vector4());
 		RigidTranslations.resize(RigidOffsets.size() - 1, Vector3());
 
-		flexSetRigids(
+		NvFlexSetRigids(
 			pFlexSolver,
 			&RigidOffsets[0],
 			&RigidIndices[0],
@@ -109,19 +108,18 @@ void FlexSystem::UploadFlexData()
 			RigidCoefficients.data(),
 			(float*)&RigidRotations[0],
 			(float*)&RigidTranslations[0],
-			numRigids,
-			MemoryType
+			numRigids
 		);
 	}
 
 	//Springs
 	if (SpringIndices.size() > 0)
-		flexSetSprings(pFlexSolver, SpringIndices.data(), SpringLengths.data(), SpringStiffness.data(), SpringLengths.size(), MemoryType);
+		NvFlexSetSprings(pFlexSolver, SpringIndices.data(), SpringLengths.data(), SpringStiffness.data(), SpringLengths.size());
 
 	//Convex shapes
 	if (ShapePositions.size() > 0)
 	{
-		flexSetShapes(pFlexSolver,
+		NvFlexSetShapes(pFlexSolver,
 		              ShapeGeometry.data(),
 		              ShapeGeometry.size(),
 		              (float*)ShapeAabbMin.data(),
@@ -132,108 +130,105 @@ void FlexSystem::UploadFlexData()
 		              (float*)ShapePrevPositions.data(),
 		              (float*)ShapePrevRotations.data(),
 		              ShapeFlags.data(),
-		              ShapeStarts.size(),
-		              MemoryType
+		              ShapeStarts.size()
 		);
 	}
 
-	flexSetPhases(pFlexSolver, Phases.data(), numParticles, MemoryType);
+	NvFlexSetPhases(pFlexSolver, Phases.data(), numParticles);
 
 	RestPositions.insert(RestPositions.begin(), Positions.begin(), Positions.end());
-	flexSetRestParticles(pFlexSolver, (float*)RestPositions.data(), numParticles, MemoryType);
+	NvFlexSetRestParticles(pFlexSolver, (float*)RestPositions.data(), numParticles);
 
 	Console::LogFormat(LogType::INFO, "FlexSystem::UploadFlexData() > Flex data uploaded successfully: %i particles", Positions.size());
 }
 
 void FlexSystem::SetDefaultParams()
 {
-	Params.mRadius = 0.15f;
+	Params.radius = 0.15f;
 
-	Params.mGravity[0] = 0.0f;
-	Params.mGravity[1] = -9.8f;
-	Params.mGravity[2] = 0.0f;
+	Params.gravity[0] = 0.0f;
+	Params.gravity[1] = -9.8f;
+	Params.gravity[2] = 0.0f;
 
-	Params.mWind[0] = 0.0f;
-	Params.mWind[1] = 0.0f;
-	Params.mWind[2] = 0.0f;
+	Params.wind[0] = 0.0f;
+	Params.wind[1] = 0.0f;
+	Params.wind[2] = 0.0f;
 
-	Params.mViscosity = 0.0f;
-	Params.mDynamicFriction = 0.0f;
-	Params.mStaticFriction = 0.0f;
-	Params.mParticleFriction = 0.0f; // scale friction between particles by default
-	Params.mFreeSurfaceDrag = 0.0f;
-	Params.mDrag = 0.0f;
-	Params.mLift = 0.0f;
-	Params.mNumIterations = 3;
-	Params.mFluidRestDistance = 0.0f;
-	Params.mSolidRestDistance = 0.0f;
-	Params.mAnisotropyScale = 1.0f;
-	Params.mAnisotropyMin = 0.1f;
-	Params.mAnisotropyMax = 2.0f;
-	Params.mSmoothing = 1.0f;
-	Params.mDissipation = 0.0f;
-	Params.mDamping = 0.0f;
-	Params.mParticleCollisionMargin = 0.0f;
-	Params.mShapeCollisionMargin = 0.0f;
-	Params.mCollisionDistance = 0.0f;
-	Params.mPlasticThreshold = 0.0f;
-	Params.mPlasticCreep = 0.0f;
-	Params.mFluid = false;
-	Params.mSleepThreshold = 0.0f;
-	Params.mShockPropagation = 0.0f;
-	Params.mRestitution = 0.0f;
-	Params.mMaxSpeed = FLT_MAX;
-	Params.mRelaxationMode = eFlexRelaxationLocal;
-	Params.mRelaxationFactor = 1.0f;
-	Params.mSolidPressure = 1.0f;
-	Params.mAdhesion = 0.0f;
-	Params.mCohesion = 0.025f;
-	Params.mSurfaceTension = 0.0f;
-	Params.mVorticityConfinement = 0.0f;
-	Params.mBuoyancy = 1.0f;
+	Params.viscosity = 0.0f;
+	Params.dynamicFriction = 0.0f;
+	Params.staticFriction = 0.0f;
+	Params.particleFriction = 0.0f; // scale friction between particles by default
+	Params.freeSurfaceDrag = 0.0f;
+	Params.drag = 0.0f;
+	Params.lift = 0.0f;
+	Params.numIterations = 3;
+	Params.fluidRestDistance = 0.0f;
+	Params.solidRestDistance = 0.0f;
+	Params.anisotropyScale = 1.0f;
+	Params.anisotropyMin = 0.1f;
+	Params.anisotropyMax = 2.0f;
+	Params.smoothing = 1.0f;
+	Params.dissipation = 0.0f;
+	Params.damping = 0.0f;
+	Params.particleCollisionMargin = 0.0f;
+	Params.shapeCollisionMargin = 0.0f;
+	Params.collisionDistance = 0.0f;
+	Params.plasticThreshold = 0.0f;
+	Params.plasticCreep = 0.0f;
+	Params.fluid = false;
+	Params.sleepThreshold = 0.0f;
+	Params.shockPropagation = 0.0f;
+	Params.restitution = 0.0f;
+	Params.maxSpeed = FLT_MAX;
+	Params.relaxationMode = NvFlexRelaxationMode::eNvFlexRelaxationLocal;
+	Params.relaxationFactor = 1.0f;
+	Params.solidPressure = 1.0f;
+	Params.adhesion = 0.0f;
+	Params.cohesion = 0.025f;
+	Params.surfaceTension = 0.0f;
+	Params.vorticityConfinement = 0.0f;
+	Params.buoyancy = 1.0f;
 
-	Params.mDiffuseThreshold = 100.0f;
-	Params.mDiffuseBuoyancy = 1.0f;
-	Params.mDiffuseDrag = 0.8f;
-	Params.mDiffuseBallistic = 16;
-	Params.mDiffuseSortAxis[0] = 0.0f;
-	Params.mDiffuseSortAxis[1] = 0.0f;
-	Params.mDiffuseSortAxis[2] = 0.0f;
-	Params.mDiffuseLifetime = 2.0f;
+	Params.diffuseThreshold = 100.0f;
+	Params.diffuseBuoyancy = 1.0f;
+	Params.diffuseDrag = 0.8f;
+	Params.diffuseBallistic = 16;
+	Params.diffuseSortAxis[0] = 0.0f;
+	Params.diffuseSortAxis[1] = 0.0f;
+	Params.diffuseSortAxis[2] = 0.0f;
+	Params.diffuseLifetime = 2.0f;
 
-	Params.mInertiaBias = 0.001f;
-
-	Params.mNumPlanes = 0;
+	Params.numPlanes = 0;
 }
 
 void FlexSystem::CreateGroundPlane(const Vector3& normal, const float distance)
 {
-	int planeIdx = Params.mNumPlanes;
-	++Params.mNumPlanes;
-	reinterpret_cast<Vector4&>(Params.mPlanes[planeIdx]) = Vector4(normal.x, normal.y, normal.z, -distance);
+	int planeIdx = Params.numPlanes;
+	++Params.numPlanes;
+	reinterpret_cast<Vector4&>(Params.planes[planeIdx]) = Vector4(normal.x, normal.y, normal.z, -distance);
 }
 
 void FlexSystem::AdjustParams()
 {
 	// by default solid particles use the maximum radius
-	if (Params.mFluid && Params.mSolidRestDistance == 0.0f)
-		Params.mSolidRestDistance = Params.mFluidRestDistance;
+	if (Params.fluid && Params.solidRestDistance == 0.0f)
+		Params.solidRestDistance = Params.fluidRestDistance;
 	else
-		Params.mSolidRestDistance = Params.mRadius;
+		Params.solidRestDistance = Params.radius;
 	// collision distance with shapes half the radius
-	if (Params.mCollisionDistance == 0.0f)
+	if (Params.collisionDistance == 0.0f)
 	{
-		Params.mCollisionDistance = Params.mRadius * 0.5f;
+		Params.collisionDistance = Params.radius * 0.5f;
 
-		if (Params.mFluid)
-			Params.mCollisionDistance = Params.mFluidRestDistance * 0.5f;
+		if (Params.fluid)
+			Params.collisionDistance = Params.fluidRestDistance * 0.5f;
 	}
 	// default particle friction to 10% of shape friction
-	if (Params.mParticleFriction == 0.0f)
-		Params.mParticleFriction = Params.mDynamicFriction * 0.1f;
+	if (Params.particleFriction == 0.0f)
+		Params.particleFriction = Params.dynamicFriction * 0.1f;
 	// add a margin for detecting contacts between particles and shapes
-	if (Params.mShapeCollisionMargin == 0.0f)
-		Params.mShapeCollisionMargin = Params.mCollisionDistance * 0.5f;
+	if (Params.shapeCollisionMargin == 0.0f)
+		Params.shapeCollisionMargin = Params.collisionDistance * 0.5f;
 }
 
 void FlexSystem::CalculateRigidOffsets(const int numRigids, Vector3* localPositions)

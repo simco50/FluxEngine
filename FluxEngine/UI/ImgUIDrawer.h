@@ -13,6 +13,8 @@ public:
 	void Render();
 	void OnResize();
 
+	int WndProc(UINT message, WPARAM wParam, LPARAM lParam);
+
 private:
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();

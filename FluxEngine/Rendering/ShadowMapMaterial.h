@@ -10,7 +10,7 @@ public:
 	void SetLightVP(const XMFLOAT4X4& matrix);
 
 	void LoadShaderVariables();
-	void UpdateShaderVariables(MeshComponent* pMeshComponent);
+	void UpdateShaderVariables(MeshRenderer* pMeshComponent);
 
 private:
 	ID3DX11EffectMatrixVariable* m_pLightVPV = nullptr;

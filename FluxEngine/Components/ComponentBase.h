@@ -1,6 +1,6 @@
 #pragma once
 class GameObject;
-class TransformComponent;
+class Transform;
 
 class ComponentBase
 {
@@ -8,7 +8,7 @@ public:
 	ComponentBase();
 	virtual ~ComponentBase();
 
-	TransformComponent* GetTransform() const;
+	Transform* GetTransform() const;
 
 protected:
 	virtual void Initialize() = 0;

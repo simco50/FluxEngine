@@ -4,7 +4,7 @@ class MeshFilter;
 class FlexSystem
 {
 public:
-	FlexSystem();
+	explicit FlexSystem(NvFlexLibrary* pFlexLibrary);
 	~FlexSystem();
 
 	void InitializeSolver();
@@ -15,10 +15,10 @@ public:
 
 	void UpdateData();
 
-	FlexMemory MemoryType = eFlexMemoryHost;
-	FlexSolver* pFlexSolver = nullptr;
+	NvFlexSolver* pFlexSolver = nullptr;
+	NvFlexLibrary* pFlexLibrary;
 
-	FlexParams Params;
+	NvFlexParams Params;
 	int Substeps = 3;
 
 	//Position + InvWeight
@@ -53,7 +53,7 @@ public:
 	vector<Vector4> ShapeRotations;
 	vector<Vector4> ShapePrevPositions;
 	vector<Vector4> ShapePrevRotations;
-	vector<FlexCollisionGeometry> ShapeGeometry;
+	vector<NvFlexCollisionGeometry> ShapeGeometry;
 	vector<int> ShapeFlags;
 
 	//Methods

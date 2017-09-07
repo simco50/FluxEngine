@@ -1,8 +1,8 @@
 #pragma once
 #include "GameTimer.h"
 
-class InputManager;
-class CameraComponent;
+class InputEngine;
+class Camera;
 class RenderTarget;
 class ShadowMapper;
 class MaterialManager;
@@ -31,9 +31,7 @@ struct GameSettings
 
 struct SceneContext
 {
-	CameraComponent* CurrentCamera = nullptr;
-	vector<CameraComponent*> Cameras;
-	InputManager* Input = nullptr;
+	Camera* Camera = nullptr;
 	ShadowMapper* ShadowMapper = nullptr;
 	MaterialManager* MaterialManager = nullptr;
 };

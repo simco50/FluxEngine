@@ -21,7 +21,7 @@ void BasicMaterial_Deferred::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pUseNormalTexture, gUseNormalMap, AsScalar);
 }
 
-void BasicMaterial_Deferred::UpdateShaderVariables(MeshComponent* pMeshComponent)
+void BasicMaterial_Deferred::UpdateShaderVariables(MeshRenderer* pMeshComponent)
 {
 	UNREFERENCED_PARAMETER(pMeshComponent);
 	m_pUseDiffuseTexture->SetBool(m_UseDiffuseTexture);

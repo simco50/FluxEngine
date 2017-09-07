@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FreeCamera.h"
-#include "../Components/CameraComponent.h"
-#include "../Components/TransformComponent.h"
+#include "../Components/Camera.h"
+#include "../Components/Transform.h"
 #include "../Components/AudioListener.h"
 
 FreeCamera::FreeCamera()
@@ -15,7 +15,7 @@ FreeCamera::~FreeCamera()
 
 void FreeCamera::Initialize()
 {
-	m_pCamera = new CameraComponent();
+	m_pCamera = new Camera();
 	AddComponent(m_pCamera);
 	AudioListener* pAudioListener = new AudioListener();
 	AddComponent(pAudioListener);
@@ -38,26 +38,26 @@ void FreeCamera::KeyboardMouse()
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);
-	moveDirection.x += m_pGameContext->Scene->Input->IsKeyboardKeyDown('A') ? -1 : 0;
-	moveDirection.x += m_pGameContext->Scene->Input->IsKeyboardKeyDown('D') ? 1 : 0;
-	moveDirection.z += m_pGameContext->Scene->Input->IsKeyboardKeyDown('S') ? -1 : 0;
-	moveDirection.z += m_pGameContext->Scene->Input->IsKeyboardKeyDown('W') ? 1 : 0;
-	moveDirection.y += m_pGameContext->Scene->Input->IsKeyboardKeyDown('Q') ? -1 : 0;
-	moveDirection.y += m_pGameContext->Scene->Input->IsKeyboardKeyDown('E') ? 1 : 0;
+	moveDirection.x += InputEngine::GetInstance()->IsKeyboardKeyDown('A') ? -1 : 0;
+	moveDirection.x += InputEngine::GetInstance()->IsKeyboardKeyDown('D') ? 1 : 0;
+	moveDirection.z += InputEngine::GetInstance()->IsKeyboardKeyDown('S') ? -1 : 0;
+	moveDirection.z += InputEngine::GetInstance()->IsKeyboardKeyDown('W') ? 1 : 0;
+	moveDirection.y += InputEngine::GetInstance()->IsKeyboardKeyDown('Q') ? -1 : 0;
+	moveDirection.y += InputEngine::GetInstance()->IsKeyboardKeyDown('E') ? 1 : 0;
 
 	XMVECTOR xmMove = XMLoadFloat3(&moveDirection);
 	
 	float moveSpeed = m_MoveSpeed;
-	if (m_pGameContext->Scene->Input->IsKeyboardKeyDown(VK_LSHIFT))
+	if (InputEngine::GetInstance()->IsKeyboardKeyDown(VK_LSHIFT))
 		moveSpeed *= m_ShiftMultiplier;
 
 	xmMove *= dt * moveSpeed;
 	GetTransform()->Translate(xmMove, Space::SELF);
 
 	//Rotation
-	if (m_pGameContext->Scene->Input->IsMouseButtonDown(VK_RBUTTON))
+	if (InputEngine::GetInstance()->IsMouseButtonDown(VK_RBUTTON))
 	{
-		XMFLOAT2 mouseMove = m_pGameContext->Scene->Input->GetMouseMovement();
+		XMFLOAT2 mouseMove = InputEngine::GetInstance()->GetMouseMovement();
 		GetTransform()->Rotate(XMFLOAT3(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f), Space::SELF);
 		GetTransform()->Rotate(XMFLOAT3(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f), Space::WORLD);
 	}
@@ -67,11 +67,11 @@ void FreeCamera::Controller()
 {
 	float dt = GameTimer::DeltaTime();
 
-	XMFLOAT2 leftStick = m_pGameContext->Scene->Input->GetThumbstickPosition();
-	XMFLOAT2 rightStick = m_pGameContext->Scene->Input->GetThumbstickPosition(false);
-	bool lb = m_pGameContext->Scene->Input->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
-	bool rb = m_pGameContext->Scene->Input->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-	bool leftStickPress = m_pGameContext->Scene->Input->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
+	XMFLOAT2 leftStick = InputEngine::GetInstance()->GetThumbstickPosition();
+	XMFLOAT2 rightStick = InputEngine::GetInstance()->GetThumbstickPosition(false);
+	bool lb = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
+	bool rb = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	bool leftStickPress = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);

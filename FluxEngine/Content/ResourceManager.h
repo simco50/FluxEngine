@@ -11,8 +11,11 @@ public:
 	static void Initialize(ID3D11Device* pDevice);
 	static void AddLoader(Loader* loader);
 
-	ResourceManager();
-	~ResourceManager(void);
+	ResourceManager() {}
+	~ResourceManager(){}
+
+	ResourceManager(const ResourceManager& t) = delete;
+	ResourceManager& operator=(const ResourceManager& t) = delete;
 
 	template<class T> 
 	static T* Load(const string& assetFile)
@@ -78,13 +81,5 @@ private:
 	static vector<Loader*> m_Loaders;
 	static ID3D11Device* m_pDevice;
 	static bool m_IsInitialized;
-
-private:
-	// -------------------------
-	// Disabling default copy constructor and default 
-	// assignment operator.
-	// -------------------------
-	ResourceManager(const ResourceManager& t);
-	ResourceManager& operator=(const ResourceManager& t);
 };
 

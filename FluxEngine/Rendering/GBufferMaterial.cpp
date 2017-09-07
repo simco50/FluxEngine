@@ -73,7 +73,7 @@ void GBufferMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pLightDirection, gLightDirection, AsVector);
 }
 
-void GBufferMaterial::UpdateShaderVariables(MeshComponent* pMeshComponent)
+void GBufferMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
 {
 	UNREFERENCED_PARAMETER(pMeshComponent);
 }

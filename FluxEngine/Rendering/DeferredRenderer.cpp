@@ -2,8 +2,8 @@
 #include "DeferredRenderer.h"
 #include "GBufferMaterial.h"
 #include "../Graphics/RenderTarget.h"
-#include "../Components/CameraComponent.h"
-#include "../Components/TransformComponent.h"
+#include "../Components/Camera.h"
+#include "../Components/Transform.h"
 #include "ShadowMapper.h"
 #include "QuadRenderer.h"
 
@@ -68,8 +68,8 @@ void DeferredRenderer::End()
 	m_pMaterial->SetDiffuseSRV(m_pGBuffer[DIFFUSE]->GetColorSRV());
 	m_pMaterial->SetNormalSRV(m_pGBuffer[NORMAL]->GetColorSRV());
 	m_pMaterial->SetDepthSRV(m_pGameContext->Engine->DefaultRenderTarget->GetDepthSRV());
-	m_pMaterial->SetEyePos(m_pGameContext->Scene->CurrentCamera->GetTransform()->GetWorldPosition());
-	m_pMaterial->SetViewProjInv(m_pGameContext->Scene->CurrentCamera->GetViewProjectionInverse());
+	m_pMaterial->SetEyePos(m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
+	m_pMaterial->SetViewProjInv(m_pGameContext->Scene->Camera->GetViewProjectionInverse());
 
 	//Shadow mapping
 	if (m_pGameContext->Scene->ShadowMapper != nullptr)

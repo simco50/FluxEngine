@@ -13,6 +13,6 @@ public:
 
 protected:
 	void LoadShaderVariables(){}
-	void UpdateShaderVariables(MeshComponent* pMeshComponent) { UNREFERENCED_PARAMETER(pMeshComponent); }
+	void UpdateShaderVariables(MeshRenderer* pMeshComponent) { UNREFERENCED_PARAMETER(pMeshComponent); }
 };
 

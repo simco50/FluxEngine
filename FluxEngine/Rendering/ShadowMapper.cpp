@@ -2,9 +2,9 @@
 #include "ShadowMapper.h"
 #include "../Graphics/RenderTarget.h"
 #include "../Rendering/ShadowMapMaterial.h"
-#include "../Components/MeshComponent.h"
+#include "../Components/MeshRenderer.h"
 #include "../Scenegraph/GameObject.h"
-#include "../Components/CameraComponent.h"
+#include "../Components/Camera.h"
 
 ShadowMapper::ShadowMapper()
 {
@@ -39,7 +39,7 @@ void ShadowMapper::Begin()
 
 void ShadowMapper::Render(GameObject* pGameObject)
 {
-	MeshComponent* pMesh = pGameObject->GetComponent<MeshComponent>();
+	MeshRenderer* pMesh = pGameObject->GetComponent<MeshRenderer>();
 	if (pMesh == nullptr)
 		return;
 	Material* pObjectMaterial = pMesh->GetMaterial();
@@ -54,7 +54,7 @@ void ShadowMapper::Render(GameObject* pGameObject)
 
 void ShadowMapper::End()
 {
-	m_pGameContext->Engine->D3DeviceContext->RSSetViewports(1, &m_pGameContext->Scene->CurrentCamera->GetViewport());
+	m_pGameContext->Engine->D3DeviceContext->RSSetViewports(1, &m_pGameContext->Scene->Camera->GetViewport());
 	ID3D11RenderTargetView* pRTV = m_pGameContext->Engine->DefaultRenderTarget->GetRenderTargetView();
 	m_pGameContext->Engine->D3DeviceContext->OMSetRenderTargets(1, &pRTV, m_pGameContext->Engine->DefaultRenderTarget->GetDepthStencilView());
 }
