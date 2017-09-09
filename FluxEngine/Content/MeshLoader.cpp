@@ -29,6 +29,7 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	string magic = pReader->ReadString();
 	char minVersion = pReader->Read<char>();
 	char maxVersion = pReader->Read<char>();
+	UNREFERENCED_PARAMETER(maxVersion);
 	if(minVersion != SE_VERSION)
 	{
 		stringstream stream;

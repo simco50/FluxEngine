@@ -44,7 +44,7 @@ void MeshRenderer::Initialize()
 				Console::Log("[MeshRenderer::Initialize()] > Material not yet initialized!", LogType::ERROR);
 				return;
 			}
-			m_pMeshFilter->CreateBuffers(m_pMaterial);
+			m_pMeshFilter->CreateBuffers(m_pMaterial->GetInputLayoutDesc());
 		}
 
 		BoundingOrientedBox::CreateFromPoints(m_LocalBoundingBox, m_pMeshFilter->VertexCount(), (Vector3*)m_pMeshFilter->GetVertexData("POSITION").pData, sizeof(Vector3));

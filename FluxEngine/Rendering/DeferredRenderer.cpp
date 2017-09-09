@@ -40,12 +40,12 @@ void DeferredRenderer::CreateGBuffer()
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.ColorSRV = true;
 	desc.DepthBuffer = false;
-	m_pGBuffer[DIFFUSE] = make_unique<RenderTarget>(m_pGameContext->Engine);
-	m_pGBuffer[DIFFUSE]->Create(&desc);
+	m_pGBuffer[DIFFUSE] = make_unique<RenderTarget>(m_pGameContext->Engine->D3Device, m_pGameContext->Engine->D3DeviceContext);
+	m_pGBuffer[DIFFUSE]->Create(desc);
 
 	desc.ColorFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	m_pGBuffer[NORMAL] = make_unique<RenderTarget>(m_pGameContext->Engine);
-	m_pGBuffer[NORMAL]->Create(&desc);
+	m_pGBuffer[NORMAL] = make_unique<RenderTarget>(m_pGameContext->Engine->D3Device, m_pGameContext->Engine->D3DeviceContext);
+	m_pGBuffer[NORMAL]->Create(desc);
 }
 
 void DeferredRenderer::Begin()

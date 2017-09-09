@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "MeshFilter.h"
-#include "../Materials/Material.h"
 
 using namespace std;
 
@@ -23,7 +22,7 @@ void MeshFilter::Initialize(GameContext* pGameContext)
 	m_pGameContext = pGameContext;
 }
 
-void MeshFilter::CreateBuffers(const ILDesc* ILDesc)
+void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 {
 	if (m_BuffersInitialized)
 		return;
@@ -43,31 +42,31 @@ void MeshFilter::CreateBuffers(const ILDesc* ILDesc)
 
 	for (int i = 0; i < m_VertexCount; i++)
 	{
-		for (size_t e = 0; e < ILDesc->InputLayoutDesc.size(); e++)
+		for (size_t e = 0; e < ILDesc->LayoutDesc.size(); e++)
 		{
-			if (m_VertexData.find(ILDesc->InputLayoutDesc[e].SemanticName) == m_VertexData.end())
+			if (m_VertexData.find(ILDesc->LayoutDesc[e].SemanticName) == m_VertexData.end())
 			{
 				if (i == 0)
 				{
-					string m = string(ILDesc->InputLayoutDesc[e].SemanticName);
+					string m = string(ILDesc->LayoutDesc[e].SemanticName);
 					wstring msg = wstring(m.begin(), m.end());
 
 					Console::LogFormat(LogType::WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
 				}
 				//Get the stride of the required dummy data
 				int size;
-				if (e == ILDesc->InputLayoutDesc.size() - 1)
-					size = vertexStride - ILDesc->InputLayoutDesc[e].AlignedByteOffset;
+				if (e == ILDesc->LayoutDesc.size() - 1)
+					size = vertexStride - ILDesc->LayoutDesc[e].AlignedByteOffset;
 				else
-					size = ILDesc->InputLayoutDesc[e + 1].AlignedByteOffset - ILDesc->InputLayoutDesc[e].AlignedByteOffset;
+					size = ILDesc->LayoutDesc[e + 1].AlignedByteOffset - ILDesc->LayoutDesc[e].AlignedByteOffset;
 				vector<char> dummy(size, 0);
 				memcpy(pDataLocation, dummy.data(), size);
 				pDataLocation = (char*)pDataLocation + size;
 			}
 			else
 			{
-				int stride = GetVertexDataUnsafe(ILDesc->InputLayoutDesc[e].SemanticName).Stride;
-				void* pData = (char*)GetVertexDataUnsafe(ILDesc->InputLayoutDesc[e].SemanticName).pData + stride * i;
+				int stride = GetVertexDataUnsafe(ILDesc->LayoutDesc[e].SemanticName).Stride;
+				void* pData = (char*)GetVertexDataUnsafe(ILDesc->LayoutDesc[e].SemanticName).pData + stride * i;
 				memcpy(pDataLocation, pData, stride);
 				pDataLocation = (char*)pDataLocation + stride;
 			}
@@ -103,11 +102,6 @@ void MeshFilter::CreateBuffers(const ILDesc* ILDesc)
 	HR(m_pGameContext->Engine->D3Device->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
 
 	m_BuffersInitialized = true;
-}
-
-void MeshFilter::CreateBuffers(Material* pMaterial)
-{
-	CreateBuffers(pMaterial->GetInputLayoutDesc());
 }
 
 MeshFilter::VertexData& MeshFilter::GetVertexData(const string& semantic)

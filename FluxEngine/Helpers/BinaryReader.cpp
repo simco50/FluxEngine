@@ -63,7 +63,7 @@ string BinaryReader::ReadString()
 {
 	int stringLength = (char)Read<char>();
 	stringstream ss;
-	for (size_t i = 0; i < stringLength; ++i)
+	for (int i = 0; i < stringLength; ++i)
 	{
 		ss << Read<char>();
 	}

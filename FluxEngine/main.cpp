@@ -14,8 +14,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	UNREFERENCED_PARAMETER(nShowCmd);
 	UNREFERENCED_PARAMETER(hPrevInstance);
 
-	GameManager::GetInstance()->Run(hInstance);
-	GameManager::DestroyInstance();
+	GameManager::Instance().Run(hInstance);
 
 	return 0;
 }

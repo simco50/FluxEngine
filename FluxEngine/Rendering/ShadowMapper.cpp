@@ -87,8 +87,8 @@ void ShadowMapper::SetResolution(const int width, const int height)
 	desc.DepthBuffer = true;
 	desc.DepthSRV = true;
 	desc.DepthFormat = DXGI_FORMAT_D32_FLOAT;
-	m_pRenderTarget = make_unique<RenderTarget>(m_pGameContext->Engine);
-	m_pRenderTarget->Create(&desc);
+	m_pRenderTarget = make_unique<RenderTarget>(m_pGameContext->Engine->D3Device, m_pGameContext->Engine->D3DeviceContext);
+	m_pRenderTarget->Create(desc);
 }
 
 void ShadowMapper::SetLight(const XMFLOAT3& position, const XMFLOAT3& direction)

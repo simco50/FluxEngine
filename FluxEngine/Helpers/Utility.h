@@ -1,5 +1,7 @@
 #pragma once
 //Macros
+
+#ifdef _DEBUG
 #define HR(command)\
 {HRESULT r = command;\
 stringstream stream;\
@@ -7,6 +9,9 @@ stream << typeid(*this).name() << "::" << __func__ << "()" << endl;\
 stream << "Line: " << __LINE__  << endl;\
 stream << "Action: " << #command ;\
 Console::LogHRESULT(stream.str(), r);}
+#else
+#define HR(command) command;
+#endif
 
 #define BIND_AND_CHECK_SEMANTIC(variable, semantic, as)\
 {variable = m_pEffect->GetVariableBySemantic(semantic)->as();\

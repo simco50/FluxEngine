@@ -1,14 +1,14 @@
 #pragma once
 
-struct ILElement
+struct InputLayoutElement
 {
 	UINT Size = 0;
 	DXGI_FORMAT Format;
 };
 
-struct ILDesc
+struct InputLayoutDesc
 {
-	enum ILSemantic : UINT
+	enum LayoutSemantic : UINT
 	{
 		POSITION = 1 << 0,
 		NORMAL = 1 << 1,
@@ -18,6 +18,6 @@ struct ILDesc
 	};
 	UINT ElementSemantics = 0;
 	UINT VertexStride = 0;
-	vector<D3D11_INPUT_ELEMENT_DESC> InputLayoutDesc;
+	vector<D3D11_INPUT_ELEMENT_DESC> LayoutDesc;
 	//vector<ILElement> InputLayoutElements;
 };

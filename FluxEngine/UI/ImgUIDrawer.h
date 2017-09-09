@@ -1,10 +1,9 @@
 #pragma once
+#include "Helpers/Singleton.h"
 
-class ImgUIDrawer
+class ImgUIDrawer : public Singleton<ImgUIDrawer>
 {
 public:
-	ImgUIDrawer();
-	~ImgUIDrawer();
 
 	void Initialize(EngineContext* pEngineContext);
 	void Shutdown();

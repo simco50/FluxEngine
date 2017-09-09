@@ -63,6 +63,4 @@ private:
 	bool m_Minimized = false;
 	bool m_Maximized = false;
 	bool m_Resizing = false;
-
-	ImgUIDrawer* m_pUIDrawer = nullptr;
 };

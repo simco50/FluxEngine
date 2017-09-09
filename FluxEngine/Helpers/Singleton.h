@@ -4,26 +4,16 @@ template<class T>
 class Singleton
 {
 public:
-
-	static T* GetInstance()
+	static T& Instance()
 	{
-		if (!m_Instance)
-		{
-			m_Instance = new T();
-		}
-
-		return m_Instance;
+		static T instance;
+		return instance;
 	}
 
-	static void DestroyInstance()
-	{
-		delete m_Instance;
-		m_Instance = nullptr;
-	}
+protected:
+	Singleton() {}
 
 private:
-	static T* m_Instance;
+	Singleton(const Singleton& other) {}
+	void operator=(const Singleton& other) {}
 };
-
-template<class T>
-T* Singleton<T>::m_Instance = nullptr;

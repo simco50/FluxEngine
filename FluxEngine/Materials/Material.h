@@ -34,7 +34,7 @@ public:
 	void Update(MeshRenderer* pMeshComponent);
 
 	ID3D11InputLayout* GetInputLayout() const { return m_pInputLayout.Get(); }
-	const ILDesc* GetInputLayoutDesc() const { return &m_InputLayoutDesc; }
+	const InputLayoutDesc* GetInputLayoutDesc() const { return &m_InputLayoutDesc; }
 	const MaterialDesc& GetDesc() const { return m_MaterialDesc; }
 	ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; }
 
@@ -51,7 +51,7 @@ protected:
 	Unique_COM<ID3D11InputLayout> m_pInputLayout;
 
 private:
-	ILDesc m_InputLayoutDesc;
+	InputLayoutDesc m_InputLayoutDesc;
 
 
 	//Effect variables

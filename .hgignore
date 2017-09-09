@@ -8,7 +8,6 @@ syntax: glob
 memory_leak_report.txt
 *.opendb
 FluxEngine/obj/
-Libraries/
 FluxConverter/obj/
 Build/
 .vs/
@@ -16,3 +15,5 @@ ipch/
 *.sln
 *.vcxproj
 *.filters
+FluxEngine\profiling*.csv
+FluxEngine\nsight_profiler.cfg

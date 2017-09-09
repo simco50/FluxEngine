@@ -14,7 +14,7 @@ AudioListener::~AudioListener()
 
 void AudioListener::Initialize()
 {
-	m_pFmodSystem = AudioEngine::GetInstance()->GetSystem();
+	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 
 	XMFLOAT3 pos = m_pGameObject->GetTransform()->GetWorldPosition();
 	FMOD_VECTOR listenerPosition;

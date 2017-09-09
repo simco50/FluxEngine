@@ -2,8 +2,8 @@
 #include "RenderTarget.h"
 
 
-RenderTarget::RenderTarget(EngineContext* pEngineContext):
-	m_pEngineContext(pEngineContext)
+RenderTarget::RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext) :
+	m_pD3Device(pDevice), m_pD3DeviceContext(pDeviceContext)
 {
 }
 
@@ -12,13 +12,13 @@ RenderTarget::~RenderTarget()
 	Reset();
 }
 
-void RenderTarget::Create(RENDER_TARGET_DESC* renderTargetDesc)
+void RenderTarget::Create(const RENDER_TARGET_DESC& renderTargetDesc)
 {
 	Reset();
-	m_pRenderTargetDesc = renderTargetDesc;
-	if (m_pRenderTargetDesc->ColorBuffer)
+	m_RenderTargetDesc = renderTargetDesc;
+	if (m_RenderTargetDesc.ColorBuffer)
 		CreateColor();
-	if (m_pRenderTargetDesc->DepthBuffer)
+	if (m_RenderTargetDesc.DepthBuffer)
 		CreateDepth();
 }
 
@@ -38,21 +38,21 @@ void RenderTarget::CreateColor()
 {
 	//BUFFER
 	//Use the provided resource if there is one
-	if(m_pRenderTargetDesc->pColor)
-		m_pColorBuffer = m_pRenderTargetDesc->pColor;
+	if(m_RenderTargetDesc.pColor)
+		m_pColorBuffer = m_RenderTargetDesc.pColor;
 	else
 	{
 		D3D11_TEXTURE2D_DESC bufferDesc = {};
-		bufferDesc.Width = m_pRenderTargetDesc->Width;
-		bufferDesc.Height = m_pRenderTargetDesc->Height;
+		bufferDesc.Width = m_RenderTargetDesc.Width;
+		bufferDesc.Height = m_RenderTargetDesc.Height;
 		bufferDesc.ArraySize = 1;
 		bufferDesc.CPUAccessFlags = 0;
-		bufferDesc.Format = m_pRenderTargetDesc->ColorFormat;
+		bufferDesc.Format = m_RenderTargetDesc.ColorFormat;
 		bufferDesc.MipLevels = 1;
-		if (m_pRenderTargetDesc->MSAA)
+		if (m_RenderTargetDesc.MSAA)
 		{
 			bufferDesc.SampleDesc.Count = 4;
-			bufferDesc.SampleDesc.Quality = m_pEngineContext->GameSettings.MsaaQuality - 1;
+			bufferDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality;
 		}
 		else
 		{
@@ -60,39 +60,39 @@ void RenderTarget::CreateColor()
 			bufferDesc.SampleDesc.Quality = 0;
 		}
 		bufferDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
-		if(m_pRenderTargetDesc->ColorSRV)
+		if(m_RenderTargetDesc.ColorSRV)
 			bufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-		HR(m_pEngineContext->D3Device->CreateTexture2D(&bufferDesc, nullptr, m_pColorBuffer.GetAddressOf()));
+		HR(m_pD3Device->CreateTexture2D(&bufferDesc, nullptr, m_pColorBuffer.GetAddressOf()));
 	}
 
 	//RTV
-	HR(m_pEngineContext->D3Device->CreateRenderTargetView(m_pColorBuffer.Get(), nullptr, m_pRenderTargetView.GetAddressOf()));
+	HR(m_pD3Device->CreateRenderTargetView(m_pColorBuffer.Get(), nullptr, m_pRenderTargetView.GetAddressOf()));
 
 	//SRV
-	if (m_pRenderTargetDesc->ColorSRV)
-		HR(m_pEngineContext->D3Device->CreateShaderResourceView(m_pColorBuffer.Get(), nullptr, m_pColorSRV.GetAddressOf()));
+	if (m_RenderTargetDesc.ColorSRV)
+		HR(m_pD3Device->CreateShaderResourceView(m_pColorBuffer.Get(), nullptr, m_pColorSRV.GetAddressOf()));
 }
 
 void RenderTarget::CreateDepth()
 {
 	//BUFFER
 	//Use provided resource if there is one
-	if (m_pRenderTargetDesc->pDepth)
-		m_pDepthBuffer = m_pRenderTargetDesc->pDepth;
+	if (m_RenderTargetDesc.pDepth)
+		m_pDepthBuffer = m_RenderTargetDesc.pDepth;
 	else
 	{
 		D3D11_TEXTURE2D_DESC depthStencilDesc = {};
-		depthStencilDesc.Width = m_pRenderTargetDesc->Width;
-		depthStencilDesc.Height = m_pRenderTargetDesc->Height;
+		depthStencilDesc.Width = m_RenderTargetDesc.Width;
+		depthStencilDesc.Height = m_RenderTargetDesc.Height;
 		depthStencilDesc.MipLevels = 1;
 		depthStencilDesc.ArraySize = 1;
-		depthStencilDesc.Format = GetDepthResourceFormat(m_pRenderTargetDesc->DepthFormat);
-		if (m_pRenderTargetDesc->MSAA)
+		depthStencilDesc.Format = GetDepthResourceFormat(m_RenderTargetDesc.DepthFormat);
+		if (m_RenderTargetDesc.MSAA)
 		{
 			depthStencilDesc.SampleDesc.Count = 4;
-			depthStencilDesc.SampleDesc.Quality = m_pEngineContext->GameSettings.MsaaQuality - 1;
+			depthStencilDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality;
 		}
 		else
 		{
@@ -101,37 +101,37 @@ void RenderTarget::CreateDepth()
 		}
 		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 		depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		if (m_pRenderTargetDesc->DepthSRV)
+		if (m_RenderTargetDesc.DepthSRV)
 			depthStencilDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 		depthStencilDesc.CPUAccessFlags = 0;
 		depthStencilDesc.MiscFlags = 0;
 
-		HR(m_pEngineContext->D3Device->CreateTexture2D(&depthStencilDesc, nullptr, m_pDepthBuffer.GetAddressOf()));
+		HR(m_pD3Device->CreateTexture2D(&depthStencilDesc, nullptr, m_pDepthBuffer.GetAddressOf()));
 	}
 
 	//DSV
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	dsvDesc.Format = m_pRenderTargetDesc->DepthFormat;
-	if (m_pRenderTargetDesc->MSAA)
+	dsvDesc.Format = m_RenderTargetDesc.DepthFormat;
+	if (m_RenderTargetDesc.MSAA)
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 	else
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Flags = 0;
 	dsvDesc.Texture2D.MipSlice = 0;
-	HR(m_pEngineContext->D3Device->CreateDepthStencilView(m_pDepthBuffer.Get(), &dsvDesc, m_pDepthStencilView.GetAddressOf()));
+	HR(m_pD3Device->CreateDepthStencilView(m_pDepthBuffer.Get(), &dsvDesc, m_pDepthStencilView.GetAddressOf()));
 
-	if(m_pRenderTargetDesc->DepthSRV)
+	if(m_RenderTargetDesc.DepthSRV)
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Format = GetDepthSRVFormat(m_pRenderTargetDesc->DepthFormat);
-		if(m_pRenderTargetDesc->MSAA)
+		srvDesc.Format = GetDepthSRVFormat(m_RenderTargetDesc.DepthFormat);
+		if(m_RenderTargetDesc.MSAA)
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
 		else
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 
-		HR(m_pEngineContext->D3Device->CreateShaderResourceView(m_pDepthBuffer.Get(), &srvDesc, m_pDepthSRV.GetAddressOf()));
+		HR(m_pD3Device->CreateShaderResourceView(m_pDepthBuffer.Get(), &srvDesc, m_pDepthSRV.GetAddressOf()));
 	}
 }
 
@@ -188,7 +188,7 @@ DXGI_FORMAT RenderTarget::GetDepthSRVFormat(DXGI_FORMAT initFormat)
 void RenderTarget::ClearColor()
 {
 	if (m_pRenderTargetView)
-		m_pEngineContext->D3DeviceContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<float*>(&m_pEngineContext->GameSettings.ClearColor));
+		m_pD3DeviceContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<float*>(&m_RenderTargetDesc.ClearColor));
 	else
 		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a RenderTargetView", LogType::ERROR);
 }
@@ -196,7 +196,7 @@ void RenderTarget::ClearColor()
 void RenderTarget::ClearDepth()
 {
 	if (m_pRenderTargetView)
-		m_pEngineContext->D3DeviceContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		m_pD3DeviceContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	else
 		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a DepthStencilView", LogType::ERROR);
 }

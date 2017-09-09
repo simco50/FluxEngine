@@ -19,9 +19,9 @@ AudioSource::~AudioSource()
 
 void AudioSource::Initialize()
 {
-	m_pFmodSystem = AudioEngine::GetInstance()->GetSystem();
+	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 	if(m_pSound == nullptr)
-		m_pSound = AudioEngine::GetInstance()->LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
+		m_pSound = AudioEngine::Instance().LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
 }
 
 void AudioSource::Update()

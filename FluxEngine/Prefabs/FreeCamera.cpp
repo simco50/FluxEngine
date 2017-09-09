@@ -38,26 +38,26 @@ void FreeCamera::KeyboardMouse()
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);
-	moveDirection.x += InputEngine::GetInstance()->IsKeyboardKeyDown('A') ? -1 : 0;
-	moveDirection.x += InputEngine::GetInstance()->IsKeyboardKeyDown('D') ? 1 : 0;
-	moveDirection.z += InputEngine::GetInstance()->IsKeyboardKeyDown('S') ? -1 : 0;
-	moveDirection.z += InputEngine::GetInstance()->IsKeyboardKeyDown('W') ? 1 : 0;
-	moveDirection.y += InputEngine::GetInstance()->IsKeyboardKeyDown('Q') ? -1 : 0;
-	moveDirection.y += InputEngine::GetInstance()->IsKeyboardKeyDown('E') ? 1 : 0;
+	moveDirection.x += InputEngine::Instance().IsKeyboardKeyDown('A') ? -1 : 0;
+	moveDirection.x += InputEngine::Instance().IsKeyboardKeyDown('D') ? 1 : 0;
+	moveDirection.z += InputEngine::Instance().IsKeyboardKeyDown('S') ? -1 : 0;
+	moveDirection.z += InputEngine::Instance().IsKeyboardKeyDown('W') ? 1 : 0;
+	moveDirection.y += InputEngine::Instance().IsKeyboardKeyDown('Q') ? -1 : 0;
+	moveDirection.y += InputEngine::Instance().IsKeyboardKeyDown('E') ? 1 : 0;
 
 	XMVECTOR xmMove = XMLoadFloat3(&moveDirection);
 	
 	float moveSpeed = m_MoveSpeed;
-	if (InputEngine::GetInstance()->IsKeyboardKeyDown(VK_LSHIFT))
+	if (InputEngine::Instance().IsKeyboardKeyDown(VK_LSHIFT))
 		moveSpeed *= m_ShiftMultiplier;
 
 	xmMove *= dt * moveSpeed;
 	GetTransform()->Translate(xmMove, Space::SELF);
 
 	//Rotation
-	if (InputEngine::GetInstance()->IsMouseButtonDown(VK_RBUTTON))
+	if (InputEngine::Instance().IsMouseButtonDown(VK_RBUTTON))
 	{
-		XMFLOAT2 mouseMove = InputEngine::GetInstance()->GetMouseMovement();
+		XMFLOAT2 mouseMove = InputEngine::Instance().GetMouseMovement();
 		GetTransform()->Rotate(XMFLOAT3(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f), Space::SELF);
 		GetTransform()->Rotate(XMFLOAT3(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f), Space::WORLD);
 	}
@@ -67,11 +67,11 @@ void FreeCamera::Controller()
 {
 	float dt = GameTimer::DeltaTime();
 
-	XMFLOAT2 leftStick = InputEngine::GetInstance()->GetThumbstickPosition();
-	XMFLOAT2 rightStick = InputEngine::GetInstance()->GetThumbstickPosition(false);
-	bool lb = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
-	bool rb = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-	bool leftStickPress = InputEngine::GetInstance()->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
+	XMFLOAT2 leftStick = InputEngine::Instance().GetThumbstickPosition();
+	XMFLOAT2 rightStick = InputEngine::Instance().GetThumbstickPosition(false);
+	bool lb = InputEngine::Instance().IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
+	bool rb = InputEngine::Instance().IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	bool leftStickPress = InputEngine::Instance().IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);

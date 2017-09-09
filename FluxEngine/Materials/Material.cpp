@@ -94,7 +94,7 @@ void Material::CreateInputLayout()
 	{
 		passShaderDesc.pShaderVariable->GetInputSignatureElementDesc(passShaderDesc.ShaderIndex, i, &pDesc);
 
-		ILElement ilElement;
+		InputLayoutElement ilElement;
 
 		//MASK LAYOUT
 		//0000 0001 => 4 bytes	(Active Bits = 1)
@@ -136,7 +136,7 @@ void Material::CreateInputLayout()
 		desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 		desc.AlignedByteOffset = currentOffset;
 
-		m_InputLayoutDesc.InputLayoutDesc.push_back(desc);
+		m_InputLayoutDesc.LayoutDesc.push_back(desc);
 		currentOffset += ilElement.Size;
 	}
 
@@ -144,5 +144,5 @@ void Material::CreateInputLayout()
 
 	D3DX11_PASS_DESC PassDesc;
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
-	HR(m_pGameContext->Engine->D3Device->CreateInputLayout(m_InputLayoutDesc.InputLayoutDesc.data(), m_InputLayoutDesc.InputLayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
+	HR(m_pGameContext->Engine->D3Device->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
 }

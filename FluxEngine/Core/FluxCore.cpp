@@ -5,6 +5,7 @@
 #include "../Graphics/RenderTarget.h"
 #include "../UI/ImgUIDrawer.h"
 #include "../Physics/PhysX/PhysicsCore.h"
+#include "Renderer.h"
 
 using namespace std;
 
@@ -22,14 +23,10 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	CleanupD3D();
-	AudioEngine::DestroyInstance();
 	ResourceManager::Release();
 	Console::Release();
 
-	InputEngine::GetInstance()->DestroyInstance();
-
-	m_pUIDrawer->Shutdown();
-	SafeDelete(m_pUIDrawer);
+	ImgUIDrawer::Instance().Shutdown();
 }
 
 void FluxCore::CleanupD3D()
@@ -54,14 +51,12 @@ int FluxCore::Run(HINSTANCE hInstance)
 	InitializeHighDefinitionMouse();
 
 	ResourceManager::Initialize(m_pDevice.Get());
+	ImgUIDrawer::Instance().Initialize(&m_EngineContext);
+	InputEngine::Instance().Initialize();
+
 	Initialize(&m_EngineContext);
 
 	GameTimer::Reset();
-
-	m_pUIDrawer = new ImgUIDrawer();
-	m_pUIDrawer->Initialize(&m_EngineContext);
-
-	InputEngine::GetInstance()->Initialize();
 
 	//Game loop
 	MSG msg = {};
@@ -86,23 +81,21 @@ int FluxCore::Run(HINSTANCE hInstance)
 void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
+
 	m_pDefaultRenderTarget->ClearColor();
 	m_pDefaultRenderTarget->ClearDepth();
+	//ImgUIDrawer::Instance().NewFrame();
 
 	CalculateFrameStats();
 
-	AudioEngine::GetInstance()->Update();
-	InputEngine::GetInstance()->Update();
+	//AudioEngine::Instance().Update();
+	InputEngine::Instance().Update();
 
 	Update();
 
-	m_pUIDrawer->NewFrame();
-
 	//Render the game
 	Render();
-
-	m_pUIDrawer->Render();
-
+	//ImgUIDrawer::Instance().Render();
 
 	m_pSwapChain->Present(m_EngineContext.GameSettings.VerticalSync ? 1 : 0, 0);
 }
@@ -188,6 +181,10 @@ HRESULT FluxCore::EnumAdapters()
 	while (m_pFactory->EnumAdapters(adapterCount, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		pAdapters.push_back(pAdapter);
+		DXGI_ADAPTER_DESC desc;
+		pAdapter->GetDesc(&desc);
+		wstring d = desc.Description;
+		Console::Log(string(d.begin(), d.end()));
 		++adapterCount;
 	}
 	m_pAdapter = pAdapters[0];
@@ -297,23 +294,23 @@ void FluxCore::OnResize()
 	desc.pColor = pBackbuffer;
 	desc.ColorFormat = m_BackBufferFormat;
 	desc.DepthFormat = m_DepthStencilFormat;
-	desc.MSAA = m_EngineContext.GameSettings.UseDeferredRendering ? false : m_EngineContext.GameSettings.MSAA;
+	desc.MSAA = m_EngineContext.GameSettings.MSAA;
 	desc.DepthSRV = true;
 
-	m_pDefaultRenderTarget = make_unique<RenderTarget>(&m_EngineContext);
-	m_pDefaultRenderTarget->Create(&desc);
+	m_pDefaultRenderTarget = make_unique<RenderTarget>(m_EngineContext.D3Device, m_EngineContext.D3DeviceContext);
+	m_pDefaultRenderTarget->Create(desc);
 	m_EngineContext.DefaultRenderTarget = m_pDefaultRenderTarget.get();
 	ID3D11RenderTargetView* rtv = m_pDefaultRenderTarget->GetRenderTargetView();
 
 	//Bind views to the output merger state
 	m_pDeviceContext->OMSetRenderTargets(1, &rtv, m_pDefaultRenderTarget->GetDepthStencilView());
 
-	m_Viewport.Height = m_EngineContext.GameSettings.Height;
-	m_Viewport.Width = m_EngineContext.GameSettings.Width;
+	m_Viewport.Height = (float)m_EngineContext.GameSettings.Height;
+	m_Viewport.Width = (float)m_EngineContext.GameSettings.Width;
 	m_Viewport.MaxDepth = 1.0f;
 	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.TopLeftX = 0;
-	m_Viewport.TopLeftY = 0;
+	m_Viewport.TopLeftX = 0.0f;
+	m_Viewport.TopLeftY = 0.0f;
 	m_pDeviceContext->RSSetViewports(1, &m_Viewport);
 }
 
@@ -426,7 +423,7 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			float xPosRelative = (float)raw->data.mouse.lLastX;
 			float yPosRelative = (float)raw->data.mouse.lLastY;
-			InputEngine::GetInstance()->SetMouseMovement(XMFLOAT2(xPosRelative, yPosRelative));
+			InputEngine::Instance().SetMouseMovement(XMFLOAT2(xPosRelative, yPosRelative));
 		}
 		return 0;
 	}
@@ -435,7 +432,7 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	m_pUIDrawer->WndProc(message, wParam, lParam);
+	ImgUIDrawer::Instance().WndProc(message, wParam, lParam);
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }

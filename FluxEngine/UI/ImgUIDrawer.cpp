@@ -1,14 +1,6 @@
 #include "stdafx.h"
 #include "ImgUIDrawer.h"
 
-ImgUIDrawer::ImgUIDrawer()
-{
-}
-
-ImgUIDrawer::~ImgUIDrawer()
-{
-}
-
 void ImgUIDrawer::Initialize(EngineContext* pEngineContext)
 {
 	m_pEngineContext = pEngineContext;

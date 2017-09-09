@@ -9,12 +9,10 @@ public:
 	~MeshFilter();
 
 	void Initialize(GameContext* pGameContext);
-	void CreateBuffers(const ILDesc* pILDesc);
-	void CreateBuffers(Material* pMaterial);
+	void CreateBuffers(const InputLayoutDesc* pILDesc);
 
 	ID3D11Buffer* GetVertexBuffer() const { return m_pVertexBuffer.Get(); }
 	ID3D11Buffer* GetIndexBuffer() const { return m_pIndexBuffer.Get(); }
-
 
 	int IndexCount() const { return m_IndexCount; }
 	int VertexCount() const { return m_VertexCount; }

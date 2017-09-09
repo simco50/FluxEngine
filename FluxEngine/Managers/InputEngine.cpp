@@ -142,17 +142,17 @@ void InputEngine::Update()
 	m_OldMousePosition = m_CurrMousePosition;
 	if(GetCursorPos(&m_CurrMousePosition))
 	{
-		ScreenToClient(GameManager::GetInstance()->GetEngineContext().Hwnd, &m_CurrMousePosition);
+		ScreenToClient(GameManager::Instance().GetEngineContext().Hwnd, &m_CurrMousePosition);
 	}
 
 	if (m_ForceToCenter)
 	{
 		POINT mouseCenter;
-		m_CurrMousePosition.x = GameManager::GetInstance()->GetEngineContext().GameSettings.Width / 2;
-		m_CurrMousePosition.y = GameManager::GetInstance()->GetEngineContext().GameSettings.Height / 2;
+		m_CurrMousePosition.x = GameManager::Instance().GetEngineContext().GameSettings.Width / 2;
+		m_CurrMousePosition.y = GameManager::Instance().GetEngineContext().GameSettings.Height / 2;
 		mouseCenter.x = m_CurrMousePosition.x;
 		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(GameManager::GetInstance()->GetEngineContext().Hwnd, &mouseCenter);
+		ClientToScreen(GameManager::Instance().GetEngineContext().Hwnd, &mouseCenter);
 
 		SetCursorPos(mouseCenter.x, mouseCenter.y);
 	}
@@ -307,11 +307,11 @@ void InputEngine::ForceMouseToCenter(bool force)
 	if (force)
 	{
 		POINT mouseCenter;
-		m_CurrMousePosition.x = GameManager::GetInstance()->GetEngineContext().GameSettings.Width / 2;
-		m_CurrMousePosition.y = GameManager::GetInstance()->GetEngineContext().GameSettings.Height / 2;
+		m_CurrMousePosition.x = GameManager::Instance().GetEngineContext().GameSettings.Width / 2;
+		m_CurrMousePosition.y = GameManager::Instance().GetEngineContext().GameSettings.Height / 2;
 		mouseCenter.x = m_CurrMousePosition.x;
 		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(GameManager::GetInstance()->GetEngineContext().Hwnd, &mouseCenter);
+		ClientToScreen(GameManager::Instance().GetEngineContext().Hwnd, &mouseCenter);
 
 		SetCursorPos(mouseCenter.x, mouseCenter.y);
 	}
