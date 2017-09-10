@@ -1,5 +1,10 @@
 #pragma once
-class MeshRenderer;
+enum class RenderQueueID
+{
+	ID_OPAQUE,
+	ID_TRANSPARANT,
+	ID_DEPTH,
+};
 
 struct MaterialDesc
 {
@@ -9,6 +14,7 @@ struct MaterialDesc
 	bool HasViewMatrix = false;
 	bool HasViewInverseMatrix = false;
 	bool HasWvpMatrix = false;
+	RenderQueueID RenderQueue = RenderQueueID::ID_OPAQUE;
 
 	bool Validate() const
 	{
@@ -31,18 +37,18 @@ public:
 	bool IsInitialized() const { return m_IsInitialized; }
 
 	void LoadEffect();
-	void Update(MeshRenderer* pMeshComponent);
+	void Update(const XMFLOAT4X4& WorldMatrix);
 
 	ID3D11InputLayout* GetInputLayout() const { return m_pInputLayout.Get(); }
 	const InputLayoutDesc* GetInputLayoutDesc() const { return &m_InputLayoutDesc; }
 	const MaterialDesc& GetDesc() const { return m_MaterialDesc; }
-	ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; }
+	virtual ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; }
 
 protected:
 	GameContext* m_pGameContext = nullptr;
 
 	virtual void LoadShaderVariables() = 0;
-	virtual void UpdateShaderVariables(MeshRenderer* pMeshComponent) = 0;
+	virtual void UpdateShaderVariables() = 0;
 	virtual void CreateInputLayout();
 
 	MaterialDesc m_MaterialDesc;
@@ -52,7 +58,6 @@ protected:
 
 private:
 	InputLayoutDesc m_InputLayoutDesc;
-
 
 	//Effect variables
 	ID3DX11EffectMatrixVariable *m_pWorldMatrixVariable = nullptr;

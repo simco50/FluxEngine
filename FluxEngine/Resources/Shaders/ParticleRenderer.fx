@@ -1,6 +1,6 @@
 float4x4 gWorld : WORLD;
 float4x4 gViewProj : VIEWPROJ;
-float4x4 gViewInverse : VIEWINV;
+float4x4 gViewInverse : VIEWINVERSE;
 Texture2D gParticleTexture;
 
 float PI = 3.141592;

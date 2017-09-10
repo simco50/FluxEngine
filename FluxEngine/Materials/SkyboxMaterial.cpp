@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SkyboxMaterial.h"
-#include "../Graphics/Texture.h"
+#include "Rendering/Core/Texture.h"
 
 SkyboxMaterial::SkyboxMaterial() : Material()
 {
@@ -17,8 +17,7 @@ void SkyboxMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pTextureVar, gSkybox, AsShaderResource);
 }
 
-void SkyboxMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
+void SkyboxMaterial::UpdateShaderVariables()
 {
-	UNREFERENCED_PARAMETER(pMeshComponent);
 	m_pTextureVar->SetResource(m_pTexture->GetResourceView());
 }

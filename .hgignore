@@ -1,14 +1,10 @@
 syntax: glob
 *\.vs\
-*\Debug\
 *.db
 *\ipch\
-*\Release\
 *.log
 memory_leak_report.txt
 *.opendb
-FluxEngine/obj/
-FluxConverter/obj/
 Build/
 .vs/
 ipch/

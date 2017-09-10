@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Material.h"
-#include "../Components/MeshRenderer.h"
-#include "../Components/Transform.h"
-#include "../Components/Camera.h"
+#include "Rendering/MeshRenderer.h"
+#include "Core/Components/Transform.h"
+#include "Rendering/Camera/Camera.h"
 
 Material::~Material()
 {
@@ -48,16 +48,14 @@ void Material::LoadEffect()
 		BIND_AND_CHECK_SEMANTIC(m_pWvpMatrixVariable, "WorldViewProjection", AsMatrix);
 }
 
-void Material::Update(MeshRenderer* pMeshComponent)
+void Material::Update(const XMFLOAT4X4& WorldMatrix)
 {
 	if(!m_IsInitialized)
 	{
 		Console::LogFormat(LogType::ERROR, "Material using effect: %s and technique: %s is not initialized.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
 		return;
 	}
-	auto world = XMMatrixIdentity();
-	if(pMeshComponent)
-		world = XMLoadFloat4x4(&pMeshComponent->GetTransform()->GetWorldMatrix());
+	auto world = XMLoadFloat4x4(&WorldMatrix);
 	auto view = XMLoadFloat4x4(&m_pGameContext->Scene->Camera->GetView());
 	auto projection = XMLoadFloat4x4(&m_pGameContext->Scene->Camera->GetProjection());
 
@@ -76,7 +74,7 @@ void Material::Update(MeshRenderer* pMeshComponent)
 		m_pWvpMatrixVariable->SetMatrix(reinterpret_cast<float*>(&wvp));
 	}
 
-	UpdateShaderVariables(pMeshComponent);
+	UpdateShaderVariables();
 }
 
 void Material::CreateInputLayout()
@@ -144,5 +142,5 @@ void Material::CreateInputLayout()
 
 	D3DX11_PASS_DESC PassDesc;
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
-	HR(m_pGameContext->Engine->D3Device->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
+	HR(Renderer::Instance().GetDevice()->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
 }

@@ -107,5 +107,5 @@
   },
   "SortingMode": 0,
   "BlendMode": 1,
-  "ImagePath": "D:\\Personal Work\\D3D Engine\\FluxEngine\\Resources\\Textures\\Water.png"
+  "ImagePath": "./Resources/Textures/Water.png"
 }

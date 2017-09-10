@@ -11,7 +11,6 @@ public:
 
 	virtual void Initialize() {}
 	virtual void Update() {}
-	virtual void Render() {}
 
 	void AddComponent(ComponentBase* pComponent);
 
@@ -69,7 +68,6 @@ private:
 
 	void BaseInitialize(GameContext* pGameContext);
 	void BaseUpdate();
-	void BaseRender();
 
 	string m_Tag;
 	string m_Name;

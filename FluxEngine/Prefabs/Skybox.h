@@ -12,7 +12,6 @@ public:
 
 	void Initialize() override;
 	void Update() override;
-	void Render() override;
 
 	void SetTexture(Texture* pTexture);
 

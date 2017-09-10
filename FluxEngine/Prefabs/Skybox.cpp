@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Skybox.h"
-#include "../Components/MeshRenderer.h"
-#include "../Materials/SkyboxMaterial.h"
+#include "Rendering/MeshRenderer.h"
+#include "Materials/SkyboxMaterial.h"
 
 Skybox::Skybox()
 {
@@ -23,10 +23,6 @@ void Skybox::Initialize()
 }
 
 void Skybox::Update()
-{
-}
-
-void Skybox::Render()
 {
 }
 

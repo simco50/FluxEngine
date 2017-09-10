@@ -5,7 +5,7 @@ class ImgUIDrawer : public Singleton<ImgUIDrawer>
 {
 public:
 
-	void Initialize(EngineContext* pEngineContext);
+	void Initialize(const HWND& hwnd);
 	void Shutdown();
 	void NewFrame();
 
@@ -20,7 +20,7 @@ private:
 	void CreateFontsTexture();
 	void LoadShader();
 
-	EngineContext* m_pEngineContext = nullptr;
+	HWND m_Hwnd;
 
 	int m_VertexBufferSize = 1000;
 	int m_IndexBufferSize = 1000;
@@ -29,10 +29,9 @@ private:
 	Unique_COM<ID3D11InputLayout> m_pInputLayout;
 	ID3DX11Effect* m_pEffect = nullptr;
 	ID3DX11EffectTechnique* m_pTechnique = nullptr;
-	
+
 	ID3DX11EffectShaderResourceVariable* m_pTextureVariable = nullptr;
 	ID3DX11EffectMatrixVariable* m_pViewProjVariable = nullptr;
 
 	Unique_COM<ID3D11ShaderResourceView> m_pFontSRV;
 };
-

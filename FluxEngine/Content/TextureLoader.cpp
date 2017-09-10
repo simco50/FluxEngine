@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "TextureLoader.h"
-#include "../Graphics/Texture.h"
+#include "Rendering/Core/Texture.h"
 
 TextureLoader::TextureLoader()
 {
@@ -14,7 +14,7 @@ TextureLoader::~TextureLoader()
 Texture* TextureLoader::LoadContent(const string& assetFile)
 {
 	TexMetadata metaData;
-	unique_ptr<ScratchImage> image = make_unique<ScratchImage>();
+	ScratchImage image;
 
 	size_t pointPos = assetFile.rfind(L'.');
 	if (pointPos == wstring::npos)
@@ -30,22 +30,24 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	wstring path = wstring(assetFile.begin(), assetFile.end());
 	if (extension == "dds")
 	{
-		HR(LoadFromDDSFile(path.c_str(), DDS_FLAGS_NONE, &metaData, *image));
+		HR(LoadFromDDSFile(path.c_str(), DDS_FLAGS_NONE, &metaData, image));
 	}
 	else if (extension == "tga")
 	{
-		HR(LoadFromTGAFile(path.c_str(), &metaData, *image));
+		HR(LoadFromTGAFile(path.c_str(), &metaData, image));
 	}
 	else
 	{
-		HR(LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, &metaData, *image));
+		HR(LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, &metaData, image));
 	}
 
 	ID3D11Resource* pTexture;
 	ID3D11ShaderResourceView* pSRV;
+	
+	HR(CreateTexture(m_pDevice, image.GetImages(), image.GetImageCount(), metaData, &pTexture));
+	HR(CreateShaderResourceView(m_pDevice, image.GetImages(), image.GetImageCount(), metaData, &pSRV));
 
-	HR(CreateTexture(m_pDevice, image->GetImages(), image->GetImageCount(), metaData, &pTexture));
-	HR(CreateShaderResourceView(m_pDevice, image->GetImages(), image->GetImageCount(), metaData, &pSRV));
+
 
 	return new Texture(pTexture, pSRV);
 }

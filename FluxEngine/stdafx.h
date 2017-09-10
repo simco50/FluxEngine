@@ -1,7 +1,5 @@
 #pragma once
 
-#define PHYSX
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -28,6 +26,7 @@ using namespace std;
 #pragma endregion STL
 
 #pragma region
+
 #include <PxPhysicsAPI.h>
 #if defined(DEBUG) || defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")
@@ -45,11 +44,19 @@ using namespace std;
 #pragma comment(lib, "PxPvdSDK_x86.lib")
 #endif
 using namespace physx;
+
 #pragma endregion PhysX
 
+#pragma region
 
 #include <imgui.h>
-#pragma comment(lib, "imgui.lib")
+#ifdef _DEBUG
+#pragma comment(lib, "imgui_Debug.lib")
+#else
+#pragma comment(lib, "imgui_Release.lib")
+#endif
+
+#pragma endregion IMGUI
 
 #pragma region
 
@@ -128,15 +135,25 @@ using namespace DirectX;
 #pragma region
 #undef ERROR
 //Engine core include
+#include "Helpers/SmartInterface.h"
+#include "Helpers/Utility.h"
+#include "Helpers/VertexStructures.h"
+#include "Helpers/ShaderStructs.h"
+
 #include "Debugging/Console.h"
+#include "Debugging/PerfTimer.h"
+
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
-#include "Helpers/VertexStructures.h"
-#include "Managers/InputEngine.h"
+#include "Core/InputEngine.h"
+
 #include "Content/ResourceManager.h"
-#include "Helpers/SmartInterface.h"
-#include "Debugging/PerfTimer.h"
-#include "Helpers/ShaderStructs.h"
+
+#include "Rendering/Core/RenderItem.h"
+#include "Rendering/Core/Renderer.h"
+
+#include "Audio/AudioEngine.h"
+
 using namespace Smart_COM;
 #include "Math/SimpleMath.h"
 using namespace DirectX::SimpleMath;
@@ -144,6 +161,5 @@ using namespace DirectX::SimpleMath;
 
 #pragma region
 
-#include "Helpers/Utility.h"
 
 #pragma endregion HELPERS

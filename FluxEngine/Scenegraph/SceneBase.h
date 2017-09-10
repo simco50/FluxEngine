@@ -1,7 +1,5 @@
 #pragma once
 class GameObject;
-class DeferredRenderer;
-class ShadowMapper;
 
 class SceneBase
 {
@@ -11,7 +9,6 @@ public:
 
 	virtual void Initialize() = 0;
 	virtual void Update() = 0;
-	virtual void Render() = 0;
 	virtual void LateUpdate() {}
 
 	void AddChild(GameObject* pChild);
@@ -40,6 +37,4 @@ private:
 
 	void BaseInitialize(EngineContext* pEngineContext);
 	void BaseUpdate();
-	void BaseRender();
-	DeferredRenderer* m_pDeferredRenderer = nullptr;
 };

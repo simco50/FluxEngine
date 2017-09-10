@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GameManager.h"
-#include "../Scenegraph/SceneBase.h"
+#include "Scenegraph/SceneBase.h"
 #include "Scenes/DemoScene.h"
 
 GameManager::GameManager()
@@ -18,10 +18,9 @@ void GameManager::PrepareGame()
 	m_EngineContext.GameSettings.Width = 1240;
 	m_EngineContext.GameSettings.Height = 720;
 	m_EngineContext.GameSettings.ClearColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
-	m_EngineContext.GameSettings.MSAA = false;
+	m_EngineContext.GameSettings.MSAA = true;
 	m_EngineContext.GameSettings.Title = "FluxEngine";
 	m_EngineContext.GameSettings.VerticalSync = true;
-	m_EngineContext.GameSettings.UseDeferredRendering = false;
 }
 
 void GameManager::Initialize(EngineContext* pEngineContext)
@@ -36,12 +35,6 @@ void GameManager::Initialize(EngineContext* pEngineContext)
 	m_SceneInitialized = true;
 }
 
-void GameManager::Render()
-{
-	if(m_pScenes[m_ActiveScene] && m_pScenes[m_ActiveScene]->IsInitialized())
-		m_pScenes[m_ActiveScene]->BaseRender();
-}
-
 void GameManager::Update()
 {
 	if (m_pScenes[m_ActiveScene])
@@ -50,13 +43,6 @@ void GameManager::Update()
 			m_pScenes[m_ActiveScene]->BaseInitialize(m_pEngineContext);
 		m_pScenes[m_ActiveScene]->BaseUpdate();
 	}
-}
-
-void GameManager::OnResize()
-{
-	FluxCore::OnResize();
-	if (m_ActiveScene >= 0 && m_ActiveScene < (int)m_pScenes.size() && m_pScenes[m_ActiveScene])
-		m_pScenes[m_ActiveScene]->OnResize();
 }
 
 LRESULT GameManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

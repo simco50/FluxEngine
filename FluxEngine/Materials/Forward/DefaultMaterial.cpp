@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "DefaultMaterial.h"
-#include "../../Graphics/Texture.h"
+#include "Rendering/Core/Texture.h"
 
 ID3DX11EffectVectorVariable* DefaultMaterial::m_pColorVar = nullptr;
 ID3DX11EffectShaderResourceVariable* DefaultMaterial::m_pDiffuseTextureVar = nullptr;
@@ -25,9 +25,8 @@ void DefaultMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pUseDiffuseTextureVar, gUseDiffuseTexture, AsScalar);
 }
 
-void DefaultMaterial::UpdateShaderVariables(MeshRenderer* pMeshComponent)
+void DefaultMaterial::UpdateShaderVariables()
 {
-	UNREFERENCED_PARAMETER(pMeshComponent);
 	m_pColorVar->SetFloatVector(&m_Color.x);
 	m_pUseDiffuseTextureVar->SetBool(m_pDiffuseTexture == nullptr ? false : true);
 	if(m_pDiffuseTexture)

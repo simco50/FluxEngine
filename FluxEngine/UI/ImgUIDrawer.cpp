@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "ImgUIDrawer.h"
 
-void ImgUIDrawer::Initialize(EngineContext* pEngineContext)
+void ImgUIDrawer::Initialize(const HWND& hwnd)
 {
-	m_pEngineContext = pEngineContext;
+	m_Hwnd = hwnd;
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
@@ -28,7 +28,7 @@ void ImgUIDrawer::Initialize(EngineContext* pEngineContext)
 
 	io.RenderDrawListsFn = nullptr;
 
-	io.ImeWindowHandle = m_pEngineContext->Hwnd;
+	io.ImeWindowHandle = hwnd;
 
 	LoadShader();
 	CreateVertexBuffer();
@@ -46,7 +46,7 @@ void ImgUIDrawer::NewFrame()
 	ImGuiIO& io = ImGui::GetIO();
 
 	RECT rect;
-	GetClientRect(m_pEngineContext->Hwnd, &rect);
+	GetClientRect(m_Hwnd, &rect);
 	io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
 
 	io.DeltaTime = GameTimer::DeltaTime();
@@ -78,8 +78,8 @@ void ImgUIDrawer::Render()
 	}
 
 	D3D11_MAPPED_SUBRESOURCE indexResource, vertexResource;
-	HR(m_pEngineContext->D3DeviceContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &vertexResource))
-	HR(m_pEngineContext->D3DeviceContext->Map(m_pIndexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &indexResource))
+	HR(Renderer::Instance().GetDeviceContext()->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &vertexResource))
+	HR(Renderer::Instance().GetDeviceContext()->Map(m_pIndexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &indexResource))
 
 	ImDrawVert* vtx_dst = (ImDrawVert*)vertexResource.pData;
 	ImDrawIdx* idx_dst = (ImDrawIdx*)indexResource.pData;
@@ -91,8 +91,8 @@ void ImgUIDrawer::Render()
 		vtx_dst += cmd_list->VtxBuffer.Size;
 		idx_dst += cmd_list->IdxBuffer.Size;
 	}
-	m_pEngineContext->D3DeviceContext->Unmap(m_pVertexBuffer.Get(), 0);
-	m_pEngineContext->D3DeviceContext->Unmap(m_pIndexBuffer.Get(), 0);
+	Renderer::Instance().GetDeviceContext()->Unmap(m_pVertexBuffer.Get(), 0);
+	Renderer::Instance().GetDeviceContext()->Unmap(m_pIndexBuffer.Get(), 0);
 
 	float L = 0.0f;
 	float R = ImGui::GetIO().DisplaySize.x;
@@ -108,12 +108,12 @@ void ImgUIDrawer::Render()
 	m_pViewProjVariable->SetMatrix((const float*)mvp[0]);
 
 	//Render
-	m_pEngineContext->D3DeviceContext->IASetInputLayout(m_pInputLayout.Get());
-	m_pEngineContext->D3DeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), sizeof(ImDrawIdx) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-	m_pEngineContext->D3DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Renderer::Instance().SetInputLayout(m_pInputLayout.Get());
+	Renderer::Instance().SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Renderer::Instance().SetIndexBuffer(m_pIndexBuffer.Get(), sizeof(ImDrawIdx) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 	UINT offset = 0;
 	UINT stride = sizeof(ImDrawVert);
-	m_pEngineContext->D3DeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
+	Renderer::Instance().SetVertexBuffer(0, m_pVertexBuffer.Get(), &stride, &offset);
 
 
 	int vertexOffset = 0;
@@ -130,9 +130,9 @@ void ImgUIDrawer::Render()
 			{
 				const D3D11_RECT r = { (LONG)pcmd->ClipRect.x, (LONG)pcmd->ClipRect.y, (LONG)pcmd->ClipRect.z, (LONG)pcmd->ClipRect.w };
 				m_pTextureVariable->SetResource((ID3D11ShaderResourceView*)pcmd->TextureId);
-				m_pEngineContext->D3DeviceContext->RSSetScissorRects(1, &r);
-				m_pTechnique->GetPassByIndex(0)->Apply(0, m_pEngineContext->D3DeviceContext);
-				m_pEngineContext->D3DeviceContext->DrawIndexed(pcmd->ElemCount, indexOffset, vertexOffset);
+				Renderer::Instance().GetDeviceContext()->RSSetScissorRects(1, &r);
+				m_pTechnique->GetPassByIndex(0)->Apply(0, Renderer::Instance().GetDeviceContext());
+				Renderer::Instance().GetDeviceContext()->DrawIndexed(pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}
@@ -207,7 +207,7 @@ void ImgUIDrawer::CreateVertexBuffer()
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = 0;
-	HR(m_pEngineContext->D3Device->CreateBuffer(&desc, nullptr, m_pVertexBuffer.GetAddressOf()))
+	HR(Renderer::Instance().GetDevice()->CreateBuffer(&desc, nullptr, m_pVertexBuffer.GetAddressOf()))
 }
 
 void ImgUIDrawer::CreateIndexBuffer()
@@ -221,7 +221,7 @@ void ImgUIDrawer::CreateIndexBuffer()
 	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = 0;
-	HR(m_pEngineContext->D3Device->CreateBuffer(&desc, nullptr, m_pIndexBuffer.GetAddressOf()))
+	HR(Renderer::Instance().GetDevice()->CreateBuffer(&desc, nullptr, m_pIndexBuffer.GetAddressOf()))
 }
 
 void ImgUIDrawer::CreateFontsTexture()
@@ -248,7 +248,7 @@ void ImgUIDrawer::CreateFontsTexture()
 	subResource.pSysMem = pixels;
 	subResource.SysMemPitch = desc.Width * 4;
 	subResource.SysMemSlicePitch = 0;
-	HR(m_pEngineContext->D3Device->CreateTexture2D(&desc, &subResource, &pTexture))
+	HR(Renderer::Instance().GetDevice()->CreateTexture2D(&desc, &subResource, &pTexture))
 
 	// Create texture view
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -257,7 +257,7 @@ void ImgUIDrawer::CreateFontsTexture()
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = desc.MipLevels;
 	srvDesc.Texture2D.MostDetailedMip = 0;
-	HR(m_pEngineContext->D3Device->CreateShaderResourceView(pTexture, &srvDesc, m_pFontSRV.GetAddressOf()))
+	HR(Renderer::Instance().GetDevice()->CreateShaderResourceView(pTexture, &srvDesc, m_pFontSRV.GetAddressOf()))
 	pTexture->Release();
 
 	io.Fonts->TexID = (void*)m_pFontSRV.Get();
@@ -275,7 +275,7 @@ void ImgUIDrawer::LoadShader()
 	};
 	D3DX11_PASS_DESC passDesc;
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
-	HR(m_pEngineContext->D3Device->CreateInputLayout(elementDesc, 3, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()))
+	HR(Renderer::Instance().GetDevice()->CreateInputLayout(elementDesc, 3, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()))
 
 	BIND_AND_CHECK_NAME(m_pTextureVariable, gTexture, AsShaderResource);
 	BIND_AND_CHECK_NAME(m_pViewProjVariable, gViewProj, AsMatrix);

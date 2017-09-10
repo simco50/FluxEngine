@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "PerfTimer.h"
 
-
 PerfTimer::PerfTimer(const string& source):
 	m_Source(source)
 {

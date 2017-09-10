@@ -1,6 +1,8 @@
 #pragma once
 #include "../../Scenegraph/SceneBase.h"
 
+class DefaultMaterial;
+
 class DemoScene : public SceneBase
 {
 public:
@@ -10,9 +12,9 @@ public:
 	void Initialize();
 	void Update();
 	void LateUpdate() override;
-	void Render();
 
 private:
 	GameObject* m_pGameObject = nullptr;
-	
+
+	vector<GameObject*> objects;
 };

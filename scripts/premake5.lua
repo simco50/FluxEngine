@@ -61,7 +61,7 @@ workspace "FluxEngine"
 
 		libdirs
 		{
-			"../Libraries/Imgui/lib",
+			"../Libraries/Imgui/lib/win32",
 			"../Libraries/DX_Tex/lib/",
 			"../Libraries/Fmod/lib",
 			"../Libraries/DX_Effects11/lib",

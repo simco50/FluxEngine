@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameObject.h"
-#include "../Components/ComponentBase.h"
-#include "../Components/Transform.h"
+#include "Core/Components/ComponentBase.h"
+#include "Core/Components/Transform.h"
 
 GameObject::GameObject()
 {
@@ -95,14 +95,4 @@ void GameObject::BaseUpdate()
 		m_pChildren[i]->BaseUpdate();
 	for (size_t i = 0; i < m_pComponents.size(); i++)
 		m_pComponents[i]->Update();
-}
-
-void GameObject::BaseRender()
-{
-	Render();
-
-	for (size_t i = 0; i < m_pChildren.size(); i++)
-		m_pChildren[i]->BaseRender();
-	for (size_t i = 0; i < m_pComponents.size(); i++)
-		m_pComponents[i]->Render();
 }

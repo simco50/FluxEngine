@@ -10,7 +10,7 @@ public:
 	~SkyboxMaterial();
 
 	void LoadShaderVariables();
-	void UpdateShaderVariables(MeshRenderer* pMeshComponent);
+	void UpdateShaderVariables();
 
 	void SetTexture(Texture* pTexture) { m_pTexture = pTexture; }
 

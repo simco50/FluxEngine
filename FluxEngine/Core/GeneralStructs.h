@@ -1,11 +1,5 @@
 #pragma once
-#include "GameTimer.h"
-
-class InputEngine;
 class Camera;
-class RenderTarget;
-class ShadowMapper;
-class MaterialManager;
 
 enum class WindowStyle
 {
@@ -24,7 +18,6 @@ struct GameSettings
 	bool MSAA;
 	UINT MsaaQuality = 0;
 	bool VerticalSync = true;
-	bool UseDeferredRendering = true;
 
 	float AspectRatio() const { return (float)Width / (float)Height; }
 };
@@ -32,17 +25,12 @@ struct GameSettings
 struct SceneContext
 {
 	Camera* Camera = nullptr;
-	ShadowMapper* ShadowMapper = nullptr;
-	MaterialManager* MaterialManager = nullptr;
 };
 
 struct EngineContext
 {
-	ID3D11Device* D3Device = nullptr;
-	ID3D11DeviceContext* D3DeviceContext = nullptr;
 	HWND Hwnd = nullptr;
 	GameSettings GameSettings;
-	RenderTarget* DefaultRenderTarget = nullptr;
 };
 
 struct GameContext

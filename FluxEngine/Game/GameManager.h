@@ -21,9 +21,7 @@ protected:
 private:
 	void PrepareGame();
 	void Initialize(EngineContext* pEngineContext);
-	void Render();
 	void Update();
-	void OnResize();
 
 	EngineContext* m_pEngineContext = nullptr;
 	int m_ActiveScene = -1;
