@@ -2,7 +2,7 @@
 #include "stdafx.h"
 
 #include "Particle.h"
-#include "Helpers/MathHelp.h"
+#include "Math/MathHelp.h"
 
 Particle::Particle(ParticleSystem* emitterSettings) :
 	m_pEmitterSettings(emitterSettings)

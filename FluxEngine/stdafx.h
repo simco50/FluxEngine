@@ -137,8 +137,8 @@ using namespace DirectX;
 //Engine core include
 #include "Helpers/SmartInterface.h"
 #include "Helpers/Utility.h"
-#include "Helpers/VertexStructures.h"
-#include "Helpers/ShaderStructs.h"
+#include "Materials/VertexStructures.h"
+#include "Rendering/Core/ShaderStructs.h"
 
 #include "Debugging/Console.h"
 #include "Debugging/PerfTimer.h"
