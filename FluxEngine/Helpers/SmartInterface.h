@@ -41,6 +41,11 @@ namespace Smart_COM
 		T* operator->() { return m_pPtr; }
 		T* operator->() const { return m_pPtr; }
 
+		bool IsValid()
+		{
+			return m_pPtr != nullptr;
+		}
+
 		void Reset()
 		{
 			if (m_pPtr)

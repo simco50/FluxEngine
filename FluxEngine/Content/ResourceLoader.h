@@ -1,6 +1,6 @@
 #pragma once
 #include <unordered_map>
-#include "../Debugging/PerfTimer.h"
+#include "../Debugging/Profiler.h"
 
 class Loader
 {
@@ -52,12 +52,10 @@ public:
 			Console::Log(ss.str(), LogType::ERROR);
 		}
 
-		stringstream stream;
-		stream << assetFile << " loaded.";
-		PerfTimer timer(stream.str());
+		AUTOPROFILE_DESC(LoadContent, assetFile);
+
 		T* content = LoadContent(assetFile);
 		if(content!=nullptr)m_contentReferences.insert(pair<string,T*>(assetFile, content));
-		timer.Stop();
 		return content;
 	}
 
@@ -77,12 +75,10 @@ public:
 
 	T* GetContent_Unmanaged(const string& assetFile)
 	{
-		stringstream stream;
-		stream << assetFile << " loaded";
-		PerfTimer timer(stream.str());
+		AUTOPROFILE_DESC(LoadContent, assetFile);
+
 		T* content = LoadContent(assetFile);
 		Console::LogFormat(LogType::WARNING, "ResourceManager > Asset '%s' loaded unmanaged.", assetFile.c_str());
-		timer.Stop();
 		return content;
 	}
 

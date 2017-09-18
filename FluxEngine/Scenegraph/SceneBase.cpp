@@ -21,7 +21,7 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	if (m_Initialized) 
 		return;
 
-	PerfTimer timer("Scene Initialization");
+	AUTOPROFILE(Scene);
 
 	//Set general engine pointer
 	m_GameContext.Engine = pEngineContext;
@@ -39,8 +39,6 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	Initialize();
 
 	m_Initialized = true;
-
-	timer.Stop();
 }
 
 void SceneBase::BaseUpdate()

@@ -141,7 +141,7 @@ using namespace DirectX;
 #include "Rendering/Core/ShaderStructs.h"
 
 #include "Debugging/Console.h"
-#include "Debugging/PerfTimer.h"
+#include "Debugging/Profiler.h"
 
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
