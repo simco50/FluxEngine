@@ -325,10 +325,10 @@ bool Graphics::RegisterWindowClass()
 
 	WNDCLASSA wc;
 
-	wc.hInstance = m_hInstance;
+	wc.hInstance = GetModuleHandle(0);
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hCursor = 0;
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hIcon = 0;
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wc.lpfnWndProc = WndProcStatic;
@@ -384,14 +384,14 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 		windowRect.bottom,
 		nullptr,
 		nullptr,
-		m_hInstance,
+		GetModuleHandle(0),
 		this
 	);
 
 	if (m_Hwnd == nullptr)
 		return false;
-
-	ShowWindow(m_Hwnd, SW_SHOW);
+	
+	ShowWindow(m_Hwnd, SW_SHOWDEFAULT);
 	UpdateWindow(m_Hwnd);
 
 	return true;
