@@ -193,7 +193,7 @@ void Graphics::SetDepthTest(const CompareMode& comparison)
 	}
 }
 
-void Graphics::SetStencilTest(bool stencilEnabled, CompareMode mode, StencilOperation pass, StencilOperation fail, StencilOperation zFail, unsigned int stencilRef,	unsigned int compareMask, unsigned int writeMask)
+void Graphics::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
 {
 	if (stencilEnabled != m_StencilTestEnabled)
 	{
