@@ -2,15 +2,15 @@
 #include "FluxCore.h"
 #include "resource.h"
 #include "UI/ImgUIDrawer.h"
+#include "Rendering/Core/Graphics.h"
+#include "Rendering/Core/ShaderVariation.h"
+#include "Rendering/Core/Shader.h"
+#include "Rendering/Core/VertexBuffer.h"
+#include "Rendering/Core/InputLayout.h"
+#include "Rendering/Core/ConstantBuffer.h"
+#include "Rendering/Core/IndexBuffer.h"
 
 using namespace std;
-
-#ifndef HID_USAGE_PAGE_GENERIC
-#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
-#endif
-#ifndef HID_USAGE_GENERIC_MOUSE
-#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
-#endif
 
 FluxCore::FluxCore()
 {
@@ -18,42 +18,36 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
-	ResourceManager::Release();
+	delete m_pShader;
+	delete m_pVertexBuffer;
+	delete m_pVertexShader;
+	delete m_pPixelShader;
+	delete m_pInputLayout;
+	delete m_pConstBuffer;
+	delete m_pGraphics;
+	delete m_pIndexBuffer;
 	Console::Release();
-	ImgUIDrawer::Instance().Shutdown();
-	Renderer::Instance().Shutdown();
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
+
 	Console::Initialize();
 
-	PrepareGame();
-
-	m_hInstance = hInstance;
-
-	HR(RegisterWindowClass());
-	HR(MakeWindow());
-
-	RendererDesc desc;
-	desc.ClearColor = m_EngineContext.GameSettings.ClearColor;
-	desc.Hwnd = m_EngineContext.Hwnd;
-	desc.Msaa = m_EngineContext.GameSettings.MSAA;
-	desc.VerticalSync = m_EngineContext.GameSettings.VerticalSync;
-	desc.WindowHeight = m_EngineContext.GameSettings.Height;
-	desc.WindowWidth = m_EngineContext.GameSettings.Width;
-	desc.WindowStyle = m_EngineContext.GameSettings.WindowStyle;
-	Renderer::Instance().Initialize(desc);
-
-	InitializeHighDefinitionMouse();
-
-	ResourceManager::Initialize(Renderer::Instance().GetDevice());
-	InputEngine::Instance().Initialize();
-	ImgUIDrawer::Instance().Initialize(m_EngineContext.Hwnd);
-
-	Initialize(&m_EngineContext);
+	m_pGraphics = new Graphics(hInstance);
+	m_pGraphics->SetMode(
+		/*WindowWidth*/				1240,
+		/*WindowHeight*/			720,
+		/*Window type*/				WindowType::WINDOWED,
+		/*Resizable*/				false,
+		/*Vsync*/					true,
+		/*Multisample*/				8,
+		/*RefreshRate denominator*/	60);
 
 	GameTimer::Reset();
+
+	InitGame();
+	
 
 	//Game loop
 	MSG msg = {};
@@ -78,255 +72,70 @@ int FluxCore::Run(HINSTANCE hInstance)
 void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
-	CalculateFrameStats();
 
-	AudioEngine::Instance().Update();
-	InputEngine::Instance().Update();
+	float elapsed = GameTimer::GameTime();
+	float deltaTime = GameTimer::DeltaTime();
+	m_pConstBuffer->SetParameter(4, 4, &elapsed);
+	m_pConstBuffer->SetParameter(0, 4, &deltaTime);
+	m_pConstBuffer->Apply();
+	
+	m_pGraphics->BeginFrame();
 
-	Update();
+	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
 
-	Renderer::Instance().NewFrame();
-	ImgUIDrawer::Instance().NewFrame();
-	Renderer::Instance().Render();
-	ImgUIDrawer::Instance().Render();
-	Renderer::Instance().Present();
+	m_pGraphics->PrepareDraw();
+	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
+	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
+
+	m_pGraphics->EndFrame();
 }
 
-HRESULT FluxCore::RegisterWindowClass()
+struct V
 {
-	WNDCLASSA wc;
+	XMFLOAT3 p;
+	XMFLOAT4 c;
+};
 
-	wc.hInstance = m_hInstance;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	HICON icon = LoadIcon(m_hInstance, MAKEINTRESOURCE(IDI_ICON1));
-	wc.hIcon = icon;
-	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wc.lpfnWndProc = WndProcStatic;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpszClassName = m_WindowClassName.c_str();
-	wc.lpszMenuName = nullptr;
-
-	if (!RegisterClassA(&wc))
-	{
-		auto error = GetLastError();
-		return HRESULT_FROM_WIN32(error);
-	}
-	return S_OK;
-}
-
-HRESULT FluxCore::MakeWindow()
+void FluxCore::InitGame()
 {
-	DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+	m_pGraphics->SetWindowTitle("Hello World");
 
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	m_pShader =  new Shader(m_pGraphics->m_pDevice.Get());
+	if (m_pShader->Load("./Resources/test.hlsl"))
+	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
+	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
+	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 
-	if(m_EngineContext.GameSettings.WindowStyle == WindowStyle::BORDERLESS)
-	{
-		m_EngineContext.GameSettings.Width = screenWidth;
-		m_EngineContext.GameSettings.Height = screenHeight;
-		windowStyle = WS_POPUP;
-	}
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	
+	vector<VertexElement> elements;
+	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
+	elements.push_back({ VertexElementType::VECTOR4, VertexElementSemantic::COLOR});
 
-	RECT windowRect = { 0, 0, m_EngineContext.GameSettings.Width, m_EngineContext.GameSettings.Height };
-	AdjustWindowRect(&windowRect, windowStyle, false);
+	vector<V> vertices;
+	vertices.push_back({ { -0.5, -0.5, 0 },{ 1,0,0,1 } });
+	vertices.push_back({ { -0.5, 0.5, 0 },{ 0,1,0,1 } });
+	vertices.push_back({ { 0.5, -0.5, 0 },{ 0,0,1,1 } });
+	vertices.push_back({ { 0.5, 0.5, 0 },{ 0,0,1,1 } });
 
-	int x = (screenWidth - windowRect.right) / 2;
-	int y = (screenHeight - windowRect.bottom) / 2;
+	m_pVertexBuffer->Create(vertices.size(), elements);
+	m_pVertexBuffer->SetData(vertices.data());
 
-	m_EngineContext.Hwnd = CreateWindowA(
-		m_WindowClassName.c_str(),
-		m_EngineContext.GameSettings.Title.c_str(),
-		windowStyle,
-		x,
-		y,
-		windowRect.right,
-		windowRect.bottom,
-		nullptr,
-		nullptr,
-		m_hInstance,
-		this
-	);
+	m_pInputLayout = new InputLayout(m_pGraphics->m_pDevice.Get());
+	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 
-	if(m_EngineContext.Hwnd == nullptr)
-	{
-		auto error = GetLastError();
-		return HRESULT_FROM_WIN32(error);
-	}
+	m_pConstBuffer = new ConstantBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	m_pConstBuffer->SetSize(16);
+	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstBuffer->GetBuffer();
+	m_pGraphics->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pBuffer);
 
-	ShowWindow(m_EngineContext.Hwnd, SW_SHOW);
-	UpdateWindow(m_EngineContext.Hwnd);
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	m_pIndexBuffer->Create(6);
+	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
+	m_pIndexBuffer->SetData(indices.data());
 
-	return S_OK;
-}
-
-void FluxCore::InitializeHighDefinitionMouse()
-{
-	RAWINPUTDEVICE Rid[1];
-	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-	Rid[0].dwFlags = RIDEV_INPUTSINK;
-	Rid[0].hwndTarget = m_EngineContext.Hwnd;
-	RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
-}
-
-LRESULT CALLBACK FluxCore::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (message == WM_CREATE)
-	{
-		CREATESTRUCT *pCS = reinterpret_cast<CREATESTRUCT*>(lParam);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG>(pCS->lpCreateParams));
-	}
-	else
-	{
-		FluxCore* pThisGame = reinterpret_cast<FluxCore*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
-		if (pThisGame) return pThisGame->WndProc(hWnd, message, wParam, lParam);
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-		// WM_ACTIVATE is sent when the window is activated or deactivated.  
-		// We pause the game when the window is deactivated and unpause it 
-		// when it becomes active.  
-	case WM_ACTIVATE:
-		OnPause(LOWORD(wParam) == WA_INACTIVE);
-		return 0;
-
-		// WM_SIZE is sent when the user resizes the window.
-	case WM_SIZE:
-	{
-		// Save the new client area dimensions.
-		int newWidth = LOWORD(lParam);
-		int newHeight = HIWORD(lParam);
-		m_EngineContext.GameSettings.Width = newWidth;
-		m_EngineContext.GameSettings.Height = newHeight;
-		if (Renderer::Instance().GetDevice() != nullptr)
-		{
-			if (wParam == SIZE_MINIMIZED)
-			{
-				OnPause(true);
-				m_Minimized = true;
-				m_Maximized = false;
-			}
-			else if (wParam == SIZE_MAXIMIZED)
-			{
-				OnPause(false);
-				m_Minimized = false;
-				m_Maximized = true;
-				Renderer::Instance().OnResize();
-			}
-			else if (wParam == SIZE_RESTORED)
-			{
-				// Restoring from minimized state?
-				if (m_Minimized)
-				{
-					OnPause(false);
-					m_Minimized = false;
-					Renderer::Instance().OnResize();
-				}
-				// Restoring from maximized state?
-				else if (m_Maximized)
-				{
-					OnPause(false);
-					m_Maximized = false;
-					Renderer::Instance().OnResize();
-				}
-				else if (!m_Resizing) // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
-				{
-					Renderer::Instance().OnResize();
-				}
-			}
-		}
-		return 0;
-	}
-
-	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-	case WM_ENTERSIZEMOVE:
-		OnPause(true);
-		m_Resizing = true;
-		return 0;
-
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
-	case WM_EXITSIZEMOVE:
-		OnPause(false);
-		m_Resizing = false;
-		Renderer::Instance().OnResize();
-		return 0;
-
-	case WM_CLOSE:
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-
-	//High-Definition Mouse Movement
-	case WM_INPUT:
-	{
-		UINT dwSize = 40;
-		static BYTE lpb[40];
-
-		GetRawInputData((HRAWINPUT)lParam, RID_INPUT,
-			lpb, &dwSize, sizeof(RAWINPUTHEADER));
-
-		RAWINPUT* raw = (RAWINPUT*)lpb;
-
-		if (raw->header.dwType == RIM_TYPEMOUSE)
-		{
-			float xPosRelative = (float)raw->data.mouse.lLastX;
-			float yPosRelative = (float)raw->data.mouse.lLastY;
-			InputEngine::Instance().SetMouseMovement(XMFLOAT2(xPosRelative, yPosRelative));
-		}
-		return 0;
-	}
-
-	default:
-		break;
-	}
-
-	ImgUIDrawer::Instance().WndProc(message, wParam, lParam);
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-void FluxCore::CalculateFrameStats() const
-{
-	// Code computes the average frames per second, and also the 
-	// average time it takes to render one frame.  These stats 
-	// are appended to the window caption bar.
-
-	static int frameCnt = 0;
-	static float timeElapsed = 0.0f;
-
-	frameCnt++;
-
-	// Compute averages over one second period.
-	if ((GameTimer::GameTime() - timeElapsed) >= 1.0f)
-	{
-		int fps = frameCnt; // fps = frameCnt / 1
-		float mspf = 1000.0f / (float)fps;
-
-		stringstream str;
-		str << m_EngineContext.GameSettings.Title << "\t FPS: " << fps << "\t MS: " << mspf;
-		string title = str.str();
-		SetWindowTextA(m_EngineContext.Hwnd, str.str().c_str());
-
-		// Reset for next average.
-		frameCnt = 0;
-		timeElapsed += 1.0f;
-	}
-}
-
-void FluxCore::OnPause(const bool paused)
-{
-	if (paused)
-		GameTimer::Stop();
-	else
-		GameTimer::Start();
+	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
+	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
+	m_pGraphics->SetInputLayout(m_pInputLayout);
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
 }

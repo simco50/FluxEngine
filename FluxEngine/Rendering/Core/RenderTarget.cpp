@@ -49,16 +49,8 @@ void RenderTarget::CreateColor()
 		bufferDesc.CPUAccessFlags = 0;
 		bufferDesc.Format = m_RenderTargetDesc.ColorFormat;
 		bufferDesc.MipLevels = 1;
-		if (m_RenderTargetDesc.MSAA)
-		{
-			bufferDesc.SampleDesc.Count = 4;
-			bufferDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality - 1;
-		}
-		else
-		{
-			bufferDesc.SampleDesc.Count = 1;
-			bufferDesc.SampleDesc.Quality = 0;
-		}
+		bufferDesc.SampleDesc.Count = m_RenderTargetDesc.MsaaSampleCount;
+		bufferDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality;
 		bufferDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
 		if(m_RenderTargetDesc.ColorSRV)
 			bufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
@@ -89,16 +81,8 @@ void RenderTarget::CreateDepth()
 		depthStencilDesc.MipLevels = 1;
 		depthStencilDesc.ArraySize = 1;
 		depthStencilDesc.Format = GetDepthResourceFormat(m_RenderTargetDesc.DepthFormat);
-		if (m_RenderTargetDesc.MSAA)
-		{
-			depthStencilDesc.SampleDesc.Count = 4;
-			depthStencilDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality - 1;
-		}
-		else
-		{
-			depthStencilDesc.SampleDesc.Count = 1;
-			depthStencilDesc.SampleDesc.Quality = 0;
-		}
+		depthStencilDesc.SampleDesc.Count = m_RenderTargetDesc.MsaaSampleCount;
+		depthStencilDesc.SampleDesc.Quality = m_RenderTargetDesc.MsaaQuality;
 		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 		depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		if (m_RenderTargetDesc.DepthSRV)
@@ -112,7 +96,7 @@ void RenderTarget::CreateDepth()
 	//DSV
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = m_RenderTargetDesc.DepthFormat;
-	if (m_RenderTargetDesc.MSAA)
+	if (m_RenderTargetDesc.MsaaSampleCount > 1)
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 	else
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -124,7 +108,7 @@ void RenderTarget::CreateDepth()
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = GetDepthSRVFormat(m_RenderTargetDesc.DepthFormat);
-		if(m_RenderTargetDesc.MSAA)
+		if(m_RenderTargetDesc.MsaaSampleCount > 1)
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
 		else
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -153,7 +137,7 @@ DXGI_FORMAT RenderTarget::GetDepthResourceFormat(DXGI_FORMAT initFormat)
 		resourceFormat = DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS;
 		break;
 	default:
-		Console::Log("RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
+		FLUX_LOG(ERROR, "RenderTarget::GetDepthSRVFormat() -> Format not supported!");
 		break;
 	}
 
@@ -178,34 +162,34 @@ DXGI_FORMAT RenderTarget::GetDepthSRVFormat(DXGI_FORMAT initFormat)
 		srvFormat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
 		break;
 	default:
-		Console::Log("RenderTarget::GetDepthSRVFormat() -> Format not supported!", LogType::ERROR);
+		FLUX_LOG(ERROR, "RenderTarget::GetDepthSRVFormat() -> Format not supported!");
 		break;
 	}
 
 	return srvFormat;
 }
 
-void RenderTarget::ClearColor()
+void RenderTarget::ClearColor(const XMFLOAT4& color)
 {
 	if (m_pRenderTargetView)
-		m_pD3DeviceContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<float*>(&m_RenderTargetDesc.ClearColor));
+		m_pD3DeviceContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&color));
 	else
-		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a RenderTargetView", LogType::ERROR);
+		FLUX_LOG(ERROR, "RenderTarget::ClearColor() -> RenderTarget does not have a RenderTargetView");
 }
 
-void RenderTarget::ClearDepth()
+void RenderTarget::ClearDepth(const unsigned int depthflags, const float depth, unsigned char stencil)
 {
 	if (m_pRenderTargetView)
-		m_pD3DeviceContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		m_pD3DeviceContext->ClearDepthStencilView(m_pDepthStencilView.Get(), (D3D11_CLEAR_FLAG)depthflags, depth, stencil);
 	else
-		Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a DepthStencilView", LogType::ERROR);
+		FLUX_LOG(ERROR, "RenderTarget::ClearColor() -> RenderTarget does not have a DepthStencilView");
 }
 
 ID3D11ShaderResourceView* RenderTarget::GetColorSRV() const
 {
 	if (m_pColorSRV)
 		return m_pColorSRV.Get();
-	Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a ColorShaderResourceView", LogType::ERROR);
+	FLUX_LOG(ERROR, "RenderTarget::ClearColor() -> RenderTarget does not have a ColorShaderResourceView");
 	return nullptr;
 }
 
@@ -213,6 +197,6 @@ ID3D11ShaderResourceView* RenderTarget::GetDepthSRV() const
 {
 	if (m_pDepthSRV)
 		return m_pDepthSRV.Get();
-	Console::Log("RenderTarget::ClearColor() -> RenderTarget does not have a DepthShaderResourceView", LogType::ERROR);
+	FLUX_LOG(ERROR, "RenderTarget::ClearColor() -> RenderTarget does not have a DepthShaderResourceView");
 	return nullptr;
 }

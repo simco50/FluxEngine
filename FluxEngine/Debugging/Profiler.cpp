@@ -44,5 +44,5 @@ AutoProfiler::~AutoProfiler()
 	const float time = Stop();
 	stringstream str;
 	str << "[" << m_Name << "] " << m_Description << " > " << time << " ms";
-	Console::Log(str.str());
+	FLUX_LOG(INFO, str.str());
 }

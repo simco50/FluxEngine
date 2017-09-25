@@ -38,14 +38,14 @@ ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 			pErrorBlob->Release();
 			pErrorBlob = nullptr;
 
-			Console::Log(ss.str(), LogType::ERROR);
+			FLUX_LOG(ERROR, ss.str());
 		}
 		else
 		{
 			stringstream ss;
 			ss<<"EffectLoader: Failed to CreateEffectFromFile!\nPath: ";
 			ss<<assetFile;
-			Console::LogHRESULT(ss.str(), hr);
+			FLUX_LOG_HR(ss.str(), hr);
 			return nullptr;
 		}
 	}

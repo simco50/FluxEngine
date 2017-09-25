@@ -1,4 +1,4 @@
-workspace "FluxEngine"
+solution ("FluxEngine")
 	basedir "../"
 	configurations { "Debug", "Release" }
     platforms "x86"
@@ -22,23 +22,21 @@ workspace "FluxEngine"
 
 		location "../FluxEngine/"
 
-		targetdir "../Build/%{cfg.buildcfg}"
-		objdir "../Build/Intermediate/%{cfg.buildcfg}"
+		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
+		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
 		pchheader "stdafx.h"
 		pchsource "../FluxEngine/stdafx.cpp"
-		kind "ConsoleApp"
+		kind "WindowedApp"
 		characterset ("MBCS")
 		defines { "WIN32", "_CONSOLE" }
 
 		files
 		{ 
-			"../FluxEngine/stdafx.cpp",
-			"../FluxEngine/stdafx.h",
-
 			"../FluxEngine/**.h",
 			"../FluxEngine/**.hpp",
-			"../FluxEngine/**.cpp"
+			"../FluxEngine/**.cpp",
+			"../FluxEngine/**.inl"
 		}
 
 		includedirs 
@@ -49,7 +47,7 @@ workspace "FluxEngine"
 			"../Libraries/DX_Tex/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Nvidia Flex 1.1.0/include",
-			"../Libraries/PhysX 3.4/Include",
+			"../Libraries/PhysX 3.4/Include"
 		}
 
 		excludes
@@ -84,7 +82,7 @@ workspace "FluxEngine"
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PhysX3DEBUG_x86.dll\" \"$(OutDir)\" /D",
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PhysX3CommonDEBUG_x86.dll\" \"$(OutDir)\" /D",
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\" /y /D",
-				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\" /D",
+				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\" /D"
 		 	}
 
 		configuration "Release32"
@@ -95,5 +93,15 @@ workspace "FluxEngine"
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PhysX3_x86.dll\" \"$(OutDir)\" /D",
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PhysX3Common_x86.dll\" \"$(OutDir)\" /D",
 				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxPvdSDK_x86.dll\" \"$(OutDir)\" /y /D",
-				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxFoundation_x86.dll\" \"$(OutDir)\" /D",
+				"copy \"..\\Libraries\\PhysX 3.4\\bin\\vc14win32\\PxFoundation_x86.dll\" \"$(OutDir)\" /D"
 		 	}
+
+
+newaction {
+		trigger     = "clean",
+		description = "Remove all binaries and generated files",
+
+		execute = function()
+			os.rmdir("../Build")
+		end
+	}

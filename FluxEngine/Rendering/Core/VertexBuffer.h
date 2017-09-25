@@ -1,6 +1,6 @@
 #pragma once
 
-enum class VertexElementType
+enum class VertexElementType : unsigned char
 {
 	INT,
 	FLOAT,
@@ -12,7 +12,7 @@ enum class VertexElementType
 	MAX_VERTEX_ELEMENT_TYPES
 };
 
-enum class VertexElementSemantic
+enum class VertexElementSemantic : unsigned char
 {
 	POSITION,
 	NORMAL,
@@ -29,18 +29,39 @@ enum class VertexElementSemantic
 struct VertexElement
 {
 	VertexElement(VertexElementType type, VertexElementSemantic semantic, unsigned char index = 0, bool perInstance = false) :
-		m_Type(type),
-		m_Semantic(semantic),
-		m_Index(index),
-		m_PerInstance(perInstance),
-		m_Offset(0)
+		Type(type),
+		Semantic(semantic),
+		Index(index),
+		PerInstance(perInstance),
+		Offset(0)
 	{}
 
-	VertexElementType m_Type;
-	VertexElementSemantic m_Semantic;
-	unsigned char m_Index;
-	bool m_PerInstance;
-	unsigned m_Offset;
+	VertexElementType Type;
+	VertexElementSemantic Semantic;
+	unsigned char Index;
+	bool PerInstance;
+	unsigned Offset;
+
+	static unsigned int GetSizeOfType(VertexElementType type)
+	{
+		switch (type)
+		{
+		case VertexElementType::FLOAT:
+		case VertexElementType::UBYTE4:
+		case VertexElementType::UBYTE4_NORM:
+		case VertexElementType::INT:
+			return 4;
+		case VertexElementType::VECTOR2:
+			return 8;
+		case VertexElementType::VECTOR3:
+			return 12;
+		case VertexElementType::VECTOR4:
+			return 16;
+		}
+		FLUX_LOG(WARNING, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
+		return 0;
+	}
+
 };
 
 class VertexBuffer
@@ -49,28 +70,34 @@ public:
 	VertexBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
 	~VertexBuffer();
 
-	void Create(const int vertexCount, const vector<VertexElement>& elements, bool dynamic = false);
+	DELETE_COPY(VertexBuffer)
 
-	ID3D11Buffer* GetBuffer() const { return m_pBuffer.Get(); }
+	void Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic = false);
+	void SetData(void* pData);
+
+	void* GetBuffer() const { return m_pBuffer; }
 
 	void* Map(bool discard);
 	void Unmap();
 
 	unsigned int GetVertexStride() const { return m_VertexStride; }
 	unsigned int GetVertexCount() const { return m_VertexCount; }
+	const vector<VertexElement>& GetElements() const { return m_Elements; }
 
 private:
-	void SetVertexSize(const vector<VertexElement>& elements);
+	void Release();
 
-	Smart_COM::Unique_COM<ID3D11Buffer> m_pBuffer;
+	void SetVertexSize(const vector<VertexElement>& elements);
+	void UpdateOffsets(vector<VertexElement>& elements);
+
+	void* m_pBuffer = nullptr;
 
 	bool m_Dynamic = false;
 	vector<VertexElement> m_Elements;
+	bool m_HardwareLocked = false;
 
 	unsigned int m_VertexCount = 0;
 	unsigned int m_VertexStride = 0;
-
-	bool m_HardwareLocked = false;
 
 	ID3D11Device* m_pDevice;
 	ID3D11DeviceContext* m_pDeviceContext;

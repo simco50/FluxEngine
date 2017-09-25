@@ -5,15 +5,20 @@ public:
 	IndexBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
 	~IndexBuffer();
 
-	void Create(const int indexCount, bool dynamic = false);
+	DELETE_COPY(IndexBuffer)
 
-	ID3D11Buffer* GetBuffer() const { return m_pBuffer.Get(); }
+	void Create(const int indexCount, bool dynamic = false);
+	void SetData(void* pData);
+
+	void* GetBuffer() const { return m_pBuffer; }
 
 	void* Map(bool discard);
 	void Unmap();
 
 private:
-	Smart_COM::Unique_COM<ID3D11Buffer> m_pBuffer;
+	void Release();
+
+	void* m_pBuffer = nullptr;
 
 	bool m_Dynamic = false;
 	int m_IndexCount = -1;

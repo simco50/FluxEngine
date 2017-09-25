@@ -12,7 +12,7 @@ void Material::Initialize(GameContext* pGameContext)
 {
 	if (m_IsInitialized)
 	{
-		Console::LogFormat(LogType::WARNING, "Material using effect: %s and technique: %s is already initialized. Skipping initialization.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
+		FLUX_LOG(WARNING, "Material using effect: %s and technique: %s is already initialized. Skipping initialization.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
 		return;
 	}
 
@@ -52,7 +52,7 @@ void Material::Update(const XMFLOAT4X4& WorldMatrix)
 {
 	if(!m_IsInitialized)
 	{
-		Console::LogFormat(LogType::ERROR, "Material using effect: %s and technique: %s is not initialized.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
+		FLUX_LOG(ERROR, "Material using effect: %s and technique: %s is not initialized.", m_MaterialDesc.EffectName.c_str(), m_MaterialDesc.TechniqueName.c_str());
 		return;
 	}
 	auto world = XMLoadFloat4x4(&WorldMatrix);
@@ -142,5 +142,5 @@ void Material::CreateInputLayout()
 
 	D3DX11_PASS_DESC PassDesc;
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
-	HR(Renderer::Instance().GetDevice()->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
+	HR(RenderSystem::Instance().GetDevice()->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
 }

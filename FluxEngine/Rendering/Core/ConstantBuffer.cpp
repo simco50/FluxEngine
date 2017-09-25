@@ -10,36 +10,41 @@ ConstantBuffer::ConstantBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDevi
 
 ConstantBuffer::~ConstantBuffer()
 {
+	Release();
 }
 
 void ConstantBuffer::SetSize(const unsigned int size)
 {
 	Release();
+	m_Size = size;
 
-	m_pShadowData = new unsigned char[size];
+	m_pShadowData = new unsigned char[m_Size];
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = size;
+	desc.ByteWidth = m_Size;
 	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	
-	HR(m_pDevice->CreateBuffer(&desc, nullptr, &m_pBuffer));
+	HR(m_pDevice->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
 }
 
 void ConstantBuffer::Apply()
 {
 	if (m_IsDirty && m_pBuffer)
 	{
-		m_pDeviceContext->UpdateSubresource(m_pBuffer, 0, 0, (void*)m_pShadowData, 0, 0);
+		m_pDeviceContext->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, 0, (void*)m_pShadowData, 0, 0);
 		m_IsDirty = false;
 	}
 }
 
-void ConstantBuffer::SetParameter(unsigned char offset, const unsigned char size, const void* pData)
+bool ConstantBuffer::SetParameter(unsigned int offset, const unsigned int size, const void* pData)
 {
+	if (m_Size < offset + size)
+		return false;
 	memcpy(&m_pShadowData[offset], pData, size);
+	m_IsDirty = true;
+	return true;
 }
 
 void ConstantBuffer::Release()

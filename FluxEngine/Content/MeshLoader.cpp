@@ -17,7 +17,7 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	{
 		stringstream stream;
 		stream << "MeshLoader::LoadContent() -> '" << assetFile << "' has a wrong file extension";
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, stream.str());
 		return nullptr;
 	}
 
@@ -34,7 +34,7 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	{
 		stringstream stream;
 		stream << "MeshLoader::LoadContent() File '" << assetFile << "' version mismatch: Expects v" << SE_VERSION << ".0 but is v" << (int)minVersion << ".0";
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, stream.str());
 	}
 	
 	for(;;)

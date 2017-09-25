@@ -15,19 +15,12 @@ public:
 	const XMFLOAT4X4& GetViewProjectionInverse() const { return m_ViewProjectionInverse; }
 	const XMFLOAT4X4& GetProjection() const { return m_Projection; }
 
-	bool IsActive() const { return m_Active; }
-	void SetActive(const bool isActive) { m_Active = isActive; }
-
 	void SetViewport(float x, float y, float width, float height);
 	void UpdateViewport();
 	const D3D11_VIEWPORT& GetViewport() const { return m_Viewport; }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction);
-
-	void SetFrustumCulling(const bool enabled) { m_FrustumCulling = enabled; }
-	bool FrustumCulling() const { return m_FrustumCulling; }
-	bool IsInFrustum(MeshRenderer* pObj) const;
 
 	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
 	void SetOrthographicSize(float size) { m_Size = size; }
@@ -50,7 +43,6 @@ private:
 	XMFLOAT4X4 m_Projection;
 
 	bool m_Perspective = true;
-	bool m_Active = false;
 
 	D3D11_VIEWPORT m_Viewport;
 	float m_VpX = 0.0f;
@@ -58,7 +50,6 @@ private:
 	float m_VpWidth = 1.0f;
 	float m_VpHeight = 1.0f;
 
-	bool m_FrustumCulling = true;
 	BoundingFrustum m_Frustum;
 };
 

@@ -5,6 +5,8 @@ public:
 	Texture(ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV);
 	~Texture();
 
+	DELETE_COPY(Texture)
+
 	ID3D11Resource* GetResource() const { return m_pTexture; }
 	ID3D11ShaderResourceView* GetResourceView() const { return m_pTextureSRV; }
 

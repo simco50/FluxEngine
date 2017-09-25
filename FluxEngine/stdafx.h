@@ -1,5 +1,12 @@
 #pragma once
 
+#ifdef _DEBUG
+
+#define PROFILING
+#define LOGGING
+
+#endif
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -16,7 +23,6 @@
 #include <string>
 #include <algorithm>
 #include <map>
-#include <exception>
 #include <sstream>
 #include <memory>
 #include <fstream>
@@ -63,7 +69,6 @@ using namespace physx;
 //DirectX
 #include <dxgi.h>
 #pragma comment(lib, "dxgi.lib")
-
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 #include <d3dcompiler.h>
@@ -76,27 +81,23 @@ using namespace physx;
 #include <DirectXCollision.h>
 using namespace DirectX;
 
-//**EFFECTS11 (Helper for loading Effects (D3DX11))
-//https://fx11.codeplex.com/
-#include "d3dx11effect.h" //[AdditionalLibraries/DX_Effects11/include/d3dx11effect.h]
-
+#include "d3dx11effect.h"
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxEffects11_vc14_Debug.lib")
+#pragma comment(lib, "DxEffects11_Win32_Debug.lib")
 #else 
-#pragma comment(lib, "DxEffects11_vc14_Release.lib")
+#pragma comment(lib, "DxEffects11_Win32_Release.lib")
 #endif
 
-//*DXTEX (Helper for loading Textures (D3DX11))
-//http://directxtex.codeplex.com/
 #include "DirectXTex.h"
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxTex_vc14_Debug.lib")
+#pragma comment(lib, "DirectXTex_Win32_Debug.lib")
 #else 
-#pragma comment(lib, "DxTex_vc14_Release.lib")
+#pragma comment(lib, "DirectXTex_Win32_Release.lib")
 #endif
 
 #pragma endregion D3D
 
+#ifdef FLEX
 #pragma region
 #include <NvFlex.h>
 #include <NvFlexExt.h>
@@ -109,6 +110,7 @@ using namespace DirectX;
 #pragma comment(lib, "NvFlexExtReleaseCUDA_x86.lib")
 #endif
 #pragma endregion FLEX
+#endif
 
 #pragma region
 
@@ -136,6 +138,8 @@ using namespace DirectX;
 #undef ERROR
 //Engine core include
 #include "Helpers/SmartInterface.h"
+#include "Helpers/LogMacros.h"
+#include "Helpers/AssertMacros.h"
 #include "Helpers/Utility.h"
 #include "Materials/VertexStructures.h"
 #include "Rendering/Core/ShaderStructs.h"
@@ -150,9 +154,12 @@ using namespace DirectX;
 #include "Content/ResourceManager.h"
 
 #include "Rendering/Core/RenderItem.h"
-#include "Rendering/Core/Renderer.h"
+#include "Rendering/Core/RenderSystem.h"
 
 #include "Audio/AudioEngine.h"
+
+#include "Math/MathHelp.h"
+#include "Math/MathTypes.h"
 
 using namespace Smart_COM;
 #include "Math/SimpleMath.h"

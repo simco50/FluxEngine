@@ -18,9 +18,7 @@ void BinaryReader::Open(const string& filePath)
 	m_pStream->open(filePath, ios::binary);
 	if(m_pStream->fail())
 	{
-		stringstream stream;
-		stream << "BinaryReader::Open() -> File " << filePath << " not found!" << endl;
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, "[BinaryReader::Open()] > File %s not found!", filePath.c_str());
 		m_pStream.reset();
 		return;
 	}
@@ -73,7 +71,7 @@ string BinaryReader::ReadString()
 string BinaryReader::ReadLongString()
 {
 	if (m_pStream == nullptr)
-		Console::Log("BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+		FLUX_LOG(ERROR, "[BinaryReader::ReadLongString()] > BinaryReader doesn't exist!\nUnable to read binary data...");
 
 	auto stringLength = Read<UINT>();
 
@@ -90,7 +88,7 @@ string BinaryReader::ReadNullString()
 {
 	if (m_pStream == nullptr)
 	{
-		Console::Log("BinaryReader doesn't exist!\nUnable to read binary data...", LogType::ERROR);
+		FLUX_LOG(ERROR, "[BinaryReader::ReadNullString()] > BinaryReader doesn't exist!\nUnable to read binary data...");
 		return "";
 	}
 

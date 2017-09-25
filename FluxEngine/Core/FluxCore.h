@@ -1,45 +1,38 @@
 #pragma once
 
-class RenderTarget;
-struct GameSettings;
-class ImgUIDrawer;
-class PhysicsCore;
+class Graphics;
+class Shader;
+class ShaderVariation;
+class VertexBuffer;
+class InputLayout;
+class ConstantBuffer;
+class IndexBuffer;
 
 class FluxCore
 {
 public:
 	FluxCore();
-
 	virtual ~FluxCore();
 
+	DELETE_COPY(FluxCore)
+
 	int Run(HINSTANCE hInstance);
-	static LRESULT CALLBACK WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	EngineContext& GetEngineContext() { return m_EngineContext; }
-
-protected:
-	EngineContext m_EngineContext;
-
-	virtual LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void GameLoop();
+	void InitGame();
 
 private:
-	HRESULT RegisterWindowClass();
-	HRESULT MakeWindow();
-	void InitializeHighDefinitionMouse();
-	void OnPause(const bool paused);
-	void CalculateFrameStats() const;
-
-	void GameLoop();
-	virtual void PrepareGame() = 0;
-	virtual void Initialize(EngineContext* pEngineContext) = 0;
-	virtual void Update() = 0;
+	Graphics* m_pGraphics = nullptr;
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	std::string m_WindowClassName = "WindowClass1";
+	Shader* m_pShader;
+	ShaderVariation* m_pVertexShader;
+	ShaderVariation* m_pPixelShader;
+	VertexBuffer* m_pVertexBuffer;
+	InputLayout* m_pInputLayout;
+	ConstantBuffer* m_pConstBuffer;
+	IndexBuffer* m_pIndexBuffer;
 
-	//Window states
-	bool m_Minimized = false;
-	bool m_Maximized = false;
-	bool m_Resizing = false;
+	float m_DeltaTime = 0;
 };

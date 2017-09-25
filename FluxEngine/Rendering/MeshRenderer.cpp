@@ -41,7 +41,7 @@ void MeshRenderer::Initialize()
 		{ 
 			if(m_pMaterial->IsInitialized() == false)
 			{
-				Console::Log("[MeshRenderer::Initialize()] > Material not yet initialized!", LogType::ERROR);
+				FLUX_LOG(WARNING, "[MeshRenderer::Initialize()] > Material not yet initialized!");
 				return;
 			}
 			m_pMeshFilter->CreateBuffers(m_pMaterial->GetInputLayoutDesc());
@@ -53,9 +53,6 @@ void MeshRenderer::Initialize()
 
 void MeshRenderer::Update()
 {
-	if(m_pGameContext->Scene->Camera->FrustumCulling() && m_FrustumCulling)
-		m_LocalBoundingBox.Transform(m_BoundingBox, XMLoadFloat4x4(&m_pGameObject->GetTransform()->GetWorldMatrix()));
-	
 	RenderItem item;
 
 	item.Material = m_pMaterial;
@@ -66,5 +63,5 @@ void MeshRenderer::Update()
 
 	item.WorldMatrix = GetTransform()->GetWorldMatrix();
 
-	Renderer::Instance().Submit(item);
+	RenderSystem::Instance().Submit(item);
 }

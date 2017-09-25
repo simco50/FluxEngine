@@ -32,7 +32,6 @@ void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 	FreeCamera* pCamera = new FreeCamera();
 	AddChild(pCamera);
 	m_GameContext.Scene->Camera = pCamera->GetCamera();
-	pCamera->GetCamera()->SetActive(true);
 	pCamera->GetTransform()->SetRotation(25.0f, 0, 0);
 	pCamera->GetTransform()->Translate(0, 12, -20);
 

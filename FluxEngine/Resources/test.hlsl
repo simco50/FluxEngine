@@ -1,26 +1,25 @@
-#include "add.hlsl"
+#include "Uniforms.hlsl"
 
-cbuffer lol
+struct VS_INPUT
 {
-	float4 ele = float4(1,0,0,0);
+	float3 position : POSITION;
+	float4 color : COLOR;
+};
+
+struct PS_INPUT
+{
+	float4 position : SV_POSITION;
+	float4 color : COLOR;
+};
+
+void VS(VS_INPUT input, out PS_INPUT output)
+{
+	output.position = float4(input.position.x, input.position.y, 0, 1);
+	float ping = (sin(cElapsedTimeVS) + 1) / 2.0f;
+	output.color = float4(ping,1-ping,ping,1);
 }
-float4 testThing;
 
-cbuffer kaka
+void PS(PS_INPUT input, out float4 output : SV_TARGET)
 {
-	float4 elema = float4(1,0,0,0);
-	float4x4 mat;
-}
-
-void VS(float4 position : POSITION, out float4 positionOut : OUTPOSITION)
-{
-	float a, b;
-	Add(a, b);
-
-	positionOut = position + ele + elema + testThing;
-}
-
-void PS(float4 positionIn : POSITION, out float4 colorOut : SV_TARGET)
-{
-	colorOut = positionIn;
+	output = input.color;
 }

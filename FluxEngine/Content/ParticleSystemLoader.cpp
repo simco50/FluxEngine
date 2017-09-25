@@ -99,7 +99,7 @@ ParticleSystem* ParticleSystemLoader::LoadContent(const string& assetFile)
 	catch(exception exception)
 	{
 		string error = exception.what();
-		Console::LogFormat(LogType::ERROR, "Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());
+		FLUX_LOG(ERROR, "Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());
 	}
 	return pSystem;
 }

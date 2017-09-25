@@ -49,7 +49,7 @@ public:
 			stringstream ss;
 			ss << "ResourceManager> File not found!\nPath: ";
 			ss << assetFile;
-			Console::Log(ss.str(), LogType::ERROR);
+			FLUX_LOG(ERROR, ss.str());
 		}
 
 		AUTOPROFILE_DESC(LoadContent, assetFile);
@@ -78,7 +78,7 @@ public:
 		AUTOPROFILE_DESC(LoadContent, assetFile);
 
 		T* content = LoadContent(assetFile);
-		Console::LogFormat(LogType::WARNING, "ResourceManager > Asset '%s' loaded unmanaged.", assetFile.c_str());
+		FLUX_LOG_INFOFormat(LogType::WARNING, "ResourceManager > Asset '%s' loaded unmanaged.", assetFile.c_str());
 		return content;
 	}
 

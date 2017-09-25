@@ -21,7 +21,7 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	{
 		stringstream stream;
 		stream << "TextureLoader::LoadContent() -> File '" << assetFile << "' has a wrong extension" << endl;
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, stream.str());
 		return nullptr;
 	}
 	++pointPos;

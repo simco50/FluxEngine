@@ -8,10 +8,10 @@ AudioEngine::AudioEngine()
 	FMOD_RESULT result;
 
 	result = FMOD::System_Create(&m_pSystem);
-	Console::LogFmodResult(result);
+	FLUX_LOG_FMOD(result);
 
 	result = m_pSystem->init(512, FMOD_INIT_NORMAL, nullptr);
-	Console::LogFmodResult(result);
+	FLUX_LOG_FMOD(result);
 }
 
 AudioEngine::~AudioEngine()
@@ -27,7 +27,7 @@ FMOD::Sound* AudioEngine::LoadSound(const std::string& filePath, const FMOD_MODE
 
 	FMOD::Sound* pSound = nullptr;
 	FMOD_RESULT result = m_pSystem->createSound(filePath.c_str(), mode, exInfo, &pSound);
-	Console::LogFmodResult(result);
+	FLUX_LOG_FMOD(result);
 	m_Sounds[filePath] = pSound;
 	return pSound;
 }

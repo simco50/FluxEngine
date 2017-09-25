@@ -61,12 +61,12 @@ string Http::HttpGet(string host, string path)
 		response += string(buffer, result);
 		stringstream stream;
 		stream << "HttpGet() > Bytes received: " << bytesRecv;
-		Console::Log(stream.str(), LogType::INFO);
+		FLUX_LOG(INFO, stream.str());
 		bytesRecv += result;
 	}
 	stringstream stream;
 	stream << "HttpGet() > Bytes received: " << bytesRecv;
-	Console::Log(stream.str(), LogType::INFO);
+	FLUX_LOG(INFO, stream.str());
 
 	// cleanup
 	result = closesocket(sock);
@@ -79,7 +79,7 @@ string Http::HttpGet(string host, string path)
 
 	freeaddrinfo(pAddrInfo);
 
-	Console::Log("HttpGet() > Cleanup Successful ", LogType::INFO);
+	FLUX_LOG(INFO, "HttpGet() > Cleanup Successful ");
 
 	return response;
 }

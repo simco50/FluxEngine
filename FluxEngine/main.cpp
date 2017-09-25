@@ -2,19 +2,13 @@
 
 #include "Game/GameManager.h"
 
-
-int main()
+int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	wWinMain(GetModuleHandle(nullptr), nullptr, nullptr, SW_SHOW);
-}
-
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nShowCmd)
-{
-	UNREFERENCED_PARAMETER(pCmdLine);
-	UNREFERENCED_PARAMETER(nShowCmd);
 	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
 
-	GameManager::Instance().Run(hInstance);
-
-	return 0;
+	FluxCore* core = new FluxCore();
+	core->Run(hInstance);
+	delete core;
 }

@@ -53,7 +53,7 @@ public:
 				return;
 			}
 		}
-		Console::Log("GameObject::RemoveComponent() -> Object does not have this component!", LogType::WARNING);
+		FLUX_LOG(WARNING, "GameObject::RemoveComponent() -> Object does not have this component!");
 	}
 
 	SceneBase* GetScene();

@@ -23,13 +23,10 @@ void FreeCamera::Initialize()
 
 void FreeCamera::Update()
 {
-	if (m_pCamera->IsActive())
-	{
-		if(m_UseMouseAndKeyboard)
-			KeyboardMouse();
-		/*if (m_UseController)
-			Controller();*/
-	}
+	if(m_UseMouseAndKeyboard)
+		KeyboardMouse();
+	/*if (m_UseController)
+		Controller();*/
 }
 
 void FreeCamera::KeyboardMouse()

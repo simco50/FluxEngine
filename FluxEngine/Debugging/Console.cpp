@@ -29,8 +29,9 @@ void Console::Initialize()
 	*m_pFileLog << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << endl;
 	*m_pFileLog << "Time: " << GetTime() << endl;
 
-	m_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+#ifdef _DEBUG
+	InitializeConsoleWindow();
+#endif
 }
 
 void Console::Release()
@@ -105,11 +106,13 @@ void Console::Log(const std::string &message, LogType type)
 		stream << "[INFO] ";
 		break;
 	case LogType::WARNING:
-		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		if(m_ConsoleHandle)
+			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		stream << "[WARNING] ";
 		break;
 	case LogType::ERROR:
-		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		if (m_ConsoleHandle)
+			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		stream << "[ERROR] ";
 		break;
 	default:
@@ -117,16 +120,21 @@ void Console::Log(const std::string &message, LogType type)
 	}
 
 	stream << message;
-	cout << stream.str() << endl;
+	if (m_ConsoleHandle)
+	{
+		cout << stream.str() << endl;
+		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	}
 
 	(*m_pFileLog) << stream.str() << endl;
 	m_pFileLog->flush();
-	SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
 	if (type == LogType::ERROR)
 	{
 		MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
-		PostQuitMessage(-1);
+		//PostQuitMessage(-1);
+		//__debugbreak();
+		abort();
 	}
 }
 
@@ -148,6 +156,53 @@ void Console::LogFormat(LogType type, const char* format, ...)
 	_vsnprintf_s(&m_ConvertBuffer[0], m_ConvertBufferSize, m_ConvertBufferSize, format, ap);
 	va_end(ap);
 	Log(&m_ConvertBuffer[0], type);
+}
+
+void Console::LogFormat(LogType type, const std::string& format, ...)
+{
+	va_list ap;
+
+	const char* f = format.c_str();
+	va_start(ap, f);
+	_vsnprintf_s(&m_ConvertBuffer[0], m_ConvertBufferSize, m_ConvertBufferSize, f, ap);
+	va_end(ap);
+	Log(&m_ConvertBuffer[0], type);
+}
+
+void Console::InitializeConsoleWindow()
+{
+	if (AllocConsole())
+	{
+		// Redirect the CRT standard input, output, and error handles to the console
+		FILE* pCout;
+		freopen_s(&pCout, "CONIN$", "r", stdin);
+		freopen_s(&pCout, "CONOUT$", "w", stdout);
+		freopen_s(&pCout, "CONOUT$", "w", stderr);
+
+		//Clear the error state for each of the C++ standard stream objects. We need to do this, as
+		//attempts to access the standard streams before they refer to a valid target will cause the
+		//iostream objects to enter an error state. In versions of Visual Studio after 2005, this seems
+		//to always occur during startup regardless of whether anything has been read from or written to
+		//the console or not.
+		std::wcout.clear();
+		std::cout.clear();
+		std::wcerr.clear();
+		std::cerr.clear();
+		std::wcin.clear();
+		std::cin.clear();
+		std::cin.clear();
+
+		//Set ConsoleHandle
+		m_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		//Disable Close-Button
+		HWND hwnd = GetConsoleWindow();
+		if (hwnd != NULL)
+		{
+			HMENU hMenu = GetSystemMenu(hwnd, FALSE);
+			if (hMenu != NULL) DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+		}
+	}
 }
 
 string Console::GetTime()

@@ -33,7 +33,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 	int vertexStride = ILDesc->VertexStride;
 	if (ILDesc->VertexStride == 0)
 	{
-		Console::Log("MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0", LogType::ERROR);
+		FLUX_LOG(ERROR, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
 		return;
 	}
 
@@ -51,7 +51,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 					string m = string(ILDesc->LayoutDesc[e].SemanticName);
 					wstring msg = wstring(m.begin(), m.end());
 
-					Console::LogFormat(LogType::WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
+					FLUX_LOG(WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
 				}
 				//Get the stride of the required dummy data
 				int size;
@@ -86,7 +86,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 	D3D11_SUBRESOURCE_DATA initData;
 	initData.pSysMem = m_pVertexDataStart;
 
-	HR(Renderer::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer));
+	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer));
 
 	//Create the index buffer
 	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
@@ -99,7 +99,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 	vector<DWORD> indices(m_IndexCount);
 	memcpy(indices.data(), GetVertexData("INDEX").pData, m_IndexCount * sizeof(DWORD));
 	initData.pSysMem = indices.data();
-	HR(Renderer::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
+	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
 
 	m_BuffersInitialized = true;
 }
@@ -108,7 +108,7 @@ MeshFilter::VertexData& MeshFilter::GetVertexData(const string& semantic)
 {
 	auto it = m_VertexData.find(semantic);
 	if (it == m_VertexData.end())
-		Console::LogFormat(LogType::ERROR, "MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", semantic.c_str());
+		FLUX_LOG(ERROR, "MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", semantic.c_str());
 	return it->second;
 }
 

@@ -22,9 +22,11 @@ public:
 	static void Log(const std::string &message, LogType type = LogType::INFO);
 	static void LogWarning(const std::string &message);
 	static void LogError(const std::string &message);
-	static void LogFormat(LogType type, const char* format,...);
+	static void LogFormat(LogType type, const char* format, ...);
+	static void LogFormat(LogType type, const std::string& format, ...);
 
 private:
+	static void InitializeConsoleWindow();
 	static string GetTime();
 
 	static char* m_ConvertBuffer;

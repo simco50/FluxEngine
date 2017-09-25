@@ -27,6 +27,14 @@ public:
 	~AutoProfiler();
 };
 
-#define AUTOPROFILE(name) AutoProfiler name ## Profiler(#name)
+#ifdef PROFILING
 
+#define AUTOPROFILE(name) AutoProfiler name ## Profiler(#name)
 #define AUTOPROFILE_DESC(name, description) AutoProfiler name ## Profiler(#name, description)
+
+#else
+
+#define AUTOPROFILE(name) 0
+#define AUTOPROFILE_DESC(name, description) 0
+
+#endif

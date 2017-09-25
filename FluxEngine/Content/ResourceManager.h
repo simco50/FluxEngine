@@ -30,9 +30,7 @@ public:
 				return pObj;
 			}
 		}
-		stringstream stream;
-		stream << "No appropriate ResourceLoader found for: " << assetFile;
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, "No appropriate ResourceLoader found for: %s", assetFile.c_str());
 		return nullptr;
 	}
 
@@ -49,9 +47,7 @@ public:
 				return pObj;
 			}
 		}
-		stringstream stream;
-		stream << "No appropriate ResourceLoader found for: " << assetFile;
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, "No appropriate ResourceLoader found for: %s", assetFile.c_str());
 		return nullptr;
 	}
 
@@ -70,7 +66,7 @@ public:
 		}
 		stringstream stream;
 		stream << "No appropriate ResourceLoader found for: " << assetFile;
-		Console::Log(stream.str(), LogType::ERROR);
+		FLUX_LOG(ERROR, stream.str());
 		return nullptr;
 	}
 

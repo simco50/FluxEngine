@@ -11,7 +11,7 @@ SamplerState gTextureSampler
 
 BlendState gBlendState 
 {     
-      BlendEnable[0] = TRUE;
+    BlendEnable[0] = TRUE;
 	SrcBlend = SRC_ALPHA;
     DestBlend = INV_SRC_ALPHA;
 	BlendOp = ADD;

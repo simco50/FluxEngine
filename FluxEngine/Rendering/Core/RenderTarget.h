@@ -8,7 +8,7 @@ struct RENDER_TARGET_DESC
 
 	int Width = -1;
 	int Height = -1;
-	bool MSAA = false;
+	int MsaaSampleCount = 1;
 	int MsaaQuality = 0;
 
 	DXGI_FORMAT DepthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -17,28 +17,26 @@ struct RENDER_TARGET_DESC
 	ID3D11Texture2D* pColor = nullptr;
 	ID3D11Texture2D* pDepth = nullptr;
 
-	XMFLOAT4 ClearColor = (XMFLOAT4)Colors::CornflowerBlue;
-
 	bool IsValid()
 	{
 		if (DepthSRV && DepthBuffer == false)
 		{
-			Console::Log("RENDER_TARGET_DESC::IsValid() -> Can't create DepthSRV without a DepthBuffer", LogType::ERROR);
+			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > Can't create DepthSRV without a DepthBuffer");
 			return false;
 		}
 		if(ColorSRV && ColorBuffer == false)
 		{
-			Console::Log("RENDER_TARGET_DESC::IsValid() -> Can't create ColorSRV without a ColorBuffer", LogType::ERROR);
+			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > Can't create ColorSRV without a ColorBuffer");
 			return false;
 		}
 		if(Width < 0 || Height < 0)
 		{
-			Console::Log("RENDER_TARGET_DESC::IsValid() -> RenderTarget dimensions invalid!", LogType::ERROR);
+			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > RenderTarget dimensions invalid!");
 			return false;
 		}
 		if(!ColorBuffer && !DepthBuffer)
 		{
-			Console::Log("RENDER_TARGET_DESC::IsValid() -> RenderTarget needs at least one buffer to create!", LogType::ERROR);
+			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > RenderTarget needs at least one buffer to create!");
 			return false;
 		}
 		return true;
@@ -51,8 +49,8 @@ public:
 	RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
 	~RenderTarget();
 
-	void ClearColor();
-	void ClearDepth();
+	void ClearColor(const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue);
+	void ClearDepth(const unsigned int depthflags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const float depth = 1.0f, unsigned char stencil = 0);
 
 	void Create(const RENDER_TARGET_DESC& RenderTargetDesc);
 

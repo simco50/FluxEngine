@@ -58,12 +58,6 @@ void Camera::Update()
 	XMStoreFloat4x4(&m_Projection, projection);
 	XMStoreFloat4x4(&m_ViewProjection, view * projection);
 	XMStoreFloat4x4(&m_ViewProjectionInverse, viewProjInv);
-
-	if (m_FrustumCulling)
-	{
-		BoundingFrustum frustrum(projection);
-		frustrum.Transform(m_Frustum, viewInv);
-	}
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)
@@ -97,13 +91,4 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 
 	direction = farPoint - nearPoint;
 	direction.Normalize();
-}
-
-bool Camera::IsInFrustum(MeshRenderer* pObj) const
-{
-	if (m_FrustumCulling == false)
-		return true;
-	if (pObj == nullptr)
-		return true;
-	return m_Frustum.Intersects(pObj->GetBoundingBox());
 }

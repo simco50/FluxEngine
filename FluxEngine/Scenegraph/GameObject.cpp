@@ -23,7 +23,7 @@ void GameObject::AddComponent(ComponentBase* pComponent)
 	{
 		if (pComponent == pComp)
 		{
-			Console::Log("GameObject::AddComponent() > Cannot add the same component twice!", LogType::WARNING);
+			FLUX_LOG(WARNING, "GameObject::AddComponent() > Cannot add the same component twice!");
 			return;
 		}
 	}

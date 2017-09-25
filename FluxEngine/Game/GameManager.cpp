@@ -9,81 +9,42 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	SafeDelete(m_pScenes[0]);
 }
 
 void GameManager::PrepareGame()
 {
-	m_EngineContext.GameSettings.WindowStyle = WindowStyle::WINDOWED;
-	m_EngineContext.GameSettings.Width = 1240;
-	m_EngineContext.GameSettings.Height = 720;
-	m_EngineContext.GameSettings.ClearColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
-	m_EngineContext.GameSettings.MSAA = true;
-	m_EngineContext.GameSettings.Title = "FluxEngine";
-	m_EngineContext.GameSettings.VerticalSync = true;
+
 }
 
 void GameManager::Initialize(EngineContext* pEngineContext)
 {	
-	m_pEngineContext = pEngineContext;
-
-	//Add initial scene
-	AddScene(new DemoScene());
-
-	m_ActiveScene = 0;
-	m_pScenes[m_ActiveScene]->BaseInitialize(pEngineContext);
-	m_SceneInitialized = true;
+	UNREFERENCED_PARAMETER(pEngineContext);
 }
 
 void GameManager::Update()
 {
-	if (m_pScenes[m_ActiveScene])
-	{
-		if(m_pScenes[m_ActiveScene]->IsInitialized() == false)
-			m_pScenes[m_ActiveScene]->BaseInitialize(m_pEngineContext);
-		m_pScenes[m_ActiveScene]->BaseUpdate();
-	}
 }
 
 LRESULT GameManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
-	{
-	case WM_KEYDOWN:
-		if ((int)wParam == VK_F5)
-		{
-			m_ActiveScene = (m_ActiveScene - 1 + m_pScenes.size()) % m_pScenes.size();
-		}
-		else if ((int)wParam == VK_F6)
-		{
-			m_ActiveScene = (m_ActiveScene + 1) % m_pScenes.size();
-		}
-		return 0;
-	default:
-		break;
-	}
-
-	return FluxCore::WndProc(hWnd, message, wParam, lParam);
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(message);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
+	return 0;
 }
 
 void GameManager::AddScene(SceneBase* pScene)
 {
-	m_pScenes.push_back(pScene);
-	m_ActiveScene = m_pScenes.size() - 1;
+	UNREFERENCED_PARAMETER(pScene);
 }
 
 void GameManager::ReloadScene(SceneBase* pScene)
 {
-	SafeDelete(m_pScenes[m_ActiveScene]);
-	m_pScenes[m_ActiveScene] = pScene;
+	UNREFERENCED_PARAMETER(pScene);
 }
 
 void GameManager::LoadScene(const int index)
 {
-	if(index >= (int)m_pScenes.size())
-	{
-		Console::LogFormat(LogType::WARNING, "[GameManager::LoadScene()] > Scene with index '%i' does not exist!", index);
-		return;
-	}
-	m_ActiveScene = index;
+	UNREFERENCED_PARAMETER(index);
 }

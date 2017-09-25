@@ -20,7 +20,7 @@ struct MaterialDesc
 	{
 		if (EffectName.size() == 0)
 		{
-			Console::Log("Material::Initialize() > MaterialDesc is invalid!", LogType::ERROR);
+			FLUX_LOG(ERROR, "Material::Initialize() > MaterialDesc is invalid!");
 			return false;
 		}
 		return true;
