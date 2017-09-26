@@ -32,6 +32,6 @@ Console::LogHRESULT(stream.str(), r);}
 
 #else
 
-#define HR(command) command;
+#define HR(command) UNREFERENCED_PARAMETER(command)
 
 #endif
