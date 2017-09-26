@@ -7,3 +7,4 @@ Build/
 *.ipch
 *.suo
 *.log
+*.db
