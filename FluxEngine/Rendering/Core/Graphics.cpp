@@ -339,7 +339,8 @@ bool Graphics::RegisterWindowClass()
 	if (!RegisterClassA(&wc))
 	{
 		auto error = GetLastError();
-		return HRESULT_FROM_WIN32(error);
+		FLUX_LOG_HR("[Graphics::RegisterWindowClass()]", HRESULT_FROM_WIN32(error));
+		return false;
 	}
 	return true;
 }
@@ -391,8 +392,10 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	if (m_Hwnd == nullptr)
 		return false;
 	
-	ShowWindow(m_Hwnd, SW_SHOWDEFAULT);
-	UpdateWindow(m_Hwnd);
+	if (!ShowWindow(m_Hwnd, SW_SHOWDEFAULT))
+		return false;
+	if (!UpdateWindow(m_Hwnd))
+		return false;
 
 	return true;
 }

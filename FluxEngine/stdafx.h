@@ -3,14 +3,13 @@
 #ifdef _DEBUG
 
 #define PROFILING
-#define LOGGING
 
 #endif
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if defined(DEBUG) || defined(_DEBUG)
+#if defined(_DEBUG) && !defined(CI)
 #include <vld.h>
 #endif
 
