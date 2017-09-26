@@ -35,19 +35,21 @@ int FluxCore::Run(HINSTANCE hInstance)
 	Console::Initialize();
 
 	m_pGraphics = new Graphics(hInstance);
-	m_pGraphics->SetMode(
+	if (!m_pGraphics->SetMode(
 		/*WindowWidth*/				1240,
 		/*WindowHeight*/			720,
 		/*Window type*/				WindowType::WINDOWED,
 		/*Resizable*/				false,
 		/*Vsync*/					true,
 		/*Multisample*/				8,
-		/*RefreshRate denominator*/	60);
+		/*RefreshRate denominator*/	60))
+	{
+		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
+	}
 
 	GameTimer::Reset();
 
 	InitGame();
-	
 
 	//Game loop
 	MSG msg = {};

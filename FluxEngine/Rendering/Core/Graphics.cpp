@@ -392,8 +392,7 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	if (m_Hwnd == nullptr)
 		return false;
 	
-	if (!ShowWindow(m_Hwnd, SW_SHOWDEFAULT))
-		return false;
+	ShowWindow(m_Hwnd, SW_SHOWDEFAULT);
 	if (!UpdateWindow(m_Hwnd))
 		return false;
 
