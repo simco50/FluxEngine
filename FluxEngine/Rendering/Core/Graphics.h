@@ -67,9 +67,13 @@ public:
 	void OnPause(const bool paused);
 
 	//Getters
-	const HWND& GetHwnd() const { return m_Hwnd; }
+	const HWND& GetWindow() const { return m_Hwnd; }
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
+
+	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
+	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
+	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 private:
 	void SetPrimitiveType(const PrimitiveType type);
@@ -84,7 +88,6 @@ private:
 	void UpdateBlendState();
 	void UpdateDepthStencilState();
 
-	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 	bool CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 	static LRESULT CALLBACK WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -106,19 +109,19 @@ private:
 	bool m_Minimized = false;
 	bool m_Resizing = false;
 
-	unique_ptr<RenderTarget> m_DefaultRenderTarget;
-
 	Unique_COM<IDXGIAdapter> m_pAdapter;
 	Unique_COM<ID3D11Device> m_pDevice;
 	Unique_COM<ID3D11DeviceContext> m_pDeviceContext;
 	Unique_COM<IDXGIFactory> m_pFactory;
 	Unique_COM<IDXGISwapChain> m_pSwapChain;
 
+	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
+
 	//RasterizerState
+	Unique_COM<ID3D11RasterizerState> m_pRasterizerState;
 	FillMode m_FillMode = FillMode::SOLID;
 	CullMode m_CullMode = CullMode::BACK;
 	bool m_RasterizerStateDirty = true;
-	Unique_COM<ID3D11RasterizerState> m_pRasterizerState;
 
 	//BlendState
 	Unique_COM<ID3D11BlendState> m_pBlendState;
@@ -144,13 +147,10 @@ private:
 	//Current State
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	VertexBuffer* m_pCurrentVertexBuffer = nullptr;
-	RenderTarget* m_pCurrentRenderTarget = nullptr;
 	PrimitiveType m_CurrentPrimitiveType = PrimitiveType::UNDEFINED;
 	InputLayout* m_pCurrentInputLayout = nullptr;
 	FloatRect m_CurrentViewport;
 
 	ShaderVariation* m_pCurrentVertexShader = nullptr;
 	ShaderVariation* m_pCurrentPixelShader = nullptr;
-
-	friend class FluxCore;
 };

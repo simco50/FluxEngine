@@ -18,14 +18,16 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
-	delete m_pShader;
-	delete m_pVertexBuffer;
-	delete m_pVertexShader;
-	delete m_pPixelShader;
-	delete m_pInputLayout;
-	delete m_pConstBuffer;
-	delete m_pGraphics;
-	delete m_pIndexBuffer;
+	SafeDelete(m_pShader);
+	SafeDelete(m_pVertexBuffer);
+	SafeDelete(m_pVertexShader);
+	SafeDelete(m_pPixelShader);
+	SafeDelete(m_pInputLayout);
+	SafeDelete(m_pConstBuffer);
+	SafeDelete(m_pIndexBuffer);
+
+	SafeDelete(m_pGraphics);
+
 	Console::Release();
 }
 
@@ -46,6 +48,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
+
+	//m_UiDrawer = new ImgUIDrawer(m_pGraphics);
+	//m_UiDrawer->Initialize();
 
 	GameTimer::Reset();
 
@@ -81,13 +86,17 @@ void FluxCore::GameLoop()
 	m_pConstBuffer->SetParameter(0, 4, &deltaTime);
 	m_pConstBuffer->Apply();
 	
-	m_pGraphics->BeginFrame();
-
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
-
+	m_pGraphics->BeginFrame();
 	m_pGraphics->PrepareDraw();
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
+	/*m_UiDrawer->NewFrame();
+
+
+	ImGui::Text("Hello World");
+
+	m_UiDrawer->Render();*/
 
 	m_pGraphics->EndFrame();
 }
@@ -102,13 +111,12 @@ void FluxCore::InitGame()
 {
 	m_pGraphics->SetWindowTitle("Hello World");
 
-	m_pShader =  new Shader(m_pGraphics->m_pDevice.Get());
+	m_pShader =  new Shader(m_pGraphics);
 	if (m_pShader->Load("./Resources/test.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
-	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 
-	m_pVertexBuffer = new VertexBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics);
 	
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
@@ -123,19 +131,20 @@ void FluxCore::InitGame()
 	m_pVertexBuffer->Create(vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
 
-	m_pInputLayout = new InputLayout(m_pGraphics->m_pDevice.Get());
+	m_pInputLayout = new InputLayout(m_pGraphics);
 	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 
-	m_pConstBuffer = new ConstantBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	m_pConstBuffer = new ConstantBuffer(m_pGraphics);
 	m_pConstBuffer->SetSize(16);
 	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstBuffer->GetBuffer();
-	m_pGraphics->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pBuffer);
+	m_pGraphics->GetDeviceContext()->VSSetConstantBuffers(0, 1, &pBuffer);
 
-	m_pIndexBuffer = new IndexBuffer(m_pGraphics->m_pDevice.Get(), m_pGraphics->m_pDeviceContext.Get());
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics);
 	m_pIndexBuffer->Create(6);
 	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
 	m_pIndexBuffer->SetData(indices.data());
-
+	
+	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	m_pGraphics->SetInputLayout(m_pInputLayout);

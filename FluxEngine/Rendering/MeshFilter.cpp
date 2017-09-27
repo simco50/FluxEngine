@@ -86,7 +86,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 	D3D11_SUBRESOURCE_DATA initData;
 	initData.pSysMem = m_pVertexDataStart;
 
-	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer));
+	//HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer));
 
 	//Create the index buffer
 	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
@@ -99,7 +99,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 	vector<DWORD> indices(m_IndexCount);
 	memcpy(indices.data(), GetVertexData("INDEX").pData, m_IndexCount * sizeof(DWORD));
 	initData.pSysMem = indices.data();
-	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
+	//HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
 
 	m_BuffersInitialized = true;
 }

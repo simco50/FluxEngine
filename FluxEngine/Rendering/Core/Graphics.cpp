@@ -14,6 +14,7 @@ Graphics::Graphics(HINSTANCE hInstance) :
 
 Graphics::~Graphics()
 {
+	
 }
 
 bool Graphics::SetMode(const int width, 
@@ -63,7 +64,7 @@ void Graphics::SetWindowPosition(const XMFLOAT2& position)
 void Graphics::SetRenderTarget(RenderTarget* pRenderTarget)
 {
 	ID3D11RenderTargetView* pRtv = pRenderTarget->GetRenderTargetView();
-	if (pRenderTarget == nullptr)
+	if (pRenderTarget != nullptr)
 		m_pDeviceContext->OMSetRenderTargets(1, &pRtv, pRenderTarget->GetDepthStencilView());
 }
 
@@ -89,7 +90,7 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
 	for (const VertexBuffer* pVb : pBuffers)
 	{
 		buffers.push_back((ID3D11Buffer*)pVb->GetBuffer());
-		strides.push_back(pVb->GetVertexStride());
+		strides.push_back(pVb->GetStride());
 	}
 
 	m_pDeviceContext->IASetVertexBuffers(0, pBuffers.size(), buffers.data(), strides.data(), offsets.data());
@@ -97,7 +98,7 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
 
 void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
-	m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 }
 
 void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixelShader)
@@ -253,8 +254,8 @@ void Graphics::Draw(const PrimitiveType type, const int indexStart, const int in
 
 void Graphics::Clear(const unsigned int flags, const XMFLOAT4& color, const float depth, const unsigned char stencil)
 {
-	m_DefaultRenderTarget->ClearColor(color);
-	m_DefaultRenderTarget->ClearDepth(flags, depth, stencil);
+	m_pDefaultRenderTarget->ClearColor(color);
+	m_pDefaultRenderTarget->ClearDepth(flags, depth, stencil);
 }
 
 void Graphics::PrepareDraw()
@@ -503,12 +504,13 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	assert(m_pSwapChain.IsValid());
 
 	m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-	m_DefaultRenderTarget.reset();
 
 	HR(m_pSwapChain->ResizeBuffers(1, windowWidth, windowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
+
+	m_pDefaultRenderTarget.reset();
 
 	RENDER_TARGET_DESC desc;
 	desc.Width = windowWidth;
@@ -517,15 +519,10 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	desc.MsaaSampleCount = m_Multisample;
-	desc.MsaaQuality = GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
-	desc.DepthSRV = true;
 
-	m_DefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(m_pDevice.Get(), m_pDeviceContext.Get()));
-	m_DefaultRenderTarget->Create(desc);
-	ID3D11RenderTargetView* rtv = m_DefaultRenderTarget->GetRenderTargetView();
-
-	//Bind views to the output merger state
-	m_pDeviceContext->OMSetRenderTargets(1, &rtv, m_DefaultRenderTarget->GetDepthStencilView());
+	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
+	m_pDefaultRenderTarget->Create(desc);
+	SetRenderTarget(m_pDefaultRenderTarget.get());
 
 	m_WindowWidth = windowWidth;
 	m_WindowHeight = windowHeight;
@@ -659,6 +656,9 @@ void Graphics::UpdateBlendState()
 	}
 
 	HR(m_pDevice->CreateBlendState(&desc, m_pBlendState.GetAddressOf()));
+
+#undef max
+	m_pDeviceContext->OMSetBlendState(m_pBlendState.Get(), nullptr, numeric_limits<unsigned int>::max());
 }
 
 void Graphics::UpdateDepthStencilState()
@@ -800,7 +800,9 @@ void Graphics::UpdateDepthStencilState()
 		break;
 	}
 
-	HR(m_pDevice->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf()))
+	HR(m_pDevice->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf()));
+
+	m_pDeviceContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), m_StencilRef);
 }
 
 unsigned int Graphics::GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const

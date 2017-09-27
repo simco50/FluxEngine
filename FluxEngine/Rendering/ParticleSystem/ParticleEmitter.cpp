@@ -73,7 +73,7 @@ void ParticleEmitter::CreateVertexBuffer()
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0;
-	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, nullptr, m_pVertexBuffer.GetAddressOf()));
+	//HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, nullptr, m_pVertexBuffer.GetAddressOf()));
 }
 
 void ParticleEmitter::SortParticles()
@@ -135,7 +135,7 @@ void ParticleEmitter::Update()
 
 	m_ParticleCount = 0;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	RenderSystem::Instance().GetDeviceContext()->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	//RenderSystem::Instance().GetDeviceContext()->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	ParticleVertex* pBuffer = static_cast<ParticleVertex*>(mappedResource.pData);
 
 	if(m_pParticleSystem->MaxParticles > (int)m_Particles.size())
@@ -178,7 +178,7 @@ void ParticleEmitter::Update()
 	if (burstParticles > 0)
 		++m_BurstIterator;
 
-	RenderSystem::Instance().GetDeviceContext()->Unmap(m_pVertexBuffer.Get(), 0);
+	//RenderSystem::Instance().GetDeviceContext()->Unmap(m_pVertexBuffer.Get(), 0);
 
 	if (m_pParticleSystem->MaxParticles > m_BufferSize)
 	{
@@ -187,12 +187,12 @@ void ParticleEmitter::Update()
 		CreateVertexBuffer();
 	}
 
-	RenderItem item;
-	item.Material = m_pMaterial;
+	//RenderItem item;
+	/*item.Material = m_pMaterial;
 	item.Topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 	item.VertexBuffers = { m_pVertexBuffer.Get() };
 	item.VertexCount = m_ParticleCount;
-	item.WorldMatrix = GetTransform()->GetWorldMatrix();
+	item.WorldMatrix = GetTransform()->GetWorldMatrix();*/
 
-	RenderSystem::Instance().Submit(item);
+	//RenderSystem::Instance().Submit(item);
 }

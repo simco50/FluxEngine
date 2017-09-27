@@ -53,7 +53,7 @@ void MeshRenderer::Initialize()
 
 void MeshRenderer::Update()
 {
-	RenderItem item;
+	/*RenderItem item;
 
 	item.Material = m_pMaterial;
 	item.IndexBuffer = m_pMeshFilter->GetIndexBuffer();
@@ -63,5 +63,5 @@ void MeshRenderer::Update()
 
 	item.WorldMatrix = GetTransform()->GetWorldMatrix();
 
-	RenderSystem::Instance().Submit(item);
+	RenderSystem::Instance().Submit(item);*/
 }

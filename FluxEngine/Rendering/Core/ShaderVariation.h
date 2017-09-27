@@ -2,6 +2,7 @@
 class Shader;
 enum class ShaderType;
 class ConstantBuffer;
+class Graphics;
 
 struct ShaderParameter
 {
@@ -18,7 +19,7 @@ public:
 	ShaderVariation(Shader* pOwner, const ShaderType type);
 	~ShaderVariation();
 
-	bool Create(ID3D11Device* pDevice);
+	bool Create(Graphics* pGraphics);
 	void Release();
 	void SetDefines(const vector<string>& defines);
 

@@ -29,8 +29,8 @@ void DefaultMaterial::UpdateShaderVariables()
 {
 	m_pColorVar->SetFloatVector(&m_Color.x);
 	m_pUseDiffuseTextureVar->SetBool(m_pDiffuseTexture == nullptr ? false : true);
-	if(m_pDiffuseTexture)
-		m_pDiffuseTextureVar->SetResource(m_pDiffuseTexture->GetResourceView());
+	/*if(m_pDiffuseTexture)
+		m_pDiffuseTextureVar->SetResource(m_pDiffuseTexture->GetResourceView());*/
 }
 
 void DefaultMaterial::SetDiffuseTexture(const string& filePath)

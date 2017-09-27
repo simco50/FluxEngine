@@ -1,11 +1,12 @@
 #pragma once
 class VertexBuffer;
 class ShaderVariation;
+class Graphics;
 
 class InputLayout
 {
 public:
-	InputLayout(ID3D11Device* pDevice);
+	InputLayout(Graphics* pGraphics);
 	~InputLayout();
 
 	DELETE_COPY(InputLayout)
@@ -17,6 +18,6 @@ public:
 private:
 
 	Smart_COM::Unique_COM<ID3D11InputLayout> m_pInputLayout;
-	ID3D11Device* m_pDevice;
+	Graphics* m_pGraphics;
 };
 

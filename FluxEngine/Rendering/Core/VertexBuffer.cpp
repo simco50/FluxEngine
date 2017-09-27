@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "VertexBuffer.h"
+#include "Graphics.h"
 
-VertexBuffer::VertexBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext):
-	m_pDevice(pDevice),
-	m_pDeviceContext(pDeviceContext)
+VertexBuffer::VertexBuffer(Graphics* pGraphics) :
+	m_pGraphics(pGraphics)
 {
 
 }
@@ -29,7 +29,7 @@ void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements
 	desc.CPUAccessFlags = dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Usage = dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 	
-	HR(m_pDevice->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
+	HR(m_pGraphics->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
 }
 
 void VertexBuffer::SetData(void* pData)
@@ -42,7 +42,7 @@ void VertexBuffer::SetData(void* pData)
 	destBox.front = 0;
 	destBox.back = 1;
 
-	m_pDeviceContext->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, &destBox, pData, 0, 0);
+	m_pGraphics->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, &destBox, pData, 0, 0);
 }
 
 void* VertexBuffer::Map(bool discard)
@@ -52,7 +52,7 @@ void* VertexBuffer::Map(bool discard)
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	mappedData.pData = nullptr;
 
-	HR(m_pDeviceContext->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
+	HR(m_pGraphics->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
 	pBuffer = mappedData.pData;
 
 	m_HardwareLocked = true;
@@ -63,7 +63,7 @@ void VertexBuffer::Unmap()
 {
 	if (m_HardwareLocked)
 	{
-		m_pDeviceContext->Unmap((ID3D11Buffer*)m_pBuffer, 0);
+		m_pGraphics->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pBuffer, 0);
 		m_HardwareLocked = false;
 	}
 }

@@ -19,5 +19,5 @@ void SkyboxMaterial::LoadShaderVariables()
 
 void SkyboxMaterial::UpdateShaderVariables()
 {
-	m_pTextureVar->SetResource(m_pTexture->GetResourceView());
+	m_pTextureVar->SetResource((ID3D11ShaderResourceView*)m_pTexture->GetResourceView());
 }

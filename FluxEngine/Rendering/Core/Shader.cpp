@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Shader.h"
 #include "ShaderVariation.h"
+#include "Graphics.h"
 
-Shader::Shader(ID3D11Device* pDevice) :
-	m_pDevice(pDevice)
+Shader::Shader(Graphics* pGraphics) :
+	m_pGraphics(pGraphics)
 {
 
 }
@@ -40,7 +41,7 @@ ShaderVariation* Shader::GetVariation(ShaderType type, const vector<string>& def
 {
 	ShaderVariation* variation = new ShaderVariation(this, type);
 	variation->SetDefines(defines);
-	if (!variation->Create(m_pDevice))
+	if (!variation->Create(m_pGraphics))
 	{
 		FLUX_LOG(ERROR, "[Shader::GetVariation()] > Failed to load shader variation");
 		return nullptr;
@@ -62,10 +63,6 @@ const std::string& Shader::GetSource(ShaderType type) const
 		break;
 	}
 	throw;
-}
-
-void Shader::Compile()
-{
 }
 
 bool Shader::ProcessSource(ifstream& stream, string& output)

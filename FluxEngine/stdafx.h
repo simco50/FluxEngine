@@ -1,15 +1,13 @@
 #pragma once
 
 #ifdef _DEBUG
-
 #define PROFILING
-
 #endif
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if defined(_DEBUG) && !defined(CI)
+#if defined(_DEBUG)
 #include <vld.h>
 #endif
 
@@ -151,9 +149,6 @@ using namespace DirectX;
 #include "Core/InputEngine.h"
 
 #include "Content/ResourceManager.h"
-
-#include "Rendering/Core/RenderItem.h"
-#include "Rendering/Core/RenderSystem.h"
 
 #include "Audio/AudioEngine.h"
 

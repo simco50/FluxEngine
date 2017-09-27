@@ -142,5 +142,5 @@ void Material::CreateInputLayout()
 
 	D3DX11_PASS_DESC PassDesc;
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&PassDesc);
-	HR(RenderSystem::Instance().GetDevice()->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
+	//HR(RenderSystem::Instance().GetDevice()->CreateInputLayout(m_InputLayoutDesc.LayoutDesc.data(), m_InputLayoutDesc.LayoutDesc.size(), PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()));
 }

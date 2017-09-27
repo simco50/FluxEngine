@@ -1,10 +1,19 @@
 #include "stdafx.h"
 #include "ImgUIDrawer.h"
+#include "Rendering\Core\Graphics.h"
+#include "Rendering\Core\VertexBuffer.h"
+#include "Rendering\Core\IndexBuffer.h"
+#include "Rendering\Core\Shader.h"
+#include "Rendering\Core\InputLayout.h"
+#include "Rendering\Core\ConstantBuffer.h"
 
-void ImgUIDrawer::Initialize(const HWND& hwnd)
+ImgUIDrawer::ImgUIDrawer(Graphics* pGraphics) :
+	m_pGraphics(pGraphics)
 {
-	m_Hwnd = hwnd;
+}
 
+void ImgUIDrawer::Initialize()
+{
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
 	io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
@@ -28,12 +37,18 @@ void ImgUIDrawer::Initialize(const HWND& hwnd)
 
 	io.RenderDrawListsFn = nullptr;
 
-	io.ImeWindowHandle = hwnd;
+	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
 	LoadShader();
 	CreateVertexBuffer();
 	CreateIndexBuffer();
+
+	m_pIl = new InputLayout(m_pGraphics);
+	m_pIl->Create({ m_pVb }, m_pVertexShader);
 	CreateFontsTexture();
+
+	m_pConstantBuffer = new ConstantBuffer(m_pGraphics);
+	m_pConstantBuffer->SetSize(64);
 }
 
 void ImgUIDrawer::Shutdown()
@@ -46,7 +61,7 @@ void ImgUIDrawer::NewFrame()
 	ImGuiIO& io = ImGui::GetIO();
 
 	RECT rect;
-	GetClientRect(m_Hwnd, &rect);
+	GetClientRect(m_pGraphics->GetWindow(), &rect);
 	io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
 
 	io.DeltaTime = GameTimer::DeltaTime();
@@ -65,24 +80,22 @@ void ImgUIDrawer::Render()
 	ImGui::Render();
 	ImDrawData* draw_data = ImGui::GetDrawData();
 
-	if(m_pVertexBuffer.Get() == nullptr || m_VertexBufferSize < draw_data->TotalVtxCount)
+	if(m_pVb == nullptr || (int)m_pVb->GetCount() < draw_data->TotalVtxCount)
 	{
-		m_VertexBufferSize = draw_data->TotalVtxCount + 5000;
-		CreateVertexBuffer();
+		m_pVb->Create(m_pVb->GetCount() + 5000, m_VertexElements, true);
 	}
 	
-	if (m_pIndexBuffer.Get() == nullptr || m_IndexBufferSize < draw_data->TotalIdxCount)
+	if (m_pIb == nullptr || (int)m_pIb->GetCount() < draw_data->TotalIdxCount)
 	{
-		m_IndexBufferSize = draw_data->TotalIdxCount + 10000;
 		CreateIndexBuffer();
+		m_pIb->Create(m_pIb->GetCount() + 10000, true, true);
 	}
 
-	D3D11_MAPPED_SUBRESOURCE indexResource, vertexResource;
-	HR(RenderSystem::Instance().GetDeviceContext()->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &vertexResource))
-	HR(RenderSystem::Instance().GetDeviceContext()->Map(m_pIndexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &indexResource))
+	void* pVertexResource = m_pVb->Map(true);
+	void* pIndexResource = m_pIb->Map(true);
 
-	ImDrawVert* vtx_dst = (ImDrawVert*)vertexResource.pData;
-	ImDrawIdx* idx_dst = (ImDrawIdx*)indexResource.pData;
+	ImDrawVert* vtx_dst = (ImDrawVert*)pVertexResource;
+	ImDrawIdx* idx_dst = (ImDrawIdx*)pIndexResource;
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
@@ -91,8 +104,21 @@ void ImgUIDrawer::Render()
 		vtx_dst += cmd_list->VtxBuffer.Size;
 		idx_dst += cmd_list->IdxBuffer.Size;
 	}
-	RenderSystem::Instance().GetDeviceContext()->Unmap(m_pVertexBuffer.Get(), 0);
-	RenderSystem::Instance().GetDeviceContext()->Unmap(m_pIndexBuffer.Get(), 0);
+
+	m_pVb->Unmap();
+	m_pIb->Unmap();
+
+	m_pGraphics->SetInputLayout(m_pIl);
+	m_pGraphics->SetIndexBuffer(m_pIb);
+	m_pGraphics->SetVertexBuffer(m_pVb);
+	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
+
+	m_pGraphics->SetDepthEnabled(true);
+	m_pGraphics->SetColorWrite(ColorWrite::ALL);
+	m_pGraphics->SetDepthTest(CompareMode::ALWAYS);
+	m_pGraphics->SetBlendMode(BlendMode::REPLACE, false);
+
+	m_pGraphics->SetCullMode(CullMode::NONE);
 
 	float L = 0.0f;
 	float R = ImGui::GetIO().DisplaySize.x;
@@ -105,16 +131,13 @@ void ImgUIDrawer::Render()
 		{ 0.0f,					0.0f,				0.5f,       0.0f },
 		{ (R + L) / (L - R),	(T + B) / (B - T),  0.5f,       1.0f },
 	};
-	m_pViewProjVariable->SetMatrix((const float*)mvp[0]);
 
-	//Render
-	RenderSystem::Instance().SetInputLayout(m_pInputLayout.Get());
-	RenderSystem::Instance().SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	RenderSystem::Instance().SetIndexBuffer(m_pIndexBuffer.Get(), sizeof(ImDrawIdx) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-	UINT offset = 0;
-	UINT stride = sizeof(ImDrawVert);
-	RenderSystem::Instance().SetVertexBuffer(0, m_pVertexBuffer.Get(), &stride, &offset);
+	m_pConstantBuffer->SetParameter(0, 64, mvp);
+	m_pConstantBuffer->Apply();
 
+	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstantBuffer->GetBuffer();
+	m_pGraphics->GetDeviceContext()->VSSetConstantBuffers(1, 1, &pBuffer);
+	m_pGraphics->PrepareDraw();
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -128,11 +151,9 @@ void ImgUIDrawer::Render()
 				pcmd->UserCallback(cmd_list, pcmd);
 			else
 			{
-				const D3D11_RECT r = { (LONG)pcmd->ClipRect.x, (LONG)pcmd->ClipRect.y, (LONG)pcmd->ClipRect.z, (LONG)pcmd->ClipRect.w };
-				m_pTextureVariable->SetResource((ID3D11ShaderResourceView*)pcmd->TextureId);
-				RenderSystem::Instance().GetDeviceContext()->RSSetScissorRects(1, &r);
-				m_pTechnique->GetPassByIndex(0)->Apply(0, RenderSystem::Instance().GetDeviceContext());
-				RenderSystem::Instance().GetDeviceContext()->DrawIndexed(pcmd->ElemCount, indexOffset, vertexOffset);
+				//Set the texture
+				//Set the scissor rect
+				m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, indexOffset, pcmd->ElemCount, vertexOffset, 0);
 			}
 			indexOffset += pcmd->ElemCount;
 		}
@@ -198,30 +219,19 @@ int ImgUIDrawer::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void ImgUIDrawer::CreateVertexBuffer()
 {
-	m_pVertexBuffer.Reset();
-
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(D3D11_BUFFER_DESC));
-	desc.ByteWidth = m_VertexBufferSize * sizeof(ImDrawVert);
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&desc, nullptr, m_pVertexBuffer.GetAddressOf()))
+	SafeDelete(m_pVb);
+	m_pVb = new VertexBuffer(m_pGraphics);
+	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::POSITION));
+	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD));
+	m_VertexElements.push_back(VertexElement(VertexElementType::UBYTE4_NORM, VertexElementSemantic::COLOR));
+	m_pVb->Create(1000, m_VertexElements, true);
 }
 
 void ImgUIDrawer::CreateIndexBuffer()
 {
-	m_pIndexBuffer.Reset();
-
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(D3D11_BUFFER_DESC));
-	desc.ByteWidth = m_IndexBufferSize * sizeof(ImDrawIdx);
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&desc, nullptr, m_pIndexBuffer.GetAddressOf()))
+	SafeDelete(m_pIb);
+	m_pIb = new IndexBuffer(m_pGraphics);
+	m_pIb->Create(1000, true, true);
 }
 
 void ImgUIDrawer::CreateFontsTexture()
@@ -248,7 +258,7 @@ void ImgUIDrawer::CreateFontsTexture()
 	subResource.pSysMem = pixels;
 	subResource.SysMemPitch = desc.Width * 4;
 	subResource.SysMemSlicePitch = 0;
-	HR(RenderSystem::Instance().GetDevice()->CreateTexture2D(&desc, &subResource, &pTexture))
+	HR(m_pGraphics->GetDevice()->CreateTexture2D(&desc, &subResource, &pTexture))
 
 	// Create texture view
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -257,7 +267,7 @@ void ImgUIDrawer::CreateFontsTexture()
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = desc.MipLevels;
 	srvDesc.Texture2D.MostDetailedMip = 0;
-	HR(RenderSystem::Instance().GetDevice()->CreateShaderResourceView(pTexture, &srvDesc, m_pFontSRV.GetAddressOf()))
+	HR(m_pGraphics->GetDevice()->CreateShaderResourceView(pTexture, &srvDesc, m_pFontSRV.GetAddressOf()))
 	pTexture->Release();
 
 	io.Fonts->TexID = (void*)m_pFontSRV.Get();
@@ -265,18 +275,8 @@ void ImgUIDrawer::CreateFontsTexture()
 
 void ImgUIDrawer::LoadShader()
 {
-	m_pEffect = ResourceManager::Load<ID3DX11Effect>("Resources/Shaders/ImGui.fx");
-	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
-
-	D3D11_INPUT_ELEMENT_DESC elementDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, 8,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	D3DX11_PASS_DESC passDesc;
-	m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
-	HR(RenderSystem::Instance().GetDevice()->CreateInputLayout(elementDesc, 3, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, m_pInputLayout.GetAddressOf()))
-
-	BIND_AND_CHECK_NAME(m_pTextureVariable, gTexture, AsShaderResource);
-	BIND_AND_CHECK_NAME(m_pViewProjVariable, gViewProj, AsMatrix);
+	m_pShader = new Shader(m_pGraphics);
+	m_pShader->Load("Resources/Shaders/Imgui.hlsl");
+	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader, {});
+	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, {});
 }

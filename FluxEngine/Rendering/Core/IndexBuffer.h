@@ -1,13 +1,15 @@
 #pragma once
+class Graphics;
+
 class IndexBuffer
 {
 public:
-	IndexBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
+	IndexBuffer(Graphics* pGraphics);
 	~IndexBuffer();
 
 	DELETE_COPY(IndexBuffer)
 
-	void Create(const int indexCount, bool dynamic = false);
+	void Create(const int indexCount, const bool smallIndexStride = false, const bool dynamic = false);
 	void SetData(void* pData);
 
 	void* GetBuffer() const { return m_pBuffer; }
@@ -15,16 +17,19 @@ public:
 	void* Map(bool discard);
 	void Unmap();
 
+	unsigned int GetCount() const { return m_IndexCount; }
+	bool IsSmallStride() const { return m_SmallIndexStride; }
+
 private:
 	void Release();
 
 	void* m_pBuffer = nullptr;
 
 	bool m_Dynamic = false;
-	int m_IndexCount = -1;
+	unsigned int m_IndexCount = 0;
+	bool m_SmallIndexStride = false;
 	bool m_HardwareLocked = false;
 
-	ID3D11Device* m_pDevice;
-	ID3D11DeviceContext* m_pDeviceContext;
+	Graphics* m_pGraphics;
 };
 

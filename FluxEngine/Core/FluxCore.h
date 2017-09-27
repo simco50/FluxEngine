@@ -7,6 +7,7 @@ class VertexBuffer;
 class InputLayout;
 class ConstantBuffer;
 class IndexBuffer;
+class ImgUIDrawer;
 
 class FluxCore
 {
@@ -26,13 +27,15 @@ private:
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	Shader* m_pShader;
-	ShaderVariation* m_pVertexShader;
-	ShaderVariation* m_pPixelShader;
-	VertexBuffer* m_pVertexBuffer;
-	InputLayout* m_pInputLayout;
-	ConstantBuffer* m_pConstBuffer;
-	IndexBuffer* m_pIndexBuffer;
+	Shader* m_pShader = nullptr;
+	ShaderVariation* m_pVertexShader = nullptr;
+	ShaderVariation* m_pPixelShader = nullptr;
+	VertexBuffer* m_pVertexBuffer = nullptr;
+	InputLayout* m_pInputLayout = nullptr;
+	ConstantBuffer* m_pConstBuffer = nullptr;
+	IndexBuffer* m_pIndexBuffer = nullptr;
+
+	ImgUIDrawer* m_UiDrawer = nullptr;
 
 	float m_DeltaTime = 0;
 };

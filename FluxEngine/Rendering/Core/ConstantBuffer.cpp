@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "ConstantBuffer.h"
+#include "Graphics.h"
 
-
-ConstantBuffer::ConstantBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext) :
-	m_pDevice(pDevice),
-	m_pDeviceContext(pDeviceContext)
+ConstantBuffer::ConstantBuffer(Graphics* pGraphics) : 
+	m_pGraphics(pGraphics)
 {
+
 }
 
 ConstantBuffer::~ConstantBuffer()
@@ -26,14 +26,14 @@ void ConstantBuffer::SetSize(const unsigned int size)
 	desc.CPUAccessFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	
-	HR(m_pDevice->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
+	HR(m_pGraphics->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
 }
 
 void ConstantBuffer::Apply()
 {
 	if (m_IsDirty && m_pBuffer)
 	{
-		m_pDeviceContext->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, 0, (void*)m_pShadowData, 0, 0);
+		m_pGraphics->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, 0, (void*)m_pShadowData, 0, 0);
 		m_IsDirty = false;
 	}
 }

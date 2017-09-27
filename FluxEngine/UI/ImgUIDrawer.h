@@ -1,11 +1,19 @@
 #pragma once
-#include "Helpers/Singleton.h"
 
-class ImgUIDrawer : public Singleton<ImgUIDrawer>
+class Graphics;
+class VertexBuffer;
+class IndexBuffer;
+class InputLayout;
+class Shader;
+class ShaderVariation;
+struct VertexElement;
+class ConstantBuffer;
+
+class ImgUIDrawer
 {
 public:
-
-	void Initialize(const HWND& hwnd);
+	ImgUIDrawer(Graphics* pGraphics);
+	void Initialize();
 	void Shutdown();
 	void NewFrame();
 
@@ -20,18 +28,20 @@ private:
 	void CreateFontsTexture();
 	void LoadShader();
 
-	HWND m_Hwnd;
-
-	int m_VertexBufferSize = 1000;
-	int m_IndexBufferSize = 1000;
-	Unique_COM<ID3D11Buffer> m_pVertexBuffer;
-	Unique_COM<ID3D11Buffer> m_pIndexBuffer;
-	Unique_COM<ID3D11InputLayout> m_pInputLayout;
-	ID3DX11Effect* m_pEffect = nullptr;
-	ID3DX11EffectTechnique* m_pTechnique = nullptr;
 
 	ID3DX11EffectShaderResourceVariable* m_pTextureVariable = nullptr;
 	ID3DX11EffectMatrixVariable* m_pViewProjVariable = nullptr;
 
 	Unique_COM<ID3D11ShaderResourceView> m_pFontSRV;
+
+	Graphics* m_pGraphics;
+	vector<VertexElement> m_VertexElements;
+	VertexBuffer* m_pVb = nullptr;
+	IndexBuffer* m_pIb = nullptr;
+	InputLayout* m_pIl = nullptr;
+
+	ConstantBuffer* m_pConstantBuffer = nullptr;
+	Shader* m_pShader = nullptr;
+	ShaderVariation* m_pPixelShader = nullptr;
+	ShaderVariation* m_pVertexShader = nullptr;
 };

@@ -1,8 +1,10 @@
 #pragma once
+class Graphics;
+
 class ConstantBuffer
 {
 public:
-	ConstantBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
+	ConstantBuffer(Graphics* pGraphics);
 	~ConstantBuffer();
 
 	DELETE_COPY(ConstantBuffer)
@@ -23,6 +25,5 @@ private:
 	unsigned int m_Size = 0;
 	unsigned char* m_pShadowData = nullptr;
 
-	ID3D11Device* m_pDevice;
-	ID3D11DeviceContext* m_pDeviceContext;
+	Graphics* m_pGraphics;
 };

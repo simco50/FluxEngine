@@ -1,5 +1,7 @@
 #pragma once
 
+class Graphics;
+
 enum class VertexElementType : unsigned char
 {
 	INT,
@@ -42,6 +44,56 @@ struct VertexElement
 	bool PerInstance;
 	unsigned Offset;
 
+	static char* GetSemanticOfType(VertexElementSemantic semantic)
+	{
+		switch (semantic)
+		{
+		case VertexElementSemantic::POSITION:
+			return "POSITION";
+		case VertexElementSemantic::NORMAL:
+			return "NORMAL";
+		case VertexElementSemantic::BINORMAL:
+			return "BINORMAL";
+		case VertexElementSemantic::TANGENT:
+			return "TANGENT";
+		case VertexElementSemantic::TEXCOORD:
+			return "TEXCOORD";
+		case VertexElementSemantic::COLOR:
+			return "COLOR";
+		case VertexElementSemantic::BLENDWEIGHTS:
+			return "BLENDWEIGHT";
+		case VertexElementSemantic::BLENDINDICES:
+			return "BLENDINDEX";
+		case VertexElementSemantic::OBJECTINDEX:
+			return "OBJECTINDEX";
+		}
+		FLUX_LOG(WARNING, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+		return "INVALID";
+	}
+
+	static DXGI_FORMAT GetFormatOfType(VertexElementType type)
+	{
+		switch (type)
+		{
+		case VertexElementType::FLOAT:
+			return DXGI_FORMAT_R32_FLOAT;
+		case VertexElementType::UBYTE4:
+			return DXGI_FORMAT_R8G8B8A8_UINT;
+		case VertexElementType::UBYTE4_NORM:
+			return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case VertexElementType::INT:
+			return DXGI_FORMAT_R32_SINT;
+		case VertexElementType::VECTOR2:
+			return DXGI_FORMAT_R32G32_FLOAT;
+		case VertexElementType::VECTOR3:
+			return DXGI_FORMAT_R32G32B32_FLOAT;
+		case VertexElementType::VECTOR4:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+		FLUX_LOG(WARNING, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
+		return (DXGI_FORMAT)0;
+	}
+
 	static unsigned int GetSizeOfType(VertexElementType type)
 	{
 		switch (type)
@@ -67,7 +119,7 @@ struct VertexElement
 class VertexBuffer
 {
 public:
-	VertexBuffer(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
+	VertexBuffer(Graphics* pGraphics);
 	~VertexBuffer();
 
 	DELETE_COPY(VertexBuffer)
@@ -80,8 +132,8 @@ public:
 	void* Map(bool discard);
 	void Unmap();
 
-	unsigned int GetVertexStride() const { return m_VertexStride; }
-	unsigned int GetVertexCount() const { return m_VertexCount; }
+	unsigned int GetStride() const { return m_VertexStride; }
+	unsigned int GetCount() const { return m_VertexCount; }
 	const vector<VertexElement>& GetElements() const { return m_Elements; }
 
 private:
@@ -99,7 +151,6 @@ private:
 	unsigned int m_VertexCount = 0;
 	unsigned int m_VertexStride = 0;
 
-	ID3D11Device* m_pDevice;
-	ID3D11DeviceContext* m_pDeviceContext;
+	Graphics* m_pGraphics;
 };
 

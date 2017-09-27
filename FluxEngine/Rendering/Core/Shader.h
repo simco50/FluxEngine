@@ -1,5 +1,6 @@
 #pragma once
 
+class Graphics;
 class ShaderVariation;
 
 enum class ShaderType
@@ -11,7 +12,7 @@ enum class ShaderType
 class Shader
 {
 public:
-	Shader(ID3D11Device* pDevice);
+	Shader(Graphics* pGraphics);
 	~Shader();
 
 	bool Load(const string& filePath);
@@ -21,13 +22,11 @@ public:
 private:
 	string m_FileDir;
 
-	void Compile();
 	bool ProcessSource(ifstream& stream, string& output);
 	void CommentFunction(string& input, const string& function);
 
 	string m_VertexShaderSource;
 	string m_PixelShaderSource;
 
-	ID3D11Device* m_pDevice;
+	Graphics* m_pGraphics;
 };
-

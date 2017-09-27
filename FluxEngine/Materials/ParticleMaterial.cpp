@@ -26,7 +26,7 @@ void ParticleMaterial::LoadShaderVariables()
 
 void ParticleMaterial::UpdateShaderVariables()
 {
-	m_pTextureVariable->SetResource(m_pTexture->GetResourceView());
+	m_pTextureVariable->SetResource((ID3D11ShaderResourceView*)m_pTexture->GetResourceView());
 	XMFLOAT4X4 vp = m_pGameContext->Scene->Camera->GetViewProjection();
 	m_pViewProjVariable->SetMatrix(reinterpret_cast<float*>(&vp));
 }

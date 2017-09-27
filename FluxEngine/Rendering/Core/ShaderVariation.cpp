@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ShaderVariation.h"
 #include "Shader.h"
+#include "Graphics.h"
 
 ShaderVariation::ShaderVariation(Shader* pShader, const ShaderType type) :
 	m_pParentShader(pShader),
@@ -14,7 +15,7 @@ ShaderVariation::~ShaderVariation()
 	Release();
 }
 
-bool ShaderVariation::Create(ID3D11Device* pDevice)
+bool ShaderVariation::Create(Graphics* pGraphics)
 {
 	Compile();
 
@@ -27,10 +28,10 @@ bool ShaderVariation::Create(ID3D11Device* pDevice)
 	switch (m_ShaderType)
 	{
 	case ShaderType::VertexShader:
-		HR(pDevice->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject))
+		HR(pGraphics->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject))
 			break;
 	case ShaderType::PixelShader:
-		HR(pDevice->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
+		HR(pGraphics->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
 			break;
 	default:
 		break;
