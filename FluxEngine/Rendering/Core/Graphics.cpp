@@ -313,7 +313,11 @@ void Graphics::PrepareDraw()
 
 	if (m_ScissorRectDirty)
 	{
-		D3D11_RECT rect = { m_CurrentScissorRect.Left, m_CurrentScissorRect.Top, m_CurrentScissorRect.Right, m_CurrentScissorRect.Bottom };
+		D3D11_RECT rect = { 
+			(LONG)m_CurrentScissorRect.Left, 
+			(LONG)m_CurrentScissorRect.Top, 
+			(LONG)m_CurrentScissorRect.Right, 
+			(LONG)m_CurrentScissorRect.Bottom };
 		m_pDeviceContext->RSSetScissorRects(1, &rect);
 		m_ScissorRectDirty = false;
 	}

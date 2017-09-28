@@ -30,6 +30,7 @@ solution ("FluxEngine")
 		kind "WindowedApp"
 		characterset ("MBCS")
 		defines { "WIN32", "_CONSOLE" }
+		flags {"FatalCompileWarnings"}
 
 		files
 		{ 
