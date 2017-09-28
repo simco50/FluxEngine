@@ -27,13 +27,12 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pIndexBuffer);
 
 	SafeDelete(m_pGraphics);
-
+	ResourceManager::Release();
 	Console::Release();
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
-
 	Console::Initialize();
 
 	m_pGraphics = new Graphics(hInstance);
@@ -48,6 +47,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
+	ResourceManager::Initialize(m_pGraphics);
 
 	//m_UiDrawer = new ImgUIDrawer(m_pGraphics);
 	//m_UiDrawer->Initialize();
@@ -104,7 +104,7 @@ void FluxCore::GameLoop()
 struct V
 {
 	XMFLOAT3 p;
-	XMFLOAT4 c;
+	XMFLOAT2 c;
 };
 
 void FluxCore::InitGame()
@@ -120,13 +120,13 @@ void FluxCore::InitGame()
 	
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
-	elements.push_back({ VertexElementType::VECTOR4, VertexElementSemantic::COLOR});
+	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD});
 
 	vector<V> vertices;
-	vertices.push_back({ { -0.5, -0.5, 0 },{ 1,0,0,1 } });
-	vertices.push_back({ { -0.5, 0.5, 0 },{ 0,1,0,1 } });
-	vertices.push_back({ { 0.5, -0.5, 0 },{ 0,0,1,1 } });
-	vertices.push_back({ { 0.5, 0.5, 0 },{ 0,0,1,1 } });
+	vertices.push_back({ { -0.5, -0.5, 0 },{ 0,1 } });
+	vertices.push_back({ { -0.5, 0.5, 0 },{ 0,0} });
+	vertices.push_back({ { 0.5, -0.5, 0 },{ 1,1 } });
+	vertices.push_back({ { 0.5, 0.5, 0 },{ 1,0 } });
 
 	m_pVertexBuffer->Create(vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
@@ -149,4 +149,7 @@ void FluxCore::InitGame()
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
+
+	Texture* pTex = ResourceManager::Load<Texture>("./Resources/Textures/Water.png");
+	m_pGraphics->SetTexture(0, pTex);
 }

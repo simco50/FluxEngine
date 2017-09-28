@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TextureLoader.h"
 #include "Rendering/Core/Texture.h"
+#include "Rendering/Core/Graphics.h"
 
 TextureLoader::TextureLoader()
 {
@@ -44,12 +45,12 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	ID3D11Resource* pTexture;
 	ID3D11ShaderResourceView* pSRV;
 	
-	HR(CreateTexture(m_pDevice, image.GetImages(), image.GetImageCount(), metaData, &pTexture));
-	HR(CreateShaderResourceView(m_pDevice, image.GetImages(), image.GetImageCount(), metaData, &pSRV));
+	HR(CreateTexture(m_pGraphics->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pTexture));
+	HR(CreateShaderResourceView(m_pGraphics->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pSRV));
 
 
 
-	return new Texture(pTexture, pSRV);
+	return new Texture(m_pGraphics, pTexture, pSRV);
 }
 
 void TextureLoader::Destroy(Texture* objToDestroy)

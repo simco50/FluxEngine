@@ -2,7 +2,8 @@
 #include "Texture.h"
 #include "Graphics.h"
 
-Texture::Texture(ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV) :
+Texture::Texture(Graphics* pGraphics, ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV) :
+	m_pGraphics(pGraphics),
 	m_pResource(pTexture),
 	m_pShaderResourceView(pTextureSRV),
 	m_Usage(TextureUsage::STATIC)
@@ -47,12 +48,51 @@ bool Texture::SetSize(const int width, const int height, const unsigned int form
 	return true;
 }
 
+void Texture::UpdateParameters()
+{
+	SafeRelease(m_pSamplerState);
+
+	D3D11_SAMPLER_DESC desc = {};
+	XMFLOAT4 borderColor;
+	TextureAddressMode mode = TextureAddressMode::WRAP;
+	switch (mode)
+	{
+	case TextureAddressMode::WRAP:
+		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		break;
+	case TextureAddressMode::MIRROR:
+		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		break;
+	case TextureAddressMode::CLAMP:
+		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		break;
+	case TextureAddressMode::BORDER:
+		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		break;
+	case TextureAddressMode::MIRROR_ONCE:
+		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
+		break;
+	}
+	memcpy(desc.BorderColor, &borderColor, 4 * sizeof(float));
+	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	desc.MaxAnisotropy = 1;
+#undef min
+#undef max
+	desc.MinLOD = numeric_limits<float>::min();
+	desc.MaxLOD = numeric_limits<float>::max();
+	desc.MipLODBias = 0;
+
+	HR(m_pGraphics->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
+}
+
 void Texture::Release()
 {
 	SafeRelease(m_pResource);
 	SafeRelease(m_pShaderResourceView);
 	SafeRelease(m_pRenderTargetView);
 	SafeRelease(m_pReadOnlyView);
+	SafeRelease(m_pSamplerState);
 }
 
 bool Texture::Create()

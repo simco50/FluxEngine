@@ -2,6 +2,8 @@
 #include <unordered_map>
 #include "../Debugging/Profiler.h"
 
+class Graphics;
+
 class Loader
 {
 public:
@@ -10,10 +12,10 @@ public:
 
 	virtual const type_info& GetType() const = 0;
 	virtual void Unload() = 0;
-	virtual void SetDevice(ID3D11Device* pDevice) { m_pDevice = pDevice; }
+	virtual void SetDevice(Graphics* pGraphics) { m_pGraphics = pGraphics; }
 
 protected:
-	ID3D11Device* m_pDevice = nullptr;
+	Graphics* m_pGraphics = nullptr;
 
 private:
 	Loader( const Loader &obj);

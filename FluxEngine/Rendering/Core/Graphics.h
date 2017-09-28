@@ -6,6 +6,7 @@ class IndexBuffer;
 class RenderTarget;
 class ShaderVariation;
 class InputLayout;
+class Texture;
 
 class Graphics
 {
@@ -41,6 +42,8 @@ public:
 	void SetInputLayout(InputLayout* pInputLayout);
 
 	void SetViewport(const FloatRect& rect);
+
+	void SetTexture(const int index, Texture* pTexture);
 
 	//Rasterizer State
 	void SetFillMode(const FillMode& fillMode);
@@ -144,7 +147,6 @@ private:
 	unsigned char m_StencilCompareMask;
 	unsigned char m_StencilWriteMask;
 
-	//Current State
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	VertexBuffer* m_pCurrentVertexBuffer = nullptr;
 	PrimitiveType m_CurrentPrimitiveType = PrimitiveType::UNDEFINED;
@@ -153,4 +155,7 @@ private:
 
 	ShaderVariation* m_pCurrentVertexShader = nullptr;
 	ShaderVariation* m_pCurrentPixelShader = nullptr;
+
+	vector<ID3D11SamplerState*> m_CurrentSamplerStates;
+	vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
 };

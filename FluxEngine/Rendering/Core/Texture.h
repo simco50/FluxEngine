@@ -9,11 +9,20 @@ enum class TextureUsage
 	DEPTHSTENCILBUFFER,
 };
 
+enum class TextureAddressMode
+{
+	WRAP,
+	MIRROR,
+	CLAMP,
+	BORDER,
+	MIRROR_ONCE,
+};
+
 class Texture
 {
 public:
 	Texture(Graphics* pGraphics);
-	Texture(ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV);
+	Texture(Graphics* pGraphics, ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV);
 	~Texture();
 
 	DELETE_COPY(Texture)
@@ -24,8 +33,12 @@ public:
 	void* GetResource() const { return m_pResource; }
 	void* GetResourceView() const { return m_pShaderResourceView; }
 
+	void* GetSamplerState() const { return m_pSamplerState; }
+
 	const int& GetWidth() const { return m_Width; }
 	const int& GetHeight() const { return m_Height; }
+
+	void UpdateParameters();
 
 private:
 	void Release();
@@ -41,6 +54,8 @@ private:
 	void* m_pShaderResourceView = nullptr;
 	void* m_pRenderTargetView = nullptr;
 	void* m_pReadOnlyView = nullptr;
+
+	void* m_pSamplerState = nullptr;
 
 	unsigned int m_TextureFormat = 0;
 	int m_MultiSample = 1;

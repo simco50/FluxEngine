@@ -3,12 +3,14 @@
 #include <typeinfo>
 #include "ResourceLoader.h"
 
+class Graphics;
+
 using namespace std;
 
 class ResourceManager
 {
 public:
-	static void Initialize(ID3D11Device* pDevice);
+	static void Initialize(Graphics* pGraphics);
 	static void AddLoader(Loader* loader);
 
 	ResourceManager() {}
@@ -75,7 +77,7 @@ public:
 
 private:
 	static vector<Loader*> m_Loaders;
-	static ID3D11Device* m_pDevice;
+	static Graphics* m_pGraphics;
 	static bool m_IsInitialized;
 };
 

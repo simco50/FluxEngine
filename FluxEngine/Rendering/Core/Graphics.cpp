@@ -5,6 +5,7 @@
 #include "IndexBuffer.h"
 #include "ShaderVariation.h"
 #include "InputLayout.h"
+#include "Texture.h"
 
 
 Graphics::Graphics(HINSTANCE hInstance) :
@@ -137,6 +138,20 @@ void Graphics::SetViewport(const FloatRect& rect)
 	m_CurrentViewport = rect;
 
 	m_pDeviceContext->RSSetViewports(1, &viewport);
+}
+
+void Graphics::SetTexture(const int index, Texture* pTexture)
+{
+	if (index >= m_CurrentSamplerStates.size())
+	{
+		m_CurrentSamplerStates.resize(index + 1);
+		m_CurrentShaderResourceViews.resize(index + 1);
+	}
+
+	pTexture->UpdateParameters();
+
+	m_CurrentShaderResourceViews[index] = (ID3D11ShaderResourceView*)pTexture->GetResourceView();
+	m_CurrentSamplerStates[index] = (ID3D11SamplerState*)pTexture->GetSamplerState();
 }
 
 void Graphics::SetFillMode(const FillMode& fillMode)
@@ -274,6 +289,14 @@ void Graphics::PrepareDraw()
 	{
 		UpdateDepthStencilState();
 		m_DepthStencilStateDirty = false;
+	}
+
+	for (int i = 0; i < m_CurrentSamplerStates.size(); ++i)
+	{
+		m_pDeviceContext->VSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
+		m_pDeviceContext->PSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
+		m_pDeviceContext->VSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
+		m_pDeviceContext->PSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
 	}
 }
 

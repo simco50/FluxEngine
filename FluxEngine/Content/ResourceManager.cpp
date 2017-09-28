@@ -6,9 +6,10 @@
 #include "MeshLoader.h"
 #include "TextureLoader.h"
 #include "ParticleSystemLoader.h"
+#include "Rendering\Core\Graphics.h"
 
 vector<Loader*> ResourceManager::m_Loaders = vector<Loader*>();
-ID3D11Device* ResourceManager::m_pDevice = nullptr;
+Graphics* ResourceManager::m_pGraphics = nullptr;
 bool ResourceManager::m_IsInitialized = false;
 
 void ResourceManager::Release()
@@ -26,14 +27,14 @@ void ResourceManager::Reset()
 {
 	Release();
 	m_IsInitialized = false;
-	Initialize(m_pDevice);
+	Initialize(m_pGraphics);
 }
 
-void ResourceManager::Initialize(ID3D11Device* pDevice)
+void ResourceManager::Initialize(Graphics* pGraphics)
 {
 	if(!m_IsInitialized)
 	{
-		m_pDevice = pDevice;
+		m_pGraphics = pGraphics;
 		m_IsInitialized = true;
 		AddLoader(new EffectLoader());
 		AddLoader(new MeshLoader());
@@ -54,5 +55,5 @@ void ResourceManager::AddLoader(Loader* loader)
 	}
 
 	m_Loaders.push_back(loader);
-	loader->SetDevice(m_pDevice);
+	loader->SetDevice(m_pGraphics);
 }
