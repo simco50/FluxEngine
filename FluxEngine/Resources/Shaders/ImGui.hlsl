@@ -1,62 +1,34 @@
-cbuffer PerFrame : register(b1)
+cbuffer PerFrameVS : register(b1)
 {
-      float4x4 gViewProj;
+      float4x4 cViewProjVS;
 }
 
-texture2D gTexture : register(t0);
+Texture2D gTexture;
+SamplerState gTextureSampler;
 
-SamplerState gTextureSampler : register(s0);
-
-/*
-BlendState gBlendState 
-{     
-    BlendEnable[0] = TRUE;
-	SrcBlend = SRC_ALPHA;
-    DestBlend = INV_SRC_ALPHA;
-	BlendOp = ADD;
-	SrcBlendAlpha = ONE;
-	DestBlendAlpha = ZERO;
-	BlendOpAlpha = ADD;
-	RenderTargetWriteMask[0] = 0x0f;
-};
-
-DepthStencilState gDepthStencilState
-{
-	DepthEnable = TRUE;
-	DepthWriteMask = ALL;
-	DepthFunc = ALWAYS;
-};
-
-RasterizerState gRasterizerState
-{
-      CullMode = NONE;
-      FillMode = SOLID;
-      ScissorEnable = TRUE;
-      DepthClipEnable = TRUE;
-};*/
 
 struct VS_INPUT
 {
-      float2 pos : POSITION;
-      float4 col : COLOR0;
-      float2 uv  : TEXCOORD0;
+      float2 position : POSITION;
+      float4 color : COLOR0;
+      float2 texCoord  : TEXCOORD0;
 };
 
 struct PS_INPUT
 {
-      float4 pos : SV_POSITION;
-      float4 col : COLOR0;
-      float2 uv  : TEXCOORD0;
+      float4 position : SV_POSITION;
+      float4 color : COLOR0;
+      float2 texCoord  : TEXCOORD0;
 };
 
 void VS(VS_INPUT input, out PS_INPUT output)
 {
-      output.pos = mul(gViewProj, float4(input.pos.xy, 0.f, 1.f));
-      output.col = input.col;
-      output.uv  = input.uv;
+      output.position = mul(cViewProjVS, float4(input.position.xy, 0.f, 1.f));
+      output.color = input.color;
+      output.texCoord  = input.texCoord;
 }
 
 void PS(PS_INPUT input, out float4 output : SV_TARGET)
 {
-      output = input.col * gTexture.Sample(gTextureSampler, input.uv);
+      output = input.color * gTexture.Sample(gTextureSampler, input.texCoord);
 }
