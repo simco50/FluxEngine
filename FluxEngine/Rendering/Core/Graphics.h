@@ -42,7 +42,7 @@ public:
 	void SetInputLayout(InputLayout* pInputLayout);
 
 	void SetViewport(const FloatRect& rect);
-	void SetScissorRect(const bool enabled, const FloatRect& rect = FloatRect::ZERO());
+	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
 
 	void SetTexture(const unsigned int index, Texture* pTexture);
 
@@ -149,7 +149,7 @@ private:
 	unsigned char m_StencilWriteMask;
 
 	//Clip rect
-	FloatRect m_CurrentScissorRect;
+	IntRect m_CurrentScissorRect;
 	bool m_ScissorEnabled = false;
 	bool m_ScissorRectDirty = true;
 

@@ -15,7 +15,12 @@ Graphics::Graphics(HINSTANCE hInstance) :
 
 Graphics::~Graphics()
 {
-	
+#ifdef _DEBUG
+	ID3D11Debug* pDebug = nullptr;
+	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
+	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_SUMMARY);
+	SafeRelease(pDebug);
+#endif
 }
 
 bool Graphics::SetMode(const int width, 
@@ -140,7 +145,7 @@ void Graphics::SetViewport(const FloatRect& rect)
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 }
 
-void Graphics::SetScissorRect(const bool enabled, const FloatRect& rect)
+void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
 	if (enabled != m_ScissorEnabled)
 	{
@@ -563,7 +568,7 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	desc.pColor = pBackbuffer;
 	desc.pDepth = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.DepthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	desc.MsaaSampleCount = m_Multisample;
 	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
 	m_pDefaultRenderTarget->Create(desc);

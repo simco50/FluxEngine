@@ -11,7 +11,7 @@ struct RENDER_TARGET_DESC
 	int Height = -1;
 	int MsaaSampleCount = 1;
 
-	DXGI_FORMAT DepthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	DXGI_FORMAT ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	ID3D11Texture2D* pColor = nullptr;
@@ -43,6 +43,8 @@ class RenderTarget
 public:
 	RenderTarget(Graphics* pGraphics);
 	~RenderTarget();
+
+	DELETE_COPY(RenderTarget)
 
 	void ClearColor(const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue);
 	void ClearDepth(const unsigned int depthflags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const float depth = 1.0f, unsigned char stencil = 0);

@@ -119,6 +119,7 @@ bool Texture::Create()
 {
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
+	//#todo Create a SRV from a RT and DB
 	//desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
@@ -164,7 +165,7 @@ bool Texture::Create()
 		rtvDesc.Format = desc.Format;
 		rtvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
 
-		HR(m_pGraphics->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, nullptr /*&rtvDesc*/, (ID3D11RenderTargetView**)&m_pRenderTargetView));
+		HR(m_pGraphics->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, nullptr, (ID3D11RenderTargetView**)&m_pRenderTargetView));
 	}
 
 	else if ((desc.BindFlags & D3D11_BIND_DEPTH_STENCIL) == D3D11_BIND_DEPTH_STENCIL)

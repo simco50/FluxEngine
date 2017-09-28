@@ -52,13 +52,18 @@ struct IntRect
 	int GetWidth() const { return Right - Left; }
 	int GetHeight() const { return Bottom - Top; }
 
-	bool operator==(const IntRect& other)
+	bool operator==(const IntRect& other) const
 	{
 		return Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
 	}
 
-	bool operator!=(const IntRect& other)
+	bool operator!=(const IntRect& other) const
 	{
 		return Left != other.Left || Top != other.Top || Right != other.Right || Bottom != other.Bottom;
+	}
+
+	static IntRect ZERO()
+	{
+		return IntRect();
 	}
 };

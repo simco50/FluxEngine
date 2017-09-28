@@ -113,7 +113,6 @@ struct VertexElement
 		FLUX_LOG(WARNING, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
 		return 0;
 	}
-
 };
 
 class VertexBuffer

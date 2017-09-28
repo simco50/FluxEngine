@@ -42,7 +42,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		/*WindowWidth*/				1240,
 		/*WindowHeight*/			720,
 		/*Window type*/				WindowType::WINDOWED,
-		/*Resizable*/				false,
+		/*Resizable*/				true,
 		/*Vsync*/					true,
 		/*Multisample*/				8,
 		/*RefreshRate denominator*/	60))
@@ -154,8 +154,6 @@ void FluxCore::InitGame()
 	m_pIndexBuffer->Create(6);
 	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
 	m_pIndexBuffer->SetData(indices.data());
-	
-	
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
 }

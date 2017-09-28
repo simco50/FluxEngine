@@ -19,16 +19,10 @@ public:
 	void NewFrame();
 
 	void Render();
-	void OnResize();
 
 	int WndProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	void CreateVertexBuffer();
-	void CreateIndexBuffer();
-	void CreateFontsTexture();
-	void LoadShader();
-
 	Graphics* m_pGraphics;
 	vector<VertexElement> m_VertexElements;
 
@@ -40,4 +34,7 @@ private:
 	Shader* m_pShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
+
+	static const int START_VERTEX_COUNT = 1000;
+	static const int START_INDEX_COUNT = 1000;
 };
