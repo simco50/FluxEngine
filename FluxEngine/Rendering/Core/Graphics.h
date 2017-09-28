@@ -42,6 +42,7 @@ public:
 	void SetInputLayout(InputLayout* pInputLayout);
 
 	void SetViewport(const FloatRect& rect);
+	void SetScissorRect(const bool enabled, const FloatRect& rect = FloatRect::ZERO());
 
 	void SetTexture(const unsigned int index, Texture* pTexture);
 
@@ -59,7 +60,7 @@ public:
 	void SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, const unsigned char writeMask);
 
 	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
-	void Draw(const PrimitiveType type, const int indexStart, const int indexCount, const int minVertex, const int vertexCount);
+	void Draw(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex);
 
 	void Clear(const unsigned int flags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue, const float depth = 1.0f, const unsigned char stencil = 0);
 
@@ -146,6 +147,11 @@ private:
 	unsigned int m_StencilRef = 0;
 	unsigned char m_StencilCompareMask;
 	unsigned char m_StencilWriteMask;
+
+	//Clip rect
+	FloatRect m_CurrentScissorRect;
+	bool m_ScissorEnabled = false;
+	bool m_ScissorRectDirty = true;
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	VertexBuffer* m_pCurrentVertexBuffer = nullptr;

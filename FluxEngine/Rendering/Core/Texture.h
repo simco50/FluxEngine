@@ -68,6 +68,7 @@ public:
 	DELETE_COPY(Texture)
 
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
+	bool SetData(void* pData);
 
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }

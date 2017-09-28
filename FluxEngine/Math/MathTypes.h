@@ -18,14 +18,19 @@ struct FloatRect
 	float GetWidth() const { return Right - Left; }
 	float GetHeight() const { return Bottom - Top; }
 
-	bool operator==(const FloatRect& other)
+	bool operator==(const FloatRect& other) const
 	{
 		return Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
 	}
 
-	bool operator!=(const FloatRect& other)
+	bool operator!=(const FloatRect& other) const
 	{
 		return Left != other.Left || Top != other.Top || Right != other.Right || Bottom != other.Bottom;
+	}
+
+	static FloatRect ZERO()
+	{
+		return FloatRect();
 	}
 };
 

@@ -3,16 +3,11 @@ cbuffer PerFrame : register(b1)
       float4x4 gViewProj;
 }
 
-/*texture2D gTexture;
+texture2D gTexture : register(t0);
 
-SamplerState gTextureSampler
-{
-      Filter = MIN_MAG_MIP_Linear;
-      AddressU = WRAP;
-      AddressV = WRAP;
-      ComparisonFunc = ALWAYS;
-};
+SamplerState gTextureSampler : register(s0);
 
+/*
 BlendState gBlendState 
 {     
     BlendEnable[0] = TRUE;
@@ -63,5 +58,5 @@ void VS(VS_INPUT input, out PS_INPUT output)
 
 void PS(PS_INPUT input, out float4 output : SV_TARGET)
 {
-      output = input.col;
+      output = input.col * gTexture.Sample(gTextureSampler, input.uv);
 }

@@ -4,15 +4,13 @@
 #include "Rendering\Core\VertexBuffer.h"
 #include "Rendering\Core\IndexBuffer.h"
 #include "Rendering\Core\Shader.h"
+#include "Rendering\Core\ShaderVariation.h"
 #include "Rendering\Core\InputLayout.h"
 #include "Rendering\Core\ConstantBuffer.h"
+#include "Rendering\Core\Texture.h"
 
 ImgUIDrawer::ImgUIDrawer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
-{
-}
-
-void ImgUIDrawer::Initialize()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
@@ -43,16 +41,24 @@ void ImgUIDrawer::Initialize()
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 
-	m_pIl = new InputLayout(m_pGraphics);
-	m_pIl->Create({ m_pVb }, m_pVertexShader);
+	m_pInputLayout = new InputLayout(m_pGraphics);
+	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 	CreateFontsTexture();
 
 	m_pConstantBuffer = new ConstantBuffer(m_pGraphics);
 	m_pConstantBuffer->SetSize(64);
 }
 
-void ImgUIDrawer::Shutdown()
+ImgUIDrawer::~ImgUIDrawer()
 {
+	SafeDelete(m_pFontTexture);
+	SafeDelete(m_pConstantBuffer);
+	SafeDelete(m_pVertexBuffer);
+	SafeDelete(m_pIndexBuffer);
+	SafeDelete(m_pInputLayout);
+	SafeDelete(m_pPixelShader);
+	SafeDelete(m_pVertexShader);
+	SafeDelete(m_pShader);
 	ImGui::Shutdown();
 }
 
@@ -80,19 +86,19 @@ void ImgUIDrawer::Render()
 	ImGui::Render();
 	ImDrawData* draw_data = ImGui::GetDrawData();
 
-	if(m_pVb == nullptr || (int)m_pVb->GetCount() < draw_data->TotalVtxCount)
+	if(m_pVertexBuffer == nullptr || (int)m_pVertexBuffer->GetCount() < draw_data->TotalVtxCount)
 	{
-		m_pVb->Create(m_pVb->GetCount() + 5000, m_VertexElements, true);
+		m_pVertexBuffer->Create(m_pVertexBuffer->GetCount() + 5000, m_VertexElements, true);
 	}
 	
-	if (m_pIb == nullptr || (int)m_pIb->GetCount() < draw_data->TotalIdxCount)
+	if (m_pIndexBuffer == nullptr || (int)m_pIndexBuffer->GetCount() < draw_data->TotalIdxCount)
 	{
 		CreateIndexBuffer();
-		m_pIb->Create(m_pIb->GetCount() + 10000, true, true);
+		m_pIndexBuffer->Create(m_pIndexBuffer->GetCount() + 10000, true, true);
 	}
 
-	void* pVertexResource = m_pVb->Map(true);
-	void* pIndexResource = m_pIb->Map(true);
+	void* pVertexResource = m_pVertexBuffer->Map(true);
+	void* pIndexResource = m_pIndexBuffer->Map(true);
 
 	ImDrawVert* vtx_dst = (ImDrawVert*)pVertexResource;
 	ImDrawIdx* idx_dst = (ImDrawIdx*)pIndexResource;
@@ -105,18 +111,18 @@ void ImgUIDrawer::Render()
 		idx_dst += cmd_list->IdxBuffer.Size;
 	}
 
-	m_pVb->Unmap();
-	m_pIb->Unmap();
+	m_pVertexBuffer->Unmap();
+	m_pIndexBuffer->Unmap();
 
-	m_pGraphics->SetInputLayout(m_pIl);
-	m_pGraphics->SetIndexBuffer(m_pIb);
-	m_pGraphics->SetVertexBuffer(m_pVb);
+	m_pGraphics->SetInputLayout(m_pInputLayout);
+	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
+	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 
 	m_pGraphics->SetDepthEnabled(true);
 	m_pGraphics->SetColorWrite(ColorWrite::ALL);
 	m_pGraphics->SetDepthTest(CompareMode::ALWAYS);
-	m_pGraphics->SetBlendMode(BlendMode::REPLACE, false);
+	m_pGraphics->SetBlendMode(BlendMode::ALPHA, false);
 
 	m_pGraphics->SetCullMode(CullMode::NONE);
 
@@ -135,9 +141,9 @@ void ImgUIDrawer::Render()
 	m_pConstantBuffer->SetParameter(0, 64, mvp);
 	m_pConstantBuffer->Apply();
 
+	//#todo Move the constbuffer management to a shaderprogram
 	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstantBuffer->GetBuffer();
 	m_pGraphics->GetDeviceContext()->VSSetConstantBuffers(1, 1, &pBuffer);
-	m_pGraphics->PrepareDraw();
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -151,9 +157,10 @@ void ImgUIDrawer::Render()
 				pcmd->UserCallback(cmd_list, pcmd);
 			else
 			{
-				//Set the texture
-				//Set the scissor rect
-				m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, indexOffset, pcmd->ElemCount, vertexOffset, 0);
+				m_pGraphics->SetScissorRect(true, { pcmd->ClipRect.x, pcmd->ClipRect.y, pcmd->ClipRect.z, pcmd->ClipRect.w });
+				m_pGraphics->SetTexture(0, (Texture*)pcmd->TextureId);
+				m_pGraphics->PrepareDraw();
+				m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}
@@ -219,19 +226,19 @@ int ImgUIDrawer::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void ImgUIDrawer::CreateVertexBuffer()
 {
-	SafeDelete(m_pVb);
-	m_pVb = new VertexBuffer(m_pGraphics);
+	SafeDelete(m_pVertexBuffer);
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics);
 	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::POSITION));
 	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD));
 	m_VertexElements.push_back(VertexElement(VertexElementType::UBYTE4_NORM, VertexElementSemantic::COLOR));
-	m_pVb->Create(1000, m_VertexElements, true);
+	m_pVertexBuffer->Create(1000, m_VertexElements, true);
 }
 
 void ImgUIDrawer::CreateIndexBuffer()
 {
-	SafeDelete(m_pIb);
-	m_pIb = new IndexBuffer(m_pGraphics);
-	m_pIb->Create(1000, true, true);
+	SafeDelete(m_pIndexBuffer);
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics);
+	m_pIndexBuffer->Create(1000, true, true);
 }
 
 void ImgUIDrawer::CreateFontsTexture()
@@ -241,7 +248,12 @@ void ImgUIDrawer::CreateFontsTexture()
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-	D3D11_TEXTURE2D_DESC desc;
+	m_pFontTexture = (new Texture(m_pGraphics));
+	m_pFontTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
+	m_pFontTexture->SetData(pixels);
+	io.Fonts->TexID = m_pFontTexture;
+
+	/*D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Width = width;
 	desc.Height = height;
@@ -270,7 +282,7 @@ void ImgUIDrawer::CreateFontsTexture()
 	HR(m_pGraphics->GetDevice()->CreateShaderResourceView(pTexture, &srvDesc, m_pFontSRV.GetAddressOf()))
 	pTexture->Release();
 
-	io.Fonts->TexID = (void*)m_pFontSRV.Get();
+	io.Fonts->TexID = (void*)m_pFontSRV.Get();*/
 }
 
 void ImgUIDrawer::LoadShader()

@@ -140,6 +140,20 @@ void Graphics::SetViewport(const FloatRect& rect)
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 }
 
+void Graphics::SetScissorRect(const bool enabled, const FloatRect& rect)
+{
+	if (enabled != m_ScissorEnabled)
+	{
+		m_ScissorEnabled = enabled;
+		m_RasterizerStateDirty = true;
+	}
+	if (enabled && rect != m_CurrentScissorRect)
+	{
+		m_CurrentScissorRect = rect;
+		m_ScissorRectDirty = true;
+	}
+}
+
 void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 {
 	if (index >= m_CurrentSamplerStates.size())
@@ -259,10 +273,8 @@ void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int v
 	m_pDeviceContext->Draw(vertexCount, vertexStart);
 }
 
-void Graphics::Draw(const PrimitiveType type, const int indexStart, const int indexCount, const int minVertex, const int vertexCount)
+void Graphics::Draw(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
 {
-	UNREFERENCED_PARAMETER(vertexCount);
-
 	SetPrimitiveType(type);
 	m_pDeviceContext->DrawIndexed(indexCount, indexStart, minVertex);
 }
@@ -297,6 +309,13 @@ void Graphics::PrepareDraw()
 		m_pDeviceContext->PSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
 		m_pDeviceContext->VSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
 		m_pDeviceContext->PSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
+	}
+
+	if (m_ScissorRectDirty)
+	{
+		D3D11_RECT rect = { m_CurrentScissorRect.Left, m_CurrentScissorRect.Top, m_CurrentScissorRect.Right, m_CurrentScissorRect.Bottom };
+		m_pDeviceContext->RSSetScissorRects(1, &rect);
+		m_ScissorRectDirty = false;
 	}
 }
 
@@ -584,7 +603,7 @@ void Graphics::UpdateRasterizerState()
 	}
 	desc.FrontCounterClockwise = false;
 	desc.MultisampleEnable = m_Multisample > 1;
-	desc.ScissorEnable = false;
+	desc.ScissorEnable = m_ScissorEnabled;
 	desc.SlopeScaledDepthBias = 0.0f;
 
 	HR(m_pDevice->CreateRasterizerState(&desc, m_pRasterizerState.GetAddressOf()));

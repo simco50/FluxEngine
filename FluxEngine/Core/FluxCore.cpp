@@ -26,6 +26,8 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pConstBuffer);
 	SafeDelete(m_pIndexBuffer);
 
+	SafeDelete(m_UiDrawer);
+
 	SafeDelete(m_pGraphics);
 	ResourceManager::Release();
 	Console::Release();
@@ -49,8 +51,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 	ResourceManager::Initialize(m_pGraphics);
 
-	//m_UiDrawer = new ImgUIDrawer(m_pGraphics);
-	//m_UiDrawer->Initialize();
+	m_UiDrawer = new ImgUIDrawer(m_pGraphics);
 
 	GameTimer::Reset();
 
@@ -85,18 +86,28 @@ void FluxCore::GameLoop()
 	m_pConstBuffer->SetParameter(4, 4, &elapsed);
 	m_pConstBuffer->SetParameter(0, 4, &deltaTime);
 	m_pConstBuffer->Apply();
-	
+
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
-	m_pGraphics->BeginFrame();
+
+	Texture* pTex = ResourceManager::Load<Texture>("./Resources/Textures/Water.png");
+	m_pGraphics->SetTexture(0, pTex);
+	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
+	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
+	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
+	m_pGraphics->SetInputLayout(m_pInputLayout);
+	m_pGraphics->SetScissorRect(false);
+
 	m_pGraphics->PrepareDraw();
-	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
-	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 6, 0, 4);
-	/*m_UiDrawer->NewFrame();
+	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 6, 0, 0);
+	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 6, 0, 0);
 
+	m_pGraphics->BeginFrame();
+	m_UiDrawer->NewFrame();
 
-	ImGui::Text("Hello World");
+	ImGui::Text("MS: %f", GameTimer::DeltaTime());
+	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 
-	m_UiDrawer->Render();*/
+	m_UiDrawer->Render();
 
 	m_pGraphics->EndFrame();
 }
@@ -144,12 +155,7 @@ void FluxCore::InitGame()
 	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
 	m_pIndexBuffer->SetData(indices.data());
 	
-	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
-	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
-	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
-	m_pGraphics->SetInputLayout(m_pInputLayout);
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
+	
 
-	Texture* pTex = ResourceManager::Load<Texture>("./Resources/Textures/Water.png");
-	m_pGraphics->SetTexture(0, pTex);
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
 }

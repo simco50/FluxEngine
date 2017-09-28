@@ -48,6 +48,27 @@ bool Texture::SetSize(const int width, const int height, const unsigned int form
 	return true;
 }
 
+bool Texture::SetData(void* pData)
+{
+	if (m_Usage == TextureUsage::STATIC)
+	{
+		D3D11_BOX box = {};
+		box.back = 1;
+		box.front = 0;
+		box.left = 0;
+		box.top = 0;
+		box.right = m_Width;
+		box.bottom = m_Height;
+		m_pGraphics->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &box, pData, m_Width * 4, 0);
+	}
+	else
+	{
+		FLUX_LOG(ERROR, "[Texture::SetData()] > Not yet implemented!");
+		return false;
+	}
+	return true;
+}
+
 void Texture::UpdateParameters()
 {
 	SafeRelease(m_pSamplerState);
@@ -76,7 +97,7 @@ void Texture::UpdateParameters()
 
 	memcpy(desc.BorderColor, &borderColor, 4 * sizeof(float));
 	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	desc.Filter = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
 	desc.MaxAnisotropy = 1;
 	desc.MinLOD = numeric_limits<float>::min();
 	desc.MaxLOD = numeric_limits<float>::max();
@@ -105,6 +126,7 @@ bool Texture::Create()
 		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	else if (m_Usage == TextureUsage::DYNAMIC || m_Usage == TextureUsage::STATIC)
 	{
+		desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 	}
 	else
 	{
