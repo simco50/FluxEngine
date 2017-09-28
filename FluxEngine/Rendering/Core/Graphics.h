@@ -43,7 +43,7 @@ public:
 
 	void SetViewport(const FloatRect& rect);
 
-	void SetTexture(const int index, Texture* pTexture);
+	void SetTexture(const unsigned int index, Texture* pTexture);
 
 	//Rasterizer State
 	void SetFillMode(const FillMode& fillMode);

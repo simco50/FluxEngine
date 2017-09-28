@@ -47,7 +47,7 @@ public:
 	void ClearColor(const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue);
 	void ClearDepth(const unsigned int depthflags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const float depth = 1.0f, unsigned char stencil = 0);
 
-	void Create(const RENDER_TARGET_DESC& RenderTargetDesc);
+	bool Create(const RENDER_TARGET_DESC& RenderTargetDesc);
 
 	ID3D11RenderTargetView* GetRenderTargetView() const;
 	ID3D11DepthStencilView* GetDepthStencilView() const;

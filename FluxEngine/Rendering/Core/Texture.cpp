@@ -73,12 +73,11 @@ void Texture::UpdateParameters()
 		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 		break;
 	}
+
 	memcpy(desc.BorderColor, &borderColor, 4 * sizeof(float));
 	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
 	desc.MaxAnisotropy = 1;
-#undef min
-#undef max
 	desc.MinLOD = numeric_limits<float>::min();
 	desc.MaxLOD = numeric_limits<float>::max();
 	desc.MipLODBias = 0;

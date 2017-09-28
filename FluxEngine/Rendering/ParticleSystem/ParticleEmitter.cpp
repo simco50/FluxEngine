@@ -134,7 +134,7 @@ void ParticleEmitter::Update()
 	SortParticles();
 
 	m_ParticleCount = 0;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 	//RenderSystem::Instance().GetDeviceContext()->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	ParticleVertex* pBuffer = static_cast<ParticleVertex*>(mappedResource.pData);
 

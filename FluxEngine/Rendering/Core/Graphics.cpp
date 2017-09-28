@@ -140,7 +140,7 @@ void Graphics::SetViewport(const FloatRect& rect)
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 }
 
-void Graphics::SetTexture(const int index, Texture* pTexture)
+void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 {
 	if (index >= m_CurrentSamplerStates.size())
 	{
@@ -291,7 +291,7 @@ void Graphics::PrepareDraw()
 		m_DepthStencilStateDirty = false;
 	}
 
-	for (int i = 0; i < m_CurrentSamplerStates.size(); ++i)
+	for (unsigned int i = 0; i < m_CurrentSamplerStates.size(); ++i)
 	{
 		m_pDeviceContext->VSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
 		m_pDeviceContext->PSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
@@ -527,22 +527,21 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	assert(m_pSwapChain.IsValid());
 
 	m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+	m_pDefaultRenderTarget.reset();
 
 	HR(m_pSwapChain->ResizeBuffers(1, windowWidth, windowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
-	m_pDefaultRenderTarget.reset();
-
-	RENDER_TARGET_DESC desc;
+	RENDER_TARGET_DESC desc = {};
 	desc.Width = windowWidth;
 	desc.Height = windowHeight;
 	desc.pColor = pBackbuffer;
+	desc.pDepth = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	desc.MsaaSampleCount = m_Multisample;
-
 	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
@@ -680,7 +679,6 @@ void Graphics::UpdateBlendState()
 
 	HR(m_pDevice->CreateBlendState(&desc, m_pBlendState.GetAddressOf()));
 
-#undef max
 	m_pDeviceContext->OMSetBlendState(m_pBlendState.Get(), nullptr, numeric_limits<unsigned int>::max());
 }
 

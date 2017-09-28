@@ -13,17 +13,22 @@ RenderTarget::~RenderTarget()
 {
 }
 
-void RenderTarget::Create(const RENDER_TARGET_DESC& renderTargetDesc)
+bool RenderTarget::Create(const RENDER_TARGET_DESC& RenderTargetDesc)
 {
-	if (!renderTargetDesc.IsValid())
-		return;
+	if (!RenderTargetDesc.IsValid())
+		return false;
 
 	m_pRenderTexture.reset();
 	m_pDepthTexture.reset();
 	m_pRenderTexture = unique_ptr<Texture>(new Texture(m_pGraphics));
-	m_pRenderTexture->SetSize(renderTargetDesc.Width, renderTargetDesc.Height, renderTargetDesc.ColorFormat, TextureUsage::RENDERTARGET, renderTargetDesc.MsaaSampleCount, renderTargetDesc.pColor);
+	if (!m_pRenderTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.ColorFormat, TextureUsage::RENDERTARGET, RenderTargetDesc.MsaaSampleCount, RenderTargetDesc.pColor))
+		return false;
+
 	m_pDepthTexture = unique_ptr<Texture>(new Texture(m_pGraphics));
-	m_pDepthTexture->SetSize(renderTargetDesc.Width, renderTargetDesc.Height, renderTargetDesc.DepthFormat, TextureUsage::DEPTHSTENCILBUFFER, renderTargetDesc.MsaaSampleCount, renderTargetDesc.pDepth);
+	if (!m_pDepthTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.DepthFormat, TextureUsage::DEPTHSTENCILBUFFER, RenderTargetDesc.MsaaSampleCount, RenderTargetDesc.pDepth))
+		return false;
+
+	return true;
 }
 
 ID3D11RenderTargetView* RenderTarget::GetRenderTargetView() const
