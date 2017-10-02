@@ -74,7 +74,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 				Sleep(100);
 		}
 	}
-	return msg.wParam;
+	return (int)msg.wParam;
 }
 
 void FluxCore::GameLoop()
@@ -139,7 +139,7 @@ void FluxCore::InitGame()
 	vertices.push_back({ { 0.5, -0.5, 0 },{ 1,1 } });
 	vertices.push_back({ { 0.5, 0.5, 0 },{ 1,0 } });
 
-	m_pVertexBuffer->Create(vertices.size(), elements);
+	m_pVertexBuffer->Create((int)vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
 
 	m_pInputLayout = new InputLayout(m_pGraphics);

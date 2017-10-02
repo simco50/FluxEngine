@@ -1,7 +1,7 @@
 /*$ preserve start $*/
 
 /* ================================================================================================== */
-/* FMOD Studio - Error string header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2015. */
+/* FMOD Studio - Error string header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017. */
 /*                                                                                                    */
 /* Use this header if you want to store or display a string version / english explanation of          */
 /* the FMOD error codes.                                                                              */
@@ -102,6 +102,8 @@ static const char *FMOD_ErrorString(FMOD_RESULT errcode)
         case FMOD_ERR_INVALID_STRING:            return "An invalid string was passed to this function.";
         case FMOD_ERR_ALREADY_LOCKED:            return "The specified resource is already locked.";
         case FMOD_ERR_NOT_LOCKED:                return "The specified resource is not locked, so it can't be unlocked.";
+        case FMOD_ERR_RECORD_DISCONNECTED:       return "The specified recording driver has been disconnected.";
+        case FMOD_ERR_TOOMANYSAMPLES:            return "The length provided exceeds the allowable limit.";
         default :                                return "Unknown error.";
 /*$ preserve start $*/
     };

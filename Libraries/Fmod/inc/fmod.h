@@ -2,7 +2,7 @@
 
 /* ======================================================================================== */
 /* FMOD Studio Low Level API - C header file.                                               */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2012-2015.                               */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2012-2017.                               */
 /*                                                                                          */
 /* Use this header in conjunction with fmod_common.h (which contains all the constants /    */
 /* callbacks) to develop using C interface.                                                 */
@@ -74,6 +74,8 @@ FMOD_RESULT F_API FMOD_System_SetCallback               (FMOD_SYSTEM *system, FM
 FMOD_RESULT F_API FMOD_System_SetPluginPath             (FMOD_SYSTEM *system, const char *path);
 FMOD_RESULT F_API FMOD_System_LoadPlugin                (FMOD_SYSTEM *system, const char *filename, unsigned int *handle, unsigned int priority);
 FMOD_RESULT F_API FMOD_System_UnloadPlugin              (FMOD_SYSTEM *system, unsigned int handle);
+FMOD_RESULT F_API FMOD_System_GetNumNestedPlugins       (FMOD_SYSTEM *system, unsigned int handle, int *count);
+FMOD_RESULT F_API FMOD_System_GetNestedPlugin           (FMOD_SYSTEM *system, unsigned int handle, int index, unsigned int *nestedhandle);
 FMOD_RESULT F_API FMOD_System_GetNumPlugins             (FMOD_SYSTEM *system, FMOD_PLUGINTYPE plugintype, int *numplugins);
 FMOD_RESULT F_API FMOD_System_GetPluginHandle           (FMOD_SYSTEM *system, FMOD_PLUGINTYPE plugintype, int index, unsigned int *handle);
 FMOD_RESULT F_API FMOD_System_GetPluginInfo             (FMOD_SYSTEM *system, unsigned int handle, FMOD_PLUGINTYPE *plugintype, char *name, int namelen, unsigned int *version);
@@ -120,8 +122,9 @@ FMOD_RESULT F_API FMOD_System_GetSpeakerModeChannels    (FMOD_SYSTEM *system, FM
 
 FMOD_RESULT F_API FMOD_System_GetVersion                (FMOD_SYSTEM *system, unsigned int *version);
 FMOD_RESULT F_API FMOD_System_GetOutputHandle           (FMOD_SYSTEM *system, void **handle);
-FMOD_RESULT F_API FMOD_System_GetChannelsPlaying        (FMOD_SYSTEM *system, int *channels);
+FMOD_RESULT F_API FMOD_System_GetChannelsPlaying        (FMOD_SYSTEM *system, int *channels, int *realchannels);
 FMOD_RESULT F_API FMOD_System_GetCPUUsage               (FMOD_SYSTEM *system, float *dsp, float *stream, float *geometry, float *update, float *total);
+FMOD_RESULT F_API FMOD_System_GetFileUsage              (FMOD_SYSTEM *system, long long *sampleBytesRead, long long *streamBytesRead, long long *otherBytesRead);
 FMOD_RESULT F_API FMOD_System_GetSoundRAM               (FMOD_SYSTEM *system, int *currentalloced, int *maxalloced, int *total);
 
 /*
@@ -221,7 +224,6 @@ FMOD_RESULT F_API FMOD_Sound_Set3DConeSettings          (FMOD_SOUND *sound, floa
 FMOD_RESULT F_API FMOD_Sound_Get3DConeSettings          (FMOD_SOUND *sound, float *insideconeangle, float *outsideconeangle, float *outsidevolume);
 FMOD_RESULT F_API FMOD_Sound_Set3DCustomRolloff         (FMOD_SOUND *sound, FMOD_VECTOR *points, int numpoints);
 FMOD_RESULT F_API FMOD_Sound_Get3DCustomRolloff         (FMOD_SOUND *sound, FMOD_VECTOR **points, int *numpoints);
-FMOD_RESULT F_API FMOD_Sound_SetSubSound                (FMOD_SOUND *sound, int index, FMOD_SOUND *subsound);
 FMOD_RESULT F_API FMOD_Sound_GetSubSound                (FMOD_SOUND *sound, int index, FMOD_SOUND **subsound);
 FMOD_RESULT F_API FMOD_Sound_GetSubSoundParent          (FMOD_SOUND *sound, FMOD_SOUND **parentsound);
 FMOD_RESULT F_API FMOD_Sound_GetName                    (FMOD_SOUND *sound, char *name, int namelen);
@@ -231,7 +233,7 @@ FMOD_RESULT F_API FMOD_Sound_GetNumSubSounds            (FMOD_SOUND *sound, int 
 FMOD_RESULT F_API FMOD_Sound_GetNumTags                 (FMOD_SOUND *sound, int *numtags, int *numtagsupdated);
 FMOD_RESULT F_API FMOD_Sound_GetTag                     (FMOD_SOUND *sound, const char *name, int index, FMOD_TAG *tag);
 FMOD_RESULT F_API FMOD_Sound_GetOpenState               (FMOD_SOUND *sound, FMOD_OPENSTATE *openstate, unsigned int *percentbuffered, FMOD_BOOL *starving, FMOD_BOOL *diskbusy);
-FMOD_RESULT F_API FMOD_Sound_ReadData                   (FMOD_SOUND *sound, void *buffer, unsigned int lenbytes, unsigned int *read);
+FMOD_RESULT F_API FMOD_Sound_ReadData                   (FMOD_SOUND *sound, void *buffer, unsigned int length, unsigned int *read);
 FMOD_RESULT F_API FMOD_Sound_SeekData                   (FMOD_SOUND *sound, unsigned int pcm);
 
 FMOD_RESULT F_API FMOD_Sound_SetSoundGroup              (FMOD_SOUND *sound, FMOD_SOUNDGROUP *soundgroup);
@@ -338,7 +340,6 @@ FMOD_RESULT F_API FMOD_Channel_RemoveDSP                (FMOD_CHANNEL *channel, 
 FMOD_RESULT F_API FMOD_Channel_GetNumDSPs               (FMOD_CHANNEL *channel, int *numdsps);
 FMOD_RESULT F_API FMOD_Channel_SetDSPIndex              (FMOD_CHANNEL *channel, FMOD_DSP *dsp, int index);
 FMOD_RESULT F_API FMOD_Channel_GetDSPIndex              (FMOD_CHANNEL *channel, FMOD_DSP *dsp, int *index);
-FMOD_RESULT F_API FMOD_Channel_OverridePanDSP           (FMOD_CHANNEL *channel, FMOD_DSP *pan);
 
 /*
      3D functionality.
@@ -460,7 +461,6 @@ FMOD_RESULT F_API FMOD_ChannelGroup_RemoveDSP           (FMOD_CHANNELGROUP *chan
 FMOD_RESULT F_API FMOD_ChannelGroup_GetNumDSPs          (FMOD_CHANNELGROUP *channelgroup, int *numdsps);
 FMOD_RESULT F_API FMOD_ChannelGroup_SetDSPIndex         (FMOD_CHANNELGROUP *channelgroup, FMOD_DSP *dsp, int index);
 FMOD_RESULT F_API FMOD_ChannelGroup_GetDSPIndex         (FMOD_CHANNELGROUP *channelgroup, FMOD_DSP *dsp, int *index);
-FMOD_RESULT F_API FMOD_ChannelGroup_OverridePanDSP      (FMOD_CHANNELGROUP *channelgroup, FMOD_DSP *pan);
 
 /*
      3D functionality.

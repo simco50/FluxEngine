@@ -73,7 +73,7 @@ void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
 		}
 	}
 
-	int bufferSize = ((char*)pDataLocation - (char*)m_pVertexDataStart);
+	int bufferSize = (int)((char*)pDataLocation - (char*)m_pVertexDataStart);
 	//Create the vertex buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));

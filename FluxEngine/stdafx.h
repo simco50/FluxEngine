@@ -29,7 +29,8 @@ using namespace std;
 
 #pragma endregion STL
 
-#pragma region
+
+#ifdef PHYSX
 
 #include <PxPhysicsAPI.h>
 #if defined(DEBUG) || defined(_DEBUG)
@@ -49,7 +50,7 @@ using namespace std;
 #endif
 using namespace physx;
 
-#pragma endregion PhysX
+#endif
 
 #pragma region
 
@@ -81,16 +82,16 @@ using namespace DirectX;
 
 #include "d3dx11effect.h"
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxEffects11_Win32_Debug.lib")
+#pragma comment(lib, "DxEffects11_Debug.lib")
 #else 
-#pragma comment(lib, "DxEffects11_Win32_Release.lib")
+#pragma comment(lib, "DxEffects11_Release.lib")
 #endif
 
 #include "DirectXTex.h"
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DirectXTex_Win32_Debug.lib")
+#pragma comment(lib, "DirectXTex_Debug.lib")
 #else 
-#pragma comment(lib, "DirectXTex_Win32_Release.lib")
+#pragma comment(lib, "DirectXTex_Release.lib")
 #endif
 
 #pragma endregion D3D
@@ -119,9 +120,9 @@ using namespace DirectX;
 #include "fmod_errors.h"
 #pragma warning(pop)
 
-#pragma comment(lib, "fmod_vc.lib")
+#pragma comment(lib, "fmod64_vc.lib")
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "fmodL_vc.lib")
+#pragma comment(lib, "fmodL64_vc.lib")
 #endif
 
 #pragma endregion FMOD

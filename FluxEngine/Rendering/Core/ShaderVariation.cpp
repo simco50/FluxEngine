@@ -113,7 +113,7 @@ bool ShaderVariation::Compile()
 		return false;
 	}
 	unsigned char* pBuffer = (unsigned char*)shaderCode->GetBufferPointer();
-	unsigned bufferSize = shaderCode->GetBufferSize();
+	unsigned int bufferSize = (unsigned int)shaderCode->GetBufferSize();
 
 	ShaderReflection(pBuffer, bufferSize);
 

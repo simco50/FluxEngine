@@ -11,7 +11,7 @@ MeshLoader::~MeshLoader()
 
 MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 {
-	int pointPos = assetFile.rfind(L'.') + 1;
+	unsigned int pointPos = (unsigned int)assetFile.rfind(L'.') + 1;
 	string extension = assetFile.substr(pointPos, assetFile.length() - pointPos);
 	if(extension != "flux")
 	{

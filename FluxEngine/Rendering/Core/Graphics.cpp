@@ -80,7 +80,7 @@ void Graphics::SetRenderTargets(const vector<RenderTarget*>& pRenderTargets)
 	pRtvs.reserve(pRenderTargets.size());
 	for (RenderTarget* pRt : pRenderTargets)
 		pRtvs.push_back(pRt->GetRenderTargetView());
-	m_pDeviceContext->OMSetRenderTargets(pRenderTargets.size(), pRtvs.data(), pRenderTargets[0]->GetDepthStencilView());
+	m_pDeviceContext->OMSetRenderTargets((UINT)pRenderTargets.size(), pRtvs.data(), pRenderTargets[0]->GetDepthStencilView());
 }
 
 void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
@@ -99,7 +99,7 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
 		strides.push_back(pVb->GetStride());
 	}
 
-	m_pDeviceContext->IASetVertexBuffers(0, pBuffers.size(), buffers.data(), strides.data(), offsets.data());
+	m_pDeviceContext->IASetVertexBuffers(0, (UINT)pBuffers.size(), buffers.data(), strides.data(), offsets.data());
 }
 
 void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
@@ -310,10 +310,10 @@ void Graphics::PrepareDraw()
 
 	for (unsigned int i = 0; i < m_CurrentSamplerStates.size(); ++i)
 	{
-		m_pDeviceContext->VSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
-		m_pDeviceContext->PSSetSamplers(0, m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
-		m_pDeviceContext->VSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
-		m_pDeviceContext->PSSetShaderResources(0, m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
+		m_pDeviceContext->VSSetSamplers(0, (UINT)m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
+		m_pDeviceContext->PSSetSamplers(0, (UINT)m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
+		m_pDeviceContext->VSSetShaderResources(0, (UINT)m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
+		m_pDeviceContext->PSSetShaderResources(0, (UINT)m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
 	}
 
 	if (m_ScissorRectDirty)
@@ -471,7 +471,7 @@ bool Graphics::EnumerateAdapters()
 
 		if (desc.DedicatedVideoMemory > bestMemory)
 		{
-			bestMemory = desc.DedicatedVideoMemory;
+			bestMemory = (unsigned long)desc.DedicatedVideoMemory;
 			bestAdapterIdx = adapterCount;
 		}
 
@@ -888,7 +888,7 @@ LRESULT CALLBACK Graphics::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam,
 	if (message == WM_CREATE)
 	{
 		CREATESTRUCT *pCS = reinterpret_cast<CREATESTRUCT*>(lParam);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG>(pCS->lpCreateParams));
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG64>(pCS->lpCreateParams));
 	}
 	else
 	{

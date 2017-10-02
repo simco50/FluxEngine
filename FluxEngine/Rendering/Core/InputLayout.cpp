@@ -37,5 +37,5 @@ void InputLayout::Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVaria
 		}
 	}
 	const vector<unsigned char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetDevice()->CreateInputLayout(elementDesc.data(), elementDesc.size(), byteCode.data(), byteCode.size(), m_pInputLayout.GetAddressOf()))
+	HR(m_pGraphics->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), m_pInputLayout.GetAddressOf()))
 }

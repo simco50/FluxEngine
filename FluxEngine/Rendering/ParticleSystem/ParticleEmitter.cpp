@@ -140,7 +140,7 @@ void ParticleEmitter::Update()
 
 	if(m_pParticleSystem->MaxParticles > (int)m_Particles.size())
 	{
-		int startIdx = m_Particles.size();
+		int startIdx = (int)m_Particles.size();
 		m_Particles.resize(m_pParticleSystem->MaxParticles);
 		for (int i = startIdx; i < m_pParticleSystem->MaxParticles; i++)
 			m_Particles[i] = new Particle(m_pParticleSystem);

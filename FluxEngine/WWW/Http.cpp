@@ -29,14 +29,14 @@ string Http::HttpGet(string host, string path)
 		throw SocketError("Socket", WSAGetLastError());
 
 	// Connect to server.
-	result = connect(sock, pAddrInfo->ai_addr, pAddrInfo->ai_addrlen);
+	result = connect(sock, pAddrInfo->ai_addr, (int)pAddrInfo->ai_addrlen);
 	if (result != 0)
 		throw SocketError("Connect", WSAGetLastError());
 
 	const string request = "GET " + path + " HTTP/1.1\nHost: " + host + "\n\n";
 
 	// Send an initial buffer
-	result = send(sock, request.c_str(), request.size(), 0);
+	result = send(sock, request.c_str(), (int)request.size(), 0);
 	if (result == SOCKET_ERROR)
 		throw SocketError("Send", WSAGetLastError());
 

@@ -1,5 +1,5 @@
 /* ========================================================================================== */
-/* FMOD Studio - C++ header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2015.  */
+/* FMOD Studio - C++ header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.  */
 /*                                                                                            */
 /* Use this header in conjunction with fmod_common.h (which contains all the constants /      */
 /* callbacks) to develop using C++ classes.                                                   */
@@ -77,12 +77,14 @@ namespace FMOD
         FMOD_RESULT F_API attachFileSystem        (FMOD_FILE_OPEN_CALLBACK useropen, FMOD_FILE_CLOSE_CALLBACK userclose, FMOD_FILE_READ_CALLBACK userread, FMOD_FILE_SEEK_CALLBACK userseek);
         FMOD_RESULT F_API setAdvancedSettings     (FMOD_ADVANCEDSETTINGS *settings);
         FMOD_RESULT F_API getAdvancedSettings     (FMOD_ADVANCEDSETTINGS *settings);
-        FMOD_RESULT F_API setCallback             (FMOD_SYSTEM_CALLBACK callback, FMOD_SYSTEM_CALLBACK_TYPE callbackmask = 0xFFFFFFFF);
+        FMOD_RESULT F_API setCallback             (FMOD_SYSTEM_CALLBACK callback, FMOD_SYSTEM_CALLBACK_TYPE callbackmask = FMOD_SYSTEM_CALLBACK_ALL);
 
         // Plug-in support.
         FMOD_RESULT F_API setPluginPath           (const char *path);
         FMOD_RESULT F_API loadPlugin              (const char *filename, unsigned int *handle, unsigned int priority = 0);
         FMOD_RESULT F_API unloadPlugin            (unsigned int handle);
+        FMOD_RESULT F_API getNumNestedPlugins     (unsigned int handle, int *count);
+        FMOD_RESULT F_API getNestedPlugin         (unsigned int handle, int index, unsigned int *nestedhandle);
         FMOD_RESULT F_API getNumPlugins           (FMOD_PLUGINTYPE plugintype, int *numplugins);
         FMOD_RESULT F_API getPluginHandle         (FMOD_PLUGINTYPE plugintype, int index, unsigned int *handle);
         FMOD_RESULT F_API getPluginInfo           (unsigned int handle, FMOD_PLUGINTYPE *plugintype, char *name, int namelen, unsigned int *version);
@@ -120,8 +122,9 @@ namespace FMOD
         // System information functions.
         FMOD_RESULT F_API getVersion              (unsigned int *version);
         FMOD_RESULT F_API getOutputHandle         (void **handle);
-        FMOD_RESULT F_API getChannelsPlaying      (int *channels);
+        FMOD_RESULT F_API getChannelsPlaying      (int *channels, int *realchannels = 0);
         FMOD_RESULT F_API getCPUUsage             (float *dsp, float *stream, float *geometry, float *update, float *total);
+        FMOD_RESULT F_API getFileUsage            (long long *sampleBytesRead, long long *streamBytesRead, long long *otherBytesRead);
         FMOD_RESULT F_API getSoundRAM             (int *currentalloced, int *maxalloced, int *total);
 
         // Sound/DSP/Channel/FX creation and retrieval.
@@ -204,7 +207,6 @@ namespace FMOD
         FMOD_RESULT F_API get3DConeSettings      (float *insideconeangle, float *outsideconeangle, float *outsidevolume);
         FMOD_RESULT F_API set3DCustomRolloff     (FMOD_VECTOR *points, int numpoints);
         FMOD_RESULT F_API get3DCustomRolloff     (FMOD_VECTOR **points, int *numpoints);
-        FMOD_RESULT F_API setSubSound            (int index, Sound *subsound);
         FMOD_RESULT F_API getSubSound            (int index, Sound **subsound);
         FMOD_RESULT F_API getSubSoundParent      (Sound **parentsound);
         FMOD_RESULT F_API getName                (char *name, int namelen);
@@ -214,7 +216,7 @@ namespace FMOD
         FMOD_RESULT F_API getNumTags             (int *numtags, int *numtagsupdated);
         FMOD_RESULT F_API getTag                 (const char *name, int index, FMOD_TAG *tag);
         FMOD_RESULT F_API getOpenState           (FMOD_OPENSTATE *openstate, unsigned int *percentbuffered, bool *starving, bool *diskbusy);
-        FMOD_RESULT F_API readData               (void *buffer, unsigned int lenbytes, unsigned int *read);
+        FMOD_RESULT F_API readData               (void *buffer, unsigned int length, unsigned int *read);
         FMOD_RESULT F_API seekData               (unsigned int pcm);
 
         FMOD_RESULT F_API setSoundGroup          (SoundGroup *soundgroup);
@@ -309,7 +311,6 @@ namespace FMOD
         FMOD_RESULT F_API getNumDSPs             (int *numdsps);
         FMOD_RESULT F_API setDSPIndex            (DSP *dsp, int index);
         FMOD_RESULT F_API getDSPIndex            (DSP *dsp, int *index);
-        FMOD_RESULT F_API overridePanDSP         (DSP *pan);
 
         // 3D functionality.
         FMOD_RESULT F_API set3DAttributes        (const FMOD_VECTOR *pos, const FMOD_VECTOR *vel, const FMOD_VECTOR *alt_pan_pos = 0);
