@@ -1,27 +1,17 @@
 solution ("FluxEngine")
 	basedir "../"
 	configurations { "Debug", "Release" }
-    platforms "x64"
+    platforms {"x86", "x64"}
     warnings "Extra"
 
-	filter "configurations:Debug"
-			runtime "Debug"
-		 	defines { "_DEBUG" }
-		 	flags {  }
-		 	symbols "On"
-		 	optimize "Off"
+	filter { "platforms:x64" }
+		architecture "x64"
 
-	filter "configurations:Release"
-		 	runtime "Release"
-			defines { "NDEBUG" }
-		 	flags {  }
-		 	symbols "Off"
-		 	optimize "Full"
+	filter { "platforms:x86" }
+		architecture "x32"
 
 	project "FluxEngine"
-
 		location "../FluxEngine/"
-
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
@@ -31,6 +21,7 @@ solution ("FluxEngine")
 		characterset ("MBCS")
 		defines { "WIN32", "_CONSOLE" }
 		flags {"FatalWarnings"}
+		language "C++"
 
 		files
 		{ 
@@ -51,17 +42,30 @@ solution ("FluxEngine")
 
 		libdirs
 		{
-			"../Libraries/Imgui/lib/x64",
-			"../Libraries/DX_Tex/lib/x64",
-			"../Libraries/Fmod/lib/x64",
-			"../Libraries/DX_Effects11/lib/x64",
+			"../Libraries/Imgui/lib/%{cfg.platform}",
+			"../Libraries/DX_Tex/lib/%{cfg.platform}",
+			"../Libraries/Fmod/lib/%{cfg.platform}",
+			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
 		}
 
-		postbuildcommands 
+		postbuildcommands
 		{ 
 			"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
 		}
 
+		filter { "configurations:Debug" }
+			runtime "Debug"
+		 	defines { "_DEBUG" }
+		 	flags {  }
+		 	symbols "On"
+		 	optimize "Off"
+
+		filter { "configurations:Release" }
+		 	runtime "Release"
+			defines { "NDEBUG" }
+		 	flags {  }
+		 	symbols "Off"
+		 	optimize "Full"
 
 newaction {
 		trigger     = "clean",
@@ -69,5 +73,6 @@ newaction {
 
 		execute = function()
 			os.rmdir("../Build")
+			os.rmdir("../ipch")
 		end
 	}
