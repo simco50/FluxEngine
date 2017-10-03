@@ -29,7 +29,7 @@ solution ("FluxEngine")
 		pchsource "../FluxEngine/stdafx.cpp"
 		kind "WindowedApp"
 		characterset ("MBCS")
-		defines { "WIN32", "_CONSOLE" }
+		defines { "_CONSOLE" }
 		flags {"FatalWarnings"}
 		language "C++"
 

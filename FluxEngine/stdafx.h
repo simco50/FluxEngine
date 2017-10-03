@@ -8,7 +8,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if defined(_DEBUG)
+#if CI
+#else
 #include <vld.h>
 #endif
 
