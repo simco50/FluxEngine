@@ -6,9 +6,19 @@ solution ("FluxEngine")
 
 	filter { "platforms:x64" }
 		architecture "x64"
+		postbuildcommands
+		{ 
+			"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
+		}
+		defines {"x64"}
 
 	filter { "platforms:x86" }
 		architecture "x32"
+		postbuildcommands
+		{ 
+			"copy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
+		}
+		defines {"x86"}
 
 	project "FluxEngine"
 		location "../FluxEngine/"
@@ -46,11 +56,6 @@ solution ("FluxEngine")
 			"../Libraries/DX_Tex/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
-		}
-
-		postbuildcommands
-		{ 
-			"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
 		}
 
 		filter { "configurations:Debug" }

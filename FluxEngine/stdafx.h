@@ -119,10 +119,16 @@ using namespace DirectX;
 #pragma warning(disable: 4505) //Unreferenced local function removed (FMOD_ErrorString)
 #include "fmod_errors.h"
 #pragma warning(pop)
-
+#if x64
 #pragma comment(lib, "fmod64_vc.lib")
 #if defined(DEBUG) || defined(_DEBUG)
 #pragma comment(lib, "fmodL64_vc.lib")
+#endif
+#elif defined(x86)
+#pragma comment(lib, "fmod_vc.lib")
+#if defined(DEBUG) || defined(_DEBUG)
+#pragma comment(lib, "fmodL_vc.lib")
+#endif
 #endif
 
 #pragma endregion FMOD
