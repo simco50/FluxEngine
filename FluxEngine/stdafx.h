@@ -8,10 +8,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if defined(_DEBUG) && !CI
-#include <vld.h>
-#endif
-
 #pragma region
 
 //Standard Library
