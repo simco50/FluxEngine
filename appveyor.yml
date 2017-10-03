@@ -9,6 +9,11 @@ platform:
 shallow_clone: true
 before_build:
 - ps: .\scripts\premake5.exe --file=scripts\premake5.lua vs2017
+build_script:
+- ps: >-
+    Write-Output "Configuration: $env:CONFIGURATION"
+    Write-Output "Platform: $env:PLATFORM"
+    msbuild /v:m /p:"Configuration=$env:CONFIGURATION" /p:Platform="$env:PLATFORM" "$env:Solution" /p:DefineConstants="CI=1" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 build:
   project: FluxEngine.sln
   parallel: false
