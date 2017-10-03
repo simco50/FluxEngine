@@ -13,11 +13,11 @@ public:
 
 	void Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVariation* pVariation);
 
-	void* GetInputLayout() const { return m_pInputLayout.Get(); }
+	void* GetInputLayout() const { return m_pInputLayout; }
 
 private:
 
-	Smart_COM::Unique_COM<ID3D11InputLayout> m_pInputLayout;
+	void* m_pInputLayout;
 	Graphics* m_pGraphics;
 };
 

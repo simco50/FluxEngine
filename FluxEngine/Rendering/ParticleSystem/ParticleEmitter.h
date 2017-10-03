@@ -10,7 +10,7 @@ class ParticleEmitter : public ComponentBase
 {
 public:
 	ParticleEmitter(ParticleSystem* pSystem = nullptr);
-	~ParticleEmitter(void);
+	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;
 
@@ -45,7 +45,7 @@ private:
 	int m_BufferSize = 0;
 	float m_ParticleSpawnTimer = 0.0f;
 
-	Unique_COM<ID3D11Buffer> m_pVertexBuffer;
+	ComPtr<ID3D11Buffer> m_pVertexBuffer;
 
 	ParticleMaterial* m_pMaterial = nullptr;
 	wstring m_AssetFile;

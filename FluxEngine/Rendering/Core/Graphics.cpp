@@ -15,12 +15,13 @@ Graphics::Graphics(HINSTANCE hInstance) :
 
 Graphics::~Graphics()
 {
+/*
 #ifdef _DEBUG
-	ID3D11Debug* pDebug = nullptr;
+	ComPtr<ID3D11Debug> pDebug;
 	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
 	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_SUMMARY);
-	SafeRelease(pDebug);
 #endif
+*/
 }
 
 bool Graphics::SetMode(const int width, 
@@ -203,9 +204,9 @@ void Graphics::SetBlendMode(const BlendMode& blendMode, const bool alphaToCovera
 
 void Graphics::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::ALL*/)
 {
-	if (m_ColorWriteMask != (unsigned char)colorWriteMask)
+	if (m_ColorWriteMask !=colorWriteMask)
 	{
-		m_ColorWriteMask = (unsigned char)colorWriteMask;
+		m_ColorWriteMask = colorWriteMask;
 		m_BlendStateDirty = true;
 	}
 }
@@ -627,7 +628,7 @@ void Graphics::UpdateBlendState()
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
 	desc.RenderTarget[0].BlendEnable = m_BlendMode == BlendMode::REPLACE ? false : true;
-	desc.RenderTarget[0].RenderTargetWriteMask = m_ColorWriteMask;
+	desc.RenderTarget[0].RenderTargetWriteMask = (unsigned int)m_ColorWriteMask;
 	
 	switch (m_BlendMode)
 	{
@@ -883,19 +884,30 @@ bool Graphics::CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned 
 		return numLevels > 0; // D3D10.0 and below: use the best quality
 }
 
+
 LRESULT CALLBACK Graphics::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (message == WM_CREATE)
+	Graphics* pThis = nullptr;
+
+	if (message == WM_NCCREATE)
 	{
-		CREATESTRUCT *pCS = reinterpret_cast<CREATESTRUCT*>(lParam);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG64>(pCS->lpCreateParams));
+		pThis = static_cast<Graphics*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
+		SetLastError(0);
+		if (!SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis)))
+		{
+			if (GetLastError() != 0)
+				return 0;
+		}
 	}
 	else
 	{
-		Graphics* pThisGame = reinterpret_cast<Graphics*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
-		if (pThisGame) return pThisGame->WndProc(hWnd, message, wParam, lParam);
+		pThis = reinterpret_cast<Graphics*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	}
-
+	if (pThis)
+	{
+		LRESULT callback = pThis->WndProc(hWnd, message, wParam, lParam);
+		return callback;
+	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
@@ -962,8 +974,8 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		m_Resizing = true;
 		return 0;
 
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
+	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+	// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
 		OnPause(false);
 		m_Resizing = false;

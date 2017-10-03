@@ -15,4 +15,3 @@ public:
 private:
 	RenderViewport* m_pViewport = nullptr;
 };
-

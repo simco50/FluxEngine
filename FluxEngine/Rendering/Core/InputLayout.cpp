@@ -13,7 +13,7 @@ InputLayout::InputLayout(Graphics* pGraphics) :
 
 InputLayout::~InputLayout()
 {
-	
+	SafeRelease(m_pInputLayout);
 }
 
 void InputLayout::Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVariation* pVariation)
@@ -37,5 +37,5 @@ void InputLayout::Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVaria
 		}
 	}
 	const vector<unsigned char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), m_pInputLayout.GetAddressOf()))
+	HR(m_pGraphics->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
 }

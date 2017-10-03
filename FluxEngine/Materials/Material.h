@@ -54,7 +54,7 @@ protected:
 	MaterialDesc m_MaterialDesc;
 	ID3DX11Effect* m_pEffect = nullptr;
 	ID3DX11EffectTechnique* m_pTechnique = nullptr;
-	Unique_COM<ID3D11InputLayout> m_pInputLayout;
+	ComPtr<ID3D11InputLayout> m_pInputLayout;
 
 private:
 	InputLayoutDesc m_InputLayoutDesc;

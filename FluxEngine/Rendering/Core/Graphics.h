@@ -113,29 +113,29 @@ private:
 	bool m_Minimized = false;
 	bool m_Resizing = false;
 
-	Unique_COM<IDXGIAdapter> m_pAdapter;
-	Unique_COM<ID3D11Device> m_pDevice;
-	Unique_COM<ID3D11DeviceContext> m_pDeviceContext;
-	Unique_COM<IDXGIFactory> m_pFactory;
-	Unique_COM<IDXGISwapChain> m_pSwapChain;
+	ComPtr<IDXGIAdapter> m_pAdapter;
+	ComPtr<ID3D11Device> m_pDevice;
+	ComPtr<ID3D11DeviceContext> m_pDeviceContext;
+	ComPtr<IDXGIFactory> m_pFactory;
+	ComPtr<IDXGISwapChain> m_pSwapChain;
 
 	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
 
 	//RasterizerState
-	Unique_COM<ID3D11RasterizerState> m_pRasterizerState;
+	ComPtr<ID3D11RasterizerState> m_pRasterizerState;
 	FillMode m_FillMode = FillMode::SOLID;
 	CullMode m_CullMode = CullMode::BACK;
 	bool m_RasterizerStateDirty = true;
 
 	//BlendState
-	Unique_COM<ID3D11BlendState> m_pBlendState;
+	ComPtr<ID3D11BlendState> m_pBlendState;
 	bool m_BlendStateDirty = true;
 	BlendMode m_BlendMode = BlendMode::REPLACE;
 	bool m_AlphaToCoverage = false;
-	unsigned char m_ColorWriteMask = (unsigned char)ColorWrite::ALL;
-
+	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
+	
 	//Depthstencilstate
-	Unique_COM<ID3D11DepthStencilState> m_pDepthStencilState;
+	ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
 	bool m_DepthStencilStateDirty = true;
 	bool m_DepthEnabled = true;
 	CompareMode m_DepthCompareMode = CompareMode::LESSEQUAL;

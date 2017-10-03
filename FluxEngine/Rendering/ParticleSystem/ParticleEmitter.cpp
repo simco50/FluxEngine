@@ -19,7 +19,7 @@ ParticleEmitter::ParticleEmitter(ParticleSystem* pSystem) : m_pParticleSystem(pS
 }
 
 
-ParticleEmitter::~ParticleEmitter(void)
+ParticleEmitter::~ParticleEmitter()
 {
 	for (size_t i = 0; i < m_Particles.size(); i++)
 		delete m_Particles[i];

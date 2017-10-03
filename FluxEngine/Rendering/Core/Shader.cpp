@@ -11,6 +11,12 @@ Shader::Shader(Graphics* pGraphics) :
 
 Shader::~Shader()
 {
+	for (auto p : m_VertexShaderCache)
+		SafeDelete(p.second);
+	m_VertexShaderCache.clear();
+	for (auto p : m_PixelShaderCache)
+		SafeDelete(p.second);
+	m_PixelShaderCache.clear();
 }
 
 bool Shader::Load(const string& filePath)
@@ -37,16 +43,47 @@ bool Shader::Load(const string& filePath)
 	return true;
 }
 
-ShaderVariation* Shader::GetVariation(ShaderType type, const vector<string>& defines)
+ShaderVariation* Shader::GetVariation(ShaderType type, const string& defines)
 {
-	ShaderVariation* variation = new ShaderVariation(this, type);
-	variation->SetDefines(defines);
-	if (!variation->Create(m_pGraphics))
+	switch (type)
+	{
+	case ShaderType::VertexShader:
+		for (auto p : m_VertexShaderCache)
+		{
+			if (p.first == defines)
+				return p.second;
+		}
+		break;
+	case ShaderType::PixelShader:
+		for (auto p : m_PixelShaderCache)
+		{
+			if (p.first == defines)
+				return p.second;
+		}
+		break;
+	default:
+		break;
+	}
+
+	ShaderVariation* pVariation = new ShaderVariation(this, type);
+	pVariation->SetDefines(defines);
+	if (!pVariation->Create(m_pGraphics))
 	{
 		FLUX_LOG(ERROR, "[Shader::GetVariation()] > Failed to load shader variation");
 		return nullptr;
 	}
-	return variation;
+
+	switch (type)
+	{
+	case ShaderType::VertexShader:
+		m_VertexShaderCache[defines] = pVariation;
+		break;
+	case ShaderType::PixelShader:
+		m_PixelShaderCache[defines] = pVariation;
+		break;
+	}
+
+	return pVariation;
 }
 
 const std::string& Shader::GetSource(ShaderType type) const

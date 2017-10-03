@@ -33,8 +33,8 @@ private:
 	GameContext* m_pGameContext = nullptr;
 
 	bool m_BuffersInitialized = false;
-	Unique_COM<ID3D11Buffer> m_pVertexBuffer = nullptr;
-	Unique_COM<ID3D11Buffer> m_pIndexBuffer = nullptr;
+	ComPtr<ID3D11Buffer> m_pVertexBuffer = nullptr;
+	ComPtr<ID3D11Buffer> m_pIndexBuffer = nullptr;
 
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;

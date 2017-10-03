@@ -41,21 +41,7 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 
 void ShaderVariation::Release()
 {
-	if (m_pShaderObject == nullptr)
-		return;
-
-	switch (m_ShaderType)
-	{
-	case ShaderType::VertexShader:
-		((ID3D11VertexShader*)m_pShaderObject)->Release();
-		break;
-	case ShaderType::PixelShader:
-		((ID3D11PixelShader*)m_pShaderObject)->Release();
-		break;
-	default:
-		break;
-	}
-	m_pShaderObject = nullptr;
+	SafeRelease(m_pShaderObject);
 }
 
 bool ShaderVariation::Compile()
@@ -174,7 +160,12 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 	SafeRelease(reflection);
 }
 
-void ShaderVariation::SetDefines(const vector<string>& defines)
+void ShaderVariation::SetDefines(const string& defines)
 {
-	m_Defines = defines;
+	stringstream stream(defines);
+	string define;
+	while (getline(stream, define, ','))
+	{
+		m_Defines.push_back(define);
+	}
 }

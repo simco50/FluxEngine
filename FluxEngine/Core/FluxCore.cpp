@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FluxCore.h"
 #include "resource.h"
-#include "UI/ImgUIDrawer.h"
+#include "UI/ImmediateUI.h"
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/ShaderVariation.h"
 #include "Rendering/Core/Shader.h"
@@ -20,13 +20,11 @@ FluxCore::~FluxCore()
 {
 	SafeDelete(m_pShader);
 	SafeDelete(m_pVertexBuffer);
-	SafeDelete(m_pVertexShader);
-	SafeDelete(m_pPixelShader);
 	SafeDelete(m_pInputLayout);
 	SafeDelete(m_pConstBuffer);
 	SafeDelete(m_pIndexBuffer);
 
-	SafeDelete(m_UiDrawer);
+	SafeDelete(m_pImmediateUI);
 
 	SafeDelete(m_pGraphics);
 	ResourceManager::Release();
@@ -51,7 +49,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 	ResourceManager::Initialize(m_pGraphics);
 
-	m_UiDrawer = new ImgUIDrawer(m_pGraphics);
+	m_pImmediateUI = new ImmediateUI(m_pGraphics);
 
 	GameTimer::Reset();
 
@@ -102,12 +100,12 @@ void FluxCore::GameLoop()
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 6, 0, 0);
 
 	m_pGraphics->BeginFrame();
-	m_UiDrawer->NewFrame();
+	m_pImmediateUI->NewFrame();
 
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 
-	m_UiDrawer->Render();
+	m_pImmediateUI->Render();
 
 	m_pGraphics->EndFrame();
 }

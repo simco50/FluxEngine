@@ -15,8 +15,10 @@ public:
 	Shader(Graphics* pGraphics);
 	~Shader();
 
+	DELETE_COPY(Shader)
+
 	bool Load(const string& filePath);
-	ShaderVariation* GetVariation(ShaderType type, const vector<string>& defines = {});
+	ShaderVariation* GetVariation(ShaderType type, const string& defines = string(""));
 	const string& GetSource(ShaderType type) const;
 
 private:
@@ -27,6 +29,9 @@ private:
 
 	string m_VertexShaderSource;
 	string m_PixelShaderSource;
+
+	map<string, ShaderVariation*> m_VertexShaderCache;
+	map<string, ShaderVariation*> m_PixelShaderCache;
 
 	Graphics* m_pGraphics;
 };

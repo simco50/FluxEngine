@@ -3,13 +3,13 @@
 namespace Smart_COM 
 {
 	template<class T>
-	class Unique_COM
+	class ComPtr
 	{
 	public:
-		Unique_COM()
+		ComPtr()
 		{}
 
-		Unique_COM(T* pPtr)
+		ComPtr(T* pPtr)
 		{
 			if(pPtr != nullptr)
 			{
@@ -19,18 +19,18 @@ namespace Smart_COM
 			m_pPtr = pPtr;
 		}
 
-		~Unique_COM() { Reset(); }
+		~ComPtr() { Reset(); }
 
-		Unique_COM& operator=(T* other)
+		ComPtr& operator=(T* other)
 		{
 			Reset();
 			m_pPtr = other;
 			return *this;
 		}
 
-		Unique_COM(const Unique_COM& other) = delete;
+		ComPtr(const ComPtr& other) = delete;
 
-		Unique_COM& operator=(const Unique_COM& other) = delete;
+		ComPtr& operator=(const ComPtr& other) = delete;
 
 		T* Get() { return m_pPtr; }
 		T* Get() const { return m_pPtr; }

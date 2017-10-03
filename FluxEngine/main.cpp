@@ -1,6 +1,5 @@
 #include "stdafx.h"
-
-#include "Game/GameManager.h"
+#include "Core/FluxCore.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -11,4 +10,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	FluxCore* core = new FluxCore();
 	core->Run(hInstance);
 	delete core;
+
+	return 0;
 }

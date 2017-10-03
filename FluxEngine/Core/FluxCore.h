@@ -7,7 +7,7 @@ class VertexBuffer;
 class InputLayout;
 class ConstantBuffer;
 class IndexBuffer;
-class ImgUIDrawer;
+class ImmediateUI;
 
 class FluxCore
 {
@@ -22,6 +22,7 @@ public:
 	void InitGame();
 
 private:
+
 	Graphics* m_pGraphics = nullptr;
 
 	//Window variables
@@ -35,7 +36,7 @@ private:
 	ConstantBuffer* m_pConstBuffer = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
-	ImgUIDrawer* m_UiDrawer = nullptr;
+	ImmediateUI* m_pImmediateUI = nullptr;
 
 	float m_DeltaTime = 0;
 };

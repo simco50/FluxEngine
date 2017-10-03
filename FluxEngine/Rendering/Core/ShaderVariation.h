@@ -21,7 +21,7 @@ public:
 
 	bool Create(Graphics* pGraphics);
 	void Release();
-	void SetDefines(const vector<string>& defines);
+	void SetDefines(const string& defines);
 
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 
