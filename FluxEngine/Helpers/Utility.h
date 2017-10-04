@@ -10,7 +10,7 @@ if(! variable->IsValid()) Console::LogError(stream.str());}
 variable = m_pEffect->GetVariableByName(#name)->as();\
 if(! variable->IsValid()) Console::LogFormat(LogType::ERROR, "Variable with name '%s' not found", L#name);
 
-#define ERROR_TEXTURE "./Resources/Textures/ErrorTexture.jpg"
+#define ERROR_TEXTURE "FluxEngine/Resources/Textures/ErrorTexture.jpg"
 
 //Deletes the copy constructor and assignment operator
 #define DELETE_COPY(className) \

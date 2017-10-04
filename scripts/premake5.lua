@@ -1,4 +1,5 @@
-solution ("FluxEngine")
+workspace "FluxEngine"
+	filename "FluxEngine_%{_ACTION}"
 	basedir "../"
 	configurations { "Debug", "Release" }
     platforms {"x86", "x64"}
@@ -8,7 +9,7 @@ solution ("FluxEngine")
 		architecture "x64"
 		postbuildcommands
 		{ 
-			"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
+			"copy \"Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
 		}
 		defines {"x64"}
 
@@ -16,12 +17,13 @@ solution ("FluxEngine")
 		architecture "x32"
 		postbuildcommands
 		{ 
-			"copy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
+			"copy \"Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
 		}
 		defines {"x86"}
 
 	project "FluxEngine"
-		location "../FluxEngine/"
+		filename "FluxEngine_%{_ACTION}"
+		location "../"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
@@ -43,7 +45,7 @@ solution ("FluxEngine")
 
 		includedirs 
 		{ 
-			"$(ProjectDir)",
+			"$(ProjectDir)/FluxEngine",
 			"../Libraries/ImgUI/include",
 			"../Libraries/DX_Effects11/include",
 			"../Libraries/DX_Tex/include",

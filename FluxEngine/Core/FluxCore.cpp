@@ -87,7 +87,7 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
 
-	Texture* pTex = ResourceManager::Load<Texture>("./Resources/Textures/Water.png");
+	Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/Water.png");
 	m_pGraphics->SetTexture(0, pTex);
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
@@ -121,7 +121,7 @@ void FluxCore::InitGame()
 	m_pGraphics->SetWindowTitle("Hello World");
 
 	m_pShader =  new Shader(m_pGraphics);
-	if (m_pShader->Load("./Resources/test.hlsl"))
+	if (m_pShader->Load("FluxEngine/Resources/test.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
 

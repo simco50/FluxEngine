@@ -38,7 +38,7 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics) :
 
 	//Load shader
 	m_pShader = make_unique< Shader>(m_pGraphics);
-	m_pShader->Load("Resources/Shaders/Imgui.hlsl");
+	m_pShader->Load("FluxEngine/Resources/Shaders/Imgui.hlsl");
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader, {});
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, {});
 

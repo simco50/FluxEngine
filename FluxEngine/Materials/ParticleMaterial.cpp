@@ -6,7 +6,7 @@
 
 ParticleMaterial::ParticleMaterial() : Material()
 {
-	m_MaterialDesc.EffectName = "./Resources/Shaders/ParticleRenderer.fx";
+	m_MaterialDesc.EffectName = "FluxEngine/Resources/Shaders/ParticleRenderer.fx";
 	m_MaterialDesc.HasWorldMatrix = true;
 	m_MaterialDesc.HasViewInverseMatrix = true;
 }

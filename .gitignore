@@ -9,3 +9,7 @@ Build/
 *.log
 *.db
 .vs/
+*.sln
+*.vcxproj
+*.filters
+imgui.ini
