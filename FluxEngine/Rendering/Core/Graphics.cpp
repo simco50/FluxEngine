@@ -402,8 +402,8 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 {
 	AUTOPROFILE(MakeWindow);
 
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int displayWidth = GetSystemMetrics(SM_CXSCREEN);
+	int displayHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	DWORD windowStyle;
 	switch (m_WindowType)
@@ -414,8 +414,8 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 		windowStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME | WS_CAPTION;
 		break;
 	case WindowType::BORDERLESS:
-		windowWidth = screenWidth;
-		windowHeight = screenHeight;
+		windowWidth = displayWidth;
+		windowHeight = displayHeight;
 		windowStyle = WS_POPUP;
 		break;
 	}
@@ -424,9 +424,11 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 
 	RECT windowRect = { 0, 0, windowWidth, windowHeight };
 	AdjustWindowRect(&windowRect, windowStyle, false);
+	windowWidth = windowRect.right - windowRect.left;
+	windowHeight = windowRect.bottom - windowRect.top;
 
-	int x = (screenWidth - windowRect.right) / 2;
-	int y = (screenHeight - windowRect.bottom) / 2;
+	int x = (displayWidth - windowWidth) / 2;
+	int y = (displayHeight - windowHeight) / 2;
 
 	m_Hwnd = CreateWindowA(
 		"wndClass",
@@ -434,8 +436,8 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 		windowStyle,
 		x,
 		y,
-		windowRect.right,
-		windowRect.bottom,
+		windowWidth,
+		windowHeight,
 		nullptr,
 		nullptr,
 		GetModuleHandle(0),

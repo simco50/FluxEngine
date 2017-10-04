@@ -153,7 +153,12 @@ void InputEngine::Update()
 
 bool InputEngine::IsKeyboardKeyDown(int key) const
 {
-	return (m_pCurrKeyboardState[key] & 0xF0) != 0 ? true : false;
+	return (m_pCurrKeyboardState[key] & 0xF0) != 0;
+}
+
+bool InputEngine::IsKeyboardKeyPressed(int key) const
+{
+	return (m_pCurrKeyboardState[key] & 0xF0) != 0 && m_pCurrKeyboardState[key] != m_pOldKeyboardState[key];
 }
 
 bool InputEngine::IsMouseButtonDown(int button) const

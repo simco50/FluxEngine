@@ -83,10 +83,7 @@ void ImmediateUI::NewFrame()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	RECT rect;
-	GetClientRect(m_pGraphics->GetWindow(), &rect);
-	io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
-
+	io.DisplaySize = ImVec2((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	io.DeltaTime = GameTimer::DeltaTime();
 	io.KeyCtrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
@@ -100,15 +97,26 @@ void ImmediateUI::NewFrame()
 	io.MousePos.x = (float)m_pInput->GetMousePosition().x;
 	io.MousePos.y = (float)m_pInput->GetMousePosition().y;
 
-	/*if (wParam < 256)
-		io.KeysDown[wParam] = 0;
 	// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-	if (wParam > 0 && wParam < 0x10000)
-		io.AddInputCharacter((unsigned short)wParam);
-	if (wParam < 256)
-		io.KeysDown[wParam] = 1;*/
+	/*if (wParam > 0 && wParam < 0x10000)
+		io.AddInputCharacter((unsigned short)wParam);*/
+
+	/*LPWORD output = nullptr;
+	ToAscii(0, 0, m_pInput->GetKeyboardFlags(), output, 0);
+	io.AddInputCharacter(*output);*/
+
+	for (int i = 0; i < 256; ++i)
+	{
+		io.KeysDown[i] = m_pInput->IsKeyboardKeyDown(i);
+	}
+	for (char i = 30; i < 96; ++i)
+	{
+		if (m_pInput->IsKeyboardKeyPressed(i))
+			io.AddInputCharacter(i);
+	}
 
 	io.MouseDrawCursor = true;
+	m_pInput->CursorVisible(!io.MouseDrawCursor);
 
 	ImGui::NewFrame();
 }

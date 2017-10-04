@@ -41,4 +41,5 @@ private:
 	unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
+	XMFLOAT4 color = XMFLOAT4(0,0,0,1);
 };

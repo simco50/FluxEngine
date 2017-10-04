@@ -76,9 +76,12 @@ public:
 	bool IsGamepadConnected(GamepadIndex index) const { return m_ConnectedGamepads[(DWORD)index]; }
 
 	bool IsKeyboardKeyDown(int key) const;
+	bool IsKeyboardKeyPressed(int key) const;
 	bool IsMouseButtonDown(int button) const;
 	bool IsGamepadButtonDown(WORD button, GamepadIndex playerIndex = GamepadIndex::PlayerOne) const;
 	void RefreshControllerConnections();
+
+	const BYTE* GetKeyboardFlags() const { return m_pCurrKeyboardState; }
 
 private:
 	Graphics* m_pGraphics = nullptr;

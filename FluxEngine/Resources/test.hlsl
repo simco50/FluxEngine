@@ -2,6 +2,11 @@ Texture2D tex : register(t0);
 
 SamplerState state : register(s0);
 
+cbuffer cPerModel : register(b0)
+{
+	float4 cColor = float4(1,1,1,1);
+}
+
 struct VS_INPUT
 {
 	float3 position : POSITION;
@@ -22,5 +27,6 @@ void VS(VS_INPUT input, out PS_INPUT output)
 
 void PS(PS_INPUT input, out float4 output : SV_TARGET)
 {
-	output = tex.Sample(state, input.texCoord);
+	float4 sample = tex.Sample(state, input.texCoord);
+	output = sample * cColor;
 }

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "FluxCore.h"
-#include "resource.h"
 #include "UI/ImmediateUI.h"
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/ShaderVariation.h"
@@ -81,15 +80,12 @@ void FluxCore::GameLoop()
 
 	m_pInput->Update();
 
-	float elapsed = GameTimer::GameTime();
-	float deltaTime = GameTimer::DeltaTime();
-	m_pConstBuffer->SetParameter(4, 4, &elapsed);
-	m_pConstBuffer->SetParameter(0, 4, &deltaTime);
-	m_pConstBuffer->Apply();
-
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
-
-	Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/Water.png");
+	m_pConstBuffer->SetParameter(0, 4 * 4, &color);
+	m_pConstBuffer->Apply();
+	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstBuffer->GetBuffer();
+	m_pGraphics->GetDeviceContext()->PSSetConstantBuffers(0, 1, &pBuffer);
+	Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/WhiteGradient.png");
 	m_pGraphics->SetTexture(0, pTex);
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
@@ -106,6 +102,7 @@ void FluxCore::GameLoop()
 
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
+	ImGui::ColorPicker4("Color Picker", &color.x);
 
 	m_pImmediateUI->Render();
 
@@ -147,8 +144,7 @@ void FluxCore::InitGame()
 
 	m_pConstBuffer = new ConstantBuffer(m_pGraphics);
 	m_pConstBuffer->SetSize(16);
-	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstBuffer->GetBuffer();
-	m_pGraphics->GetDeviceContext()->VSSetConstantBuffers(0, 1, &pBuffer);
+	
 
 	m_pIndexBuffer = new IndexBuffer(m_pGraphics);
 	m_pIndexBuffer->Create(6);
