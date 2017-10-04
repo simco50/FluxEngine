@@ -16,18 +16,4 @@ build:
 artifacts:
 - path: '\FluxEngine\Resources'
   name: Resources
-- path: '\Build\FluxEngine_x86_Release'
-  name: FluxEngine_x86_Release
-- path: '\Build\FluxEngine_x64_Release'
-  name: FluxEngine_x64_Release
-- path: '\Build\FluxEngine_x86_Debug'
-  name: FluxEngine_x86_Debug
-- path: '\Build\FluxEngine_x64_Debug'
-  name: FluxEngine_x64_Debug
-notifications:
-- provider: Email
-  to:
-  - sim2.coenen@gmail.com
-  on_build_success: true
-  on_build_failure: true
-  on_build_status_changed: false
+- path: '\Build\FluxEngine_$(configuration)_$(platform)'
