@@ -17,3 +17,4 @@ artifacts:
 - path: '\FluxEngine\Resources'
   name: Resources
 - path: '\Build\FluxEngine_$(configuration)_$(platform)'
+  name: Build
