@@ -9,11 +9,12 @@ class ShaderVariation;
 struct VertexElement;
 class ConstantBuffer;
 class Texture;
+class InputEngine;
 
 class ImmediateUI
 {
 public:
-	ImmediateUI(Graphics* pGraphics);
+	ImmediateUI(Graphics* pGraphics, InputEngine* pInput);
 	~ImmediateUI();
 
 	DELETE_COPY(ImmediateUI)
@@ -24,6 +25,8 @@ public:
 
 private:
 	Graphics* m_pGraphics;
+	InputEngine* m_pInput;
+
 	vector<VertexElement> m_VertexElements;
 
 	unique_ptr<Texture> m_pFontTexture;

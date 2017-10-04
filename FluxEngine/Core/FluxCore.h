@@ -8,6 +8,7 @@ class InputLayout;
 class ConstantBuffer;
 class IndexBuffer;
 class ImmediateUI;
+class InputEngine;
 
 class FluxCore
 {
@@ -36,7 +37,8 @@ private:
 	ConstantBuffer* m_pConstBuffer = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
-	ImmediateUI* m_pImmediateUI = nullptr;
+	unique_ptr<ImmediateUI> m_pImmediateUI;
+	unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
 };

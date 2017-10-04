@@ -9,6 +9,7 @@
 #include "Rendering/Core/InputLayout.h"
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
+#include "Core\InputEngine.h"
 
 using namespace std;
 
@@ -23,8 +24,6 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pInputLayout);
 	SafeDelete(m_pConstBuffer);
 	SafeDelete(m_pIndexBuffer);
-
-	SafeDelete(m_pImmediateUI);
 
 	SafeDelete(m_pGraphics);
 	ResourceManager::Release();
@@ -49,7 +48,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 	ResourceManager::Initialize(m_pGraphics);
 
-	m_pImmediateUI = new ImmediateUI(m_pGraphics);
+	m_pInput = make_unique<InputEngine>(m_pGraphics);
+	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
 
 	GameTimer::Reset();
 
@@ -78,6 +78,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
+
+	m_pInput->Update();
 
 	float elapsed = GameTimer::GameTime();
 	float deltaTime = GameTimer::DeltaTime();

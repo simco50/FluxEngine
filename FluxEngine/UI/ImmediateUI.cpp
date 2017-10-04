@@ -8,9 +8,11 @@
 #include "Rendering\Core\InputLayout.h"
 #include "Rendering\Core\ConstantBuffer.h"
 #include "Rendering\Core\Texture.h"
+#include "Core\InputEngine.h"
 
-ImmediateUI::ImmediateUI(Graphics* pGraphics) :
-	m_pGraphics(pGraphics)
+ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
+	m_pGraphics(pGraphics),
+	m_pInput(pInput)
 {
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
@@ -90,6 +92,21 @@ void ImmediateUI::NewFrame()
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
+
+	io.MouseDown[0] = m_pInput->IsMouseButtonDown(VK_LBUTTON);
+	io.MouseDown[1] = m_pInput->IsMouseButtonDown(VK_MBUTTON);
+	io.MouseDown[2] = m_pInput->IsMouseButtonDown(VK_RBUTTON);
+	//io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
+	io.MousePos.x = (float)m_pInput->GetMousePosition().x;
+	io.MousePos.y = (float)m_pInput->GetMousePosition().y;
+
+	/*if (wParam < 256)
+		io.KeysDown[wParam] = 0;
+	// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
+	if (wParam > 0 && wParam < 0x10000)
+		io.AddInputCharacter((unsigned short)wParam);
+	if (wParam < 256)
+		io.KeysDown[wParam] = 1;*/
 
 	io.MouseDrawCursor = true;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
-#include "Helpers/Singleton.h"
+
+class Graphics;
 
 enum GamepadIndex: DWORD
 {
@@ -48,17 +49,16 @@ struct InputAction
 	bool Down = false;
 };
 
-class InputEngine : public Singleton<InputEngine>
+class InputEngine
 {
 public:
 
-	InputEngine();
+	InputEngine(Graphics* pGraphics);
 	~InputEngine();
 
 	InputEngine(const InputEngine& t) = delete;
 	InputEngine& operator=(const InputEngine& t) = delete;
 
-	void Initialize();
 	void Update();
 	bool AddInputAction(InputAction action);
 	bool IsActionTriggered(int actionID);
@@ -81,6 +81,7 @@ public:
 	void RefreshControllerConnections();
 
 private:
+	Graphics* m_pGraphics = nullptr;
 
 	map<int, vector<InputAction>> m_InputActions;
 	BYTE *m_pCurrKeyboardState = nullptr;
@@ -92,7 +93,6 @@ private:
 	POINT m_OldMousePosition;
 	bool m_MouseMove;
 	XMFLOAT2 m_MouseMovement;
-	bool m_IsInitialized = false;
 
 	XINPUT_STATE m_OldGamepadState[XUSER_MAX_COUNT], m_CurrGamepadState[XUSER_MAX_COUNT];
 	bool m_ConnectedGamepads[XUSER_MAX_COUNT];

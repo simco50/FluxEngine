@@ -31,7 +31,7 @@ void FreeCamera::Update()
 
 void FreeCamera::KeyboardMouse()
 {
-	float dt = GameTimer::DeltaTime();
+	/*float dt = GameTimer::DeltaTime();
 
 	//Moving
 	XMFLOAT3 moveDirection(0, 0, 0);
@@ -57,12 +57,12 @@ void FreeCamera::KeyboardMouse()
 		XMFLOAT2 mouseMove = InputEngine::Instance().GetMouseMovement();
 		GetTransform()->Rotate(XMFLOAT3(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f), Space::SELF);
 		GetTransform()->Rotate(XMFLOAT3(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f), Space::WORLD);
-	}
+	}*/
 }
 
 void FreeCamera::Controller()
 {
-	float dt = GameTimer::DeltaTime();
+	/*float dt = GameTimer::DeltaTime();
 
 	XMFLOAT2 leftStick = InputEngine::Instance().GetThumbstickPosition();
 	XMFLOAT2 rightStick = InputEngine::Instance().GetThumbstickPosition(false);
@@ -88,5 +88,5 @@ void FreeCamera::Controller()
 
 	//Rotation
 	GetTransform()->Rotate(XMFLOAT3(-rightStick.y * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, 0.0f), Space::SELF);
-	GetTransform()->Rotate(XMFLOAT3(0.0f, rightStick.x * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f), Space::WORLD);
+	GetTransform()->Rotate(XMFLOAT3(0.0f, rightStick.x * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f), Space::WORLD);*/
 }

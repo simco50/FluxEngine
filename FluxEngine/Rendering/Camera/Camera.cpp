@@ -77,7 +77,10 @@ void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 {
-	POINT mousePos = InputEngine::Instance().GetMousePosition();
+	UNREFERENCED_PARAMETER(startPoint);
+	UNREFERENCED_PARAMETER(direction);
+
+/*	POINT mousePos = InputEngine::Instance().GetMousePosition();
 	Vector2 ndc;
 	float hw = m_Viewport.Width / 2.0f;
 	float hh = m_Viewport.Height / 2.0f;
@@ -90,5 +93,5 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 	startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
 
 	direction = farPoint - nearPoint;
-	direction.Normalize();
+	direction.Normalize();*/
 }
