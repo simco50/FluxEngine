@@ -33,7 +33,6 @@ private:
 	unique_ptr<VertexBuffer> m_pVertexBuffer;
 	unique_ptr<IndexBuffer> m_pIndexBuffer;
 	unique_ptr<InputLayout> m_pInputLayout;
-	unique_ptr<ConstantBuffer> m_pConstantBuffer;
 	unique_ptr<Shader> m_pShader;
 	ShaderVariation* m_pPixelShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;

@@ -34,7 +34,6 @@ private:
 	ShaderVariation* m_pPixelShader = nullptr;
 	VertexBuffer* m_pVertexBuffer = nullptr;
 	InputLayout* m_pInputLayout = nullptr;
-	ConstantBuffer* m_pConstBuffer = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
 	unique_ptr<Graphics> m_pGraphics;
@@ -43,5 +42,7 @@ private:
 	unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
-	XMFLOAT4 color = XMFLOAT4(0,0,0,1);
+	XMFLOAT4 color = XMFLOAT4(1, 1, 1, 1);
+
+	int m_IndexCount = -1;
 };

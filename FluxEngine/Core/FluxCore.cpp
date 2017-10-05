@@ -10,6 +10,7 @@
 #include "Rendering/Core/IndexBuffer.h"
 #include "Core\InputEngine.h"
 #include "Context.h"
+#include "Rendering/MeshFilter.h"
 
 using namespace std;
 
@@ -22,7 +23,6 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pShader);
 	SafeDelete(m_pVertexBuffer);
 	SafeDelete(m_pInputLayout);
-	SafeDelete(m_pConstBuffer);
 	SafeDelete(m_pIndexBuffer);
 
 	ResourceManager::Release();
@@ -84,31 +84,54 @@ int FluxCore::Run(HINSTANCE hInstance)
 void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
-
 	m_pInput->Update();
 
-	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL);
-	m_pConstBuffer->SetParameter(0, 4 * 4, &color);
-	m_pConstBuffer->Apply();
-	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstBuffer->GetBuffer();
-	m_pGraphics->GetDeviceContext()->PSSetConstantBuffers(0, 1, &pBuffer);
-	Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/WhiteGradient.png");
-	m_pGraphics->SetTexture(0, pTex);
+	m_pGraphics->BeginFrame();
+	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, (XMFLOAT4)DirectX::Colors::CornflowerBlue, 1.0f, 1);
+
+	XMFLOAT3 pos, lookat, up;
+	pos = XMFLOAT3(0, 0, 0);
+	lookat = XMFLOAT3(0, 0, 100);
+	up = XMFLOAT3(0, 1, 0);
+
+	XMMATRIX view = XMMatrixLookAtLH(XMLoadFloat3(&pos), XMLoadFloat3(&lookat), XMLoadFloat3(&up));
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1920.0f / 1080.0f, 0.1f, 2500.0f);
+
+	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 150);
+	
+	XMMATRIX wvp = world * view * projection;
+
+	XMFLOAT4X4 wvpMat, worldMat;
+	XMStoreFloat4x4(&wvpMat, wvp);
+	XMStoreFloat4x4(&worldMat, world);
+
+	m_pVertexShader->SetParameter("cWorld", &worldMat);
+	m_pVertexShader->SetParameter("cWorldViewProj", &wvpMat);
+	XMFLOAT3 lightDirection(-0.577f, -0.577f, 0.577f);
+	m_pPixelShader->SetParameter("cColor", &color);
+	m_pPixelShader->SetParameter("cLightDirection", &lightDirection);
+
+	//Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/WhiteGradient.png");
+	//m_pGraphics->SetTexture(0, pTex);
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetScissorRect(false);
+	m_pGraphics->SetCullMode(CullMode::NONE);
+	m_pGraphics->SetBlendMode(BlendMode::REPLACE, true);
+	m_pGraphics->SetDepthEnabled(true);
+	m_pGraphics->SetDepthTest(CompareMode::LESS);
 
 	m_pGraphics->PrepareDraw();
-	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 6, 0, 0);
-	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 6, 0, 0);
+	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 0);
 
-	m_pGraphics->BeginFrame();
 	m_pImmediateUI->NewFrame();
-
+	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
+	ImGui::End();
+
 	ImGui::ColorPicker4("Color Picker", &color.x);
 
 	m_pImmediateUI->Render();
@@ -116,10 +139,10 @@ void FluxCore::GameLoop()
 	m_pGraphics->EndFrame();
 }
 
-struct V
+struct Vertex
 {
-	XMFLOAT3 p;
-	XMFLOAT2 c;
+	XMFLOAT3 pos;
+	XMFLOAT3 normal;
 };
 
 void FluxCore::InitGame()
@@ -127,36 +150,44 @@ void FluxCore::InitGame()
 	m_pGraphics->SetWindowTitle("Hello World");
 
 	m_pShader =  new Shader(m_pGraphics.get());
-	if (m_pShader->Load("FluxEngine/Resources/test.hlsl"))
-	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader, "TEST=1, COLOR");
+	if (m_pShader->Load("FluxEngine/Resources/Shaders/Diffuse.hlsl"))
+	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
 
-	m_pVertexBuffer = new VertexBuffer(m_pGraphics.get());
-	
+
+	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("FluxEngine/Resources/Meshes/bust.flux");
+
+	vector<Vertex> vertices;
+	MeshFilter::VertexData positions = pMesh->GetVertexData("POSITION");
+	MeshFilter::VertexData normals = pMesh->GetVertexData("NORMAL");
+	for (int i = 0; i < positions.Count; ++i)
+	{
+		vertices.push_back({ ((XMFLOAT3*)positions.pData)[i], ((XMFLOAT3*)normals.pData)[i] });
+	}
+
+	vector<unsigned int> indexes;
+	MeshFilter::VertexData indices = pMesh->GetVertexData("INDEX");
+	for (int i = 0; i < indices.Count; ++i)
+	{
+		indexes.push_back(((unsigned int*)indices.pData)[i]);
+	}
+	m_IndexCount = (int)indexes.size();
+
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics.get());
+	m_pIndexBuffer->Create((int)indexes.size());
+	m_pIndexBuffer->SetData(indexes.data());
+
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
-	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD});
+	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
 
-	vector<V> vertices;
-	vertices.push_back({ { -0.5, -0.5, 0 },{ 0,1 } });
-	vertices.push_back({ { -0.5, 0.5, 0 },{ 0,0} });
-	vertices.push_back({ { 0.5, -0.5, 0 },{ 1,1 } });
-	vertices.push_back({ { 0.5, 0.5, 0 },{ 1,0 } });
-
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics.get());
 	m_pVertexBuffer->Create((int)vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
 
 	m_pInputLayout = new InputLayout(m_pGraphics.get());
 	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 
-	m_pConstBuffer = new ConstantBuffer(m_pGraphics.get());
-	m_pConstBuffer->SetSize(16);
 	
-
-	m_pIndexBuffer = new IndexBuffer(m_pGraphics.get());
-	m_pIndexBuffer->Create(6);
-	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
-	m_pIndexBuffer->SetData(indices.data());
-
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
 }

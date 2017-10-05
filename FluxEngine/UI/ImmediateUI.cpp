@@ -68,10 +68,6 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	m_pFontTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
 	m_pFontTexture->SetData(pixels);
 	io.Fonts->TexID = m_pFontTexture.get();
-
-	m_pConstantBuffer = make_unique<ConstantBuffer>(m_pGraphics);
-	m_pConstantBuffer->SetSize(64);
-
 }
 
 ImmediateUI::~ImmediateUI()
@@ -158,16 +154,14 @@ void ImmediateUI::Render()
 	m_pGraphics->SetDepthEnabled(true);
 	m_pGraphics->SetColorWrite(ColorWrite::ALL);
 	m_pGraphics->SetDepthTest(CompareMode::ALWAYS);
+
 	m_pGraphics->SetBlendMode(BlendMode::ALPHA, false);
-	m_pGraphics->SetCullMode(CullMode::NONE);
+
+	m_pGraphics->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pConstantBuffer->SetParameter(0, 64, &projectionMatrix);
-	m_pConstantBuffer->Apply();
-
-	//#todo Move the constbuffer management to a shaderprogram
-	ID3D11Buffer* pBuffer = (ID3D11Buffer*)m_pConstantBuffer->GetBuffer();
-	m_pGraphics->GetDeviceContext()->VSSetConstantBuffers(1, 1, &pBuffer);
+	
+	m_pVertexShader->SetParameter("cViewProjVS", &projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

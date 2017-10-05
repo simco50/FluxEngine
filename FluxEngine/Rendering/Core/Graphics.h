@@ -138,7 +138,7 @@ private:
 	ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
 	bool m_DepthStencilStateDirty = true;
 	bool m_DepthEnabled = true;
-	CompareMode m_DepthCompareMode = CompareMode::LESSEQUAL;
+	CompareMode m_DepthCompareMode = CompareMode::LESS;
 	bool m_StencilTestEnabled = false;
 	CompareMode m_StencilTestMode = CompareMode::ALWAYS;
 	StencilOperation m_StencilTestPassOperation = StencilOperation::KEEP;

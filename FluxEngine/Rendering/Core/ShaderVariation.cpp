@@ -2,6 +2,7 @@
 #include "ShaderVariation.h"
 #include "Shader.h"
 #include "Graphics.h"
+#include "ConstantBuffer.h"
 
 ShaderVariation::ShaderVariation(Shader* pShader, const ShaderType type) :
 	m_pParentShader(pShader),
@@ -17,7 +18,7 @@ ShaderVariation::~ShaderVariation()
 
 bool ShaderVariation::Create(Graphics* pGraphics)
 {
-	Compile();
+	Compile(pGraphics);
 
 	if (m_ShaderByteCode.size() == 0)
 	{
@@ -44,7 +45,7 @@ void ShaderVariation::Release()
 	SafeRelease(m_pShaderObject);
 }
 
-bool ShaderVariation::Compile()
+bool ShaderVariation::Compile(Graphics* pGraphics)
 {
 	AUTOPROFILE_DESC(ShaderVariation_Compile, m_ShaderType == ShaderType::PixelShader ? "Pixel shader" : "Vertex shader");
 
@@ -56,7 +57,14 @@ bool ShaderVariation::Compile()
 	// Set the entrypoint, profile and flags according to the shader being compiled
 	const char* entryPoint = 0;
 	const char* profile = 0;
-	unsigned flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+	unsigned flags = D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
+	
+#ifdef _DEBUG
+	flags |= D3DCOMPILE_DEBUG;
+	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#endif
 
 	vector<string> defines = m_Defines;
 	defines.push_back("D3D11");
@@ -77,13 +85,6 @@ bool ShaderVariation::Compile()
 	default:
 		break;
 	}
-
-#ifdef _DEBUG
-	flags |= D3DCOMPILE_DEBUG;
-	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
-#endif
 
 	vector<D3D_SHADER_MACRO> macros;
 	for (const string& define : defines)
@@ -125,7 +126,7 @@ bool ShaderVariation::Compile()
 	m_ShaderByteCode.resize(bufferSize);
 	memcpy(&m_ShaderByteCode[0], pBuffer, bufferSize);
 
-	ShaderReflection(pBuffer, bufferSize);
+	ShaderReflection(pBuffer, bufferSize, pGraphics);
 
 #ifndef _DEBUG
 	// Strip everything not necessary to use the shader
@@ -142,7 +143,7 @@ bool ShaderVariation::Compile()
 	return true;
 }
 
-void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSize)
+void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
 {
 	ID3D11ShaderReflection* reflection = 0;
 	D3D11_SHADER_DESC shaderDesc;
@@ -168,6 +169,11 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 		pConstantBuffer->GetDesc(&bufferDesc);
 		unsigned cbRegister = cbRegisterMap[string(bufferDesc.Name)];
 
+		if (cbRegister >= m_ConstantBuffers.size())
+			m_ConstantBuffers.resize(cbRegister + 1);
+		m_ConstantBuffers[cbRegister] = make_unique<ConstantBuffer>(pGraphics);
+		m_ConstantBuffers[cbRegister]->SetSize(bufferDesc.Size);
+
 		for (unsigned v = 0; v < bufferDesc.Variables; ++v)
 		{
 			ID3D11ShaderReflectionVariable* pVariable = pConstantBuffer->GetVariableByIndex(v);
@@ -180,6 +186,7 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 			parameter.Type = m_ShaderType;
 			parameter.Size = variableDesc.Size;
 			parameter.Buffer = cbRegister;
+			parameter.pBuffer = m_ConstantBuffers[cbRegister].get();
 			m_ShaderParameters[parameter.Name] = parameter;
 		}
 	}
@@ -194,4 +201,10 @@ void ShaderVariation::SetDefines(const string& defines)
 	{
 		m_Defines.push_back(define);
 	}
+}
+
+void ShaderVariation::SetParameter(const string& name, void* pValue)
+{
+	const ShaderParameter& p = m_ShaderParameters[name];
+	p.pBuffer->SetParameter(p.Offset, p.Size, pValue);
 }

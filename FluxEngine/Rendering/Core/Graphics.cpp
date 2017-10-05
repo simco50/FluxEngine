@@ -6,6 +6,7 @@
 #include "ShaderVariation.h"
 #include "InputLayout.h"
 #include "Texture.h"
+#include "ConstantBuffer.h"
 
 
 Graphics::Graphics(HINSTANCE hInstance) :
@@ -331,6 +332,24 @@ void Graphics::PrepareDraw()
 		m_pDeviceContext->RSSetScissorRects(1, &rect);
 		m_ScissorRectDirty = false;
 	}
+
+	vector<ID3D11Buffer*> pBuffers;
+	for (const unique_ptr<ConstantBuffer>& pBuffer : m_pCurrentVertexShader->GetConstantBuffers())
+	{
+		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
+		if(pBuffer)
+			pBuffer->Apply();
+	}
+	m_pDeviceContext->VSSetConstantBuffers(0, (UINT)pBuffers.size(), pBuffers.data());
+
+	pBuffers.clear();
+	for (const unique_ptr<ConstantBuffer>& pBuffer : m_pCurrentPixelShader->GetConstantBuffers())
+	{
+		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
+		if (pBuffer)
+			pBuffer->Apply();
+	}
+	m_pDeviceContext->PSSetConstantBuffers(0, (UINT)pBuffers.size(), pBuffers.data());
 }
 
 void Graphics::BeginFrame()
@@ -606,8 +625,10 @@ void Graphics::UpdateRasterizerState()
 		desc.CullMode = D3D11_CULL_NONE;
 		break;
 	}
+
 	desc.DepthBias = 0;
-	desc.DepthBiasClamp = 1.0f;
+	desc.DepthBiasClamp = 0.0f;
+	desc.DepthClipEnable = true;
 	switch (m_FillMode)
 	{
 	case FillMode::SOLID:
@@ -633,6 +654,7 @@ void Graphics::UpdateBlendState()
 
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
+	desc.IndependentBlendEnable = false;
 	desc.RenderTarget[0].BlendEnable = m_BlendMode == BlendMode::REPLACE ? false : true;
 	desc.RenderTarget[0].RenderTargetWriteMask = (unsigned int)m_ColorWriteMask;
 	
