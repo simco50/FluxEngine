@@ -1,8 +1,9 @@
 #pragma once
 class Shader;
-enum class ShaderType;
 class ConstantBuffer;
 class Graphics;
+
+enum class ShaderType : unsigned char;
 
 struct ShaderParameter
 {

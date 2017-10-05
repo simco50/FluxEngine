@@ -9,6 +9,7 @@
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
 #include "Core\InputEngine.h"
+#include "../Context.h"
 
 using namespace std;
 
@@ -24,7 +25,6 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pConstBuffer);
 	SafeDelete(m_pIndexBuffer);
 
-	SafeDelete(m_pGraphics);
 	ResourceManager::Release();
 	Console::Release();
 }
@@ -33,7 +33,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
 
-	m_pGraphics = new Graphics(hInstance);
+	m_pContext = make_unique<Context>();
+
+	m_pGraphics = make_unique<Graphics>(hInstance);
 	if (!m_pGraphics->SetMode(
 		/*WindowWidth*/				1240,
 		/*WindowHeight*/			720,
@@ -45,10 +47,15 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
-	ResourceManager::Initialize(m_pGraphics);
+	m_pContext->RegisterSubsystem(m_pGraphics.get());
 
-	m_pInput = make_unique<InputEngine>(m_pGraphics);
-	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
+	ResourceManager::Initialize(m_pContext->GetSubsystem<Graphics>());
+
+	m_pInput = make_unique<InputEngine>(m_pContext->GetSubsystem<Graphics>());
+	m_pContext->RegisterSubsystem(m_pInput.get());
+
+	m_pImmediateUI = make_unique<ImmediateUI>(m_pContext->GetSubsystem<Graphics>(), m_pContext->GetSubsystem<InputEngine>());
+	m_pContext->RegisterSubsystem(m_pImmediateUI.get());
 
 	GameTimer::Reset();
 
@@ -119,12 +126,12 @@ void FluxCore::InitGame()
 {
 	m_pGraphics->SetWindowTitle("Hello World");
 
-	m_pShader =  new Shader(m_pGraphics);
+	m_pShader =  new Shader(m_pGraphics.get());
 	if (m_pShader->Load("FluxEngine/Resources/test.hlsl"))
-	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
+	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader, "TEST=1, COLOR");
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
 
-	m_pVertexBuffer = new VertexBuffer(m_pGraphics);
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics.get());
 	
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
@@ -139,14 +146,14 @@ void FluxCore::InitGame()
 	m_pVertexBuffer->Create((int)vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
 
-	m_pInputLayout = new InputLayout(m_pGraphics);
+	m_pInputLayout = new InputLayout(m_pGraphics.get());
 	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 
-	m_pConstBuffer = new ConstantBuffer(m_pGraphics);
+	m_pConstBuffer = new ConstantBuffer(m_pGraphics.get());
 	m_pConstBuffer->SetSize(16);
 	
 
-	m_pIndexBuffer = new IndexBuffer(m_pGraphics);
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics.get());
 	m_pIndexBuffer->Create(6);
 	vector<unsigned int> indices{ 0,1,2,1, 3, 2 };
 	m_pIndexBuffer->SetData(indices.data());

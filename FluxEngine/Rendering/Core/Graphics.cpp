@@ -105,7 +105,11 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
 
 void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
-	m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+	if (m_pCurrentIndexBuffer != pIndexBuffer)
+	{
+		m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		m_pCurrentIndexBuffer = pIndexBuffer;
+	}
 }
 
 void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixelShader)

@@ -46,6 +46,8 @@ void ShaderVariation::Release()
 
 bool ShaderVariation::Compile()
 {
+	AUTOPROFILE_DESC(ShaderVariation_Compile, m_ShaderType == ShaderType::PixelShader ? "Pixel shader" : "Vertex shader");
+
 	const string& source = m_pParentShader->GetSource(m_ShaderType);
 
 	if (source.length() == 0)
@@ -76,14 +78,34 @@ bool ShaderVariation::Compile()
 		break;
 	}
 
+#ifdef _DEBUG
+	flags |= D3DCOMPILE_DEBUG;
+	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#endif
+
 	vector<D3D_SHADER_MACRO> macros;
 	for (const string& define : defines)
 	{
 		D3D_SHADER_MACRO macro;
-		macro.Definition = "1";
-		macro.Name = define.c_str();
+		//Check if the define has a value
+		unsigned int assignmentOp = (unsigned int)define.find('=');
+		if (assignmentOp != string::npos)
+		{
+			string name = define.substr(0, assignmentOp);
+			string definition = define.substr(assignmentOp + 1).c_str();
+			macro.Name = name.c_str();
+			macro.Definition = definition.c_str();
+		}
+		else
+		{
+			macro.Name = define.c_str();
+			macro.Definition = "1";
+		}
 		macros.push_back(macro);
 	}
+
 	D3D_SHADER_MACRO endMacro;
 	endMacro.Name = 0;
 	endMacro.Definition = 0;
@@ -100,16 +122,20 @@ bool ShaderVariation::Compile()
 	}
 	unsigned char* pBuffer = (unsigned char*)shaderCode->GetBufferPointer();
 	unsigned int bufferSize = (unsigned int)shaderCode->GetBufferSize();
+	m_ShaderByteCode.resize(bufferSize);
+	memcpy(&m_ShaderByteCode[0], pBuffer, bufferSize);
 
 	ShaderReflection(pBuffer, bufferSize);
 
+#ifndef _DEBUG
 	// Strip everything not necessary to use the shader
 	ID3DBlob* strippedCode = 0;
 	HR(D3DStripShader(pBuffer, bufferSize, D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, &strippedCode))
 	m_ShaderByteCode.resize((unsigned)strippedCode->GetBufferSize());
 	memcpy(&m_ShaderByteCode[0], strippedCode->GetBufferPointer(), m_ShaderByteCode.size());
-
 	SafeRelease(strippedCode);
+#endif // !_DEBUG
+
 	SafeRelease(shaderCode);
 	SafeRelease(errorMsgs);
 

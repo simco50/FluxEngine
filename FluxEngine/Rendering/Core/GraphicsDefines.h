@@ -1,5 +1,6 @@
 #pragma once
 
+//The primitive topology for rendering
 enum class PrimitiveType : unsigned char
 {
 	TRIANGLELIST,
@@ -8,6 +9,7 @@ enum class PrimitiveType : unsigned char
 	UNDEFINED,
 };
 
+//The windwo type
 enum class WindowType : unsigned char
 {
 	WINDOWED,
@@ -15,6 +17,7 @@ enum class WindowType : unsigned char
 	FULLSCREEN,
 };
 
+//The fillmode of the rasterizer state
 enum class FillMode : unsigned char
 {
 	SOLID,
@@ -22,6 +25,7 @@ enum class FillMode : unsigned char
 	UNDEFINED,
 };
 
+//The cull mode of the rasterizer state
 enum class CullMode : unsigned char
 {
 	FRONT,
@@ -30,6 +34,7 @@ enum class CullMode : unsigned char
 	UNDEFINED,
 };
 
+//The blend mode of the blend state
 enum class BlendMode : unsigned char
 {
 	REPLACE,
@@ -44,6 +49,7 @@ enum class BlendMode : unsigned char
 	UNDEFINED,
 };
 
+//Color write mode of the blend state
 enum class ColorWrite : unsigned char
 {
 	NONE = 0,
@@ -54,6 +60,7 @@ enum class ColorWrite : unsigned char
 	ALL = RED | GREEN | BLUE | ALPHA,
 };
 
+//Compare mode for rendering state
 enum class CompareMode : unsigned char
 {
 	ALWAYS,
@@ -66,6 +73,7 @@ enum class CompareMode : unsigned char
 	UNDEFINED,
 };
 
+//Sntecil operation for the depth stencil state
 enum class StencilOperation : unsigned char
 {
 	KEEP,

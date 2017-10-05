@@ -21,7 +21,9 @@ Shader::~Shader()
 
 bool Shader::Load(const string& filePath)
 {
-	m_FileDir = filePath.substr(0, filePath.rfind('/') + 1);
+	unsigned int slashIdx = (unsigned int)filePath.rfind('/') + 1;
+	m_FileDir = filePath.substr(0, slashIdx);
+	m_ShaderName = filePath.substr(slashIdx, filePath.rfind('.') - slashIdx);
 
 	ifstream stream;
 	stream.open(filePath);
@@ -43,7 +45,7 @@ bool Shader::Load(const string& filePath)
 	return true;
 }
 
-ShaderVariation* Shader::GetVariation(ShaderType type, const string& defines)
+ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defines)
 {
 	switch (type)
 	{
@@ -86,7 +88,7 @@ ShaderVariation* Shader::GetVariation(ShaderType type, const string& defines)
 	return pVariation;
 }
 
-const std::string& Shader::GetSource(ShaderType type) const
+const std::string& Shader::GetSource(const ShaderType type) const
 {
 	switch (type)
 	{
@@ -104,6 +106,8 @@ const std::string& Shader::GetSource(ShaderType type) const
 
 bool Shader::ProcessSource(ifstream& stream, string& output)
 {
+	AUTOPROFILE_DESC(Shader_ProcessSource, m_ShaderName);
+
 	string line;
 	while (getline(stream, line))
 	{

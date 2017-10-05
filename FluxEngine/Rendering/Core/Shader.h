@@ -3,10 +3,11 @@
 class Graphics;
 class ShaderVariation;
 
-enum class ShaderType
+enum class ShaderType : unsigned char
 {
-	VertexShader,
-	PixelShader,
+	VertexShader	= 0,
+	PixelShader		= 1 << 0,
+	//#todo Geometry shader
 };
 
 class Shader
@@ -18,11 +19,12 @@ public:
 	DELETE_COPY(Shader)
 
 	bool Load(const string& filePath);
-	ShaderVariation* GetVariation(ShaderType type, const string& defines = string(""));
-	const string& GetSource(ShaderType type) const;
+	ShaderVariation* GetVariation(const ShaderType type, const string& defines = string(""));
+	const string& GetSource(const ShaderType type) const;
 
 private:
 	string m_FileDir;
+	string m_ShaderName;
 
 	bool ProcessSource(ifstream& stream, string& output);
 	void CommentFunction(string& input, const string& function);

@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <typeinfo>
 #include "ResourceLoader.h"
 
 class Graphics;

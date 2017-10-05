@@ -9,6 +9,7 @@ class ConstantBuffer;
 class IndexBuffer;
 class ImmediateUI;
 class InputEngine;
+class Context;
 
 class FluxCore
 {
@@ -24,7 +25,6 @@ public:
 
 private:
 
-	Graphics* m_pGraphics = nullptr;
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -37,6 +37,8 @@ private:
 	ConstantBuffer* m_pConstBuffer = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
+	unique_ptr<Graphics> m_pGraphics;
+	unique_ptr<Context> m_pContext;
 	unique_ptr<ImmediateUI> m_pImmediateUI;
 	unique_ptr<InputEngine> m_pInput;
 
