@@ -8,7 +8,7 @@ platform:
 - Win32
 shallow_clone: true
 before_build:
-- ps: .\scripts\premake5.exe --file=scripts\premake5.lua vs2017
+- ps: .\scripts\MakeVS2017.bat
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
