@@ -9,7 +9,7 @@
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
 #include "Core\InputEngine.h"
-#include "../Context.h"
+#include "Context.h"
 
 using namespace std;
 
