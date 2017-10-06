@@ -8,7 +8,10 @@ platform:
 - Win32
 shallow_clone: true
 before_build:
-- ps: .\scripts\MakeVS2017.bat
+- ps: >-
+    .\scripts\MakeVS2017.bat
+
+    cloc-1.64.exe FluxEngine > CodeReport.txt
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
@@ -18,3 +21,5 @@ artifacts:
   name: Resources
 - path: '\Build\FluxGame_$(platform)_$(configuration)'
   name: Build
+- path: 'CodeReport.txt'
+  name: CodeReport
