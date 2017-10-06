@@ -42,7 +42,8 @@ private:
 	unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
-	XMFLOAT4 color = XMFLOAT4(1, 1, 1, 1);
+	XMFLOAT4 m_Color = XMFLOAT4(1, 1, 1, 1);
+	XMFLOAT3 m_LightDirection = XMFLOAT3(-0.577f, -0.577f, 0.577f);
 
 	int m_IndexCount = -1;
 };

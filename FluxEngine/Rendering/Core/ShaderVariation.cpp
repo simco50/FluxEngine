@@ -91,7 +91,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	{
 		D3D_SHADER_MACRO macro;
 		//Check if the define has a value
-		unsigned int assignmentOp = (unsigned int)define.find('=');
+		size_t assignmentOp = define.find('=');
 		if (assignmentOp != string::npos)
 		{
 			string name = define.substr(0, assignmentOp);
@@ -205,6 +205,6 @@ void ShaderVariation::SetDefines(const string& defines)
 
 void ShaderVariation::SetParameter(const string& name, void* pValue)
 {
-	const ShaderParameter& p = m_ShaderParameters[name];
+	const ShaderParameter& p = m_ShaderParameters.at(name);
 	p.pBuffer->SetParameter(p.Offset, p.Size, pValue);
 }

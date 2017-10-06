@@ -93,26 +93,22 @@ void FluxCore::GameLoop()
 	pos = XMFLOAT3(0, 0, 0);
 	lookat = XMFLOAT3(0, 0, 100);
 	up = XMFLOAT3(0, 1, 0);
-
 	XMMATRIX view = XMMatrixLookAtLH(XMLoadFloat3(&pos), XMLoadFloat3(&lookat), XMLoadFloat3(&up));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1920.0f / 1080.0f, 0.1f, 2500.0f);
-
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1920.0f / 1080.0f, 0.1f, 250.0f);
 	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 150);
-	
 	XMMATRIX wvp = world * view * projection;
-
 	XMFLOAT4X4 wvpMat, worldMat;
 	XMStoreFloat4x4(&wvpMat, wvp);
 	XMStoreFloat4x4(&worldMat, world);
 
 	m_pVertexShader->SetParameter("cWorld", &worldMat);
 	m_pVertexShader->SetParameter("cWorldViewProj", &wvpMat);
-	XMFLOAT3 lightDirection(-0.577f, -0.577f, 0.577f);
-	m_pPixelShader->SetParameter("cColor", &color);
-	m_pPixelShader->SetParameter("cLightDirection", &lightDirection);
+	m_pPixelShader->SetParameter("cColor", &m_Color);
+	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
 
-	//Texture* pTex = ResourceManager::Load<Texture>("FluxEngine/Resources/Textures/WhiteGradient.png");
-	//m_pGraphics->SetTexture(0, pTex);
+	Texture* pTexture = ResourceManager::Load<Texture>("FluxEngine/Resources/GradWork/Textures/patrick.jpg");
+	m_pGraphics->SetTexture(0, pTexture);
+
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
@@ -132,7 +128,8 @@ void FluxCore::GameLoop()
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 	ImGui::End();
 
-	ImGui::ColorPicker4("Color Picker", &color.x);
+	ImGui::ColorPicker4("Color Picker", &m_Color.x);
+	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
 
 	m_pImmediateUI->Render();
 
@@ -142,6 +139,7 @@ void FluxCore::GameLoop()
 struct Vertex
 {
 	XMFLOAT3 pos;
+	XMFLOAT2 texCoord;
 	XMFLOAT3 normal;
 };
 
@@ -152,17 +150,18 @@ void FluxCore::InitGame()
 	m_pShader =  new Shader(m_pGraphics.get());
 	if (m_pShader->Load("FluxEngine/Resources/Shaders/Diffuse.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
-	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
+	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
 
 
-	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("FluxEngine/Resources/Meshes/bust.flux");
+	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("FluxEngine/Resources/Meshes/Bust.flux");
 
 	vector<Vertex> vertices;
 	MeshFilter::VertexData positions = pMesh->GetVertexData("POSITION");
 	MeshFilter::VertexData normals = pMesh->GetVertexData("NORMAL");
+	MeshFilter::VertexData texCoord = pMesh->GetVertexData("TEXCOORD");
 	for (int i = 0; i < positions.Count; ++i)
 	{
-		vertices.push_back({ ((XMFLOAT3*)positions.pData)[i], ((XMFLOAT3*)normals.pData)[i] });
+		vertices.push_back({ ((XMFLOAT3*)positions.pData)[i],((XMFLOAT2*)texCoord.pData)[i],((XMFLOAT3*)normals.pData)[i] });
 	}
 
 	vector<unsigned int> indexes;
@@ -179,6 +178,7 @@ void FluxCore::InitGame()
 
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
+	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
 
 	m_pVertexBuffer = new VertexBuffer(m_pGraphics.get());
