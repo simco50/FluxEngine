@@ -13,3 +13,4 @@ Build/
 *.vcxproj
 *.filters
 imgui.ini
+Logs/

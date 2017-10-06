@@ -17,15 +17,23 @@ Console::~Console()
 
 void Console::Initialize()
 {
-	m_pFileLog = new ofstream();
-	m_pFileLog->open("DebugLog.log", ios::app);
-	*m_pFileLog << endl << "-------------FLUX ENGINE LOG START--------------" << endl << endl;
-
 	time_t timer;
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	wstringstream stream;
+	stringstream filePathStream;
+	filePathStream << ".\\Logs\\" << 1900 + localTime.tm_year << "-" << localTime.tm_mon + 1 << "-" << localTime.tm_mday << "_" << localTime.tm_hour << "-" << localTime.tm_min << "-" << localTime.tm_sec << ".log";
+
+	m_pFileLog = new ofstream();
+	CreateDirectory("Logs", NULL);
+	m_pFileLog->open(filePathStream.str(), ios::app);
+	if (m_pFileLog->fail())
+	{
+		FLUX_LOG(ERROR, "Failed to open console log");
+	}
+
+	*m_pFileLog << endl << "-------------FLUX ENGINE LOG START--------------" << endl << endl;
+
 	*m_pFileLog << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << endl;
 	*m_pFileLog << "Time: " << GetTime() << endl;
 
