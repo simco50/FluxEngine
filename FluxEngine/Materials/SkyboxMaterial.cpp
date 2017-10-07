@@ -4,7 +4,7 @@
 
 SkyboxMaterial::SkyboxMaterial() : Material()
 {
-	m_MaterialDesc.EffectName = "FluxEngine/Resources/Shaders/Skybox.fx";
+	m_MaterialDesc.EffectName = "./Resources/Shaders/Skybox.fx";
 	m_MaterialDesc.HasWorldMatrix = true;
 	m_MaterialDesc.HasWvpMatrix = true;
 }

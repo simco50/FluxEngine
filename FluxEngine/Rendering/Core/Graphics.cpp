@@ -8,7 +8,6 @@
 #include "Texture.h"
 #include "ConstantBuffer.h"
 
-
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
 {
@@ -404,13 +403,13 @@ bool Graphics::RegisterWindowClass()
 	wc.hInstance = GetModuleHandle(0);
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hIcon = 0;
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wc.lpfnWndProc = WndProcStatic;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpszClassName = "wndClass";
 	wc.lpszMenuName = nullptr;
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
 	if (!RegisterClassA(&wc))
 	{

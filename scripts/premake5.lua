@@ -15,7 +15,7 @@ workspace "FluxEngine"
 
 	project "FluxEngine"
 		filename "FluxEngine_%{_ACTION}"
-		location "../"
+		location "../FluxEngine"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
@@ -37,7 +37,7 @@ workspace "FluxEngine"
 
 		includedirs 
 		{ 
-			"$(ProjectDir)/FluxEngine",
+			"$(ProjectDir)",
 			"../Libraries/ImgUI/include",
 			"../Libraries/DX_Effects11/include",
 			"../Libraries/DX_Tex/include",
@@ -68,7 +68,7 @@ workspace "FluxEngine"
 
 	project "FluxGame"
 		filename "FluxGame_%{_ACTION}"
-		location "../"
+		location "../FluxGame"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
@@ -92,8 +92,8 @@ workspace "FluxEngine"
 
 		includedirs 
 		{ 
-			"$(ProjectDir)/FluxEngine",
-			"$(ProjectDir)/FluxGame",
+			"$(ProjectDir)/../FluxEngine",
+			"$(ProjectDir)",
 			"../Libraries/ImgUI/include",
 			"../Libraries/DX_Effects11/include",
 			"../Libraries/DX_Tex/include",
@@ -125,13 +125,13 @@ workspace "FluxEngine"
 		filter { "platforms:x64" }
 			postbuildcommands
 			{ 
-				"copy \"Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
+				"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
 			}
 
 		filter { "platforms:x86" }
 			postbuildcommands
 			{ 
-				"copy \"Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
+				"copy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
 			}
 
 newaction {

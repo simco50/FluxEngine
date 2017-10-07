@@ -106,7 +106,7 @@ void FluxCore::GameLoop()
 	m_pPixelShader->SetParameter("cColor", &m_Color);
 	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
 
-	Texture* pTexture = ResourceManager::Load<Texture>("FluxEngine/Resources/GradWork/Textures/patrick.jpg");
+	Texture* pTexture = ResourceManager::Load<Texture>("./Resources/GradWork/Textures/patrick.jpg");
 	m_pGraphics->SetTexture(0, pTexture);
 
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
@@ -148,12 +148,12 @@ void FluxCore::InitGame()
 	m_pGraphics->SetWindowTitle("Hello World");
 
 	m_pShader =  new Shader(m_pGraphics.get());
-	if (m_pShader->Load("FluxEngine/Resources/Shaders/Diffuse.hlsl"))
+	if (m_pShader->Load("./Resources/Shaders/Diffuse.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
 
 
-	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("FluxEngine/Resources/Meshes/Bust.flux");
+	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("./Resources/Meshes/Bust.flux");
 
 	vector<Vertex> vertices;
 	MeshFilter::VertexData positions = pMesh->GetVertexData("POSITION");

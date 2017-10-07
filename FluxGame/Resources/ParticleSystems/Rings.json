@@ -1,0 +1,120 @@
+{
+  "Version": 2,
+  "Duration": 1.2,
+  "Loop": true,
+  "Lifetime": 3.00000048,
+  "LifetimeVariance": 0.0,
+  "StartVelocity": 0.0,
+  "StartVelocityVariance": 0.0,
+  "StartSize": 1.80000019,
+  "StartSizeVariance": 0.0,
+  "RandomStartRotation": false,
+  "PlayOnAwake": true,
+  "MaxParticles": 400,
+  "Emission": 0,
+  "Bursts": {
+    "0": 50
+  },
+  "Shape": {
+    "ShapeType": 2,
+    "Radius": 3.99999857,
+    "EmitFromShell": true,
+    "EmitFromVolume": false,
+    "Angle": 50.0
+  },
+  "Size": {
+    "Keys": {
+      "0": 0.4,
+      "1": 1.0
+    },
+    "Constant": 1.0
+  },
+  "Velocity": {
+    "Keys": {
+      "0": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "0.3": {
+        "X": 0.0,
+        "Y": 7.0,
+        "Z": 0.0
+      },
+      "0.6": {
+        "X": 0.0,
+        "Y": -7.0,
+        "Z": 0.0
+      },
+      "0.8": {
+        "X": 0.0,
+        "Y": -13.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      }
+    },
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "LocalVelocity": {
+    "Keys": {
+      "1": {
+        "X": 6.0,
+        "Y": 6.0,
+        "Z": 6.0
+      }
+    },
+    "Constant": {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0
+    }
+  },
+  "Color": {
+    "Keys": {
+      "0": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "0.5": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Z": 0.0
+      },
+      "1": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Z": 1.0
+      }
+    },
+    "Constant": {
+      "X": 1.0,
+      "Y": 1.0,
+      "Z": 1.0
+    }
+  },
+  "Transparancy": {
+    "Keys": {
+      "0": 0.0,
+      "0.4": 1.0,
+      "0.6": 1.0,
+      "1": 0.0
+    },
+    "Constant": 1.0
+  },
+  "Rotation": {
+    "Keys": {},
+    "Constant": 0.0
+  },
+  "SortingMode": 0,
+  "BlendMode": 1,
+  "ImagePath": ".\\Resources\\Textures\\gradientground.png"
+}
