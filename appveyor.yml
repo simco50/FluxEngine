@@ -14,7 +14,7 @@ build:
   parallel: true
   verbosity: minimal
 artifacts:
-- path: '\FluxEngine\Resources'
+- path: '\FluxGame\Resources'
   name: Resources
 - path: '\Build\FluxGame_$(platform)_$(configuration)'
-  name: Build
+  name: Build_$(platform)_$(configuration)
