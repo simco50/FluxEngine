@@ -95,7 +95,7 @@ void FluxCore::GameLoop()
 	up = XMFLOAT3(0, 1, 0);
 	XMMATRIX view = XMMatrixLookAtLH(XMLoadFloat3(&pos), XMLoadFloat3(&lookat), XMLoadFloat3(&up));
 	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1920.0f / 1080.0f, 0.1f, 250.0f);
-	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 150);
+	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 5);
 	XMMATRIX wvp = world * view * projection;
 	XMFLOAT4X4 wvpMat, worldMat;
 	XMStoreFloat4x4(&wvpMat, wvp);
@@ -106,7 +106,7 @@ void FluxCore::GameLoop()
 	m_pPixelShader->SetParameter("cColor", &m_Color);
 	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
 
-	Texture* pTexture = ResourceManager::Load<Texture>("./Resources/GradWork/Textures/patrick.jpg");
+	Texture* pTexture = ResourceManager::Load<Texture>("./Resources/Textures/spot.png");
 	m_pGraphics->SetTexture(0, pTexture);
 
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
@@ -153,7 +153,7 @@ void FluxCore::InitGame()
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
 
 
-	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("./Resources/Meshes/Bust.flux");
+	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("./Resources/Meshes/spot.flux");
 
 	vector<Vertex> vertices;
 	MeshFilter::VertexData positions = pMesh->GetVertexData("POSITION");
