@@ -120,14 +120,14 @@ bool Texture::Create()
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
 	//#todo Create a SRV from a RT and DB
-	//desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 	else if (m_Usage == TextureUsage::RENDERTARGET)
 		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	else if (m_Usage == TextureUsage::DYNAMIC || m_Usage == TextureUsage::STATIC)
 	{
-		desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+		//desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 	}
 	else
 	{

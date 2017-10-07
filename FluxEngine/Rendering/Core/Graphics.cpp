@@ -558,7 +558,7 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	swapDesc.BufferDesc.RefreshRate.Numerator = 1;
 	swapDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_STRETCHED;
 	swapDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
 	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapDesc.SampleDesc.Count = m_Multisample;
 	swapDesc.SampleDesc.Quality = GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
