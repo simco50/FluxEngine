@@ -65,6 +65,7 @@ private:
 	friend class SceneBase;
 	friend class Transform;
 	friend class ShadowMapper;
+	friend class FluxCore;
 
 	void BaseInitialize(GameContext* pGameContext);
 	void BaseUpdate();

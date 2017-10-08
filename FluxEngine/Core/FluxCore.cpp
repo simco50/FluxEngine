@@ -8,9 +8,13 @@
 #include "Rendering/Core/InputLayout.h"
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
-#include "Core\InputEngine.h"
 #include "Context.h"
 #include "Rendering/MeshFilter.h"
+#include "Rendering/Camera/FreeCamera.h"
+#include "Rendering/Camera/Camera.h"
+#include "Rendering/Core/RasterizerState.h"
+#include "Rendering/Core/BlendState.h"
+#include "Rendering/Core/DepthStencilState.h"
 
 using namespace std;
 
@@ -41,12 +45,13 @@ int FluxCore::Run(HINSTANCE hInstance)
 		/*WindowHeight*/			720,
 		/*Window type*/				WindowType::WINDOWED,
 		/*Resizable*/				true,
-		/*Vsync*/					true,
+		/*Vsync*/					false,
 		/*Multisample*/				8,
 		/*RefreshRate denominator*/	60))
 	{
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
+	m_pGraphics->SetWindowTitle("Hello World");
 	m_pContext->RegisterSubsystem(m_pGraphics.get());
 
 	ResourceManager::Initialize(m_pContext->GetSubsystem<Graphics>());
@@ -85,24 +90,18 @@ void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
 	m_pInput->Update();
+	m_pCamera->BaseUpdate();
 
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, (XMFLOAT4)DirectX::Colors::CornflowerBlue, 1.0f, 1);
 
-	XMFLOAT3 pos, lookat, up;
-	pos = XMFLOAT3(0, 0, 0);
-	lookat = XMFLOAT3(0, 0, 100);
-	up = XMFLOAT3(0, 1, 0);
-	XMMATRIX view = XMMatrixLookAtLH(XMLoadFloat3(&pos), XMLoadFloat3(&lookat), XMLoadFloat3(&up));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1920.0f / 1080.0f, 0.1f, 250.0f);
+	XMFLOAT4X4 viewProj = m_pCamera->GetCamera()->GetViewProjection();
 	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 5);
-	XMMATRIX wvp = world * view * projection;
-	XMFLOAT4X4 wvpMat, worldMat;
-	XMStoreFloat4x4(&wvpMat, wvp);
-	XMStoreFloat4x4(&worldMat, world);
+	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
+	XMMATRIX wvp = world * vp;
 
-	m_pVertexShader->SetParameter("cWorld", &worldMat);
-	m_pVertexShader->SetParameter("cWorldViewProj", &wvpMat);
+	m_pVertexShader->SetParameter("cWorld", &world);
+	m_pVertexShader->SetParameter("cWorldViewProj", &wvp);
 	m_pPixelShader->SetParameter("cColor", &m_Color);
 	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
 
@@ -114,10 +113,12 @@ void FluxCore::GameLoop()
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetScissorRect(false);
-	m_pGraphics->SetCullMode(CullMode::NONE);
-	m_pGraphics->SetBlendMode(BlendMode::REPLACE, true);
-	m_pGraphics->SetDepthEnabled(true);
-	m_pGraphics->SetDepthTest(CompareMode::LESS);
+	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::NONE);
+	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, true);
+	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
+	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::LESS);
+
+	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
 	m_pGraphics->PrepareDraw();
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 0);
@@ -145,7 +146,9 @@ struct Vertex
 
 void FluxCore::InitGame()
 {
-	m_pGraphics->SetWindowTitle("Hello World");
+
+	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics.get());
+	m_pCamera->BaseInitialize(nullptr);
 
 	m_pShader =  new Shader(m_pGraphics.get());
 	if (m_pShader->Load("./Resources/Shaders/Diffuse.hlsl"))

@@ -8,7 +8,9 @@
 #include "Rendering\Core\InputLayout.h"
 #include "Rendering\Core\ConstantBuffer.h"
 #include "Rendering\Core\Texture.h"
-#include "Core\InputEngine.h"
+#include "Rendering\Core\DepthStencilState.h"
+#include "Rendering\Core\BlendState.h"
+#include "Rendering\Core\RasterizerState.h"
 
 ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	m_pGraphics(pGraphics),
@@ -151,13 +153,13 @@ void ImmediateUI::Render()
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 
-	m_pGraphics->SetDepthEnabled(true);
-	m_pGraphics->SetColorWrite(ColorWrite::ALL);
-	m_pGraphics->SetDepthTest(CompareMode::ALWAYS);
+	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
+	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
 
-	m_pGraphics->SetBlendMode(BlendMode::ALPHA, false);
+	m_pGraphics->GetBlendState()->SetColorWrite(ColorWrite::ALL);
+	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::ALPHA, false);
 
-	m_pGraphics->SetCullMode(CullMode::BACK);
+	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	

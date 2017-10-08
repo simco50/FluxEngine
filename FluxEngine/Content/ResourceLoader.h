@@ -1,6 +1,5 @@
 #pragma once
 #include <unordered_map>
-#include "../Debugging/Profiler.h"
 
 class Graphics;
 

@@ -145,12 +145,12 @@ using namespace DirectX;
 #include "Materials/VertexStructures.h"
 #include "Rendering/Core/ShaderStructs.h"
 
-#include "Debugging/Console.h"
-#include "Debugging/Profiler.h"
+#include "Diagnostics/Console.h"
+#include "Diagnostics/Profiler.h"
 
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
-#include "Core/InputEngine.h"
+#include "Input/InputEngine.h"
 
 #include "Content/ResourceManager.h"
 

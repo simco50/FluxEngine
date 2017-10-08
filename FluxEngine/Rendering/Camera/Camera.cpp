@@ -5,8 +5,10 @@
 #include "Core/Components/Transform.h"
 #include "Math/SimpleMath.h"
 #include "Rendering/MeshRenderer.h"
+#include "Rendering/Core/Graphics.h"
 
-Camera::Camera()
+Camera::Camera(InputEngine* pInput, Graphics* pGraphics):
+	m_pInput(pInput), m_pGraphics(pGraphics)
 {
 	XMStoreFloat4x4(&m_Projection, XMMatrixIdentity());
 	XMStoreFloat4x4(&m_View, XMMatrixIdentity());
@@ -21,12 +23,12 @@ Camera::~Camera()
 
 void Camera::UpdateViewport()
 {
-	m_Viewport.Height = m_VpHeight * m_pGameContext->Engine->GameSettings.Height;
-	m_Viewport.Width = m_VpWidth * m_pGameContext->Engine->GameSettings.Width;
+	m_Viewport.Height = m_VpHeight * m_pGraphics->GetWindowHeight();
+	m_Viewport.Width = m_VpWidth * m_pGraphics->GetWindowWidth();
 	m_Viewport.MaxDepth = 1.0f;
 	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.TopLeftX = m_VpX * m_pGameContext->Engine->GameSettings.Width;
-	m_Viewport.TopLeftY = m_VpY * m_pGameContext->Engine->GameSettings.Height;
+	m_Viewport.TopLeftX = m_VpX * m_pGraphics->GetWindowWidth();
+	m_Viewport.TopLeftY = m_VpY * m_pGraphics->GetWindowHeight();
 }
 
 void Camera::Initialize()
@@ -80,7 +82,7 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 	UNREFERENCED_PARAMETER(startPoint);
 	UNREFERENCED_PARAMETER(direction);
 
-/*	POINT mousePos = InputEngine::Instance().GetMousePosition();
+	POINT mousePos =  m_pInput->GetMousePosition();
 	Vector2 ndc;
 	float hw = m_Viewport.Width / 2.0f;
 	float hh = m_Viewport.Height / 2.0f;
@@ -93,5 +95,5 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 	startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
 
 	direction = farPoint - nearPoint;
-	direction.Normalize();*/
+	direction.Normalize();
 }

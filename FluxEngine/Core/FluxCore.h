@@ -10,6 +10,7 @@ class IndexBuffer;
 class ImmediateUI;
 class InputEngine;
 class Context;
+class FreeCamera;
 
 class FluxCore
 {
@@ -46,4 +47,6 @@ private:
 	XMFLOAT3 m_LightDirection = XMFLOAT3(-0.577f, -0.577f, 0.577f);
 
 	int m_IndexCount = -1;
+
+	unique_ptr<FreeCamera> m_pCamera;
 };

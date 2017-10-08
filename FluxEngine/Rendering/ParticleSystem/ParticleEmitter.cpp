@@ -5,7 +5,6 @@
 #include "Content/ResourceManager.h"
 #include "Particle.h"
 #include "Core/Components/Transform.h"
-#include "Debugging/Console.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
 #include "Materials/ParticleMaterial.h"

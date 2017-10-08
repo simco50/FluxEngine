@@ -4,8 +4,8 @@
 class FreeCamera : public GameObject
 {
 public:
-	FreeCamera();
-	~FreeCamera();
+	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
+	virtual ~FreeCamera();
 
 	void Initialize();
 	void Update();
@@ -17,6 +17,9 @@ public:
 	void SetSpeed(const float speed) { m_MoveSpeed = speed; }
 
 private:
+	InputEngine* m_pInput = nullptr;
+	Graphics* m_pGraphics = nullptr;
+
 	void KeyboardMouse();
 	void Controller();
 

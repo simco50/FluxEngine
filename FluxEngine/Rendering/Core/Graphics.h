@@ -7,6 +7,9 @@ class RenderTarget;
 class ShaderVariation;
 class InputLayout;
 class Texture;
+class BlendState;
+class RasterizerState;
+class DepthStencilState;
 
 class Graphics
 {
@@ -46,19 +49,6 @@ public:
 
 	void SetTexture(const unsigned int index, Texture* pTexture);
 
-	//Rasterizer State
-	void SetFillMode(const FillMode& fillMode);
-	void SetCullMode(const CullMode& cullMode);
-
-	//Blend State
-	void SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage);
-	void SetColorWrite(const ColorWrite colorWriteMask = ColorWrite::ALL);
-
-	//Depthstencil State
-	void SetDepthEnabled(const bool enabled);
-	void SetDepthTest(const CompareMode& comparison);
-	void SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, const unsigned char writeMask);
-
 	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
 	void Draw(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex);
 
@@ -75,6 +65,10 @@ public:
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
 
+	BlendState* GetBlendState() const { return m_pBlendState.get(); }
+	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
+	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
+
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
@@ -86,11 +80,7 @@ private:
 	bool MakeWindow(int windowWidth, int windowHeight);
 	bool EnumerateAdapters();
 	bool CreateDevice(const int windowWidth, const int windowHeight);
-	bool UpdateSwapchain(const int windowWidth, const int windowHeight);
-
-	void UpdateRasterizerState();
-	void UpdateBlendState();
-	void UpdateDepthStencilState();
+	bool UpdateSwapchain();
 
 	bool CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
@@ -120,33 +110,9 @@ private:
 	ComPtr<IDXGISwapChain> m_pSwapChain;
 
 	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
-
-	//RasterizerState
-	ComPtr<ID3D11RasterizerState> m_pRasterizerState;
-	FillMode m_FillMode = FillMode::SOLID;
-	CullMode m_CullMode = CullMode::BACK;
-	bool m_RasterizerStateDirty = true;
-
-	//BlendState
-	ComPtr<ID3D11BlendState> m_pBlendState;
-	bool m_BlendStateDirty = true;
-	BlendMode m_BlendMode = BlendMode::REPLACE;
-	bool m_AlphaToCoverage = false;
-	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
-	
-	//Depthstencilstate
-	ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
-	bool m_DepthStencilStateDirty = true;
-	bool m_DepthEnabled = true;
-	CompareMode m_DepthCompareMode = CompareMode::LESS;
-	bool m_StencilTestEnabled = false;
-	CompareMode m_StencilTestMode = CompareMode::ALWAYS;
-	StencilOperation m_StencilTestPassOperation = StencilOperation::KEEP;
-	StencilOperation m_StencilTestFailOperation = StencilOperation::KEEP;
-	StencilOperation m_StencilTestZFailOperation = StencilOperation::KEEP;
-	unsigned int m_StencilRef = 0;
-	unsigned char m_StencilCompareMask;
-	unsigned char m_StencilWriteMask;
+	unique_ptr<BlendState> m_pBlendState;
+	unique_ptr<RasterizerState> m_pRasterizerState;
+	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	//Clip rect
 	IntRect m_CurrentScissorRect;

@@ -7,6 +7,9 @@
 #include "InputLayout.h"
 #include "Texture.h"
 #include "ConstantBuffer.h"
+#include "RasterizerState.h"
+#include "DepthStencilState.h"
+#include "BlendState.h"
 
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
@@ -48,9 +51,12 @@ bool Graphics::SetMode(const int width,
 		if (!CreateDevice(width, height))
 			return false;
 	}
-	if (!UpdateSwapchain(width, height))
+	if (!UpdateSwapchain())
 		return false;
 
+	m_pBlendState = make_unique<BlendState>();
+	m_pRasterizerState = make_unique<RasterizerState>();
+	m_pDepthStencilState = make_unique<DepthStencilState>();
 
 	Clear(0);
 	m_pSwapChain->Present(0, 0);
@@ -152,11 +158,8 @@ void Graphics::SetViewport(const FloatRect& rect)
 
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
-	if (enabled != m_ScissorEnabled)
-	{
-		m_ScissorEnabled = enabled;
-		m_RasterizerStateDirty = true;
-	}
+	m_pRasterizerState->SetScissorEnabled(enabled);
+
 	if (enabled && rect != m_CurrentScissorRect)
 	{
 		m_CurrentScissorRect = rect;
@@ -176,105 +179,6 @@ void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 
 	m_CurrentShaderResourceViews[index] = (ID3D11ShaderResourceView*)pTexture->GetResourceView();
 	m_CurrentSamplerStates[index] = (ID3D11SamplerState*)pTexture->GetSamplerState();
-}
-
-void Graphics::SetFillMode(const FillMode& fillMode)
-{
-	if (fillMode != m_FillMode)
-	{
-		m_FillMode = fillMode;
-		m_RasterizerStateDirty = true;
-	}
-}
-
-void Graphics::SetCullMode(const CullMode& cullMode)
-{
-	if (cullMode != m_CullMode)
-	{
-		m_CullMode = cullMode;
-		m_RasterizerStateDirty = true;
-	}
-}
-
-void Graphics::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
-{
-	if (blendMode != m_BlendMode || alphaToCoverage != m_AlphaToCoverage)
-	{
-		m_BlendMode = blendMode;
-		m_AlphaToCoverage = alphaToCoverage;
-		m_BlendStateDirty = true;
-	}
-}
-
-void Graphics::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::ALL*/)
-{
-	if (m_ColorWriteMask !=colorWriteMask)
-	{
-		m_ColorWriteMask = colorWriteMask;
-		m_BlendStateDirty = true;
-	}
-}
-
-void Graphics::SetDepthEnabled(const bool enabled)
-{
-	if (enabled != m_DepthEnabled)
-	{
-		m_DepthEnabled = enabled;
-		m_DepthStencilStateDirty = true;
-	}
-}
-
-void Graphics::SetDepthTest(const CompareMode& comparison)
-{
-	if (comparison != m_DepthCompareMode)
-	{
-		m_DepthCompareMode = comparison;
-		m_DepthStencilStateDirty = true;
-	}
-}
-
-void Graphics::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
-{
-	if (stencilEnabled != m_StencilTestEnabled)
-	{
-		m_StencilTestEnabled = stencilEnabled;
-		m_DepthStencilStateDirty = true;
-	}
-	if (mode != m_StencilTestMode)
-	{
-		m_StencilTestMode = mode;
-		m_DepthStencilStateDirty = true;
-	}
-	if (pass != m_StencilTestPassOperation)
-	{
-		m_StencilTestPassOperation = pass;
-		m_DepthStencilStateDirty = true;
-	}
-	if (fail != m_StencilTestFailOperation)
-	{
-		m_StencilTestFailOperation = fail;
-		m_DepthStencilStateDirty = true;
-	}
-	if (zFail != m_StencilTestZFailOperation)
-	{
-		m_StencilTestZFailOperation = zFail;
-		m_DepthStencilStateDirty = true;
-	}
-	if (stencilRef != m_StencilRef)
-	{
-		m_StencilRef = stencilRef;
-		m_DepthStencilStateDirty = true;
-	}
-	if (compareMask != m_StencilCompareMask)
-	{
-		m_StencilCompareMask = compareMask;
-		m_DepthStencilStateDirty = true;
-	}
-	if (writeMask != m_StencilWriteMask)
-	{
-		m_StencilWriteMask = writeMask;
-		m_DepthStencilStateDirty = true;
-	}
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
@@ -297,20 +201,22 @@ void Graphics::Clear(const unsigned int flags, const XMFLOAT4& color, const floa
 
 void Graphics::PrepareDraw()
 {
-	if (m_RasterizerStateDirty)
+	if (m_pDepthStencilState->IsDirty())
 	{
-		UpdateRasterizerState();
-		m_RasterizerStateDirty = false;
+		ID3D11DepthStencilState* pState = m_pDepthStencilState->Create(m_pDevice.Get());
+		m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
 	}
-	if (m_BlendStateDirty)
+
+	if (m_pRasterizerState->IsDirty())
 	{
-		UpdateBlendState();
-		m_BlendStateDirty = false;
+		ID3D11RasterizerState* pState = m_pRasterizerState->Create(m_pDevice.Get());
+		m_pDeviceContext->RSSetState(pState);
 	}
-	if (m_DepthStencilStateDirty)
+
+	if (m_pBlendState->IsDirty())
 	{
-		UpdateDepthStencilState();
-		m_DepthStencilStateDirty = false;
+		ID3D11BlendState* pBlendState = m_pBlendState->Create(m_pDevice.Get());
+		m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, numeric_limits<unsigned int>::max());
 	}
 
 	for (unsigned int i = 0; i < m_CurrentSamplerStates.size(); ++i)
@@ -569,10 +475,13 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	//Create the swap chain
 	HR(m_pFactory->CreateSwapChain(m_pDevice.Get(), &swapDesc, m_pSwapChain.GetAddressOf()));
 
+	m_WindowWidth = windowWidth;
+	m_WindowHeight = windowHeight;
+
 	return true;
 }
 
-bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
+bool Graphics::UpdateSwapchain()
 {
 	AUTOPROFILE(UpdateSwapchain);
 
@@ -582,14 +491,14 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
 
-	HR(m_pSwapChain->ResizeBuffers(1, windowWidth, windowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	HR(m_pSwapChain->ResizeBuffers(1, m_WindowWidth, m_WindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
 	RENDER_TARGET_DESC desc = {};
-	desc.Width = windowWidth;
-	desc.Height = windowHeight;
+	desc.Width = m_WindowWidth;
+	desc.Height = m_WindowHeight;
 	desc.pColor = pBackbuffer;
 	desc.pDepth = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -598,288 +507,9 @@ bool Graphics::UpdateSwapchain(const int windowWidth, const int windowHeight)
 	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
-
-	m_WindowWidth = windowWidth;
-	m_WindowHeight = windowHeight;
 	SetViewport(m_CurrentViewport);
 
 	return true;
-}
-
-void Graphics::UpdateRasterizerState()
-{
-	m_pRasterizerState.Reset();
-
-	D3D11_RASTERIZER_DESC desc = {};
-	desc.AntialiasedLineEnable = false;
-	switch (m_CullMode)
-	{
-	case CullMode::FRONT:
-		desc.CullMode = D3D11_CULL_FRONT;
-		break;
-	case CullMode::BACK:
-		desc.CullMode = D3D11_CULL_BACK;
-		break;
-	case CullMode::NONE:
-		desc.CullMode = D3D11_CULL_NONE;
-		break;
-	}
-
-	desc.DepthBias = 0;
-	desc.DepthBiasClamp = 0.0f;
-	desc.DepthClipEnable = true;
-	switch (m_FillMode)
-	{
-	case FillMode::SOLID:
-		desc.FillMode = D3D11_FILL_SOLID;
-		break;
-	case FillMode::WIREFRAME:
-		desc.FillMode = D3D11_FILL_WIREFRAME;
-		break;
-	}
-	desc.FrontCounterClockwise = false;
-	desc.MultisampleEnable = m_Multisample > 1;
-	desc.ScissorEnable = m_ScissorEnabled;
-	desc.SlopeScaledDepthBias = 0.0f;
-
-	HR(m_pDevice->CreateRasterizerState(&desc, m_pRasterizerState.GetAddressOf()));
-
-	m_pDeviceContext->RSSetState(m_pRasterizerState.Get());
-}
-
-void Graphics::UpdateBlendState()
-{
-	m_pBlendState.Reset();
-
-	D3D11_BLEND_DESC desc = {};
-	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
-	desc.IndependentBlendEnable = false;
-	desc.RenderTarget[0].BlendEnable = m_BlendMode == BlendMode::REPLACE ? false : true;
-	desc.RenderTarget[0].RenderTargetWriteMask = (unsigned int)m_ColorWriteMask;
-	
-	switch (m_BlendMode)
-	{
-	case BlendMode::REPLACE:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::ADD:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::MULTIPLY:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_DEST_COLOR;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_DEST_COLOR;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::ALPHA:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::ADDALPHA:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::PREMULALPHA:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::INVDESTALPHA:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_DEST_ALPHA;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_DEST_ALPHA;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_DEST_ALPHA;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		break;
-	case BlendMode::SUBTRACT:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_REV_SUBTRACT;
-		break;
-	case BlendMode::SUBTRACTALPHA:
-		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
-		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_REV_SUBTRACT;
-		break;
-	}
-
-	HR(m_pDevice->CreateBlendState(&desc, m_pBlendState.GetAddressOf()));
-
-	m_pDeviceContext->OMSetBlendState(m_pBlendState.Get(), nullptr, numeric_limits<unsigned int>::max());
-}
-
-void Graphics::UpdateDepthStencilState()
-{
-	m_pDepthStencilState.Reset();
-
-	D3D11_DEPTH_STENCIL_DESC desc = {};
-	desc.DepthEnable = m_DepthEnabled;
-	desc.DepthWriteMask = m_DepthEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-	switch (m_DepthCompareMode)
-	{
-	case CompareMode::ALWAYS:
-		desc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-		break;
-	case CompareMode::EQUAL:
-		desc.DepthFunc = D3D11_COMPARISON_EQUAL;
-		break;
-	case CompareMode::NOTEQUAL:
-		desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
-		break;
-	case CompareMode::LESS:
-		desc.DepthFunc = D3D11_COMPARISON_LESS;
-		break;
-	case CompareMode::LESSEQUAL:
-		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		break;
-	case CompareMode::GREATER:
-		desc.DepthFunc = D3D11_COMPARISON_GREATER;
-		break;
-	case CompareMode::GREATEREQUAL:
-		desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		break;
-	}
-
-	desc.StencilEnable = m_StencilTestEnabled;
-	desc.StencilReadMask = m_StencilCompareMask;
-	desc.StencilWriteMask = m_StencilWriteMask;
-
-	switch (m_StencilTestMode)
-	{
-	case CompareMode::ALWAYS:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		break;
-	case CompareMode::EQUAL:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-		break;
-	case CompareMode::NOTEQUAL:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
-		break;
-	case CompareMode::LESS:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_LESS;
-		break;
-	case CompareMode::LESSEQUAL:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS_EQUAL;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_LESS_EQUAL;
-		break;
-	case CompareMode::GREATER:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_GREATER;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_GREATER;
-		break;
-	case CompareMode::GREATEREQUAL:
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		break;
-	}
-	switch (m_StencilTestPassOperation)
-	{
-	case StencilOperation::KEEP:
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		break;
-	case StencilOperation::ZERO:
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_ZERO;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_ZERO;
-		break;
-	case StencilOperation::REF:
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-		break;
-	case StencilOperation::INCR:
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-		break;
-	case StencilOperation::DECR:
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_DECR;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_DECR;
-		break;
-	}
-
-	switch (m_StencilTestFailOperation)
-	{
-	case StencilOperation::KEEP:
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		break;
-	case StencilOperation::ZERO:
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_ZERO;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_ZERO;
-		break;
-	case StencilOperation::REF:
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-		break;
-	case StencilOperation::INCR:
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_INCR;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_INCR;
-		break;
-	case StencilOperation::DECR:
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_DECR;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_DECR;
-		break;
-	}
-
-	switch (m_StencilTestZFailOperation)
-	{
-	case StencilOperation::KEEP:
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		break;
-	case StencilOperation::ZERO:
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_ZERO;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_ZERO;
-		break;
-	case StencilOperation::REF:
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-		break;
-	case StencilOperation::INCR:
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		break;
-	case StencilOperation::DECR:
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		break;
-	}
-
-	HR(m_pDevice->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf()));
-
-	m_pDeviceContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), m_StencilRef);
 }
 
 unsigned int Graphics::GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const
@@ -953,8 +583,8 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		// Save the new client area dimensions.
-		int newWidth = LOWORD(lParam);
-		int newHeight = HIWORD(lParam);
+		m_WindowWidth = LOWORD(lParam);
+		m_WindowHeight = HIWORD(lParam);
 		if (m_pDevice.IsValid())
 		{
 			if (wParam == SIZE_MINIMIZED)
@@ -968,7 +598,7 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				OnPause(false);
 				m_Minimized = false;
 				m_Maximized = true;
-				UpdateSwapchain(newWidth, newHeight);
+				UpdateSwapchain();
 			}
 			else if (wParam == SIZE_RESTORED)
 			{
@@ -977,18 +607,18 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					OnPause(false);
 					m_Minimized = false;
-					UpdateSwapchain(newWidth, newHeight);
+					UpdateSwapchain();
 				}
 				// Restoring from maximized state?
 				else if (m_Maximized)
 				{
 					OnPause(false);
 					m_Maximized = false;
-					UpdateSwapchain(newWidth, newHeight);
+					UpdateSwapchain();
 				}
 				else if (!m_Resizing) // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 				{
-					UpdateSwapchain(newWidth, newHeight);
+					UpdateSwapchain();
 				}
 			}
 		}
@@ -1006,7 +636,7 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_EXITSIZEMOVE:
 		OnPause(false);
 		m_Resizing = false;
-		UpdateSwapchain(m_WindowWidth, m_WindowHeight);
+		UpdateSwapchain();
 		return 0;
 
 	case WM_CLOSE:

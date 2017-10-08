@@ -2,12 +2,14 @@
 #include "Core/Components/ComponentBase.h"
 
 class MeshRenderer;
+class InputEngine;
+class Graphics;
 
 class Camera : public ComponentBase
 {
 public:
-	Camera();
-	~Camera();
+	Camera(InputEngine* pInput, Graphics* pGraphics);
+	virtual ~Camera();
 
 	const XMFLOAT4X4& GetView() const { return m_View; }
 	const XMFLOAT4X4& GetViewInverse() const { return m_ViewInverse; }
@@ -28,8 +30,10 @@ public:
 protected:
 	void Initialize();
 	void Update();
-
 private:
+	InputEngine* m_pInput = nullptr;
+	Graphics* m_pGraphics = nullptr;
+
 	float m_Size = 50.0f;
 	float m_FoV = 60.0f;
 
