@@ -39,7 +39,7 @@ float Config::GetFloat(const string& name, const string& section, const float de
 	return stof(pValue->Value);
 }
 
-const string& Config::GetString(const string& name, const string& section, const string defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
+const string& Config::GetString(const string& name, const string& section, const string& defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
