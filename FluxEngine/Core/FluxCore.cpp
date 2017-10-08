@@ -15,6 +15,7 @@
 #include "Rendering/Core/RasterizerState.h"
 #include "Rendering/Core/BlendState.h"
 #include "Rendering/Core/DepthStencilState.h"
+#include "Config.h"
 
 using namespace std;
 
@@ -31,36 +32,31 @@ FluxCore::~FluxCore()
 
 	ResourceManager::Release();
 	Console::Release();
+	Config::Flush();
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
-
-	m_pContext = make_unique<Context>();
+	Config::Initialize();
 
 	m_pGraphics = make_unique<Graphics>(hInstance);
 	if (!m_pGraphics->SetMode(
-		/*WindowWidth*/				1240,
-		/*WindowHeight*/			720,
-		/*Window type*/				WindowType::WINDOWED,
-		/*Resizable*/				true,
-		/*Vsync*/					true,
-		/*Multisample*/				8,
-		/*RefreshRate denominator*/	60))
+		Config::GetInt("Width", "Window", 1240),
+		Config::GetInt("Height", "Window", 720),
+		(WindowType)Config::GetInt("WindowMode", "Window", 0),
+		Config::GetInt("Resizable", "Window", 1),
+		Config::GetInt("VSync", "Window", 1),
+		Config::GetInt("MSAA", "Window", 8),
+		Config::GetInt("RefreshRate", "Window", 60)))
 	{
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
+
 	m_pGraphics->SetWindowTitle("Hello World");
-	m_pContext->RegisterSubsystem(m_pGraphics.get());
-
-	ResourceManager::Initialize(m_pContext->GetSubsystem<Graphics>());
-
-	m_pInput = make_unique<InputEngine>(m_pContext->GetSubsystem<Graphics>());
-	m_pContext->RegisterSubsystem(m_pInput.get());
-
-	m_pImmediateUI = make_unique<ImmediateUI>(m_pContext->GetSubsystem<Graphics>(), m_pContext->GetSubsystem<InputEngine>());
-	m_pContext->RegisterSubsystem(m_pImmediateUI.get());
+	ResourceManager::Initialize(m_pGraphics.get());
+	m_pInput = make_unique<InputEngine>(m_pGraphics.get());
+	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics.get(), m_pInput.get());
 
 	GameTimer::Reset();
 

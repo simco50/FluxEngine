@@ -25,8 +25,6 @@ public:
 	void InitGame();
 
 private:
-
-
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
@@ -38,7 +36,6 @@ private:
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
 	unique_ptr<Graphics> m_pGraphics;
-	unique_ptr<Context> m_pContext;
 	unique_ptr<ImmediateUI> m_pImmediateUI;
 	unique_ptr<InputEngine> m_pInput;
 
