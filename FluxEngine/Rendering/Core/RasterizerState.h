@@ -5,7 +5,9 @@ class RasterizerState
 public:
 	RasterizerState();
 
-	ID3D11RasterizerState* Create(ID3D11Device* pDevice);
+	DELETE_COPY(RasterizerState)
+
+	ID3D11RasterizerState* GetOrCreate(ID3D11Device* pDevice);
 	bool IsDirty() const { return m_IsDirty; }
 
 	void SetScissorEnabled(const bool enabled);
@@ -14,7 +16,6 @@ public:
 	void SetCullMode(const CullMode cullMode);
 
 private:
-	ComPtr<ID3D11RasterizerState> m_pRasterizerState;
 	bool m_IsDirty = true;
 
 	bool m_ScissorEnabled = false;
@@ -22,4 +23,6 @@ private:
 
 	FillMode m_FillMode = FillMode::SOLID;
 	CullMode m_CullMode = CullMode::BACK;
+
+	map<unsigned int, ComPtr<ID3D11RasterizerState>> m_RasterizerStates;
 };

@@ -26,9 +26,21 @@ void BlendState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::A
 	}
 }
 
-ID3D11BlendState* BlendState::Create(ID3D11Device* pDevice)
+ID3D11BlendState* BlendState::GetOrCreate(ID3D11Device* pDevice)
 {
-	m_pBlendState.Reset();
+	unsigned int stateHash =
+		(unsigned char)m_BlendMode << 0
+		| (unsigned char)m_AlphaToCoverage << 1
+		| (unsigned char)m_ColorWriteMask << 2;
+
+	auto state = m_BlendStates.find(stateHash);
+	if (state != m_BlendStates.end())
+		return state->second.Get();
+
+	AUTOPROFILE(CreateBlendState);
+
+	m_BlendStates[stateHash] = nullptr;
+	ComPtr<ID3D11BlendState>& pBlendState = m_BlendStates[stateHash];
 
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
@@ -112,7 +124,7 @@ ID3D11BlendState* BlendState::Create(ID3D11Device* pDevice)
 		break;
 	}
 
-	HR(pDevice->CreateBlendState(&desc, m_pBlendState.GetAddressOf()));
+	HR(pDevice->CreateBlendState(&desc, pBlendState.GetAddressOf()));
 
-	return m_pBlendState.Get();
+	return pBlendState.Get();
 }

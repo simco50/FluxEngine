@@ -7,9 +7,89 @@ DepthStencilState::DepthStencilState()
 
 }
 
-ID3D11DepthStencilState* DepthStencilState::Create(ID3D11Device* pDevice)
+void DepthStencilState::SetDepthEnabled(const bool enabled)
 {
-	m_pDepthStencilState.Reset();
+	if (enabled != m_DepthEnabled)
+	{
+		m_DepthEnabled = enabled;
+		m_IsDirty = true;
+	}
+}
+
+void DepthStencilState::SetDepthTest(const CompareMode& comparison)
+{
+	if (comparison != m_DepthCompareMode)
+	{
+		m_DepthCompareMode = comparison;
+		m_IsDirty = true;
+	}
+}
+
+void DepthStencilState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
+{
+	if (stencilEnabled != m_StencilTestEnabled)
+	{
+		m_StencilTestEnabled = stencilEnabled;
+		m_IsDirty = true;
+	}
+	if (mode != m_StencilTestMode)
+	{
+		m_StencilTestMode = mode;
+		m_IsDirty = true;
+	}
+	if (pass != m_StencilTestPassOperation)
+	{
+		m_StencilTestPassOperation = pass;
+		m_IsDirty = true;
+	}
+	if (fail != m_StencilTestFailOperation)
+	{
+		m_StencilTestFailOperation = fail;
+		m_IsDirty = true;
+	}
+	if (zFail != m_StencilTestZFailOperation)
+	{
+		m_StencilTestZFailOperation = zFail;
+		m_IsDirty = true;
+	}
+	if (stencilRef != m_StencilRef)
+	{
+		m_StencilRef = stencilRef;
+		m_IsDirty = true;
+	}
+	if (compareMask != m_StencilCompareMask)
+	{
+		m_StencilCompareMask = compareMask;
+		m_IsDirty = true;
+	}
+	if (writeMask != m_StencilWriteMask)
+	{
+		m_StencilWriteMask = writeMask;
+		m_IsDirty = true;
+	}
+}
+
+ID3D11DepthStencilState* DepthStencilState::GetOrCreate(ID3D11Device* pDevice)
+{
+	unsigned int stateHash =
+		(unsigned char)m_DepthEnabled << 0
+		| (unsigned char)m_DepthCompareMode << 1
+		| (unsigned char)m_StencilTestEnabled << 2
+		| (unsigned char)m_StencilTestMode << 3
+		| (unsigned char)m_StencilTestPassOperation << 4
+		| (unsigned char)m_StencilTestFailOperation << 5
+		| (unsigned char)m_StencilTestZFailOperation << 6
+		| (unsigned char)m_StencilCompareMask << 7
+		| (unsigned char)m_StencilWriteMask << 8;
+
+	auto state = m_DepthStencilStates.find(stateHash);
+	if (state != m_DepthStencilStates.end())
+		return state->second.Get();
+
+	AUTOPROFILE(CreateDepthStencilState);
+
+	m_DepthStencilStates[stateHash] = nullptr;
+	ComPtr<ID3D11DepthStencilState>& pState = m_DepthStencilStates[stateHash];
 
 	D3D11_DEPTH_STENCIL_DESC desc = {};
 	desc.DepthEnable = m_DepthEnabled;
@@ -146,69 +226,7 @@ ID3D11DepthStencilState* DepthStencilState::Create(ID3D11Device* pDevice)
 		break;
 	}
 
-	HR(pDevice->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf()));
+	HR(pDevice->CreateDepthStencilState(&desc, pState.GetAddressOf()));
 
-	return m_pDepthStencilState.Get();
-}
-
-void DepthStencilState::SetDepthEnabled(const bool enabled)
-{
-	if (enabled != m_DepthEnabled)
-	{
-		m_DepthEnabled = enabled;
-		m_IsDirty = true;
-	}
-}
-
-void DepthStencilState::SetDepthTest(const CompareMode& comparison)
-{
-	if (comparison != m_DepthCompareMode)
-	{
-		m_DepthCompareMode = comparison;
-		m_IsDirty = true;
-	}
-}
-
-void DepthStencilState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
-{
-	if (stencilEnabled != m_StencilTestEnabled)
-	{
-		m_StencilTestEnabled = stencilEnabled;
-		m_IsDirty = true;
-	}
-	if (mode != m_StencilTestMode)
-	{
-		m_StencilTestMode = mode;
-		m_IsDirty = true;
-	}
-	if (pass != m_StencilTestPassOperation)
-	{
-		m_StencilTestPassOperation = pass;
-		m_IsDirty = true;
-	}
-	if (fail != m_StencilTestFailOperation)
-	{
-		m_StencilTestFailOperation = fail;
-		m_IsDirty = true;
-	}
-	if (zFail != m_StencilTestZFailOperation)
-	{
-		m_StencilTestZFailOperation = zFail;
-		m_IsDirty = true;
-	}
-	if (stencilRef != m_StencilRef)
-	{
-		m_StencilRef = stencilRef;
-		m_IsDirty = true;
-	}
-	if (compareMask != m_StencilCompareMask)
-	{
-		m_StencilCompareMask = compareMask;
-		m_IsDirty = true;
-	}
-	if (writeMask != m_StencilWriteMask)
-	{
-		m_StencilWriteMask = writeMask;
-		m_IsDirty = true;
-	}
+	return pState.Get();
 }

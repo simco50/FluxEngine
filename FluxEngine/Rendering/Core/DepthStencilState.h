@@ -7,7 +7,9 @@ class DepthStencilState
 public:
 	DepthStencilState();
 
-	ID3D11DepthStencilState* Create(ID3D11Device* pDevice);
+	DELETE_COPY(DepthStencilState)
+
+	ID3D11DepthStencilState* GetOrCreate(ID3D11Device* pDevice);
 	bool IsDirty() const { return m_IsDirty; }
 	unsigned int GetStencilRef() const { return m_StencilRef; }
 
@@ -15,8 +17,6 @@ public:
 	void SetDepthTest(const CompareMode& comparison);
 	void SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, const unsigned char writeMask);
 private:
-
-	ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
 	bool m_IsDirty = true;
 
 	bool m_DepthEnabled = true;
@@ -29,4 +29,6 @@ private:
 	unsigned int m_StencilRef = 0;
 	unsigned char m_StencilCompareMask;
 	unsigned char m_StencilWriteMask;
+
+	map<unsigned int, ComPtr<ID3D11DepthStencilState>> m_DepthStencilStates;
 };

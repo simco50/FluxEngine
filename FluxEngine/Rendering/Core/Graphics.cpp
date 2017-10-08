@@ -56,6 +56,7 @@ bool Graphics::SetMode(const int width,
 
 	m_pBlendState = make_unique<BlendState>();
 	m_pRasterizerState = make_unique<RasterizerState>();
+	m_pRasterizerState->SetMultisampleEnabled(m_Multisample > 1);
 	m_pDepthStencilState = make_unique<DepthStencilState>();
 
 	Clear(0);
@@ -203,19 +204,19 @@ void Graphics::PrepareDraw()
 {
 	if (m_pDepthStencilState->IsDirty())
 	{
-		ID3D11DepthStencilState* pState = m_pDepthStencilState->Create(m_pDevice.Get());
+		ID3D11DepthStencilState* pState = m_pDepthStencilState->GetOrCreate(m_pDevice.Get());
 		m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
 	}
 
 	if (m_pRasterizerState->IsDirty())
 	{
-		ID3D11RasterizerState* pState = m_pRasterizerState->Create(m_pDevice.Get());
+		ID3D11RasterizerState* pState = m_pRasterizerState->GetOrCreate(m_pDevice.Get());
 		m_pDeviceContext->RSSetState(pState);
 	}
 
 	if (m_pBlendState->IsDirty())
 	{
-		ID3D11BlendState* pBlendState = m_pBlendState->Create(m_pDevice.Get());
+		ID3D11BlendState* pBlendState = m_pBlendState->GetOrCreate(m_pDevice.Get());
 		m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, numeric_limits<unsigned int>::max());
 	}
 

@@ -5,19 +5,20 @@ class BlendState
 public:
 	BlendState();
 
+	DELETE_COPY(BlendState)
+
 	void SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage);
 	void SetColorWrite(const ColorWrite colorWriteMask = ColorWrite::ALL);
 
-	ID3D11BlendState* Create(ID3D11Device* pDevice);
+	ID3D11BlendState* GetOrCreate(ID3D11Device* pDevice);
 	bool IsDirty() const { return m_IsDirty; }
 
 private:
-	
-	ComPtr<ID3D11BlendState> m_pBlendState;
+	bool m_IsDirty = true;
 
 	BlendMode m_BlendMode = BlendMode::REPLACE;
 	bool m_AlphaToCoverage = false;
 	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
 
-	bool m_IsDirty = true;
+	map<unsigned int, ComPtr<ID3D11BlendState>> m_BlendStates;
 };
