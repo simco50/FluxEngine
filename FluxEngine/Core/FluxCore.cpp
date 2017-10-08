@@ -45,7 +45,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		/*WindowHeight*/			720,
 		/*Window type*/				WindowType::WINDOWED,
 		/*Resizable*/				true,
-		/*Vsync*/					false,
+		/*Vsync*/					true,
 		/*Multisample*/				8,
 		/*RefreshRate denominator*/	60))
 	{

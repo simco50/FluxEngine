@@ -23,8 +23,8 @@ Camera::~Camera()
 
 void Camera::UpdateViewport()
 {
-	m_Viewport.Height = m_VpHeight * m_pGraphics->GetWindowHeight();
 	m_Viewport.Width = m_VpWidth * m_pGraphics->GetWindowWidth();
+	m_Viewport.Height = m_VpHeight * m_pGraphics->GetWindowHeight();
 	m_Viewport.MaxDepth = 1.0f;
 	m_Viewport.MinDepth = 0.0f;
 	m_Viewport.TopLeftX = m_VpX * m_pGraphics->GetWindowWidth();
