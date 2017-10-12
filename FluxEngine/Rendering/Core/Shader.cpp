@@ -25,15 +25,15 @@ bool Shader::Load(const string& filePath)
 	m_FileDir = filePath.substr(0, slashIdx);
 	m_ShaderName = filePath.substr(slashIdx, filePath.rfind('.') - slashIdx);
 
-	ifstream stream;
-	stream.open(filePath);
-	if (stream.fail())
+	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
+	if (!pPtr->Open(FileMode::Read))
 	{
 		FLUX_LOG(WARNING, "Failed to load file: '%s'", filePath.c_str());
 		return false;
 	}
+
 	string code;
-	if (!ProcessSource(stream, code))
+	if (!ProcessSource(std::move(pPtr), code))
 		return false;
 
 	m_VertexShaderSource = code;
@@ -104,33 +104,32 @@ const std::string& Shader::GetSource(const ShaderType type) const
 	throw;
 }
 
-bool Shader::ProcessSource(ifstream& stream, string& output)
+bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, string& output)
 {
 	AUTOPROFILE_DESC(Shader_ProcessSource, m_ShaderName);
 
 	string line;
-	while (getline(stream, line))
+	while (pFile->GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
 			string includeFilePath = line.substr(9);
 			includeFilePath.erase(includeFilePath.begin());
 			includeFilePath.pop_back();
-			ifstream newStream(m_FileDir + includeFilePath);
-			if (newStream.fail())
-				return false;
 
-			if(!ProcessSource(newStream, output))
+			unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
+			newFile->Open(FileMode::Read);
+
+			if(!ProcessSource(std::move(newFile), output))
 				return false;
 		}
 		else
 		{
 			output += line;
-			output += "\n";
+			output += '\n';
 		}
 	}
-	output += "\n";
-	stream.close();
+	output += '\n';
 	return true;
 }
 

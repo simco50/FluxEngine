@@ -15,14 +15,24 @@ ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 	shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
-	wstring path = wstring(assetFile.begin(), assetFile.end());
-	hr = D3DX11CompileEffectFromFile(path.c_str(),
-		nullptr,
-		nullptr,
-		shaderFlags,
+	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
+	if (pFile == nullptr)
+		return nullptr;
+	if (!pFile->Open(FileMode::Read))
+		return nullptr;
+	vector<char> buffer;
+	pFile->ReadAllBytes(buffer);
+	
+	hr = D3DX11CompileEffectFromMemory(
+		buffer.data(),
+		buffer.size(),
+		assetFile.c_str(),
+		nullptr, 
+		nullptr, 
+		shaderFlags, 
 		0,
 		m_pGraphics->GetDevice(),
-		&pEffect,
+		&pEffect, 
 		&pErrorBlob);
 
 	if(FAILED(hr))

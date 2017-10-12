@@ -79,7 +79,7 @@ void ParticleEmitter::SortParticles()
 {
 	switch (m_pParticleSystem->SortingMode)
 	{
-	case FrontToBack:
+	case ParticleSortingMode::FrontToBack:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
 			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
@@ -87,14 +87,14 @@ void ParticleEmitter::SortParticles()
 			return d1 > d2;
 		});
 		break;
-	case BackToFront:
+	case ParticleSortingMode::BackToFront:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
 			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
 			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
 			return d1 < d2;
 		});
-	case OldestFirst:
+	case ParticleSortingMode::OldestFirst:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();
@@ -102,7 +102,7 @@ void ParticleEmitter::SortParticles()
 			return lifeTimerA < lifeTimerB;
 		});
 		break;
-	case YoungestFirst: 
+	case ParticleSortingMode::YoungestFirst:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();

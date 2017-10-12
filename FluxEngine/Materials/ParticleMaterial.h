@@ -1,7 +1,7 @@
 #pragma once
 #include "Material.h"
 
-enum BlendMode;
+enum class ParticleBlendMode;
 class Texture;
 
 class ParticleMaterial :
@@ -11,7 +11,7 @@ public:
 	ParticleMaterial();
 	~ParticleMaterial();
 	virtual ID3DX11EffectTechnique* GetTechnique() const override;
-	void SetBlendMode(const BlendMode mode);
+	void SetBlendMode(const ParticleBlendMode mode);
 	void SetTexture(const string& path);
 
 protected:
@@ -21,7 +21,7 @@ protected:
 private:
 
 	Texture* m_pTexture = nullptr;
-	BlendMode m_BlendMode;
+	ParticleBlendMode m_BlendMode;
 
 	ID3DX11EffectTechnique *m_pAlphaBlendingTechnique = nullptr;
 	ID3DX11EffectTechnique *m_pAdditiveBlendingTechnique = nullptr;

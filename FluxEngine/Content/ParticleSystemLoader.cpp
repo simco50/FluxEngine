@@ -37,13 +37,21 @@ ParticleSystemLoader::~ParticleSystemLoader()
 
 ParticleSystem* ParticleSystemLoader::LoadContent(const string& assetFile)
 {
-	std::string s(assetFile.begin(), assetFile.end());
-	ifstream file(s);
+	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
+	if (pFile == nullptr)
+		return nullptr;
+	if (!pFile->Open(FileMode::Read))
+		return nullptr;
+
+	std::string buffer;
+	buffer.resize(pFile->GetSize());
+	pFile->Read((unsigned int)buffer.size(), (char*)&buffer[0]);
+	pFile->Close();
 
 	ParticleSystem* pSystem = new ParticleSystem();
 	try
 	{
-		json data = json::parse(file);
+		json data = json::parse(buffer.data());
 
 		int version = data["Version"];
 		if(version != VERSION)
@@ -93,7 +101,7 @@ ParticleSystem* ParticleSystemLoader::LoadContent(const string& assetFile)
 
 		//Rendering
 		pSystem->SortingMode = (ParticleSortingMode)data["SortingMode"].get<int>();
-		pSystem->BlendMode = (BlendMode)data["BlendMode"].get<int>();
+		pSystem->BlendMode = (ParticleBlendMode)data["BlendMode"].get<int>();
 		pSystem->ImagePath = data["ImagePath"].get<string>();
 	}
 	catch(exception exception)

@@ -16,6 +16,7 @@
 #include "Rendering/Core/BlendState.h"
 #include "Rendering/Core/DepthStencilState.h"
 #include "Config.h"
+#include "Rendering/ParticleSystem/ParticleSystem.h"
 
 using namespace std;
 
@@ -39,6 +40,15 @@ int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
 	Config::Initialize();
+
+	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
+	{
+		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+	}
+	if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
+	{
+		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+	}
 
 	m_pGraphics = make_unique<Graphics>(hInstance);
 	if (!m_pGraphics->SetMode(
@@ -101,7 +111,7 @@ void FluxCore::GameLoop()
 	m_pPixelShader->SetParameter("cColor", &m_Color);
 	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
 
-	Texture* pTexture = ResourceManager::Load<Texture>("./Resources/Textures/spot.png");
+	Texture* pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
 	m_pGraphics->SetTexture(0, pTexture);
 
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
@@ -147,12 +157,12 @@ void FluxCore::InitGame()
 	m_pCamera->BaseInitialize(nullptr);
 
 	m_pShader =  new Shader(m_pGraphics.get());
-	if (m_pShader->Load("./Resources/Shaders/Diffuse.hlsl"))
+	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
 
 
-	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("./Resources/Meshes/spot.flux");
+	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("Resources/Meshes/spot.flux");
 
 	vector<Vertex> vertices;
 	MeshFilter::VertexData positions = pMesh->GetVertexData("POSITION");

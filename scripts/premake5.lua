@@ -42,6 +42,7 @@ workspace "FluxEngine"
 			"../Libraries/DX_Effects11/include",
 			"../Libraries/DX_Tex/include",
 			"../Libraries/Fmod/inc",
+			"../Libraries/Zlib/include",
 		}
 
 		libdirs
@@ -50,6 +51,7 @@ workspace "FluxEngine"
 			"../Libraries/DX_Tex/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
+			"../Libraries/Zlib/lib/%{cfg.platform}",
 		}
 
 		filter { "configurations:Debug" }
@@ -98,6 +100,7 @@ workspace "FluxEngine"
 			"../Libraries/DX_Effects11/include",
 			"../Libraries/DX_Tex/include",
 			"../Libraries/Fmod/inc",
+			"../Libraries/Zlib/include",
 		}
 
 		libdirs
@@ -106,6 +109,7 @@ workspace "FluxEngine"
 			"../Libraries/DX_Tex/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
+			"../Libraries/Zlib/lib/%{cfg.platform}",
 		}
 
 		filter { "configurations:Debug" }
@@ -114,6 +118,10 @@ workspace "FluxEngine"
 		 	flags {  }
 		 	symbols "On"
 		 	optimize "Off"
+		 	postbuildcommands
+			{ 
+				"copy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\" /y /D",
+			}
 
 		filter { "configurations:Release" }
 		 	runtime "Release"
@@ -121,6 +129,10 @@ workspace "FluxEngine"
 		 	flags {  }
 		 	symbols "Off"
 		 	optimize "Full"
+		 	postbuildcommands
+			{ 
+				"copy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\" /y /D",
+			}
 
 		filter { "platforms:x64" }
 			postbuildcommands

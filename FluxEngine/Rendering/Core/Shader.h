@@ -2,6 +2,7 @@
 
 class Graphics;
 class ShaderVariation;
+class IFile;
 
 enum class ShaderType : unsigned char
 {
@@ -26,7 +27,7 @@ private:
 	string m_FileDir;
 	string m_ShaderName;
 
-	bool ProcessSource(ifstream& stream, string& output);
+	bool ProcessSource(const unique_ptr<IFile>& pFile, string& output);
 	void CommentFunction(string& input, const string& function);
 
 	string m_VertexShaderSource;

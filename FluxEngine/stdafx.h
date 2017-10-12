@@ -136,6 +136,16 @@ using namespace DirectX;
 #pragma endregion XINPUT
 
 #pragma region
+//XINPUT
+#include <Zlib.h>
+#if defined(DEBUG) || defined(_DEBUG)
+#pragma comment(lib, "zlib_DEBUG.lib")
+#else
+#pragma comment(lib, "zlib.lib")
+#endif
+#pragma endregion XINPUT
+
+#pragma region
 #undef ERROR
 //Engine core include
 #include "Helpers/SmartInterface.h"
@@ -158,6 +168,9 @@ using namespace DirectX;
 
 #include "Math/MathHelp.h"
 #include "Math/MathTypes.h"
+
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/File/File.h"
 
 using namespace Smart_COM;
 #include "Math/SimpleMath.h"

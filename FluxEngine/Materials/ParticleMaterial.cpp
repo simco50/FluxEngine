@@ -20,8 +20,8 @@ void ParticleMaterial::LoadShaderVariables()
 	BIND_AND_CHECK_NAME(m_pTextureVariable, gParticleTexture, AsShaderResource);
 	BIND_AND_CHECK_SEMANTIC(m_pViewProjVariable, "ViewProj", AsMatrix);
 
-	m_pAdditiveBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ADDITIVE);
-	m_pAlphaBlendingTechnique = m_pEffect->GetTechniqueByIndex(BlendMode::ALPHABLEND);
+	m_pAdditiveBlendingTechnique = m_pEffect->GetTechniqueByIndex((int)ParticleBlendMode::ADDITIVE);
+	m_pAlphaBlendingTechnique = m_pEffect->GetTechniqueByIndex((int)ParticleBlendMode::ALPHABLEND);
 }
 
 void ParticleMaterial::UpdateShaderVariables()
@@ -35,16 +35,16 @@ ID3DX11EffectTechnique* ParticleMaterial::GetTechnique() const
 {
 	switch (m_BlendMode)
 	{
-	case ALPHABLEND:
+	case ParticleBlendMode::ALPHABLEND:
 		return m_pAlphaBlendingTechnique;
-	case ADDITIVE:
+	case ParticleBlendMode::ADDITIVE:
 		return m_pAdditiveBlendingTechnique;
 	default:
 		return nullptr;
 	}
 }
 
-void ParticleMaterial::SetBlendMode(const BlendMode mode)
+void ParticleMaterial::SetBlendMode(const ParticleBlendMode mode)
 {
 	m_BlendMode = mode;
 }

@@ -23,12 +23,16 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 
 	MeshFilter* pMeshFilter = new MeshFilter();
 	pMeshFilter->m_FilePath = assetFile;
-	unique_ptr<BinaryReader> pReader = make_unique<BinaryReader>();
-	pReader->Open(assetFile);
 
-	string magic = pReader->ReadString();
-	char minVersion = pReader->Read<char>();
-	char maxVersion = pReader->Read<char>();
+	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
+	if (pFile == nullptr)
+		return nullptr;
+	if (!pFile->Open(FileMode::Read))
+		return nullptr;
+
+	string magic = pFile->ReadString();
+	char minVersion = pFile->Read<char>();
+	char maxVersion = pFile->Read<char>();
 	UNREFERENCED_PARAMETER(maxVersion);
 	if(minVersion != SE_VERSION)
 	{
@@ -39,20 +43,23 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	
 	for(;;)
 	{
-		string block = pReader->ReadString();
+		string block = pFile->ReadString();
 		for (char& c : block)
 			c = (char)toupper(c);
 		if (block == "END")
 			break;
 
-		unsigned int length = pReader->Read<unsigned int>();
-		unsigned int stride = pReader->Read<unsigned int>();
+		unsigned int length = pFile->Read<unsigned int>();
+		unsigned int stride = pFile->Read<unsigned int>();
 
 		pMeshFilter->GetVertexDataUnsafe(block).pData = new char[length * stride];
 		pMeshFilter->GetVertexDataUnsafe(block).Count = length;
 		pMeshFilter->GetVertexDataUnsafe(block).Stride = stride;
-		pReader->Read(pMeshFilter->GetVertexDataUnsafe(block).pData, length * stride);
+		pFile->Read(length * stride, (char*)pMeshFilter->GetVertexDataUnsafe(block).pData);
 	}
+
+	pFile->Close();
+
 	pMeshFilter->m_VertexCount = pMeshFilter->GetVertexData("POSITION").Count;
 	pMeshFilter->m_IndexCount = pMeshFilter->GetVertexData("INDEX").Count;
 	return pMeshFilter;

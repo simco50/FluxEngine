@@ -15,7 +15,7 @@ struct ParticleVertex
 	float Rotation;
 };
 
-enum ParticleSortingMode
+enum class ParticleSortingMode
 {
 	FrontToBack,
 	BackToFront,
@@ -23,7 +23,7 @@ enum ParticleSortingMode
 	YoungestFirst,
 };
 
-enum BlendMode
+enum class ParticleBlendMode
 {
 	ALPHABLEND = 0,
 	ADDITIVE = 1,
@@ -78,7 +78,7 @@ struct ParticleSystem
 	KeyframeValue<float> Rotation = 0.0f;
 
 	//Rendering
-	ParticleSortingMode SortingMode = FrontToBack;
-	BlendMode BlendMode = ALPHABLEND;
+	ParticleSortingMode SortingMode = ParticleSortingMode::FrontToBack;
+	ParticleBlendMode BlendMode = ParticleBlendMode::ALPHABLEND;
 	string ImagePath = "";
 };

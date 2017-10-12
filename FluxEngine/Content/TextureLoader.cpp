@@ -14,6 +14,13 @@ TextureLoader::~TextureLoader()
 
 Texture* TextureLoader::LoadContent(const string& assetFile)
 {
+	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
+	if (!pFile->Open(FileMode::Read))
+		return nullptr;
+	vector<char> buffer;
+	pFile->ReadAllBytes(buffer);
+	pFile->Close();
+
 	TexMetadata metaData;
 	ScratchImage image;
 
@@ -27,19 +34,17 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	}
 	++pointPos;
 	string extension = assetFile.substr(pointPos, assetFile.length() - pointPos);
-
-	wstring path = wstring(assetFile.begin(), assetFile.end());
 	if (extension == "dds")
 	{
-		HR(LoadFromDDSFile(path.c_str(), DDS_FLAGS_NONE, &metaData, image));
+		HR(LoadFromDDSMemory(buffer.data(), buffer.size(), DDS_FLAGS_NONE, &metaData, image));
 	}
 	else if (extension == "tga")
 	{
-		HR(LoadFromTGAFile(path.c_str(), &metaData, image));
+		HR(LoadFromTGAMemory(buffer.data(), buffer.size(), &metaData, image));
 	}
 	else
 	{
-		HR(LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, &metaData, image));
+		HR(LoadFromWICMemory(buffer.data(), buffer.size(), WIC_FLAGS_NONE, &metaData, image));
 	}
 
 	ID3D11Resource* pTexture;
