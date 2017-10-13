@@ -8,7 +8,7 @@ bool IFile::GetLine(std::string& outLine, const char delimiter /*= '\n'*/)
 
 	while (Read(1, &c))
 	{
-		if (c == delimiter)
+		if (c == delimiter || c == '\r')
 		{
 			outLine = str.str();
 			return true;

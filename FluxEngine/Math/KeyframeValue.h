@@ -18,7 +18,7 @@ struct KeyframeValue
 		if (v != Values.end())
 			v->second = value;
 		else
-			FLUX_LOG_INFOFormat(LogType::ERROR, "Keyframe at key %f does not exist!", key);
+			FLUX_LOG(LogType::ERROR, "Keyframe at key %f does not exist!", key);
 	}
 
 	void SetConstant(T value)
@@ -36,7 +36,7 @@ struct KeyframeValue
 			Values.erase(s);
 		}
 		else
-			FLUX_LOG_INFOFormat(LogType::ERROR, "Keyframe at key %f does not exist!", source);
+			FLUX_LOG(LogType::ERROR, "Keyframe at key %f does not exist!", source);
 	}
 
 	T operator[](float interpValue)

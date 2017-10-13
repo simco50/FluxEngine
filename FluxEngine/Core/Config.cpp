@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Config.h"
+#include "FileSystem\File\PhysicalFile.h"
 
 const std::string Config::ENGINE_INI = "./Config/Engine.ini";
 const std::string Config::GAME_INI = "./Config/Game.ini";
@@ -90,24 +91,25 @@ ConfigFile* Config::GetConfigFile(const Type t)
 
 bool Config::PopulateConfigValues(const Type t)
 {
-	ifstream str;
+	unique_ptr<PhysicalFile> pFile;
+
 	switch (t)
 	{
 	case Type::EngineIni:
-		str.open(ENGINE_INI);
+		pFile = make_unique<PhysicalFile>(ENGINE_INI);
 		break;
 	case Type::GameIni:
-		str.open(GAME_INI);
+		pFile = make_unique<PhysicalFile>(GAME_INI);
 		break;
 	default:
 		return false;
 	}
 
-	if (!str.fail())
+	if (pFile->Open(FileMode::Read))
 	{
 		string line;
 		string currentSection = "";
-		while (getline(str, line))
+		while (pFile->GetLine(line))
 		{
 			if (line.length() == 0)
 				continue;

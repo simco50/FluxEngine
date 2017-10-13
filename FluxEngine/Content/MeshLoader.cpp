@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "MeshLoader.h"
 #include "Rendering/MeshFilter.h"
-#include "Helpers/BinaryReader.h"
 
 MeshLoader::MeshLoader()
 {}
