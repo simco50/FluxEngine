@@ -5,7 +5,7 @@
 
 bool PakFile::Open(const FileMode mode, const ContentType writeMode)
 {
-	m_WriteMode = writeMode;
+	m_ContentType = writeMode;
 	UNREFERENCED_PARAMETER(mode); 
 	return true;
 }

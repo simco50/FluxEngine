@@ -134,7 +134,7 @@ void Console::Log(const std::string &message, LogType type)
 		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	}
 
-	(*m_pFileLog) << stream.str() << IFile::endl;
+	*m_pFileLog << stream.str() << IFile::endl;
 
 	if (type == LogType::ERROR)
 	{

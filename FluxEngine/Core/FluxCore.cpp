@@ -40,10 +40,14 @@ int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
 
+#ifdef RELEASE
 	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 	{
-		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+		FLUX_LOG(WARNING, "Failed to mount './Resources.paK');
 	}
+#else
+	FLUX_LOG(WARNING, "[DEBUG] Skipped mounting './Resources.paK'");
+#endif
 	if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
 	{
 		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
@@ -64,7 +68,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 	}
 
-	m_pGraphics->SetWindowTitle("Hello World");
+	m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
 	ResourceManager::Initialize(m_pGraphics.get());
 	m_pInput = make_unique<InputEngine>(m_pGraphics.get());
 	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics.get(), m_pInput.get());
@@ -107,10 +111,10 @@ void FluxCore::GameLoop()
 	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
 	XMMATRIX wvp = world * vp;
 
-	m_pVertexShader->SetParameter("cWorld", &world);
-	m_pVertexShader->SetParameter("cWorldViewProj", &wvp);
-	m_pPixelShader->SetParameter("cColor", &m_Color);
-	m_pPixelShader->SetParameter("cLightDirection", &m_LightDirection);
+	m_pVertexShader->SetParameter("cWorldVS", &world);
+	m_pVertexShader->SetParameter("cWorldViewProjVS", &wvp);
+	m_pPixelShader->SetParameter("cColorPS", &m_Color);
+	m_pPixelShader->SetParameter("cLightDirectionPS", &m_LightDirection);
 
 	Texture* pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
 	m_pGraphics->SetTexture(0, pTexture);

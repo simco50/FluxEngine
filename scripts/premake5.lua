@@ -7,11 +7,11 @@ workspace "FluxEngine"
 
     filter { "platforms:x64" }
 		architecture "x64"
-		defines {"x64"}
+		defines {"x64", "PLATFORM_WINDOWS"}
 
 	filter { "platforms:x86" }
 		architecture "x32"
-		defines {"x86"}	
+		defines {"x86", "PLATFORM_WINDOWS"}	
 
 	project "FluxEngine"
 		filename "FluxEngine_%{_ACTION}"

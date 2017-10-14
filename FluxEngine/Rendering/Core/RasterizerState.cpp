@@ -49,7 +49,7 @@ ID3D11RasterizerState* RasterizerState::GetOrCreate(ID3D11Device* pDevice)
 		(unsigned char)m_ScissorEnabled << 0
 		| (unsigned char)m_MultisampleEnabled << 1
 		| (unsigned char)m_FillMode << 2
-		| (unsigned char)m_CullMode << 3;
+		| (unsigned char)m_CullMode << 6;
 
 	auto state = m_RasterizerStates.find(stateHash);
 	if (state != m_RasterizerStates.end())

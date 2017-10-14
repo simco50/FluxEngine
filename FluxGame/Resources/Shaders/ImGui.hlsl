@@ -1,11 +1,5 @@
-cbuffer PerFrameVS : register(b1)
-{
-      float4x4 cViewProjVS;
-}
-
-Texture2D gTexture;
-SamplerState gTextureSampler;
-
+#include "Uniforms.hlsl"
+#include "Samplers.hlsl"
 
 struct VS_INPUT
 {
@@ -30,5 +24,5 @@ void VS(VS_INPUT input, out PS_INPUT output)
 
 void PS(PS_INPUT input, out float4 output : SV_TARGET)
 {
-      output = input.color * gTexture.Sample(gTextureSampler, input.texCoord);
+      output = input.color * tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
 }

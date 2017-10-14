@@ -119,12 +119,9 @@ bool Config::PopulateConfigValues(const Type t)
 				m_Configs[t].Sections[currentSection].Name = currentSection;
 				continue;
 			}
-			unsigned int equals = (unsigned int)line.rfind('=');
+			size_t equals = line.rfind('=');
 			if (equals == string::npos)
-			{
-				FLUX_LOG(WARNING, "[Config::Config()] > Wrong config syntax '%s'", line.c_str());
 				continue;
-			}
 			m_Configs[t].Sections[currentSection].Values[line.substr(0, equals)].Value = line.substr(equals + 1);
 		}
 	}

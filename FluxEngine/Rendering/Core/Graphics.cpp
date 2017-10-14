@@ -243,7 +243,7 @@ void Graphics::PrepareDraw()
 	}
 
 	vector<ID3D11Buffer*> pBuffers;
-	for (const unique_ptr<ConstantBuffer>& pBuffer : m_pCurrentVertexShader->GetConstantBuffers())
+	for (ConstantBuffer* pBuffer : m_pCurrentVertexShader->GetConstantBuffers())
 	{
 		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
 		if(pBuffer)
@@ -252,7 +252,7 @@ void Graphics::PrepareDraw()
 	m_pDeviceContext->VSSetConstantBuffers(0, (UINT)pBuffers.size(), pBuffers.data());
 
 	pBuffers.clear();
-	for (const unique_ptr<ConstantBuffer>& pBuffer : m_pCurrentPixelShader->GetConstantBuffers())
+	for (ConstantBuffer* pBuffer : m_pCurrentPixelShader->GetConstantBuffers())
 	{
 		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
 		if (pBuffer)
@@ -511,6 +511,22 @@ bool Graphics::UpdateSwapchain()
 	SetViewport(m_CurrentViewport);
 
 	return true;
+}
+
+ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex)
+{
+	unsigned int bufferHash = size << 0
+		| (unsigned char)shaderType << 16
+		| (unsigned char)registerIndex << 24;
+
+	auto pIt = m_ConstantBuffers.find(bufferHash);
+	if (pIt != m_ConstantBuffers.end())
+		return pIt->second.get();
+
+	unique_ptr<ConstantBuffer> pBuffer = make_unique<ConstantBuffer>(this);
+	pBuffer->SetSize(size);
+	m_ConstantBuffers[bufferHash] = std::move(pBuffer);
+	return m_ConstantBuffers[bufferHash].get();
 }
 
 unsigned int Graphics::GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const

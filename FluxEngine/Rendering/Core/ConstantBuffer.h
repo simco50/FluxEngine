@@ -1,6 +1,13 @@
 #pragma once
 class Graphics;
 
+/*
+	Register 0 is reserved for per-frame data
+	Register 1 is reserved for per-view data
+	Register 2 is reserved for per-object data
+	Registers 3-8 is free to use
+*/
+
 class ConstantBuffer
 {
 public:

@@ -33,8 +33,5 @@ protected:
 	BoundingOrientedBox m_BoundingBox;
 
 	bool m_FrustumCulling = true;
-
-private:
-	friend class ShadowMapper;
 };
 

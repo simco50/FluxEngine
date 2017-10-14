@@ -8,7 +8,7 @@ PhysicalFile::~PhysicalFile()
 
 bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 {
-	m_WriteMode = writeMode;
+	m_ContentType = writeMode;
 
 	DWORD access;
 	DWORD creation_disposition;
@@ -22,16 +22,26 @@ bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 	case FileMode::Write:
 		access = GENERIC_WRITE;
 		creation_disposition = CREATE_ALWAYS;
+		if (CreateDirectory(GetDirectoryPath().c_str(), nullptr) == 0)
+		{
+			if (GetLastError() == ERROR_PATH_NOT_FOUND)
+				return false;
+		}
 		break;
 	case FileMode::ReadWrite:
 		access = GENERIC_READ | GENERIC_WRITE;
-		creation_disposition = OPEN_EXISTING;
+		creation_disposition = CREATE_NEW;
+		if (CreateDirectory(GetDirectoryPath().c_str(), nullptr) == 0)
+		{
+			if (GetLastError() == ERROR_PATH_NOT_FOUND)
+				return false;
+		}
 		break;
 	default:
 		return false;
 	}
 
-	m_Handle = CreateFileA(
+	m_Handle = CreateFile(
 		m_FileName.c_str(),
 		access,
 		0,

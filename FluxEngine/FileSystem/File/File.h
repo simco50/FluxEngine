@@ -61,7 +61,10 @@ public:
 
 	std::string ReadSizedString();
 
+	std::string GetDirectoryPath() const;
+	std::string GetFileName() const;
+
 protected:
 	std::string m_FileName;
-	ContentType m_WriteMode;
+	ContentType m_ContentType;
 };

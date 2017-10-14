@@ -106,8 +106,6 @@ const std::string& Shader::GetSource(const ShaderType type) const
 
 bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 {
-	AUTOPROFILE_DESC(Shader_ProcessSource, m_ShaderName);
-
 	string line;
 	while (pFile->GetLine(line))
 	{

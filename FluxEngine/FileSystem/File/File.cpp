@@ -65,7 +65,7 @@ IFile& IFile::operator<<(const unsigned char value)
 
 IFile& IFile::operator<<(const int value)
 {
-	if (m_WriteMode == ContentType::Text)
+	if (m_ContentType == ContentType::Text)
 	{
 		std::string str = to_string(value);
 		Write(str.data(), (unsigned int)str.size());
@@ -77,7 +77,7 @@ IFile& IFile::operator<<(const int value)
 
 IFile& IFile::operator<<(const unsigned int value)
 {
-	if (m_WriteMode == ContentType::Text)
+	if (m_ContentType == ContentType::Text)
 	{
 		std::string str = to_string(value);
 		Write(str.data(), (unsigned int)str.size());
@@ -89,7 +89,7 @@ IFile& IFile::operator<<(const unsigned int value)
 
 IFile& IFile::operator<<(const float value)
 {
-	if (m_WriteMode == ContentType::Text)
+	if (m_ContentType == ContentType::Text)
 	{
 		std::string str = to_string(value);
 		Write(str.data(), (unsigned int)str.size());
@@ -101,7 +101,7 @@ IFile& IFile::operator<<(const float value)
 
 IFile& IFile::operator<<(const double value)
 {
-	if (m_WriteMode == ContentType::Text)
+	if (m_ContentType == ContentType::Text)
 	{
 		std::string str = to_string(value);
 		Write(str.data(), (unsigned int)str.size());
@@ -192,4 +192,20 @@ std::string IFile::ReadSizedString()
 	str.resize(size);
 	Read(size, &str[0]);
 	return str;
+}
+
+std::string IFile::GetDirectoryPath() const
+{
+	size_t slashIdx = m_FileName.rfind('\\');
+	if (slashIdx == string::npos)
+		return "";
+	return m_FileName.substr(0, slashIdx);
+}
+
+std::string IFile::GetFileName() const
+{
+	size_t slashIdx = m_FileName.rfind('\\');
+	if (slashIdx == string::npos)
+		return m_FileName;
+	return m_FileName.substr(slashIdx + 1);
 }

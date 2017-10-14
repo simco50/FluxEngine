@@ -29,9 +29,9 @@ void BlendState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::A
 ID3D11BlendState* BlendState::GetOrCreate(ID3D11Device* pDevice)
 {
 	unsigned int stateHash =
-		(unsigned char)m_BlendMode << 0
-		| (unsigned char)m_AlphaToCoverage << 1
-		| (unsigned char)m_ColorWriteMask << 2;
+		 (unsigned char)m_BlendMode << 0
+		| (unsigned char)m_AlphaToCoverage << 8
+		| (unsigned char)m_ColorWriteMask << 16;
 
 	auto state = m_BlendStates.find(stateHash);
 	if (state != m_BlendStates.end())

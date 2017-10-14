@@ -74,13 +74,13 @@ ID3D11DepthStencilState* DepthStencilState::GetOrCreate(ID3D11Device* pDevice)
 	unsigned int stateHash =
 		(unsigned char)m_DepthEnabled << 0
 		| (unsigned char)m_DepthCompareMode << 1
-		| (unsigned char)m_StencilTestEnabled << 2
-		| (unsigned char)m_StencilTestMode << 3
-		| (unsigned char)m_StencilTestPassOperation << 4
-		| (unsigned char)m_StencilTestFailOperation << 5
-		| (unsigned char)m_StencilTestZFailOperation << 6
-		| (unsigned char)m_StencilCompareMask << 7
-		| (unsigned char)m_StencilWriteMask << 8;
+		| (unsigned char)m_StencilTestEnabled << 5
+		| (unsigned char)m_StencilTestMode << 6
+		| (unsigned char)m_StencilTestPassOperation << 10
+		| (unsigned char)m_StencilTestFailOperation << 14
+		| (unsigned char)m_StencilTestZFailOperation << 18
+		| (unsigned char)m_StencilCompareMask << 22
+		| (unsigned char)m_StencilWriteMask << 26;
 
 	auto state = m_DepthStencilStates.find(stateHash);
 	if (state != m_DepthStencilStates.end())

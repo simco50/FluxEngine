@@ -151,7 +151,7 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 	D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)&reflection);
 	reflection->GetDesc(&shaderDesc);
 
-	map<string, unsigned> cbRegisterMap;
+	map<string, UINT> cbRegisterMap;
 
 	for (unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 	{
@@ -171,8 +171,8 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 
 		if (cbRegister >= m_ConstantBuffers.size())
 			m_ConstantBuffers.resize(cbRegister + 1);
-		m_ConstantBuffers[cbRegister] = make_unique<ConstantBuffer>(pGraphics);
-		m_ConstantBuffers[cbRegister]->SetSize(bufferDesc.Size);
+
+		m_ConstantBuffers[cbRegister] = pGraphics->GetOrCreateConstantBuffer(bufferDesc.Size, m_ShaderType, cbRegister);
 
 		for (unsigned v = 0; v < bufferDesc.Variables; ++v)
 		{
@@ -186,7 +186,7 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 			parameter.Type = m_ShaderType;
 			parameter.Size = variableDesc.Size;
 			parameter.Buffer = cbRegister;
-			parameter.pBuffer = m_ConstantBuffers[cbRegister].get();
+			parameter.pBuffer = m_ConstantBuffers[cbRegister];
 			m_ShaderParameters[parameter.Name] = parameter;
 		}
 	}
@@ -205,6 +205,11 @@ void ShaderVariation::SetDefines(const string& defines)
 
 void ShaderVariation::SetParameter(const string& name, void* pValue)
 {
-	const ShaderParameter& p = m_ShaderParameters.at(name);
-	p.pBuffer->SetParameter(p.Offset, p.Size, pValue);
+	auto pParameter = m_ShaderParameters.find(name);
+	if (pParameter == m_ShaderParameters.end())
+	{
+		FLUX_LOG(WARNING, "[ShaderVariation::SetParameter()] > Parameter with name '%s' not found!", name.c_str());
+		return;
+	}
+	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, pValue);
 }

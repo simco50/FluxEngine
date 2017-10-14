@@ -15,6 +15,8 @@ ConstantBuffer::~ConstantBuffer()
 
 void ConstantBuffer::SetSize(const unsigned int size)
 {
+	AUTOPROFILE(CreateConstantBuffer);
+
 	Release();
 	m_Size = size;
 

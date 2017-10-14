@@ -53,15 +53,5 @@ void MeshRenderer::Initialize()
 
 void MeshRenderer::Update()
 {
-	/*RenderItem item;
-
-	item.Material = m_pMaterial;
-	item.IndexBuffer = m_pMeshFilter->GetIndexBuffer();
-	item.VertexBuffers = { m_pMeshFilter->GetVertexBuffer() };
-	item.IndexCount = m_pMeshFilter->IndexCount();
-	item.VertexCount = m_pMeshFilter->VertexCount();
-
-	item.WorldMatrix = GetTransform()->GetWorldMatrix();
-
-	RenderSystem::Instance().Submit(item);*/
+	
 }

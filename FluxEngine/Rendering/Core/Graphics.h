@@ -10,6 +10,8 @@ class Texture;
 class BlendState;
 class RasterizerState;
 class DepthStencilState;
+class ConstantBuffer;
+enum class ShaderType : unsigned char;
 
 class Graphics
 {
@@ -69,6 +71,8 @@ public:
 	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
 	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
 
+	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
+
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
@@ -113,6 +117,8 @@ private:
 	unique_ptr<BlendState> m_pBlendState;
 	unique_ptr<RasterizerState> m_pRasterizerState;
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
+
+	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 
 	//Clip rect
 	IntRect m_CurrentScissorRect;
