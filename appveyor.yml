@@ -9,8 +9,6 @@ platform:
 shallow_clone: true
 before_build:
 - ps: .\scripts\MakeVS2017.bat
-after_build:
-- ps: 7z a "Game.zip" "%APPVEYOR_BUILD_FOLDER%\Build\FluxGame_$(platform)_$(configuration)\" "%APPVEYOR_BUILD_FOLDER%\Build\FluxEngine_$(platform)_$(configuration)\"
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
@@ -18,5 +16,5 @@ build:
 artifacts:
 - path: '\FluxGame\Resources'
   name: Resources
-- path: 'Game.zip'
+- path: '\Build\FluxGame_$(platform)_$(configuration)'
   name: Build_$(platform)_$(configuration)
