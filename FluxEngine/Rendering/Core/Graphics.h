@@ -78,6 +78,9 @@ public:
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 private:
+	static const int MAX_CONST_BUFFERS = 7;
+	static const int NUM_SHADER_TYPES = 2;
+
 	void SetPrimitiveType(const PrimitiveType type);
 
 	bool RegisterWindowClass();
@@ -119,6 +122,7 @@ private:
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
+	void* m_CurrentConstBuffers[NUM_SHADER_TYPES][MAX_CONST_BUFFERS];
 
 	//Clip rect
 	IntRect m_CurrentScissorRect;
@@ -134,6 +138,9 @@ private:
 	ShaderVariation* m_pCurrentVertexShader = nullptr;
 	ShaderVariation* m_pCurrentPixelShader = nullptr;
 
+	bool m_TexturesDirty = false;
+	unsigned int m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
+	unsigned int m_LastDirtyTexture = 0;
 	vector<ID3D11SamplerState*> m_CurrentSamplerStates;
 	vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
 };

@@ -166,7 +166,6 @@ void FluxCore::InitGame()
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
 
-
 	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("Resources/Meshes/spot.flux");
 
 	vector<Vertex> vertices;
@@ -201,7 +200,6 @@ void FluxCore::InitGame()
 
 	m_pInputLayout = new InputLayout(m_pGraphics.get());
 	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
-
 	
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
 }

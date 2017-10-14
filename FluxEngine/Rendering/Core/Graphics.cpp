@@ -10,10 +10,12 @@
 #include "RasterizerState.h"
 #include "DepthStencilState.h"
 #include "BlendState.h"
+#include "Shader.h"
 
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
 {
+	ZeroMemory(m_CurrentConstBuffers, sizeof(char*) * MAX_CONST_BUFFERS * NUM_SHADER_TYPES);
 }
 
 Graphics::~Graphics()
@@ -134,6 +136,36 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 		m_pDeviceContext->PSSetShader((ID3D11PixelShader*)pPixelShader->GetShaderObject(), nullptr, 0);
 		m_pCurrentPixelShader = pPixelShader;
 	}
+	if (pVertexShader)
+	{
+		bool buffersChanged = false;
+		const vector<ConstantBuffer*>& buffers = pVertexShader->GetConstantBuffers();
+		for (int i = 0; i < buffers.size(); ++i)
+		{
+			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::VertexShader][i])
+			{
+				m_CurrentConstBuffers[(int)ShaderType::VertexShader][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
+				buffersChanged = true;
+			}
+		}
+		if (buffersChanged)
+			m_pDeviceContext->VSSetConstantBuffers(0, MAX_CONST_BUFFERS, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::VertexShader]);
+	}
+	if (pPixelShader)
+	{
+		bool buffersChanged = false;
+		const vector<ConstantBuffer*>& buffers = pPixelShader->GetConstantBuffers();
+		for (int i = 0; i < buffers.size(); ++i)
+		{
+			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::PixelShader][i])
+			{
+				m_CurrentConstBuffers[(int)ShaderType::PixelShader][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
+				buffersChanged = true;
+			}
+		}
+		if (buffersChanged)
+			m_pDeviceContext->PSSetConstantBuffers(0, MAX_CONST_BUFFERS, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::PixelShader]);
+	}
 }
 
 void Graphics::SetInputLayout(InputLayout* pInputLayout)
@@ -178,11 +210,19 @@ void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 		m_CurrentSamplerStates.resize(index + 1);
 		m_CurrentShaderResourceViews.resize(index + 1);
 	}
+	if (pTexture->GetResourceView() == m_CurrentShaderResourceViews[index] && pTexture->GetSamplerState() == m_CurrentSamplerStates[index])
+		return;
 
 	pTexture->UpdateParameters();
 
 	m_CurrentShaderResourceViews[index] = (ID3D11ShaderResourceView*)pTexture->GetResourceView();
 	m_CurrentSamplerStates[index] = (ID3D11SamplerState*)pTexture->GetSamplerState();
+
+	m_TexturesDirty = true;
+	if (m_FirstDirtyTexture > index)
+		m_FirstDirtyTexture = index;
+	if (m_LastDirtyTexture < index)
+		m_LastDirtyTexture = index;
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
@@ -223,12 +263,16 @@ void Graphics::PrepareDraw()
 		m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, numeric_limits<unsigned int>::max());
 	}
 
-	for (unsigned int i = 0; i < m_CurrentSamplerStates.size(); ++i)
+	if (m_TexturesDirty)
 	{
-		m_pDeviceContext->VSSetSamplers(0, (UINT)m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
-		m_pDeviceContext->PSSetSamplers(0, (UINT)m_CurrentSamplerStates.size(), m_CurrentSamplerStates.data());
-		m_pDeviceContext->VSSetShaderResources(0, (UINT)m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
-		m_pDeviceContext->PSSetShaderResources(0, (UINT)m_CurrentShaderResourceViews.size(), m_CurrentShaderResourceViews.data());
+		m_pDeviceContext->VSSetSamplers(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_CurrentSamplerStates.data() + m_FirstDirtyTexture);
+		m_pDeviceContext->PSSetSamplers(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_CurrentSamplerStates.data() + m_FirstDirtyTexture);
+		m_pDeviceContext->VSSetShaderResources(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_CurrentShaderResourceViews.data() + m_FirstDirtyTexture);
+		m_pDeviceContext->PSSetShaderResources(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_CurrentShaderResourceViews.data() + m_FirstDirtyTexture);
+
+		m_TexturesDirty = false;
+		m_FirstDirtyTexture = m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
+		m_LastDirtyTexture = 0;
 	}
 
 	if (m_ScissorRectDirty)
@@ -242,23 +286,17 @@ void Graphics::PrepareDraw()
 		m_ScissorRectDirty = false;
 	}
 
-	vector<ID3D11Buffer*> pBuffers;
 	for (ConstantBuffer* pBuffer : m_pCurrentVertexShader->GetConstantBuffers())
 	{
-		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
 		if(pBuffer)
 			pBuffer->Apply();
 	}
-	m_pDeviceContext->VSSetConstantBuffers(0, (UINT)pBuffers.size(), pBuffers.data());
 
-	pBuffers.clear();
 	for (ConstantBuffer* pBuffer : m_pCurrentPixelShader->GetConstantBuffers())
 	{
-		pBuffers.push_back(pBuffer ? (ID3D11Buffer*)pBuffer->GetBuffer() : nullptr);
 		if (pBuffer)
 			pBuffer->Apply();
 	}
-	m_pDeviceContext->PSSetConstantBuffers(0, (UINT)pBuffers.size(), pBuffers.data());
 }
 
 void Graphics::BeginFrame()
