@@ -18,31 +18,40 @@ public:
 	virtual ~IFile() {}
 
 	virtual bool Open(const FileMode mode) = 0;
-	virtual bool ReadAllBytes(std::vector<char>& pBuffer) = 0;
-	virtual bool Read(const unsigned int from, const unsigned int size, char* pBuffer) = 0;
-	virtual bool Read(const unsigned int size, char* pBuffer) = 0;
-	virtual bool Write(const char* pBuffer, const unsigned int size) = 0;
+	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) = 0;
+	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) = 0;
+	virtual unsigned int Read(const unsigned int size, char* pBuffer) = 0;
+	virtual unsigned int Write(const char* pBuffer, const unsigned int size) = 0;
+	bool virtual Flush() = 0;
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;
 	virtual bool SetPointer(const unsigned int position) = 0;
-	virtual bool MovePointer(const unsigned int delta) = 0;
+	virtual bool MovePointer(const int delta) = 0;
 	virtual unsigned int GetSize() const = 0;
 	bool GetLine(std::string& outLine, const char delimiter = '\n');
 
-	void operator<<(const std::string& text);
+	IFile& operator<<(const std::string& text);
+	IFile& operator<<(const char* pData);
+	IFile& operator<<(const char value);
+	IFile& operator<<(const unsigned char value);
+	IFile& operator<<(const int value);
+	IFile& operator<<(const unsigned int value);
+	IFile& operator<<(const float value);
+	IFile& operator<<(const double value);
+	IFile& operator<<(const bool value);
+	
+	IFile& operator>>(std::string& text);
+	IFile& operator>>(char*& pData);
+	IFile& operator>>(char& value);
+	IFile& operator>>(unsigned char& value);
+	IFile& operator>>(int& value);
+	IFile& operator>>(unsigned int& value);
+	IFile& operator>>(float& value);
+	IFile& operator>>(double& value);
+	IFile& operator>>(bool& value);
 
-	template<typename T>
-	T Read();
-	std::string ReadString();
+	std::string ReadSizedString();
 
 protected:
 	std::string m_FileName;
 };
-
-template<typename T>
-T IFile::Read()
-{
-	T value;
-	Read((unsigned int)sizeof(T), (char*)&value);
-	return value;
-}

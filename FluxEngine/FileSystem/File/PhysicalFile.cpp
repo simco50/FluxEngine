@@ -57,23 +57,30 @@ bool PhysicalFile::IsOpen() const
 	return m_Handle != INVALID_HANDLE_VALUE;
 }
 
-bool PhysicalFile::Write(const char* pBuffer, const unsigned int size)
+unsigned int PhysicalFile::Write(const char* pBuffer, const unsigned int size)
 {
 	if (m_Handle == FILE_HANDLE_INVALID)
-		return false;
+		return 0;
 
 	DWORD bytesToWrite = (DWORD)size;
-	DWORD bytesWritten = 0;
 	while (bytesToWrite > 0)
 	{
-		if (!WriteFile(m_Handle, pBuffer, bytesToWrite, &bytesWritten, nullptr))
-			return false;
-		bytesToWrite -= bytesWritten;
+		DWORD written = 0;
+		if (!WriteFile(m_Handle, pBuffer, bytesToWrite, &written, nullptr))
+			return 0;
+		bytesToWrite -= written;
 	}
-	return true;
+	return size - bytesToWrite;
 }
 
-bool PhysicalFile::ReadAllBytes(std::vector<char>& pBuffer)
+bool PhysicalFile::Flush()
+{
+	if (m_Handle == INVALID_HANDLE_VALUE)
+		return false;
+	return FlushFileBuffers(m_Handle) > 1;
+}
+
+unsigned int PhysicalFile::ReadAllBytes(std::vector<char>& pBuffer)
 {
 	if (m_Handle == FILE_HANDLE_INVALID)
 		return false;
@@ -84,27 +91,32 @@ bool PhysicalFile::ReadAllBytes(std::vector<char>& pBuffer)
 	return Read(size, pBuffer.data());
 }
 
-bool PhysicalFile::Read(const unsigned int from, const unsigned int size, char* pBuffer)
+unsigned int PhysicalFile::Read(const unsigned int from, const unsigned int size, char* pBuffer)
 {
 	if (!SetPointer(from))
 		return false;
 	return Read(size, pBuffer);
 }
 
-bool PhysicalFile::Read(const unsigned int size, char* pBuffer)
+unsigned int PhysicalFile::Read(const unsigned int size, char* pBuffer)
 {
 	DWORD bytesToRead = size;
-	DWORD bytesRead = 0;
 
 	while (bytesToRead > 0)
 	{
-		if (!ReadFile(m_Handle, pBuffer + bytesRead, bytesToRead, &bytesRead, nullptr))
-			return false;
-		if (bytesRead == 0)
-			return false;
-		bytesToRead -= bytesRead;
+		DWORD read = 0;
+		if (!ReadFile(m_Handle, pBuffer + size - bytesToRead, bytesToRead, &read, nullptr))
+		{
+			return size - bytesToRead;
+		}
+		else if (read == 0)
+		{
+			//EOF
+			return size - bytesToRead;
+		}
+		bytesToRead -= read;
 	}
-	return true;
+	return size - bytesToRead;
 }
 
 bool PhysicalFile::SetPointer(const unsigned int position)
@@ -116,7 +128,7 @@ bool PhysicalFile::SetPointer(const unsigned int position)
 	return true;
 }
 
-bool PhysicalFile::MovePointer(const unsigned int delta)
+bool PhysicalFile::MovePointer(const int delta)
 {
 	if (m_Handle == INVALID_HANDLE_VALUE)
 		return false;

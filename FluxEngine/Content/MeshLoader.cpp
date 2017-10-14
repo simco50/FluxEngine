@@ -29,9 +29,9 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	if (!pFile->Open(FileMode::Read))
 		return nullptr;
 
-	string magic = pFile->ReadString();
-	char minVersion = pFile->Read<char>();
-	char maxVersion = pFile->Read<char>();
+	string magic = pFile->ReadSizedString();
+	char minVersion, maxVersion;
+	*pFile >> minVersion >> maxVersion;
 	UNREFERENCED_PARAMETER(maxVersion);
 	if(minVersion != SE_VERSION)
 	{
@@ -42,14 +42,14 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	
 	for(;;)
 	{
-		string block = pFile->ReadString();
+		string block = pFile->ReadSizedString();
 		for (char& c : block)
 			c = (char)toupper(c);
 		if (block == "END")
 			break;
 
-		unsigned int length = pFile->Read<unsigned int>();
-		unsigned int stride = pFile->Read<unsigned int>();
+		unsigned int length, stride;
+		*pFile >> length >> stride;
 
 		pMeshFilter->GetVertexDataUnsafe(block).pData = new char[length * stride];
 		pMeshFilter->GetVertexDataUnsafe(block).Count = length;

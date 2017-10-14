@@ -9,42 +9,52 @@ bool PakFile::Open(const FileMode mode)
 	return true;
 }
 
-bool PakFile::ReadAllBytes(std::vector<char>& pBuffer)
+unsigned int PakFile::ReadAllBytes(std::vector<char>& pBuffer)
 {
 	if (!SetPointer(0))
-		return false;
+		return 0;
 	pBuffer.resize(m_pTableEntry->UncompressedSize);
 	return Read((unsigned int)pBuffer.size(), pBuffer.data());
 }
 
-bool PakFile::Read(const unsigned int from, const unsigned int size, char* pBuffer)
+unsigned int PakFile::Read(const unsigned int from, const unsigned int size, char* pBuffer)
 {
 	if (!SetPointer(from))
-		return false;
+		return 0;
 	return Read(size, pBuffer);
 }
 
-bool PakFile::Read(const unsigned int size, char* pBuffer)
+unsigned int PakFile::Read(const unsigned int size, char* pBuffer)
 {
 	if (m_pMountPoint == nullptr)
-		return false;
+		return 0;
 	const PakMountPoint* pMountPoint = ((PakMountPoint*)m_pMountPoint);
 
+	unsigned int sizeToRead = m_FilePointer + size > m_pTableEntry->UncompressedSize ? m_pTableEntry->UncompressedSize - m_FilePointer : size;
+
+	//We're at the 'virtual' EOF
+	if (sizeToRead <= 0)
+		return 0;
+
+	unsigned int read = 0;
 	if (m_pTableEntry->Compressed)
 	{
 		//If the file is compressed we have to cache the uncompressed data if we want to use it later
 		if (!CacheUncompressedData())
-			return false;
-		memcpy(pBuffer, m_UncompressedCache.data() + m_FilePointer, size);
+			return 0;
+
+		if(m_FilePointer)
+
+		memcpy(pBuffer, m_UncompressedCache.data() + m_FilePointer, sizeToRead);
+		read = sizeToRead;
 	}
 	else
 	{
-		if (!pMountPoint->GetPakFile()->Read(m_pTableEntry->Offset + m_FilePointer, size, pBuffer))
-			return false;
+		read = pMountPoint->GetPakFile()->Read(m_pTableEntry->Offset + m_FilePointer, sizeToRead, pBuffer);
 	}
-	if (!MovePointer(size))
-		return false;
-	return true;
+	if (!MovePointer(sizeToRead))
+		return 0;
+	return read;
 }
 
 bool PakFile::SetPointer(const unsigned int position)
@@ -55,7 +65,7 @@ bool PakFile::SetPointer(const unsigned int position)
 	return true;
 }
 
-bool PakFile::MovePointer(const unsigned int delta)
+bool PakFile::MovePointer(const int delta)
 {
 	if (m_FilePointer + delta > m_pTableEntry->UncompressedSize)
 		return false;
@@ -63,10 +73,15 @@ bool PakFile::MovePointer(const unsigned int delta)
 	return true;
 }
 
-bool PakFile::Write(const char* pBuffer, const unsigned int size)
+unsigned int PakFile::Write(const char* pBuffer, const unsigned int size)
 {
 	UNREFERENCED_PARAMETER(size);
 	UNREFERENCED_PARAMETER(pBuffer);
+	return 0;
+}
+
+bool PakFile::Flush()
+{
 	return false;
 }
 

@@ -39,7 +39,6 @@ FluxCore::~FluxCore()
 int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
-	Config::Initialize();
 
 	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 	{
@@ -49,6 +48,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
 	}
+
+	Config::Initialize();
 
 	m_pGraphics = make_unique<Graphics>(hInstance);
 	if (!m_pGraphics->SetMode(

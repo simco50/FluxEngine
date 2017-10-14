@@ -32,10 +32,11 @@ bool Shader::Load(const string& filePath)
 		return false;
 	}
 
-	string code;
-	if (!ProcessSource(std::move(pPtr), code))
+	stringstream codeStream;
+	if (!ProcessSource(std::move(pPtr), codeStream))
 		return false;
 
+	std::string code = codeStream.str();
 	m_VertexShaderSource = code;
 	m_PixelShaderSource = code;
 
@@ -104,7 +105,7 @@ const std::string& Shader::GetSource(const ShaderType type) const
 	throw;
 }
 
-bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, string& output)
+bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 {
 	AUTOPROFILE_DESC(Shader_ProcessSource, m_ShaderName);
 
@@ -125,11 +126,11 @@ bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, string& output)
 		}
 		else
 		{
-			output += line;
-			output += '\n';
+			output << line;
+			output << '\n';
 		}
 	}
-	output += '\n';
+	output << '\n';
 	return true;
 }
 
