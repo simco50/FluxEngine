@@ -18,3 +18,5 @@ artifacts:
   name: Resources
 - path: '\Build\FluxGame_$(platform)_$(configuration)'
   name: Build_$(platform)_$(configuration)
+- path: '\Build\FluxEngine_$(platform)_$(configuration)'
+  name: Build_$(platform)_$(configuration)
