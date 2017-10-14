@@ -21,7 +21,7 @@ bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 		break;
 	case FileMode::Write:
 		access = GENERIC_WRITE;
-		creation_disposition = CREATE_NEW;
+		creation_disposition = CREATE_ALWAYS;
 		break;
 	case FileMode::ReadWrite:
 		access = GENERIC_READ | GENERIC_WRITE;

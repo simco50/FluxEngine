@@ -2,8 +2,8 @@
 #include "Config.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-const std::string Config::ENGINE_INI = "./Config/Engine.ini";
-const std::string Config::GAME_INI = "./Config/Game.ini";
+const std::string Config::ENGINE_INI = "Config/Engine.ini";
+const std::string Config::GAME_INI = "Config/Game.ini";
 std::map<Config::Type, ConfigFile> Config::m_Configs;
 
 
@@ -136,19 +136,21 @@ bool Config::PopulateConfigValues(const Type t)
 
 bool Config::FlushConfigValues(const Type t)
 {
-	ofstream str;
+	unique_ptr<PhysicalFile> pFile;
 	switch (t)
 	{
 	case Type::EngineIni:
-		str.open(ENGINE_INI);
+		pFile = make_unique<PhysicalFile>(ENGINE_INI);
 		break;
 	case Type::GameIni:
-		str.open(GAME_INI);
+		pFile = make_unique<PhysicalFile>(GAME_INI);
 		break;
 	case Type::MAX_TYPES:
 	default:
 		return false;
 	}
+	if (!pFile->Open(FileMode::Write))
+		return false;
 
 	auto valueMap = m_Configs.find(t);
 	if (valueMap == m_Configs.end())
@@ -156,14 +158,13 @@ bool Config::FlushConfigValues(const Type t)
 
 	for (const auto& section : valueMap->second.Sections)
 	{
-		str << "[" << section.second.Name << "]" << endl;
+		*pFile << "[" << section.second.Name << "]" << IFile::endl;
 		for (const auto& value : section.second.Values)
 		{
-			str << value.first << "=" << value.second.Value << endl;
+			*pFile << value.first << "=" << value.second.Value << IFile::endl;
 		}
-		str << endl;
+		*pFile << IFile::endl;
 	}
 
-	str.close();
-	return true;
+	return pFile->Close();
 }

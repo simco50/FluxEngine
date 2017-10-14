@@ -41,6 +41,9 @@ bool Graphics::SetMode(const int width,
 	m_RefreshRate = refreshRate;
 	m_Multisample = multiSample;
 
+	m_WindowWidth = width;
+	m_WindowHeight = height;
+
 	if (!RegisterWindowClass())
 		return false;
 	if (!MakeWindow(width, height))
@@ -475,9 +478,6 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 
 	//Create the swap chain
 	HR(m_pFactory->CreateSwapChain(m_pDevice.Get(), &swapDesc, m_pSwapChain.GetAddressOf()));
-
-	m_WindowWidth = windowWidth;
-	m_WindowHeight = windowHeight;
 
 	return true;
 }
