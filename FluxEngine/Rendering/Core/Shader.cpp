@@ -21,12 +21,14 @@ Shader::~Shader()
 
 bool Shader::Load(const string& filePath)
 {
+	AUTOPROFILE(Shader_Load);
+
 	unsigned int slashIdx = (unsigned int)filePath.rfind('/') + 1;
 	m_FileDir = filePath.substr(0, slashIdx);
 	m_ShaderName = filePath.substr(slashIdx, filePath.rfind('.') - slashIdx);
 
 	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
-	if (!pPtr->Open(FileMode::Read))
+	if (!pPtr->Open(FileMode::Read, ContentType::Text))
 	{
 		FLUX_LOG(WARNING, "Failed to load file: '%s'", filePath.c_str());
 		return false;
@@ -37,11 +39,8 @@ bool Shader::Load(const string& filePath)
 		return false;
 
 	std::string code = codeStream.str();
-	m_VertexShaderSource = code;
-	m_PixelShaderSource = code;
-
-	CommentFunction(m_VertexShaderSource, "void PS(");
-	CommentFunction(m_PixelShaderSource, "void VS(");
+	StripFunction(code, m_VertexShaderSource, "void PS(");
+	StripFunction(code, m_PixelShaderSource, "void VS(");
 
 	return true;
 }
@@ -119,7 +118,7 @@ bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 			includeFilePath.pop_back();
 
 			unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
-			newFile->Open(FileMode::Read);
+			newFile->Open(FileMode::Read, ContentType::Text);
 
 			if(!ProcessSource(std::move(newFile), output))
 				return false;
@@ -134,16 +133,15 @@ bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 	return true;
 }
 
-void Shader::CommentFunction(string& input, const string& function)
+void Shader::StripFunction(const string& input, string& out, const string& function)
 {
-	size_t startPos = input.find(function);
-	if (startPos == string::npos)
-		return;
-	input.insert(startPos, "/*");
+	size_t startCommentPos = input.find(function);
+	if (startCommentPos == string::npos)
+		out = input;
 
+	size_t endCommentPos = 0;
 	int braceCount = 0;
-
-	for (size_t i = startPos + function.size(); i < input.size(); ++i)
+	for (size_t i = startCommentPos + function.size(); i < input.size(); ++i)
 	{
 		if (input[i] == '{')
 		{
@@ -155,10 +153,17 @@ void Shader::CommentFunction(string& input, const string& function)
 			--braceCount;
 			if (braceCount == 0)
 			{
-				input.insert(i + 1, "*/");
+				endCommentPos = i + 1;
 				break;
 			}
 			continue;
 		}
 	}
+	if (braceCount != 0)
+		out = input;
+
+	size_t newSize = input.size() - (endCommentPos - startCommentPos);
+	out.resize(newSize);
+	memcpy(&out[0], input.data(), startCommentPos);
+	memcpy(&out[0] + startCommentPos, input.data() + endCommentPos, input.size() - endCommentPos);
 }

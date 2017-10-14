@@ -40,7 +40,7 @@ ParticleSystem* ParticleSystemLoader::LoadContent(const string& assetFile)
 	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
 	if (pFile == nullptr)
 		return nullptr;
-	if (!pFile->Open(FileMode::Read))
+	if (!pFile->Open(FileMode::Read, ContentType::Text))
 		return nullptr;
 
 	std::string buffer;

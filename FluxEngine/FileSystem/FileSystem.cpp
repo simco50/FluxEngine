@@ -42,7 +42,12 @@ std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
 		std::string searchPath = path.substr(0, pMp.first.size());
 		if (pMp.first == searchPath)
 		{
-			return pMp.second->GetFile(path.substr(pMp.first.size() + 1));
+			unique_ptr<IFile> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
+
+			//If we didn't find the file, continue looking in the other mount points
+			if(pFile == nullptr)
+				continue;
+			return std::move(pFile);
 		}
 	}
 	return nullptr;

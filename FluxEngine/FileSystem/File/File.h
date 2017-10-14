@@ -9,6 +9,12 @@ enum class FileMode
 	ReadWrite,
 };
 
+enum class ContentType
+{
+	Text,
+	Binary,
+};
+
 class IFile
 {
 public:
@@ -17,7 +23,7 @@ public:
 	{}
 	virtual ~IFile() {}
 
-	virtual bool Open(const FileMode mode) = 0;
+	virtual bool Open(const FileMode mode, const ContentType writeMode) = 0;
 	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) = 0;
 	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) = 0;
 	virtual unsigned int Read(const unsigned int size, char* pBuffer) = 0;
@@ -39,7 +45,8 @@ public:
 	IFile& operator<<(const float value);
 	IFile& operator<<(const double value);
 	IFile& operator<<(const bool value);
-	
+	IFile& operator<<(IFile& (*pf)(IFile&));
+
 	IFile& operator>>(std::string& text);
 	IFile& operator>>(char*& pData);
 	IFile& operator>>(char& value);
@@ -50,8 +57,11 @@ public:
 	IFile& operator>>(double& value);
 	IFile& operator>>(bool& value);
 
+	static IFile& endl(IFile& other);
+
 	std::string ReadSizedString();
 
 protected:
 	std::string m_FileName;
+	ContentType m_WriteMode;
 };

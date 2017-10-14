@@ -13,7 +13,7 @@ public:
 	{}
 	virtual ~PhysicalFile();
 
-	virtual bool Open(const FileMode mode) override;
+	virtual bool Open(const FileMode mode, const ContentType writeMode = ContentType::Text) override;
 	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) override;
 	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) override;
 	virtual unsigned int Read(const unsigned int size, char* pBuffer) override;

@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include <time.h>
 #include <iomanip>
+#include "FileSystem\File\PhysicalFile.h"
 
 using namespace std;
 
-ofstream* Console::m_pFileLog = nullptr;
+IFile* Console::m_pFileLog = nullptr;
 HANDLE Console::m_ConsoleHandle;
 char* Console::m_ConvertBuffer = new char[m_ConvertBufferSize];
 
@@ -24,18 +25,17 @@ void Console::Initialize()
 	stringstream filePathStream;
 	filePathStream << ".\\Logs\\" << 1900 + localTime.tm_year << "-" << localTime.tm_mon + 1 << "-" << localTime.tm_mday << "_" << localTime.tm_hour << "-" << localTime.tm_min << "-" << localTime.tm_sec << ".log";
 
-	m_pFileLog = new ofstream();
-	CreateDirectory("Logs", NULL);
-	m_pFileLog->open(filePathStream.str(), ios::app);
-	if (m_pFileLog->fail())
+	m_pFileLog = new PhysicalFile(filePathStream.str());
+
+	if (!m_pFileLog->Open(FileMode::Write, ContentType::Text))
 	{
 		FLUX_LOG(ERROR, "Failed to open console log");
 	}
 
-	*m_pFileLog << endl << "-------------FLUX ENGINE LOG START--------------" << endl << endl;
+	*m_pFileLog << IFile::endl << "-------------FLUX ENGINE LOG START--------------" << IFile::endl << IFile::endl;
 
-	*m_pFileLog << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << endl;
-	*m_pFileLog << "Time: " << GetTime() << endl;
+	*m_pFileLog << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << IFile::endl;
+	*m_pFileLog << "Time: " << GetTime() << IFile::endl;
 
 #ifdef _DEBUG
 	InitializeConsoleWindow();
@@ -44,7 +44,7 @@ void Console::Initialize()
 
 void Console::Release()
 {
-	*m_pFileLog  << endl << "--------------FLUX ENGINE LOG END---------------" << endl;
+	*m_pFileLog  << IFile::endl << "--------------FLUX ENGINE LOG END---------------" << IFile::endl;
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
 }
@@ -134,8 +134,7 @@ void Console::Log(const std::string &message, LogType type)
 		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	}
 
-	(*m_pFileLog) << stream.str() << endl;
-	m_pFileLog->flush();
+	(*m_pFileLog) << stream.str() << IFile::endl;
 
 	if (type == LogType::ERROR)
 	{

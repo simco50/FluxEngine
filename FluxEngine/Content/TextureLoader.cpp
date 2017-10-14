@@ -15,7 +15,7 @@ TextureLoader::~TextureLoader()
 Texture* TextureLoader::LoadContent(const string& assetFile)
 {
 	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
-	if (!pFile->Open(FileMode::Read))
+	if (!pFile->Open(FileMode::Read, ContentType::Binary))
 		return nullptr;
 	vector<char> buffer;
 	pFile->ReadAllBytes(buffer);

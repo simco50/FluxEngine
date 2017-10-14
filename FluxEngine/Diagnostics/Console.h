@@ -7,6 +7,8 @@ enum class LogType
 	ERROR,
 };
 
+class IFile;
+
 class Console
 {
 public:
@@ -32,6 +34,6 @@ private:
 	static char* m_ConvertBuffer;
 	static const size_t m_ConvertBufferSize = 1024;
 
-	static ofstream* m_pFileLog;
+	static IFile* m_pFileLog;
 	static HANDLE m_ConsoleHandle;
 };

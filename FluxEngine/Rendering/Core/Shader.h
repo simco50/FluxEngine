@@ -28,7 +28,7 @@ private:
 	string m_ShaderName;
 
 	bool ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output);
-	void CommentFunction(string& input, const string& function);
+	void StripFunction(const string& input, string& out, const string& function);
 
 	string m_VertexShaderSource;
 	string m_PixelShaderSource;

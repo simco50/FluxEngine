@@ -65,24 +65,48 @@ IFile& IFile::operator<<(const unsigned char value)
 
 IFile& IFile::operator<<(const int value)
 {
+	if (m_WriteMode == ContentType::Text)
+	{
+		std::string str = to_string(value);
+		Write(str.data(), (unsigned int)str.size());
+		return *this;
+	}
 	Write((const char*)&value, sizeof(const int));
 	return *this;
 }
 
 IFile& IFile::operator<<(const unsigned int value)
 {
+	if (m_WriteMode == ContentType::Text)
+	{
+		std::string str = to_string(value);
+		Write(str.data(), (unsigned int)str.size());
+		return *this;
+	}
 	Write((const char*)&value, sizeof(const unsigned int));
 	return *this;
 }
 
 IFile& IFile::operator<<(const float value)
 {
+	if (m_WriteMode == ContentType::Text)
+	{
+		std::string str = to_string(value);
+		Write(str.data(), (unsigned int)str.size());
+		return *this;
+	}
 	Write((const char*)&value, sizeof(const float));
 	return *this;
 }
 
 IFile& IFile::operator<<(const double value)
 {
+	if (m_WriteMode == ContentType::Text)
+	{
+		std::string str = to_string(value);
+		Write(str.data(), (unsigned int)str.size());
+		return *this;
+	}
 	Write((const char*)&value, sizeof(const double));
 	return *this;
 }
@@ -90,6 +114,12 @@ IFile& IFile::operator<<(const double value)
 IFile& IFile::operator<<(const bool value)
 {
 	Write((const char*)&value, sizeof(const bool));
+	return *this;
+}
+
+IFile& IFile::operator<<(IFile& (*pf)(IFile&))
+{
+	pf(*this);
 	return *this;
 }
 
@@ -145,6 +175,13 @@ IFile& IFile::operator>>(bool& value)
 {
 	Read(sizeof(bool), (char*)&value);
 	return *this;
+}
+
+IFile& IFile::endl(IFile& other)
+{
+	other << "\r\n";
+	//other.Flush();
+	return other;
 }
 
 std::string IFile::ReadSizedString()

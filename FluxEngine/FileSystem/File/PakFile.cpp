@@ -3,8 +3,9 @@
 #include "FileSystem/MountPoint/PakMountPoint.h"
 #include "PhysicalFile.h"
 
-bool PakFile::Open(const FileMode mode)
+bool PakFile::Open(const FileMode mode, const ContentType writeMode)
 {
+	m_WriteMode = writeMode;
 	UNREFERENCED_PARAMETER(mode); 
 	return true;
 }
