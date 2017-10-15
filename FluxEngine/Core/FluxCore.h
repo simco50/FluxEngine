@@ -35,10 +35,11 @@ private:
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
 	VertexBuffer* m_pVertexBuffer = nullptr;
+	VertexBuffer* m_pInstanceBuffer = nullptr;
 	InputLayout* m_pInputLayout = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
-	unique_ptr<Graphics> m_pGraphics;
+	Graphics* m_pGraphics = nullptr;
 	unique_ptr<ImmediateUI> m_pImmediateUI;
 	unique_ptr<InputEngine> m_pInput;
 

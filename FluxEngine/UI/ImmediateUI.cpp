@@ -183,7 +183,7 @@ void ImmediateUI::Render()
 					(int)pcmd->ClipRect.w });
 				m_pGraphics->SetTexture(0, (Texture*)pcmd->TextureId);
 				m_pGraphics->PrepareDraw();
-				m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
+				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}

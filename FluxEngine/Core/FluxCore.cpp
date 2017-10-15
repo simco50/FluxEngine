@@ -31,6 +31,8 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pVertexBuffer);
 	SafeDelete(m_pInputLayout);
 	SafeDelete(m_pIndexBuffer);
+	SafeDelete(m_pInstanceBuffer);
+	SafeDelete(m_pGraphics);
 
 	ResourceManager::Release();
 	Console::Release();
@@ -56,7 +58,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 	Config::Initialize();
 
-	m_pGraphics = make_unique<Graphics>(hInstance);
+	m_pGraphics = new Graphics(hInstance);
 	if (!m_pGraphics->SetMode(
 		Config::GetInt("Width", "Window", 1240),
 		Config::GetInt("Height", "Window", 720),
@@ -70,9 +72,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 
 	m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
-	ResourceManager::Initialize(m_pGraphics.get());
-	m_pInput = make_unique<InputEngine>(m_pGraphics.get());
-	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics.get(), m_pInput.get());
+	ResourceManager::Initialize(m_pGraphics);
+	m_pInput = make_unique<InputEngine>(m_pGraphics);
+	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
 
 	GameTimer::Reset();
 
@@ -136,7 +138,7 @@ void FluxCore::GameLoop()
 #pragma endregion PER_VIEW
 
 #pragma region
-	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 5);
+	XMMATRIX world = XMMatrixIdentity();
 	XMMATRIX wvp = world * vp;
 	m_pVertexShader->SetParameter("cWorldVS", &world);
 	m_pVertexShader->SetParameter("cWorldViewProjVS", &wvp);
@@ -150,7 +152,7 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
-	m_pGraphics->SetVertexBuffer(m_pVertexBuffer);
+	m_pGraphics->SetVertexBuffers({ m_pVertexBuffer, m_pInstanceBuffer });
 	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::NONE);
@@ -161,9 +163,10 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
 	m_pGraphics->PrepareDraw();
-	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 0);
 
-	RenderUI();
+	m_pGraphics->DrawIndexedInstanced(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 3375);
+
+	//RenderUI();
 
 	m_pGraphics->EndFrame();
 }
@@ -197,10 +200,10 @@ struct Vertex
 void FluxCore::InitGame()
 {
 
-	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics.get());
+	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
 	m_pCamera->BaseInitialize(nullptr);
 
-	m_pShader =  new Shader(m_pGraphics.get());
+	m_pShader =  new Shader(m_pGraphics);
 	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
@@ -224,21 +227,42 @@ void FluxCore::InitGame()
 	}
 	m_IndexCount = (int)indexes.size();
 
-	m_pIndexBuffer = new IndexBuffer(m_pGraphics.get());
+	m_pIndexBuffer = new IndexBuffer(m_pGraphics);
 	m_pIndexBuffer->Create((int)indexes.size());
 	m_pIndexBuffer->SetData(indexes.data());
 
+	//Vertexbuffer
 	vector<VertexElement> elements;
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
 	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
 
-	m_pVertexBuffer = new VertexBuffer(m_pGraphics.get());
+	m_pVertexBuffer = new VertexBuffer(m_pGraphics);
 	m_pVertexBuffer->Create((int)vertices.size(), elements);
 	m_pVertexBuffer->SetData(vertices.data());
 
-	m_pInputLayout = new InputLayout(m_pGraphics.get());
-	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
+	elements.clear();
+	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::TEXCOORD, 1, true});
+
+	m_pInstanceBuffer = new VertexBuffer(m_pGraphics);
+	m_pInstanceBuffer->Create((int)vertices.size(), elements);
+	m_pInstanceBuffer->SetData(vertices.data());
+
+	vector<XMFLOAT3> instancePos;
+	for (int x = 0; x < 15; ++x)
+	{
+		for (int y = 0; y < 15; ++y)
+		{
+			for (int z = 0; z < 15; ++z)
+			{
+				instancePos.push_back(XMFLOAT3((-7.5f + x) * 2.5f, (-7.5f + y) * 2.5f, (2 + z) * 2.5f));
+			}
+		}
+	}
+	m_pInstanceBuffer->SetData(instancePos.data());
+	
+	m_pInputLayout = new InputLayout(m_pGraphics);
+	m_pInputLayout->Create({ m_pVertexBuffer, m_pInstanceBuffer }, m_pVertexShader);
 	
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 }

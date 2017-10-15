@@ -51,7 +51,8 @@ public:
 	void SetTexture(const unsigned int index, Texture* pTexture);
 
 	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
-	void Draw(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex);
+	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
+	void DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex = 0, const int instanceStart = 0);
 
 	void Clear(const unsigned int flags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue, const float depth = 1.0f, const unsigned char stencil = 0);
 

@@ -20,6 +20,9 @@ Graphics::Graphics(HINSTANCE hInstance) :
 
 Graphics::~Graphics()
 {
+	if(m_pSwapChain.IsValid())
+		m_pSwapChain->SetFullscreenState(FALSE, NULL);
+
 /*
 #ifdef _DEBUG
 	ComPtr<ID3D11Debug> pDebug;
@@ -243,10 +246,16 @@ void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int v
 	m_pDeviceContext->Draw(vertexCount, vertexStart);
 }
 
-void Graphics::Draw(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
+void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
 {
 	SetPrimitiveType(type);
 	m_pDeviceContext->DrawIndexed(indexCount, indexStart, minVertex);
+}
+
+void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex, const int instanceStart)
+{
+	SetPrimitiveType(type);
+	m_pDeviceContext->DrawIndexedInstanced(indexCount, instanceCount, indexStart, minVertex, instanceStart);
 }
 
 void Graphics::Clear(const unsigned int flags, const XMFLOAT4& color, const float depth, const unsigned char stencil)
@@ -386,13 +395,19 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	int displayWidth = GetSystemMetrics(SM_CXSCREEN);
 	int displayHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	DWORD windowStyle;
+	DWORD windowStyle = WS_VISIBLE;
 	switch (m_WindowType)
 	{
 	case WindowType::FULLSCREEN:
+		windowWidth = displayWidth;
+		windowHeight = displayHeight;
 		break;
 	case WindowType::WINDOWED:
-		windowStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME | WS_CAPTION;
+		windowStyle = 
+			WS_OVERLAPPED 
+			| WS_MINIMIZEBOX 
+			| WS_SYSMENU 
+			| WS_CAPTION;
 		break;
 	case WindowType::BORDERLESS:
 		windowWidth = displayWidth;
@@ -401,7 +416,7 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 		break;
 	}
 	if (m_Resizable)
-		windowStyle |= WS_MAXIMIZEBOX;
+		windowStyle |= WS_MAXIMIZEBOX | WS_THICKFRAME;
 
 	RECT windowRect = { 0, 0, windowWidth, windowHeight };
 	AdjustWindowRect(&windowRect, windowStyle, false);
@@ -534,6 +549,9 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 bool Graphics::UpdateSwapchain()
 {
 	AUTOPROFILE(UpdateSwapchain);
+
+	if (!m_pSwapChain.IsValid())
+		return false;
 
 	assert(m_pDevice.IsValid());
 	assert(m_pSwapChain.IsValid());
