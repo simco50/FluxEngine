@@ -40,10 +40,10 @@ int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
 
-#ifdef RELEASE
+#ifdef NDEBUG
 	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 	{
-		FLUX_LOG(WARNING, "Failed to mount './Resources.paK');
+		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
 	}
 #else
 	FLUX_LOG(WARNING, "[DEBUG] Skipped mounting './Resources.paK'");
@@ -106,15 +106,43 @@ void FluxCore::GameLoop()
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, (XMFLOAT4)DirectX::Colors::CornflowerBlue, 1.0f, 1);
 
-	XMFLOAT4X4 viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 5);
-	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
-	XMMATRIX wvp = world * vp;
+#pragma region
+	float dt = GameTimer::DeltaTime();
+	float gt = GameTimer::GameTime();
+	m_pVertexShader->SetParameter("cDeltaTimeVS", &dt);
+	m_pVertexShader->SetParameter("cElapsedTimeVS", &gt);
 
+	m_pPixelShader->SetParameter("cDeltaTimePS", &gt);
+	m_pPixelShader->SetParameter("cLightDirectionPS", &m_LightDirection);
+#pragma endregion PER_FRAME
+
+#pragma region
+	XMFLOAT4X4 viewProj = m_pCamera->GetCamera()->GetViewProjection();
+	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
+	/*m_pVertexShader->SetParameter("cViewProjVS", &vp);
+	XMFLOAT4X4 view = m_pCamera->GetCamera()->GetView();
+	m_pVertexShader->SetParameter("cViewVS", &view);
+	XMFLOAT4X4 viewInv = m_pCamera->GetCamera()->GetViewInverse();
+	m_pVertexShader->SetParameter("cViewInverseVS", &viewInv);
+	float nearClip = m_pCamera->GetCamera()->GetNearPlane();
+	m_pVertexShader->SetParameter("cNearClipVS", &nearClip);
+	float farClip = m_pCamera->GetCamera()->GetFarPlane();
+	m_pVertexShader->SetParameter("cFarClipVS", &farClip);
+
+	m_pPixelShader->SetParameter("cViewProjPS", &vp);
+	m_pPixelShader->SetParameter("cViewPS", &view);
+	m_pPixelShader->SetParameter("cViewInversePS", &viewInv);*/
+#pragma endregion PER_VIEW
+
+#pragma region
+	XMMATRIX world = XMMatrixRotationY(GameTimer::GameTime()) * XMMatrixTranslation(0, 0, 5);
+	XMMATRIX wvp = world * vp;
 	m_pVertexShader->SetParameter("cWorldVS", &world);
 	m_pVertexShader->SetParameter("cWorldViewProjVS", &wvp);
+
 	m_pPixelShader->SetParameter("cColorPS", &m_Color);
-	m_pPixelShader->SetParameter("cLightDirectionPS", &m_LightDirection);
+	//m_pPixelShader->SetParameter("cWorldPS", &world);
+#pragma endregion PER_OBJECT
 
 	Texture* pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
 	m_pGraphics->SetTexture(0, pTexture);
@@ -134,16 +162,16 @@ void FluxCore::GameLoop()
 	m_pGraphics->PrepareDraw();
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 0);
 
-	m_pImmediateUI->NewFrame();
-	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	//m_pImmediateUI->NewFrame();
+	/*ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 	ImGui::End();
 
 	ImGui::ColorPicker4("Color Picker", &m_Color.x);
-	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
+	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);*/
 
-	m_pImmediateUI->Render();
+	//m_pImmediateUI->Render();
 
 	m_pGraphics->EndFrame();
 }
@@ -201,5 +229,5 @@ void FluxCore::InitGame()
 	m_pInputLayout = new InputLayout(m_pGraphics.get());
 	m_pInputLayout->Create({ m_pVertexBuffer }, m_pVertexShader);
 	
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1));
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 }

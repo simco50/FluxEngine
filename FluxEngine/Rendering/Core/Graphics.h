@@ -11,7 +11,6 @@ class BlendState;
 class RasterizerState;
 class DepthStencilState;
 class ConstantBuffer;
-enum class ShaderType : unsigned char;
 
 class Graphics
 {
@@ -46,7 +45,7 @@ public:
 
 	void SetInputLayout(InputLayout* pInputLayout);
 
-	void SetViewport(const FloatRect& rect);
+	void SetViewport(const FloatRect& rect, bool relative = false);
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
 
 	void SetTexture(const unsigned int index, Texture* pTexture);
@@ -78,7 +77,6 @@ public:
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 private:
-	static const int MAX_CONST_BUFFERS = 7;
 	static const int NUM_SHADER_TYPES = 2;
 
 	void SetPrimitiveType(const PrimitiveType type);
@@ -122,7 +120,7 @@ private:
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
-	void* m_CurrentConstBuffers[NUM_SHADER_TYPES][MAX_CONST_BUFFERS];
+	void* m_CurrentConstBuffers[NUM_SHADER_TYPES][(unsigned int)ShaderParameterType::MAX];
 
 	//Clip rect
 	IntRect m_CurrentScissorRect;

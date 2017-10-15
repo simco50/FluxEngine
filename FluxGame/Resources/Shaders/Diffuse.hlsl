@@ -24,7 +24,7 @@ struct PS_INPUT
 
 void VS(VS_INPUT input, out PS_INPUT output)
 {
-	output.position = mul(cWorldViewProjVS, float4(input.position, 1.0f));
+	output.position = mul(cWorldViewProjVS, float4(input.position + sin(cElapsedTimeVS) * input.normal * 0.1f, 1.0f));
 	output.normal = normalize(mul((float3x3)cWorldVS, input.normal));
 	output.texCoord = input.texCoord;
 }

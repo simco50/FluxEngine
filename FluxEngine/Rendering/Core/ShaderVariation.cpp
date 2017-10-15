@@ -145,6 +145,8 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 
 void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
 {
+	m_ConstantBuffers.resize((unsigned int)ShaderParameterType::MAX);
+
 	ID3D11ShaderReflection* reflection = 0;
 	D3D11_SHADER_DESC shaderDesc;
 
@@ -170,7 +172,13 @@ void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSi
 		unsigned cbRegister = cbRegisterMap[string(bufferDesc.Name)];
 
 		if (cbRegister >= m_ConstantBuffers.size())
-			m_ConstantBuffers.resize(cbRegister + 1);
+		{
+			FLUX_LOG(ERROR, "[ShaderVariation::ShaderReflection] > The buffer '%s' with register index '%i' exceeds the maximum amount (%i) of constant buffers. See 'ShaderParameterType::MAX'", 
+				bufferDesc.Name,
+				cbRegister, 
+				ShaderParameterType::MAX);
+			return;
+		}
 
 		m_ConstantBuffers[cbRegister] = pGraphics->GetOrCreateConstantBuffer(bufferDesc.Size, m_ShaderType, cbRegister);
 

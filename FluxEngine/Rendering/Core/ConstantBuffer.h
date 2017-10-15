@@ -6,6 +6,8 @@ class Graphics;
 	Register 1 is reserved for per-view data
 	Register 2 is reserved for per-object data
 	Registers 3-8 is free to use
+
+	See 'Rendering/Core/GraphicsDefines.h'
 */
 
 class ConstantBuffer

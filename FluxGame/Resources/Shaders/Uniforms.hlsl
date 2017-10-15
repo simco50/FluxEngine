@@ -11,7 +11,6 @@ cbuffer cPerViewVS : register(b1)
 	float4x4 cViewVS;
 	float4x4 cViewInverseVS;
 	float4x4 cViewProjVS;
-	float4x4 cWorldViewProjVS;
 	float4 cFarClip;
 	float4 cNearClip;
 }
@@ -19,6 +18,7 @@ cbuffer cPerViewVS : register(b1)
 cbuffer cPerObjectVS : register(b2)
 {
 	float4x4 cWorldVS;
+	float4x4 cWorldViewProjVS;
 }
 
 #endif
@@ -27,7 +27,7 @@ cbuffer cPerObjectVS : register(b2)
 
 cbuffer cPerFramePS : register(b0)
 {
-	float cDeltaTimeVS;
+	float cDeltaTimePS;
 	float4 cLightDirectionPS;
 }
 
@@ -40,7 +40,7 @@ cbuffer cPerViewPS : register(b1)
 
 cbuffer cPerObject : register(b2)
 {
-	float4x4 cWorldxPS;
+	float4x4 cWorldPS;
 }
 
 #endif

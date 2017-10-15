@@ -27,6 +27,9 @@ public:
 	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
 	void SetOrthographicSize(float size) { m_Size = size; }
 
+	float GetNearPlane() const { return m_NearPlane; }
+	float GetFarPlane() const { return m_FarPlane; }
+
 protected:
 	void Initialize();
 	void Update();

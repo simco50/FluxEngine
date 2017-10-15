@@ -1,3 +1,5 @@
+#include "Uniforms.hlsl"
+#include "Samplers.hlsl"
 
 struct PS_OUTPUT
 {
@@ -18,5 +20,5 @@ void VS(uint vertexId : SV_VertexID, out PS_OUTPUT output)
 
 void PS(PS_OUTPUT input, out float4 output : SV_TARGET)
 {
-	output = float4(input.texCoord.x,input.texCoord.y,0,1);
+	output = float4(input.texCoord.x, input.texCoord.y, 0, 1);
 }

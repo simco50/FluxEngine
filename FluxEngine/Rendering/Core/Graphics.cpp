@@ -15,7 +15,7 @@
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
 {
-	ZeroMemory(m_CurrentConstBuffers, sizeof(char*) * MAX_CONST_BUFFERS * NUM_SHADER_TYPES);
+	ZeroMemory(m_CurrentConstBuffers, sizeof(char*) * (unsigned int)ShaderParameterType::MAX * NUM_SHADER_TYPES);
 }
 
 Graphics::~Graphics()
@@ -149,7 +149,7 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 			}
 		}
 		if (buffersChanged)
-			m_pDeviceContext->VSSetConstantBuffers(0, MAX_CONST_BUFFERS, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::VertexShader]);
+			m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::VertexShader]);
 	}
 	if (pPixelShader)
 	{
@@ -164,7 +164,7 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 			}
 		}
 		if (buffersChanged)
-			m_pDeviceContext->PSSetConstantBuffers(0, MAX_CONST_BUFFERS, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::PixelShader]);
+			m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::PixelShader]);
 	}
 }
 
@@ -177,17 +177,26 @@ void Graphics::SetInputLayout(InputLayout* pInputLayout)
 	}
 }
 
-void Graphics::SetViewport(const FloatRect& rect)
+void Graphics::SetViewport(const FloatRect& rect, bool relative)
 {
+	
 	D3D11_VIEWPORT viewport;
-	viewport.Height = rect.GetHeight() * m_WindowHeight;
-	viewport.Width = rect.GetWidth() * m_WindowWidth;
-	viewport.TopLeftX = rect.Left * m_WindowWidth;
-	viewport.TopLeftY = rect.Top * m_WindowHeight;
+	viewport.Height = rect.GetHeight();
+	viewport.Width = rect.GetWidth();
+	viewport.TopLeftX = rect.Left;
+	viewport.TopLeftY = rect.Top;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
-	m_CurrentViewport = rect;
+	if (relative)
+	{
+		viewport.Height *= m_WindowHeight;
+		viewport.Width *= m_WindowWidth;
+		viewport.TopLeftX *= m_WindowWidth;
+		viewport.TopLeftY *= m_WindowHeight;
+	}
+
+	m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
 
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 }

@@ -1,15 +1,10 @@
 #pragma once
 
+enum class ShaderType : unsigned char;
+
 class Graphics;
 class ShaderVariation;
 class IFile;
-
-enum class ShaderType : unsigned char
-{
-	VertexShader	= 0,
-	PixelShader		= 1 << 0,
-	//#todo Geometry shader
-};
 
 class Shader
 {

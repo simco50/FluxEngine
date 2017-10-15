@@ -1,5 +1,12 @@
 #pragma once
 
+enum class ShaderType : unsigned char
+{
+	VertexShader = 0,
+	PixelShader = 1 << 0,
+	//#todo Geometry shader
+};
+
 //The primitive topology for rendering
 enum class PrimitiveType : unsigned char
 {
@@ -50,7 +57,7 @@ enum class BlendMode : unsigned char
 };
 
 //Color write mode of the blend state
-enum class ColorWrite : unsigned char
+enum class ColorWrite : unsigned char //MAX 5!
 {
 	NONE = 0,
 	RED = 1 << 0,
@@ -81,4 +88,14 @@ enum class StencilOperation : unsigned char
 	REF,
 	INCR,
 	DECR
+};
+
+//The convention for the shader constant buffer register
+enum class ShaderParameterType
+{
+	PerFrame = 0,
+	PerView = 1,
+	PerObject = 2,
+	Custom = 3,
+	MAX
 };
