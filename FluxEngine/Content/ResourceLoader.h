@@ -42,7 +42,7 @@ public:
 				return kvp.second;
 		}
 
-		//Does File Exists?
+		/*//Does File Exists?
 		struct _stat buff;
 		int result = _stat(assetFile.c_str(), &buff);
 		if(result != 0)
@@ -51,7 +51,7 @@ public:
 			ss << "ResourceManager> File not found!\nPath: ";
 			ss << assetFile;
 			FLUX_LOG(ERROR, ss.str());
-		}
+		}*/
 
 		AUTOPROFILE_DESC(LoadContent, assetFile);
 
