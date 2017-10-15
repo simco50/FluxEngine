@@ -131,7 +131,7 @@ private:
 	VertexBuffer* m_pCurrentVertexBuffer = nullptr;
 	PrimitiveType m_CurrentPrimitiveType = PrimitiveType::UNDEFINED;
 	InputLayout* m_pCurrentInputLayout = nullptr;
-	FloatRect m_CurrentViewport;
+	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 
 	ShaderVariation* m_pCurrentVertexShader = nullptr;
 	ShaderVariation* m_pCurrentPixelShader = nullptr;

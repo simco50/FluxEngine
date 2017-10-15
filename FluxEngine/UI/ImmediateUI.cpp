@@ -162,7 +162,6 @@ void ImmediateUI::Render()
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	
 	m_pVertexShader->SetParameter("cViewProjVS", &projectionMatrix);
 
 	int vertexOffset = 0;

@@ -179,7 +179,6 @@ void Graphics::SetInputLayout(InputLayout* pInputLayout)
 
 void Graphics::SetViewport(const FloatRect& rect, bool relative)
 {
-	
 	D3D11_VIEWPORT viewport;
 	viewport.Height = rect.GetHeight();
 	viewport.Width = rect.GetWidth();
@@ -190,13 +189,17 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 
 	if (relative)
 	{
+		m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
+	
 		viewport.Height *= m_WindowHeight;
 		viewport.Width *= m_WindowWidth;
 		viewport.TopLeftX *= m_WindowWidth;
 		viewport.TopLeftY *= m_WindowHeight;
 	}
-
-	m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
+	else
+	{
+		m_CurrentViewport = { viewport.TopLeftX / m_WindowWidth, viewport.TopLeftY / m_WindowHeight, viewport.Width / m_WindowWidth, viewport.Height / m_WindowHeight };
+	}
 
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 }
@@ -310,7 +313,6 @@ void Graphics::PrepareDraw()
 
 void Graphics::BeginFrame()
 {
-	//
 }
 
 void Graphics::EndFrame()
@@ -555,7 +557,7 @@ bool Graphics::UpdateSwapchain()
 	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
-	SetViewport(m_CurrentViewport);
+	SetViewport(m_CurrentViewport, true);
 
 	return true;
 }
@@ -640,7 +642,7 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// We pause the game when the window is deactivated and unpause it 
 		// when it becomes active.  
 	case WM_ACTIVATE:
-		OnPause(LOWORD(wParam) == WA_INACTIVE);
+		OnPause(LOWORD(wParam) == WA_INACTIVE || m_Minimized);
 		return 0;
 
 		// WM_SIZE is sent when the user resizes the window.
@@ -653,32 +655,32 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (wParam == SIZE_MINIMIZED)
 			{
-				OnPause(true);
 				m_Minimized = true;
 				m_Maximized = false;
+				OnPause(true);
 			}
 			else if (wParam == SIZE_MAXIMIZED)
 			{
-				OnPause(false);
-				m_Minimized = false;
-				m_Maximized = true;
 				UpdateSwapchain();
+				m_Maximized = true;
+				m_Minimized = false;
+				OnPause(false);
 			}
 			else if (wParam == SIZE_RESTORED)
 			{
 				// Restoring from minimized state?
 				if (m_Minimized)
 				{
-					OnPause(false);
-					m_Minimized = false;
 					UpdateSwapchain();
+					m_Minimized = false;
+					OnPause(false);
 				}
 				// Restoring from maximized state?
 				else if (m_Maximized)
 				{
-					OnPause(false);
-					m_Maximized = false;
 					UpdateSwapchain();
+					m_Maximized = false;
+					OnPause(false);
 				}
 				else if (!m_Resizing) // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 				{
@@ -691,16 +693,16 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 	case WM_ENTERSIZEMOVE:
-		OnPause(true);
 		m_Resizing = true;
+		OnPause(true);
 		return 0;
 
 	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 	// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
-		OnPause(false);
-		m_Resizing = false;
 		UpdateSwapchain();
+		m_Resizing = false;
+		OnPause(false);
 		return 0;
 
 	case WM_CLOSE:

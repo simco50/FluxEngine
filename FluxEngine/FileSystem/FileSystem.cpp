@@ -55,9 +55,14 @@ std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
 
 std::string FileSystem::FixPath(const std::string& path)
 {
-	std::string output = path;
+	std::string output;
+	if (path.substr(0, 2) == "./")
+		output = std::string(path.begin() + 2, path.end());
+	else
+		output = path;
 	replace(output.begin(), output.end(), '/', '\\');
 	ToLower(output);
+		
 	return output;
 }
 

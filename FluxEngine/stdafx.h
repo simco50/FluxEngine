@@ -24,7 +24,6 @@ using namespace std;
 
 #pragma endregion STL
 
-
 #ifdef PHYSX
 
 #include <PxPhysicsAPI.h>

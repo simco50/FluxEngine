@@ -17,6 +17,7 @@
 #include "Rendering/Core/DepthStencilState.h"
 #include "Config.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
+#include <iomanip>
 
 using namespace std;
 
@@ -162,18 +163,28 @@ void FluxCore::GameLoop()
 	m_pGraphics->PrepareDraw();
 	m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 0);
 
-	//m_pImmediateUI->NewFrame();
-	/*ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	RenderUI();
+
+	m_pGraphics->EndFrame();
+}
+
+void FluxCore::RenderUI()
+{
+	m_pImmediateUI->NewFrame();
+
+	stringstream timeStr;
+	timeStr << setw(2) << setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << setw(2) << (int)GameTimer::GameTime() % 60;
+	string time = timeStr.str();
+	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 	ImGui::End();
 
 	ImGui::ColorPicker4("Color Picker", &m_Color.x);
-	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);*/
+	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
 
-	//m_pImmediateUI->Render();
-
-	m_pGraphics->EndFrame();
+	m_pImmediateUI->Render();
 }
 
 struct Vertex

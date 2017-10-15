@@ -22,6 +22,9 @@ public:
 
 	int Run(HINSTANCE hInstance);
 	void GameLoop();
+
+	void RenderUI();
+
 	void InitGame();
 
 private:
