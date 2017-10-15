@@ -7,6 +7,13 @@ platform:
 - x64
 - Win32
 shallow_clone: true
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+environment:
+  appveyor_rdp_password:
+    secure: isPeZD3/K+h+07yX2nK8kQ==
 before_build:
 - ps: .\scripts\MakeVS2017.bat
 build:
