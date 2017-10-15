@@ -1,1 +1,1 @@
-dir ..\FluxGame\Resources /s /b /a-d > "ResponseFile.txt"
+dir FluxGame\Resources /s /b /a-d > "FluxPak\ResponseFile.txt"
