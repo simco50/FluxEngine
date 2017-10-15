@@ -14,3 +14,5 @@ Build/
 *.filters
 imgui.ini
 Logs/
+*.pak
+FluxPak/*.txt
