@@ -67,6 +67,8 @@ public:
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
 
+	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
+
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
 	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
 	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }

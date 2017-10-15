@@ -111,8 +111,8 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
 	vector<unsigned int> offsets(pBuffers.size());
 	for (const VertexBuffer* pVb : pBuffers)
 	{
-		buffers.push_back((ID3D11Buffer*)pVb->GetBuffer());
-		strides.push_back(pVb->GetStride());
+		buffers.push_back(pVb ? (ID3D11Buffer*)pVb->GetBuffer() : nullptr);
+		strides.push_back(pVb ? pVb->GetStride() : 0);
 	}
 
 	m_pDeviceContext->IASetVertexBuffers(0, (UINT)pBuffers.size(), buffers.data(), strides.data(), offsets.data());
@@ -122,7 +122,10 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
 	if (m_pCurrentIndexBuffer != pIndexBuffer)
 	{
-		m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		if(pIndexBuffer)
+			m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		else
+			m_pDeviceContext->IASetIndexBuffer(nullptr, (DXGI_FORMAT)0, 0);
 		m_pCurrentIndexBuffer = pIndexBuffer;
 	}
 }
@@ -176,7 +179,7 @@ void Graphics::SetInputLayout(InputLayout* pInputLayout)
 	if (m_pCurrentInputLayout != pInputLayout)
 	{
 		m_pCurrentInputLayout = pInputLayout;
-		m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)m_pCurrentInputLayout->GetInputLayout());
+		m_pDeviceContext->IASetInputLayout(pInputLayout ? (ID3D11InputLayout*)m_pCurrentInputLayout->GetInputLayout() : nullptr);
 	}
 }
 
@@ -225,13 +228,15 @@ void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 		m_CurrentSamplerStates.resize(index + 1);
 		m_CurrentShaderResourceViews.resize(index + 1);
 	}
-	if (pTexture->GetResourceView() == m_CurrentShaderResourceViews[index] && pTexture->GetSamplerState() == m_CurrentSamplerStates[index])
+
+	if (pTexture && (pTexture->GetResourceView() == m_CurrentShaderResourceViews[index] && pTexture->GetSamplerState() == m_CurrentSamplerStates[index]))
 		return;
 
-	pTexture->UpdateParameters();
+	if(pTexture)
+		pTexture->UpdateParameters();
 
-	m_CurrentShaderResourceViews[index] = (ID3D11ShaderResourceView*)pTexture->GetResourceView();
-	m_CurrentSamplerStates[index] = (ID3D11SamplerState*)pTexture->GetSamplerState();
+	m_CurrentShaderResourceViews[index] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
+	m_CurrentSamplerStates[index] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
 	m_TexturesDirty = true;
 	if (m_FirstDirtyTexture > index)

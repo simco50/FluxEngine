@@ -71,6 +71,11 @@ bool Texture::SetData(void* pData)
 
 void Texture::UpdateParameters()
 {
+	if ((m_pSamplerState && !m_ParametersDirty) || m_pResource == nullptr)
+		return;
+
+	AUTOPROFILE(CreateTextureSampler);
+
 	SafeRelease(m_pSamplerState);
 
 	D3D11_SAMPLER_DESC desc = {};

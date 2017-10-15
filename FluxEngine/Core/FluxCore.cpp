@@ -18,6 +18,7 @@
 #include "Config.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include <iomanip>
+#include "Rendering/Core/RenderTarget.h"
 
 using namespace std;
 
@@ -155,7 +156,7 @@ void FluxCore::GameLoop()
 	m_pGraphics->SetVertexBuffers({ m_pVertexBuffer, m_pInstanceBuffer });
 	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetScissorRect(false);
-	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::NONE);
+	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, true);
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::LESS);
@@ -166,7 +167,7 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->DrawIndexedInstanced(PrimitiveType::TRIANGLELIST, m_IndexCount, 0, 3375);
 
-	//RenderUI();
+	RenderUI();
 
 	m_pGraphics->EndFrame();
 }

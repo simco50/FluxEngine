@@ -60,6 +60,9 @@ public:
 	ID3D11Texture2D* GetColorBuffer() const;
 	ID3D11Texture2D* GetDepthStencilBuffer() const;
 
+	Texture* GetDepthTexture() const { return m_pDepthTexture.get(); }
+	Texture* GetRenderTexture() const { return m_pRenderTexture.get(); }
+
 private:
 	Graphics* m_pGraphics;
 

@@ -97,6 +97,7 @@ private:
 	void* m_pReadOnlyView = nullptr;
 
 	void* m_pSamplerState = nullptr;
+	bool m_ParametersDirty = false;
 
 	unsigned int m_TextureFormat = 0;
 	unsigned int m_MultiSample = 1;
