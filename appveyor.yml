@@ -6,15 +6,9 @@ configuration:
 platform:
 - x64
 - Win32
-clone_folder: C:\FluxEngine
 shallow_clone: true
 before_build:
 - ps: .\scripts\MakeVS2017.bat
-after_build:
-- cmd: >-
-    FluxPak\CreateResponseFile.bat
-
-    FluxPak\CreatePakFile.bat C:/FluxEngine/FluxGame/Resources
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
@@ -22,7 +16,5 @@ build:
 artifacts:
 - path: '\FluxGame\Resources'
   name: Resources
-- path: '\FluxGame\Resources.pak'
-  name: PakFile
 - path: '\Build\FluxGame_$(platform)_$(configuration)'
   name: Build_$(platform)_$(configuration)
