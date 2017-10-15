@@ -11,9 +11,9 @@ before_build:
 - ps: .\scripts\MakeVS2017.bat
 after_build:
 - cmd: >-
-  .\FluxPak\CreateResponseFile.bat
+    .\FluxPak\CreateResponseFile.bat
 
-  .\FluxPak\CreatePakFile.bat %APPVEYOR_BUILD_FOLDER%/FluxGame/Resources
+    .\FluxPak\CreatePakFile.bat %APPVEYOR_BUILD_FOLDER%/FluxGame/Resources
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
