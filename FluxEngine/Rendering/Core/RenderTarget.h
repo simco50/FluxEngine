@@ -51,15 +51,6 @@ public:
 
 	bool Create(const RENDER_TARGET_DESC& RenderTargetDesc);
 
-	ID3D11RenderTargetView* GetRenderTargetView() const;
-	ID3D11DepthStencilView* GetDepthStencilView() const;
-
-	ID3D11ShaderResourceView* GetColorSRV() const;
-	ID3D11ShaderResourceView* GetDepthSRV() const;
-
-	ID3D11Texture2D* GetColorBuffer() const;
-	ID3D11Texture2D* GetDepthStencilBuffer() const;
-
 	Texture* GetDepthTexture() const { return m_pDepthTexture.get(); }
 	Texture* GetRenderTexture() const { return m_pRenderTexture.get(); }
 

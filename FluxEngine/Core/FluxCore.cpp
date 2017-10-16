@@ -8,7 +8,6 @@
 #include "Rendering/Core/InputLayout.h"
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
-#include "Context.h"
 #include "Rendering/MeshFilter.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
@@ -17,7 +16,6 @@
 #include "Rendering/Core/DepthStencilState.h"
 #include "Config.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
-#include <iomanip>
 #include "Rendering/Core/RenderTarget.h"
 
 using namespace std;

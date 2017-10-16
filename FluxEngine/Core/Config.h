@@ -58,6 +58,7 @@ public:
 	template<typename T>
 	static bool SetValue(const string& name, const string& section, const T& value, const Type type = Type::EngineIni);
 
+	//!Writes a specific (or all) config values to the proper file
 	static bool Flush(const Type t = Type::MAX_TYPES);
 private:
 

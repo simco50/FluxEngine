@@ -85,9 +85,9 @@ void Graphics::SetWindowPosition(const XMFLOAT2& position)
 
 void Graphics::SetRenderTarget(RenderTarget* pRenderTarget)
 {
-	ID3D11RenderTargetView* pRtv = pRenderTarget->GetRenderTargetView();
+	ID3D11RenderTargetView* pRtv = pRenderTarget ? (ID3D11RenderTargetView*)pRenderTarget->GetRenderTexture()->GetRenderTargetView() : nullptr;
 	if (pRenderTarget != nullptr)
-		m_pDeviceContext->OMSetRenderTargets(1, &pRtv, pRenderTarget->GetDepthStencilView());
+		m_pDeviceContext->OMSetRenderTargets(1, &pRtv, (ID3D11DepthStencilView*)pRenderTarget->GetDepthTexture()->GetRenderTargetView());
 }
 
 void Graphics::SetRenderTargets(const vector<RenderTarget*>& pRenderTargets)
@@ -95,8 +95,11 @@ void Graphics::SetRenderTargets(const vector<RenderTarget*>& pRenderTargets)
 	vector<ID3D11RenderTargetView*> pRtvs;
 	pRtvs.reserve(pRenderTargets.size());
 	for (RenderTarget* pRt : pRenderTargets)
-		pRtvs.push_back(pRt->GetRenderTargetView());
-	m_pDeviceContext->OMSetRenderTargets((UINT)pRenderTargets.size(), pRtvs.data(), pRenderTargets[0]->GetDepthStencilView());
+	{
+		ID3D11RenderTargetView* pRenderTarget = pRt ? (ID3D11RenderTargetView*)pRt->GetRenderTexture()->GetRenderTargetView() : nullptr;
+		pRtvs.push_back(pRenderTarget);
+	}
+	m_pDeviceContext->OMSetRenderTargets((UINT)pRenderTargets.size(), pRtvs.data(), pRenderTargets[0] ? (ID3D11DepthStencilView*)pRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr);
 }
 
 void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)

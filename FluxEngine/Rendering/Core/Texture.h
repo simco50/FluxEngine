@@ -73,7 +73,6 @@ public:
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }
 	void* GetResourceView() const { return m_pShaderResourceView; }
-
 	void* GetSamplerState() const { return m_pSamplerState; }
 
 	const int& GetWidth() const { return m_Width; }

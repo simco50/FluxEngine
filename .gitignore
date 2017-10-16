@@ -16,3 +16,4 @@ imgui.ini
 Logs/
 *.pak
 FluxPak/*.txt
+Doxygen/
