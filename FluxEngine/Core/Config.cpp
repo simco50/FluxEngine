@@ -53,7 +53,7 @@ bool Config::GetBool(const string& name, const string& section, const bool defau
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
 		return defaultValue;
-	return stoi(pValue->Value);
+	return stoi(pValue->Value) == 1;
 }
 
 bool Config::Flush(const Type t /*= Type::MAX_TYPES*/)

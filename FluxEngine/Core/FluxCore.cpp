@@ -62,8 +62,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 		Config::GetInt("Width", "Window", 1240),
 		Config::GetInt("Height", "Window", 720),
 		(WindowType)Config::GetInt("WindowMode", "Window", 0),
-		Config::GetInt("Resizable", "Window", 1),
-		Config::GetInt("VSync", "Window", 1),
+		Config::GetBool("Resizable", "Window", 1),
+		Config::GetBool("VSync", "Window", 1),
 		Config::GetInt("MSAA", "Window", 8),
 		Config::GetInt("RefreshRate", "Window", 60)))
 	{
