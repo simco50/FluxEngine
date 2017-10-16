@@ -10,8 +10,6 @@ __int64 GameTimer::m_CurrTime = 0;
 double GameTimer::m_SecondsPerCount = 0.0;
 double GameTimer::m_DeltaTime = 0.0;
 
-vector<float> GameTimer::m_FrameTimes(100);
-
 bool GameTimer::m_IsStopped = false;
 
 GameTimer::GameTimer()
@@ -40,10 +38,6 @@ void GameTimer::Tick()
 
 	if (m_DeltaTime < 0.0f)
 		m_DeltaTime = 0.0f;
-
-	for (size_t i = 1; i < m_FrameTimes.size(); i++)
-		m_FrameTimes[i - 1] = m_FrameTimes[i];
-	m_FrameTimes[m_FrameTimes.size() - 1] = (float)m_DeltaTime;
 }
 
 float GameTimer::GameTime()
@@ -62,7 +56,7 @@ void GameTimer::Reset()
 {
 	__int64 countsPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
-	m_SecondsPerCount = 1.0f / (double)(countsPerSec);
+	m_SecondsPerCount = 1.0 / (double)(countsPerSec);
 
 	__int64 currTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTime);

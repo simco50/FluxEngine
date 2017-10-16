@@ -13,7 +13,6 @@ public:
 	static void Stop();
 	static void Tick();
 	static bool IsPaused() { return m_IsStopped; }
-	static vector<float> GetFrameTimes() { return m_FrameTimes; }
 
 private:
 	static double m_SecondsPerCount;
@@ -26,7 +25,5 @@ private:
 	static __int64 m_CurrTime;
 
 	static bool m_IsStopped;
-
-	static vector<float> m_FrameTimes;
 };
 
