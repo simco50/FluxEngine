@@ -276,19 +276,19 @@ void Graphics::PrepareDraw()
 {
 	if (m_pDepthStencilState->IsDirty())
 	{
-		ID3D11DepthStencilState* pState = m_pDepthStencilState->GetOrCreate(m_pDevice.Get());
+		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
 		m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
 	}
 
 	if (m_pRasterizerState->IsDirty())
 	{
-		ID3D11RasterizerState* pState = m_pRasterizerState->GetOrCreate(m_pDevice.Get());
+		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_pRasterizerState->GetOrCreate(this);
 		m_pDeviceContext->RSSetState(pState);
 	}
 
 	if (m_pBlendState->IsDirty())
 	{
-		ID3D11BlendState* pBlendState = m_pBlendState->GetOrCreate(m_pDevice.Get());
+		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
 		m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, numeric_limits<unsigned int>::max());
 	}
 

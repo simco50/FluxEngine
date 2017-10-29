@@ -7,6 +7,15 @@ BlendState::BlendState()
 
 }
 
+BlendState::~BlendState()
+{
+	for (auto pState : m_BlendStates)
+	{
+		SafeRelease(pState.second);
+	}
+	m_BlendStates.clear();
+}
+
 void BlendState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
 {
 	if (blendMode != m_BlendMode || alphaToCoverage != m_AlphaToCoverage)
@@ -26,7 +35,7 @@ void BlendState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::A
 	}
 }
 
-ID3D11BlendState* BlendState::GetOrCreate(ID3D11Device* pDevice)
+void* BlendState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =
 		 (unsigned char)m_BlendMode << 0
@@ -35,12 +44,12 @@ ID3D11BlendState* BlendState::GetOrCreate(ID3D11Device* pDevice)
 
 	auto state = m_BlendStates.find(stateHash);
 	if (state != m_BlendStates.end())
-		return state->second.Get();
+		return state->second;
 
 	AUTOPROFILE(CreateBlendState);
 
 	m_BlendStates[stateHash] = nullptr;
-	ComPtr<ID3D11BlendState>& pBlendState = m_BlendStates[stateHash];
+	ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_BlendStates[stateHash];
 
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
@@ -124,7 +133,7 @@ ID3D11BlendState* BlendState::GetOrCreate(ID3D11Device* pDevice)
 		break;
 	}
 
-	HR(pDevice->CreateBlendState(&desc, pBlendState.GetAddressOf()));
+	HR(pGraphics->GetDevice()->CreateBlendState(&desc, (ID3D11BlendState**)&pBlendState));
 
-	return pBlendState.Get();
+	return pBlendState;
 }

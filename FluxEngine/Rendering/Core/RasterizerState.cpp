@@ -7,6 +7,15 @@ RasterizerState::RasterizerState()
 
 }
 
+RasterizerState::~RasterizerState()
+{
+	for (auto pState : m_RasterizerStates)
+	{
+		SafeRelease(pState.second);
+	}
+	m_RasterizerStates.clear();
+}
+
 void RasterizerState::SetFillMode(const FillMode fillMode)
 {
 	if (fillMode != m_FillMode)
@@ -43,7 +52,7 @@ void RasterizerState::SetMultisampleEnabled(const bool enabled)
 	}
 }
 
-ID3D11RasterizerState* RasterizerState::GetOrCreate(ID3D11Device* pDevice)
+void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =
 		(unsigned char)m_ScissorEnabled << 0
@@ -53,12 +62,12 @@ ID3D11RasterizerState* RasterizerState::GetOrCreate(ID3D11Device* pDevice)
 
 	auto state = m_RasterizerStates.find(stateHash);
 	if (state != m_RasterizerStates.end())
-		return state->second.Get();
+		return state->second;
 
 	AUTOPROFILE(CreateRasterizerState);
 
 	m_RasterizerStates[stateHash] = nullptr;
-	ComPtr<ID3D11RasterizerState>& pState = m_RasterizerStates[stateHash];
+	ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_RasterizerStates[stateHash];
 
 	D3D11_RASTERIZER_DESC desc = {};
 	desc.AntialiasedLineEnable = false;
@@ -92,7 +101,7 @@ ID3D11RasterizerState* RasterizerState::GetOrCreate(ID3D11Device* pDevice)
 	desc.ScissorEnable = m_ScissorEnabled;
 	desc.SlopeScaledDepthBias = 0.0f;
 
-	HR(pDevice->CreateRasterizerState(&desc, pState.GetAddressOf()));
+	HR(pGraphics->GetDevice()->CreateRasterizerState(&desc, (ID3D11RasterizerState**)&pState));
 
-	return pState.Get();
+	return pState;
 }

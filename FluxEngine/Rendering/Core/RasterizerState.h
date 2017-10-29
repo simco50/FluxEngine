@@ -1,13 +1,16 @@
 #include "GraphicsDefines.h"
 
+class Graphics;
+
 class RasterizerState
 {
 public:
 	RasterizerState();
+	~RasterizerState();
 
 	DELETE_COPY(RasterizerState)
 
-	ID3D11RasterizerState* GetOrCreate(ID3D11Device* pDevice);
+	void* GetOrCreate(Graphics* pGraphics);
 	bool IsDirty() const { return m_IsDirty; }
 
 	void SetScissorEnabled(const bool enabled);
@@ -24,5 +27,5 @@ private:
 	FillMode m_FillMode = FillMode::SOLID;
 	CullMode m_CullMode = CullMode::BACK;
 
-	map<unsigned int, ComPtr<ID3D11RasterizerState>> m_RasterizerStates;
+	map<unsigned int, void*> m_RasterizerStates;
 };

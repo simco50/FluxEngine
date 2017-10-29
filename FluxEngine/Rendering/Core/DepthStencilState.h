@@ -9,7 +9,7 @@ public:
 
 	DELETE_COPY(DepthStencilState)
 
-	ID3D11DepthStencilState* GetOrCreate(ID3D11Device* pDevice);
+	void* GetOrCreate(Graphics* pGraphics);
 	bool IsDirty() const { return m_IsDirty; }
 	unsigned int GetStencilRef() const { return m_StencilRef; }
 
@@ -30,5 +30,5 @@ private:
 	unsigned char m_StencilCompareMask;
 	unsigned char m_StencilWriteMask;
 
-	map<unsigned int, ComPtr<ID3D11DepthStencilState>> m_DepthStencilStates;
+	map<unsigned int, void*> m_DepthStencilStates;
 };

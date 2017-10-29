@@ -1,16 +1,19 @@
 #include "GraphicsDefines.h"
 
+class Graphics;
+
 class BlendState
 {
 public:
 	BlendState();
+	~BlendState();
 
 	DELETE_COPY(BlendState)
 
 	void SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage);
 	void SetColorWrite(const ColorWrite colorWriteMask = ColorWrite::ALL);
 
-	ID3D11BlendState* GetOrCreate(ID3D11Device* pDevice);
+	void* GetOrCreate(Graphics* pGraphics);
 	bool IsDirty() const { return m_IsDirty; }
 
 private:
@@ -20,5 +23,5 @@ private:
 	bool m_AlphaToCoverage = false;
 	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
 
-	map<unsigned int, ComPtr<ID3D11BlendState>> m_BlendStates;
+	map<unsigned int, void*> m_BlendStates;
 };

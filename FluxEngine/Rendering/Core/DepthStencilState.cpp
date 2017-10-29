@@ -69,7 +69,7 @@ void DepthStencilState::SetStencilTest(bool stencilEnabled, const CompareMode mo
 	}
 }
 
-ID3D11DepthStencilState* DepthStencilState::GetOrCreate(ID3D11Device* pDevice)
+void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =
 		(unsigned char)m_DepthEnabled << 0
@@ -84,12 +84,12 @@ ID3D11DepthStencilState* DepthStencilState::GetOrCreate(ID3D11Device* pDevice)
 
 	auto state = m_DepthStencilStates.find(stateHash);
 	if (state != m_DepthStencilStates.end())
-		return state->second.Get();
+		return state->second;
 
 	AUTOPROFILE(CreateDepthStencilState);
 
 	m_DepthStencilStates[stateHash] = nullptr;
-	ComPtr<ID3D11DepthStencilState>& pState = m_DepthStencilStates[stateHash];
+	ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_DepthStencilStates[stateHash];
 
 	D3D11_DEPTH_STENCIL_DESC desc = {};
 	desc.DepthEnable = m_DepthEnabled;
@@ -226,7 +226,7 @@ ID3D11DepthStencilState* DepthStencilState::GetOrCreate(ID3D11Device* pDevice)
 		break;
 	}
 
-	HR(pDevice->CreateDepthStencilState(&desc, pState.GetAddressOf()));
+	HR(pGraphics->GetDevice()->CreateDepthStencilState(&desc, (ID3D11DepthStencilState**)&pState));
 
-	return pState.Get();
+	return pState;
 }
