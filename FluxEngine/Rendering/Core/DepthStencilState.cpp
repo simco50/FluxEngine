@@ -7,6 +7,15 @@ DepthStencilState::DepthStencilState()
 
 }
 
+DepthStencilState::~DepthStencilState()
+{
+	for (auto& pState : m_DepthStencilStates)
+	{
+		SafeRelease(pState.second);
+	}
+	m_DepthStencilStates.clear();
+}
+
 void DepthStencilState::SetDepthEnabled(const bool enabled)
 {
 	if (enabled != m_DepthEnabled)
@@ -89,7 +98,7 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 	AUTOPROFILE(CreateDepthStencilState);
 
 	m_DepthStencilStates[stateHash] = nullptr;
-	ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_DepthStencilStates[stateHash];
+	void*& pState = m_DepthStencilStates[stateHash];
 
 	D3D11_DEPTH_STENCIL_DESC desc = {};
 	desc.DepthEnable = m_DepthEnabled;

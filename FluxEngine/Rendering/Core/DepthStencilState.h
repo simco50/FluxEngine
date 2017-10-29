@@ -6,6 +6,7 @@ class DepthStencilState
 {
 public:
 	DepthStencilState();
+	~DepthStencilState();
 
 	DELETE_COPY(DepthStencilState)
 

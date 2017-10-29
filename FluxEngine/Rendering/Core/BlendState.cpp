@@ -9,7 +9,7 @@ BlendState::BlendState()
 
 BlendState::~BlendState()
 {
-	for (auto pState : m_BlendStates)
+	for (auto& pState : m_BlendStates)
 	{
 		SafeRelease(pState.second);
 	}
@@ -49,7 +49,7 @@ void* BlendState::GetOrCreate(Graphics* pGraphics)
 	AUTOPROFILE(CreateBlendState);
 
 	m_BlendStates[stateHash] = nullptr;
-	ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_BlendStates[stateHash];
+	void*& pBlendState = m_BlendStates[stateHash];
 
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;

@@ -9,7 +9,7 @@ RasterizerState::RasterizerState()
 
 RasterizerState::~RasterizerState()
 {
-	for (auto pState : m_RasterizerStates)
+	for (auto& pState : m_RasterizerStates)
 	{
 		SafeRelease(pState.second);
 	}
@@ -67,7 +67,7 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 	AUTOPROFILE(CreateRasterizerState);
 
 	m_RasterizerStates[stateHash] = nullptr;
-	ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_RasterizerStates[stateHash];
+	void*& pState = m_RasterizerStates[stateHash];
 
 	D3D11_RASTERIZER_DESC desc = {};
 	desc.AntialiasedLineEnable = false;
