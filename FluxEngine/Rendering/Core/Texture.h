@@ -62,7 +62,7 @@ class Texture
 {
 public:
 	Texture(Graphics* pGraphics);
-	Texture(Graphics* pGraphics, ID3D11Resource* pTexture, ID3D11ShaderResourceView* pTextureSRV);
+	Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV);
 	~Texture();
 
 	DELETE_COPY(Texture)
@@ -81,6 +81,8 @@ public:
 	void UpdateParameters();
 
 private:
+	void UpdateProperties(void* pTexture);
+
 	void Release();
 	bool Create();
 

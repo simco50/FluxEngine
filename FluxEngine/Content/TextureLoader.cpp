@@ -2,6 +2,7 @@
 #include "TextureLoader.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Core/Graphics.h"
+#include "Rendering/Core/D3D11/D3D11GraphicsImpl.h"
 
 TextureLoader::TextureLoader()
 {
@@ -50,8 +51,8 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	ID3D11Resource* pTexture;
 	ID3D11ShaderResourceView* pSRV;
 	
-	HR(CreateTexture(m_pGraphics->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pTexture));
-	HR(CreateShaderResourceView(m_pGraphics->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pSRV));
+	HR(CreateTexture(m_pGraphics->GetImpl()->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pTexture));
+	HR(CreateShaderResourceView(m_pGraphics->GetImpl()->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pSRV));
 
 
 

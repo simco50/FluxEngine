@@ -14,17 +14,17 @@ struct RENDER_TARGET_DESC
 	DXGI_FORMAT DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	DXGI_FORMAT ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	ID3D11Texture2D* pColor = nullptr;
-	ID3D11Texture2D* pDepth = nullptr;
+	void* pColor = nullptr;
+	void* pDepth = nullptr;
 
 	bool IsValid() const
 	{
-		if(Width < 0 || Height < 0)
+		if (Width < 0 || Height < 0)
 		{
 			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > RenderTarget dimensions invalid!");
 			return false;
 		}
-		if(!ColorBuffer && !DepthBuffer)
+		if (!ColorBuffer && !DepthBuffer)
 		{
 			FLUX_LOG(ERROR, "[RENDER_TARGET_DESC::IsValid()] > RenderTarget needs at least one buffer to create!");
 			return false;

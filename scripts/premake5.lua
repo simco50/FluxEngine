@@ -23,7 +23,7 @@ workspace "FluxEngine"
 		pchsource "../FluxEngine/stdafx.cpp"
 		kind "StaticLib"
 		characterset ("MBCS")
-		defines { "_CONSOLE" }
+		defines { "_CONSOLE", "D3D11" }
 		flags {"FatalWarnings"}
 		language "C++"
 

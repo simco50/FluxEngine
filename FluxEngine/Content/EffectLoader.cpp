@@ -2,6 +2,7 @@
 
 #include "EffectLoader.h"
 #include "Rendering\Core\Graphics.h"
+#include "Rendering\Core\D3D11\D3D11GraphicsImpl.h"
 
 ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 {
@@ -31,7 +32,7 @@ ID3DX11Effect* EffectLoader::LoadContent(const string& assetFile)
 		nullptr, 
 		shaderFlags, 
 		0,
-		m_pGraphics->GetDevice(),
+		m_pGraphics->GetImpl()->GetDevice(),
 		&pEffect, 
 		&pErrorBlob);
 

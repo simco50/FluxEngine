@@ -12,6 +12,8 @@ class RasterizerState;
 class DepthStencilState;
 class ConstantBuffer;
 
+class GraphicsImpl;
+
 class Graphics
 {
 public:
@@ -75,9 +77,9 @@ public:
 
 	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
 
-	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
-	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
+
+	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
 private:
 	static const int NUM_SHADER_TYPES = 2;
@@ -111,11 +113,7 @@ private:
 	bool m_Minimized = false;
 	bool m_Resizing = false;
 
-	ComPtr<IDXGIAdapter> m_pAdapter;
-	ComPtr<ID3D11Device> m_pDevice;
-	ComPtr<ID3D11DeviceContext> m_pDeviceContext;
-	ComPtr<IDXGIFactory> m_pFactory;
-	ComPtr<IDXGISwapChain> m_pSwapChain;
+	unique_ptr<GraphicsImpl> m_pImpl;
 
 	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
 	unique_ptr<BlendState> m_pBlendState;
@@ -142,6 +140,5 @@ private:
 	bool m_TexturesDirty = false;
 	unsigned int m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
 	unsigned int m_LastDirtyTexture = 0;
-	vector<ID3D11SamplerState*> m_CurrentSamplerStates;
-	vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
+
 };
