@@ -1,6 +1,6 @@
 #pragma once
 
-enum class ShaderType : unsigned char;
+enum class ShaderType : unsigned int;
 
 class Graphics;
 class ShaderVariation;
@@ -16,20 +16,21 @@ public:
 
 	bool Load(const string& filePath);
 	ShaderVariation* GetVariation(const ShaderType type, const string& defines = string(""));
-	const string& GetSource(const ShaderType type) const;
+	const string& GetSource() { return m_ShaderSource; }
+
+	static string GetEntryPoint(const ShaderType type);
 
 private:
+	string MakeSearchHash(const ShaderType type, const string& defines);
+
 	string m_FileDir;
 	string m_ShaderName;
 
 	bool ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output);
-	void StripFunction(const string& input, string& out, const string& function);
 
-	string m_VertexShaderSource;
-	string m_PixelShaderSource;
-
-	map<string, ShaderVariation*> m_VertexShaderCache;
-	map<string, ShaderVariation*> m_PixelShaderCache;
+	string m_ShaderSource;
+	using ShaderVariationHash = string;
+	map<ShaderVariationHash, unique_ptr<ShaderVariation>> m_ShaderCache;
 
 	Graphics* m_pGraphics;
 };

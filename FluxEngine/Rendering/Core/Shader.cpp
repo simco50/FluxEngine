@@ -11,12 +11,6 @@ Shader::Shader(Graphics* pGraphics) :
 
 Shader::~Shader()
 {
-	for (auto p : m_VertexShaderCache)
-		SafeDelete(p.second);
-	m_VertexShaderCache.clear();
-	for (auto p : m_PixelShaderCache)
-		SafeDelete(p.second);
-	m_PixelShaderCache.clear();
 }
 
 bool Shader::Load(const string& filePath)
@@ -38,36 +32,20 @@ bool Shader::Load(const string& filePath)
 	if (!ProcessSource(std::move(pPtr), codeStream))
 		return false;
 
-	std::string code = codeStream.str();
-	StripFunction(code, m_VertexShaderSource, "void PS(");
-	StripFunction(code, m_PixelShaderSource, "void VS(");
+	m_ShaderSource = codeStream.str();
 
 	return true;
 }
 
 ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defines)
 {
-	switch (type)
-	{
-	case ShaderType::VertexShader:
-		for (auto p : m_VertexShaderCache)
-		{
-			if (p.first == defines)
-				return p.second;
-		}
-		break;
-	case ShaderType::PixelShader:
-		for (auto p : m_PixelShaderCache)
-		{
-			if (p.first == defines)
-				return p.second;
-		}
-		break;
-	default:
-		break;
-	}
+	ShaderVariationHash searchKey = MakeSearchHash(type, defines);
 
-	ShaderVariation* pVariation = new ShaderVariation(this, type);
+	auto pShader = m_ShaderCache.find(searchKey);
+	if (pShader != m_ShaderCache.end())
+		return pShader->second.get();
+
+	unique_ptr<ShaderVariation> pVariation = make_unique<ShaderVariation>(this, type);
 	pVariation->SetDefines(defines);
 	if (!pVariation->Create(m_pGraphics))
 	{
@@ -75,33 +53,31 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defin
 		return nullptr;
 	}
 
-	switch (type)
-	{
-	case ShaderType::VertexShader:
-		m_VertexShaderCache[defines] = pVariation;
-		break;
-	case ShaderType::PixelShader:
-		m_PixelShaderCache[defines] = pVariation;
-		break;
-	}
-
-	return pVariation;
+	m_ShaderCache[searchKey] = std::move(pVariation);
+	return m_ShaderCache[searchKey].get();
 }
 
-const std::string& Shader::GetSource(const ShaderType type) const
+std::string Shader::GetEntryPoint(const ShaderType type)
 {
 	switch (type)
 	{
 	case ShaderType::VertexShader:
-		return m_VertexShaderSource;
-		break;
+		return "VSMain";
 	case ShaderType::PixelShader:
-		return m_PixelShaderSource;
-		break;
+		return "PSMain";
+	case ShaderType::GeometryShader:
+		return "GSMain";
+	case ShaderType::ComputeShader:
+		return "CSMain";
 	default:
+		return "";
 		break;
 	}
-	throw;
+}
+
+std::string Shader::MakeSearchHash(const ShaderType type, const string& defines)
+{
+	return "TYPE=" + (char)type + defines;
 }
 
 bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
@@ -129,39 +105,4 @@ bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 	}
 	output << '\n';
 	return true;
-}
-
-void Shader::StripFunction(const string& input, string& out, const string& function)
-{
-	size_t startCommentPos = input.find(function);
-	if (startCommentPos == string::npos)
-		out = input;
-
-	size_t endCommentPos = 0;
-	int braceCount = 0;
-	for (size_t i = startCommentPos + function.size(); i < input.size(); ++i)
-	{
-		if (input[i] == '{')
-		{
-			++braceCount;
-			continue;
-		}
-		if (input[i] == '}')
-		{
-			--braceCount;
-			if (braceCount == 0)
-			{
-				endCommentPos = i + 1;
-				break;
-			}
-			continue;
-		}
-	}
-	if (braceCount != 0)
-		out = input;
-
-	size_t newSize = input.size() - (endCommentPos - startCommentPos);
-	out.resize(newSize);
-	memcpy(&out[0], input.data(), startCommentPos);
-	memcpy(&out[0] + startCommentPos, input.data() + endCommentPos, input.size() - endCommentPos);
 }

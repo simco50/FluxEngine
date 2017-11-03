@@ -1,10 +1,15 @@
 #include "D3D11GraphicsImpl.h"
-void InputLayout::Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVariation* pVariation)
+void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation)
 {
+	AUTOPROFILE(CreateInputLayout);
+
 	vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
 
-	for (unsigned int i = 0; i < vertexBuffers.size(); ++i)
+	for (unsigned int i = 0; i < bufferCount; ++i)
 	{
+		if (vertexBuffers[i] == nullptr)
+			continue;
+
 		for (const VertexElement& e : vertexBuffers[i]->GetElements())
 		{
 			D3D11_INPUT_ELEMENT_DESC desc;
@@ -19,6 +24,12 @@ void InputLayout::Create(const vector<VertexBuffer*>& vertexBuffers, ShaderVaria
 			elementDesc.push_back(desc);
 		}
 	}
-	const vector<unsigned char>& byteCode = pVariation->GetByteCode();
+	const vector<char>& byteCode = pVariation->GetByteCode();
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
 }
+
+void InputLayout::Create(vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)
+{
+	Create(vertexBuffers.data(), (unsigned int)vertexBuffers.size(), pVariation);
+}
+

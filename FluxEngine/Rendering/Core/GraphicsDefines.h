@@ -1,10 +1,17 @@
 #pragma once
 
-enum class ShaderType : unsigned char
+namespace GraphicsConstants
+{
+	static const int MAX_VERTEX_BUFFERS = 4;
+}
+
+enum class ShaderType : unsigned int
 {
 	VertexShader = 0,
-	PixelShader = 1 << 0,
-	//#todo Geometry shader
+	PixelShader,
+	GeometryShader,
+	ComputeShader,
+	MAX,
 };
 
 //The primitive topology for rendering

@@ -1,4 +1,6 @@
 #include "D3D11GraphicsImpl.h"
+#include "../D3DCommon/D3DHelpers.h"
+
 bool ShaderVariation::Create(Graphics* pGraphics)
 {
 	Compile(pGraphics);
@@ -17,6 +19,12 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 	case ShaderType::PixelShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
 			break;
+	case ShaderType::GeometryShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pShaderObject))
+			break;
+	case ShaderType::ComputeShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pShaderObject))
+			break;
 	default:
 		break;
 	}
@@ -27,13 +35,14 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 {
 	AUTOPROFILE_DESC(ShaderVariation_Compile, m_ShaderType == ShaderType::PixelShader ? "Pixel shader" : "Vertex shader");
 
-	const string& source = m_pParentShader->GetSource(m_ShaderType);
+	const string& source = m_pParentShader->GetSource();
 
 	if (source.length() == 0)
 		return false;
 
 	// Set the entrypoint, profile and flags according to the shader being compiled
-	const char* entryPoint = 0;
+	string entry = Shader::GetEntryPoint(m_ShaderType);
+	const char* entryPoint = entry.c_str();
 	const char* profile = 0;
 	unsigned flags = D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
 
@@ -50,16 +59,21 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	switch (m_ShaderType)
 	{
 	case ShaderType::VertexShader:
-		entryPoint = "VS";
 		defines.push_back("COMPILE_VS");
 		profile = "vs_4_0";
 		break;
 	case ShaderType::PixelShader:
-		entryPoint = "PS";
 		defines.push_back("COMPILE_PS");
 		profile = "ps_4_0";
 		flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
 		break;
+	case ShaderType::GeometryShader:
+		defines.push_back("COMPILE_GS");
+		profile = "gs_4_0";
+		break;
+	case ShaderType::ComputeShader:
+		defines.push_back("COMPILE_CS");
+		profile = "cs_4_0";
 	default:
 		break;
 	}
@@ -95,16 +109,11 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	HRESULT hr = D3DCompile(source.c_str(), source.size(), "shader", macros.data(), 0, entryPoint, profile, flags, 0, &shaderCode, &errorMsgs);
 	if (hr != S_OK)
 	{
-		string errorMessage((char*)errorMsgs->GetBufferPointer(), (char*)errorMsgs->GetBufferPointer() + errorMsgs->GetBufferSize());
-		FLUX_LOG(ERROR, errorMessage);
+		FLUX_LOG(ERROR, D3DBlobToString(errorMsgs));
 		return false;
 	}
-	unsigned char* pBuffer = (unsigned char*)shaderCode->GetBufferPointer();
-	unsigned int bufferSize = (unsigned int)shaderCode->GetBufferSize();
-	m_ShaderByteCode.resize(bufferSize);
-	memcpy(&m_ShaderByteCode[0], pBuffer, bufferSize);
-
-	ShaderReflection(pBuffer, bufferSize, pGraphics);
+	D3DBlobToVector(shaderCode, m_ShaderByteCode);
+	ShaderReflection(m_ShaderByteCode.data(), (unsigned int)m_ShaderByteCode.size(), pGraphics);
 
 #ifndef _DEBUG
 	// Strip everything not necessary to use the shader
@@ -121,7 +130,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	return true;
 }
 
-void ShaderVariation::ShaderReflection(unsigned char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
+void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
 {
 	m_ConstantBuffers.resize((unsigned int)ShaderParameterType::MAX);
 

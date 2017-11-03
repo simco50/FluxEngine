@@ -28,9 +28,16 @@ void VertexBuffer::SetVertexSize(const vector<VertexElement>& elements)
 
 void VertexBuffer::UpdateOffsets(vector<VertexElement>& elements)
 {
+	m_BufferHash = 0;
+
 	unsigned int offset = 0;
 	for (VertexElement& element : elements)
 	{
+		m_BufferHash <<= 10;
+		m_BufferHash |= 
+			(int)element.Type << 0
+			| (int)element.Semantic << 3
+			| element.Index << 7;
 		element.Offset = offset;
 		offset += VertexElement::GetSizeOfType(element.Type);
 	}

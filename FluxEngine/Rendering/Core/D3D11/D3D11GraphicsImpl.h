@@ -1,4 +1,7 @@
 #pragma once
+#include "..\GraphicsDefines.h"
+
+class InputLayout;
 
 class GraphicsImpl
 {
@@ -17,4 +20,10 @@ private:
 
 	vector<ID3D11SamplerState*> m_CurrentSamplerStates;
 	vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
+
+	map<unsigned long long, unique_ptr<InputLayout>> m_InputLayoutMap;
+
+	array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers;
+	array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets;
+	array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides;
 };

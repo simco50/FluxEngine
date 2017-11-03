@@ -23,17 +23,25 @@ struct PS_INPUT
 	float3 normal : NORMAL;
 };
 
-void VS(VS_INPUT input, out PS_INPUT output)
+#ifdef COMPILE_VS
+PS_INPUT VSMain(VS_INPUT input)
 {
+	PS_INPUT output = (PS_INPUT)0;
+
 	input.position += input.worldPosition;
 	output.position = mul(cWorldViewProjVS, float4(input.position + sin(cElapsedTimeVS) * input.normal * 0.1f, 1.0f));
 	output.normal = normalize(mul((float3x3)cWorldVS, input.normal));
 	output.texCoord = input.texCoord;
-}
 
-void PS(PS_INPUT input, out float4 output : SV_TARGET)
+	return output;
+}
+#endif
+
+#ifdef COMPILE_PS
+float4 PSMain(PS_INPUT input) : SV_TARGET
 {
 	float diffuseStrength = saturate(dot(input.normal, -cLightDirectionPS));
 	float4 sample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
-	output = float4((sample.rgb * cColorPS.rgb) * diffuseStrength, 1.0f);
+	return float4((sample.rgb * cColorPS.rgb) * diffuseStrength, 1.0f);
 }
+#endif

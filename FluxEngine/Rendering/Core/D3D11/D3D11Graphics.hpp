@@ -79,18 +79,45 @@ void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
 	SetVertexBuffers({ pBuffer });
 }
 
-void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers)
+void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset)
 {
-	vector<ID3D11Buffer*> buffers;
-	vector<unsigned int> strides;
-	vector<unsigned int> offsets(pBuffers.size());
-	for (const VertexBuffer* pVb : pBuffers)
+	if (pBuffers.size() > GraphicsConstants::MAX_VERTEX_BUFFERS)
 	{
-		buffers.push_back(pVb ? (ID3D11Buffer*)pVb->GetBuffer() : nullptr);
-		strides.push_back(pVb ? pVb->GetStride() : 0);
+		FLUX_LOG(ERROR, "[Graphics::SetVertexBuffers] > More than %i vertex buffers is not allowed", GraphicsConstants::MAX_VERTEX_BUFFERS);
+		return;
 	}
 
-	m_pImpl->m_pDeviceContext->IASetVertexBuffers(0, (UINT)pBuffers.size(), buffers.data(), strides.data(), offsets.data());
+	for (unsigned int i = 0; i < GraphicsConstants::MAX_VERTEX_BUFFERS; ++i)
+	{
+		VertexBuffer* pBuffer = nullptr;
+		pBuffer = i >= pBuffers.size() ? nullptr : pBuffers[i];
+		bool changed = false;
+
+		if (pBuffer)
+		{
+			m_CurrentVertexBuffers[i] = pBuffer;
+			m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
+			m_pImpl->m_CurrentStrides[i] = pBuffer->GetStride();
+			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetBuffer();
+			changed = true;
+		}
+		else if (m_CurrentVertexBuffers[i])
+		{
+			m_CurrentVertexBuffers[i] = nullptr;
+			m_pImpl->m_CurrentOffsets[i] = 0;
+			m_pImpl->m_CurrentStrides[i] = 0;
+			m_pImpl->m_CurrentVertexBuffers[i] = nullptr;
+			changed = true;
+		}
+		if (changed)
+		{
+			m_VertexBuffersDirty = true;
+			if (i < m_FirstDirtyVertexBuffer)
+				m_FirstDirtyVertexBuffer = i;
+			if (i > m_LastDirtyVertexBuffer)
+				m_LastDirtyVertexBuffer = i;
+		}
+	}
 }
 
 void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
@@ -146,15 +173,6 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 		}
 		if (buffersChanged)
 			m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::PixelShader]);
-	}
-}
-
-void Graphics::SetInputLayout(InputLayout* pInputLayout)
-{
-	if (m_pCurrentInputLayout != pInputLayout)
-	{
-		m_pCurrentInputLayout = pInputLayout;
-		m_pImpl->m_pDeviceContext->IASetInputLayout(pInputLayout ? (ID3D11InputLayout*)m_pCurrentInputLayout->GetInputLayout() : nullptr);
 	}
 }
 
@@ -263,6 +281,47 @@ void Graphics::PrepareDraw()
 		m_TexturesDirty = false;
 		m_FirstDirtyTexture = m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
 		m_LastDirtyTexture = 0;
+	}
+
+	if (m_VertexBuffersDirty && m_pCurrentVertexShader && m_pCurrentVertexShader->GetByteCode().size())
+	{
+		//Set the vertex buffers
+		m_pImpl->m_pDeviceContext->IASetVertexBuffers(
+			m_FirstDirtyVertexBuffer,
+			m_LastDirtyVertexBuffer - m_FirstDirtyVertexBuffer + 1,
+			&m_pImpl->m_CurrentVertexBuffers[m_FirstDirtyVertexBuffer],
+			&m_pImpl->m_CurrentStrides[m_FirstDirtyVertexBuffer],
+			&m_pImpl->m_CurrentOffsets[m_FirstDirtyVertexBuffer]);
+
+		//Calculate the input element description hash to find the correct input layout
+		unsigned long long hash = 0;
+		for (VertexBuffer* pBuffer : m_CurrentVertexBuffers)
+		{
+			if (pBuffer)
+			{
+				hash <<= pBuffer->GetElements().size() * 10;
+				hash |= pBuffer->GetBufferHash();
+			}
+			else
+			{
+				hash <<= 1;
+			}
+		}
+
+		auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
+		if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
+			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
+		else
+		{
+			unique_ptr<InputLayout> pNewInputLayout = make_unique<InputLayout>(this);
+			pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_pCurrentVertexShader);
+			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
+			m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
+		}
+
+		m_FirstDirtyVertexBuffer = numeric_limits<unsigned int>::max();
+		m_LastDirtyVertexBuffer = 0;
+		m_VertexBuffersDirty = false;
 	}
 
 	if (m_ScissorRectDirty)

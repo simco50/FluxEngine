@@ -5,7 +5,6 @@
 #include "Rendering/Core/ShaderVariation.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "Rendering/Core/InputLayout.h"
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
 #include "Rendering/MeshFilter.h"
@@ -17,6 +16,7 @@
 #include "Config.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/Core/RenderTarget.h"
+#include "Rendering/Core/Texture.h"
 
 using namespace std;
 
@@ -28,7 +28,6 @@ FluxCore::~FluxCore()
 {
 	SafeDelete(m_pShader);
 	SafeDelete(m_pVertexBuffer);
-	SafeDelete(m_pInputLayout);
 	SafeDelete(m_pIndexBuffer);
 	SafeDelete(m_pInstanceBuffer);
 	SafeDelete(m_pGraphics);
@@ -145,14 +144,12 @@ void FluxCore::GameLoop()
 	m_pPixelShader->SetParameter("cColorPS", &m_Color);
 	//m_pPixelShader->SetParameter("cWorldPS", &world);
 #pragma endregion PER_OBJECT
-
 	Texture* pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
 	m_pGraphics->SetTexture(0, pTexture);
 
 	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	m_pGraphics->SetVertexBuffers({ m_pVertexBuffer, m_pInstanceBuffer });
-	m_pGraphics->SetInputLayout(m_pInputLayout);
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, true);
@@ -198,14 +195,15 @@ struct Vertex
 
 void FluxCore::InitGame()
 {
-
 	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
 	m_pCamera->BaseInitialize(nullptr);
 
 	m_pShader =  new Shader(m_pGraphics);
 	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
-	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
-	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
+	{
+		m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
+		m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
+	}
 
 	MeshFilter* pMesh = ResourceManager::Load<MeshFilter>("Resources/Meshes/spot.flux");
 
@@ -259,9 +257,6 @@ void FluxCore::InitGame()
 		}
 	}
 	m_pInstanceBuffer->SetData(instancePos.data());
-	
-	m_pInputLayout = new InputLayout(m_pGraphics);
-	m_pInputLayout->Create({ m_pVertexBuffer, m_pInstanceBuffer }, m_pVertexShader);
 	
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 }

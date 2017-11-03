@@ -16,12 +16,12 @@
 #include "D3D11/D3D11Graphics.hpp"
 #include "D3D11/D3D11GraphicsImpl.h"
 #endif
+#include "UI/ImmediateUI.h"
 
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
 {
 	m_pImpl = make_unique<GraphicsImpl>();
-	ZeroMemory(m_CurrentConstBuffers, sizeof(char*) * (unsigned int)ShaderParameterType::MAX * NUM_SHADER_TYPES);
 }
 
 void Graphics::SetWindowTitle(const string& title)
@@ -170,6 +170,9 @@ LRESULT CALLBACK Graphics::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam,
 
 LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (ImmediateUI::WndProc(message, wParam, lParam))
+		return 0;
+
 	switch (message)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  

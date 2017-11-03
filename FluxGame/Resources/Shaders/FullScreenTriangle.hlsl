@@ -7,7 +7,7 @@ struct PS_OUTPUT
 	float2 texCoord : TEXCOORD;
 };
 
-void VS(uint vertexId : SV_VertexID, out PS_OUTPUT output)
+void VSMain(uint vertexId : SV_VertexID, out PS_OUTPUT output)
 {
 	output.position.x = (float)(vertexId / 2) * 4.0f - 1.0f;
 	output.position.y = (float)(vertexId % 2) * 4.0f - 1.0f;
@@ -18,7 +18,7 @@ void VS(uint vertexId : SV_VertexID, out PS_OUTPUT output)
 	output.texCoord.y = 1.0f - (float)(vertexId % 2) * 2.0f;
 }
 
-void PS(PS_OUTPUT input, out float4 output : SV_TARGET)
+void PSMain(PS_OUTPUT input, out float4 output : SV_TARGET)
 {
 	output = float4(tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord).rgb, 1.0f);
 }

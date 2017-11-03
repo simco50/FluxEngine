@@ -5,7 +5,6 @@
 #include "Rendering\Core\IndexBuffer.h"
 #include "Rendering\Core\Shader.h"
 #include "Rendering\Core\ShaderVariation.h"
-#include "Rendering\Core\InputLayout.h"
 #include "Rendering\Core\ConstantBuffer.h"
 #include "Rendering\Core\Texture.h"
 #include "Rendering\Core\DepthStencilState.h"
@@ -59,9 +58,6 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	m_pIndexBuffer = make_unique<IndexBuffer>(m_pGraphics);
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
-	m_pInputLayout = make_unique<InputLayout>(m_pGraphics);
-	m_pInputLayout->Create({ m_pVertexBuffer.get() }, m_pVertexShader);
-	
 	unsigned char *pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
@@ -87,31 +83,6 @@ void ImmediateUI::NewFrame()
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
-
-	io.MouseDown[0] = m_pInput->IsMouseButtonDown(VK_LBUTTON);
-	io.MouseDown[1] = m_pInput->IsMouseButtonDown(VK_MBUTTON);
-	io.MouseDown[2] = m_pInput->IsMouseButtonDown(VK_RBUTTON);
-	//io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-	io.MousePos.x = (float)m_pInput->GetMousePosition().x;
-	io.MousePos.y = (float)m_pInput->GetMousePosition().y;
-
-	// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-	/*if (wParam > 0 && wParam < 0x10000)
-		io.AddInputCharacter((unsigned short)wParam);*/
-
-	/*LPWORD output = nullptr;
-	ToAscii(0, 0, m_pInput->GetKeyboardFlags(), output, 0);
-	io.AddInputCharacter(*output);*/
-
-	for (int i = 0; i < 256; ++i)
-	{
-		io.KeysDown[i] = m_pInput->IsKeyboardKeyDown(i);
-	}
-	for (char i = 30; i < 96; ++i)
-	{
-		if (m_pInput->IsKeyboardKeyPressed(i))
-			io.AddInputCharacter(i);
-	}
 
 	io.MouseDrawCursor = true;
 	m_pInput->CursorVisible(!io.MouseDrawCursor);
@@ -148,10 +119,9 @@ void ImmediateUI::Render()
 	m_pVertexBuffer->Unmap();
 	m_pIndexBuffer->Unmap();
 
-	m_pGraphics->SetInputLayout(m_pInputLayout.get());
+	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
-	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
 
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
@@ -198,38 +168,38 @@ int ImmediateUI::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_LBUTTONDOWN:
 		io.MouseDown[0] = true;
-		return 0;
+		return 1;
 	case WM_LBUTTONUP:
 		io.MouseDown[0] = false;
-		return 0;
+		return 1;
 	case WM_RBUTTONDOWN:
 		io.MouseDown[1] = true;
-		return 0;
+		return 1;
 	case WM_RBUTTONUP:
 		io.MouseDown[1] = false;
-		return 0;
+		return 1;
 	case WM_MBUTTONDOWN:
 		io.MouseDown[2] = true;
-		return 0;
+		return 1;
 	case WM_MBUTTONUP:
 		io.MouseDown[2] = false;
-		return 0;
+		return 1;
 	case WM_MOUSEWHEEL:
 		io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-		return 0;
+		return 1;
 	case WM_MOUSEMOVE:
 		io.MousePos.x = (signed short)(lParam);
 		io.MousePos.y = (signed short)(lParam >> 16);
-		return 0;
+		return 1;
 	case WM_KEYUP:
 		if (wParam < 256)
 			io.KeysDown[wParam] = 0;
-		return 0;
+		return 1;
 	case WM_CHAR:
 		// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
 		if (wParam > 0 && wParam < 0x10000)
 			io.AddInputCharacter((unsigned short)wParam);
-		return 0;
+		return 1;
 	case WM_KEYDOWN:
 		if (wParam < 256)
 			io.KeysDown[wParam] = 1;

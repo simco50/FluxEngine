@@ -4,12 +4,10 @@ class Graphics;
 class Shader;
 class ShaderVariation;
 class VertexBuffer;
-class InputLayout;
 class ConstantBuffer;
 class IndexBuffer;
 class ImmediateUI;
 class InputEngine;
-class Context;
 class FreeCamera;
 
 class FluxCore
@@ -36,7 +34,6 @@ private:
 	ShaderVariation* m_pPixelShader = nullptr;
 	VertexBuffer* m_pVertexBuffer = nullptr;
 	VertexBuffer* m_pInstanceBuffer = nullptr;
-	InputLayout* m_pInputLayout = nullptr;
 	IndexBuffer* m_pIndexBuffer = nullptr;
 
 	Graphics* m_pGraphics = nullptr;

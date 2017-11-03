@@ -42,7 +42,7 @@ struct VertexElement
 	VertexElementSemantic Semantic;
 	unsigned char Index;
 	bool PerInstance;
-	unsigned Offset;
+	unsigned int Offset;
 
 	static char* GetSemanticOfType(VertexElementSemantic semantic)
 	{
@@ -123,7 +123,7 @@ public:
 
 	DELETE_COPY(VertexBuffer)
 
-	void Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic = false);
+		void Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic = false);
 	void SetData(void* pData);
 
 	void* GetBuffer() const { return m_pBuffer; }
@@ -134,6 +134,8 @@ public:
 	unsigned int GetStride() const { return m_VertexStride; }
 	unsigned int GetCount() const { return m_VertexCount; }
 	const vector<VertexElement>& GetElements() const { return m_Elements; }
+
+	unsigned long long GetBufferHash() const { return m_BufferHash; }
 
 private:
 	void Release();
@@ -151,5 +153,7 @@ private:
 	unsigned int m_VertexStride = 0;
 
 	Graphics* m_pGraphics;
+
+	unsigned long long m_BufferHash = 0;
 };
 

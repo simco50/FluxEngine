@@ -39,13 +39,11 @@ public:
 	void SetRenderTargets(const vector<RenderTarget*>& pRenderTargets);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
-	void SetVertexBuffers(const vector<VertexBuffer*>& pBuffers);
+	void SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
 
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
 	void SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixelShader);
-
-	void SetInputLayout(InputLayout* pInputLayout);
 
 	void SetViewport(const FloatRect& rect, bool relative = false);
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
@@ -82,8 +80,6 @@ public:
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
 private:
-	static const int NUM_SHADER_TYPES = 2;
-
 	void SetPrimitiveType(const PrimitiveType type);
 
 	bool RegisterWindowClass();
@@ -121,7 +117,7 @@ private:
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
-	void* m_CurrentConstBuffers[NUM_SHADER_TYPES][(unsigned int)ShaderParameterType::MAX];
+	array<array<void*, (unsigned int)ShaderParameterType::MAX>, (unsigned int)ShaderType::MAX> m_CurrentConstBuffers = {};
 
 	//Clip rect
 	IntRect m_CurrentScissorRect;
@@ -129,9 +125,11 @@ private:
 	bool m_ScissorRectDirty = true;
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
-	VertexBuffer* m_pCurrentVertexBuffer = nullptr;
+	array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
+	unsigned int m_FirstDirtyVertexBuffer = numeric_limits<unsigned int>::max();
+	unsigned int m_LastDirtyVertexBuffer = 0;
+	bool m_VertexBuffersDirty = false;
 	PrimitiveType m_CurrentPrimitiveType = PrimitiveType::UNDEFINED;
-	InputLayout* m_pCurrentInputLayout = nullptr;
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 
 	ShaderVariation* m_pCurrentVertexShader = nullptr;

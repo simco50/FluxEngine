@@ -3,7 +3,6 @@
 class Graphics;
 class VertexBuffer;
 class IndexBuffer;
-class InputLayout;
 class Shader;
 class ShaderVariation;
 struct VertexElement;
@@ -21,7 +20,7 @@ public:
 
 	void NewFrame();
 	void Render();
-	int WndProc(UINT message, WPARAM wParam, LPARAM lParam);
+	static int WndProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
 	Graphics* m_pGraphics;
@@ -32,7 +31,6 @@ private:
 	unique_ptr<Texture> m_pFontTexture;
 	unique_ptr<VertexBuffer> m_pVertexBuffer;
 	unique_ptr<IndexBuffer> m_pIndexBuffer;
-	unique_ptr<InputLayout> m_pInputLayout;
 	unique_ptr<Shader> m_pShader;
 	ShaderVariation* m_pPixelShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
