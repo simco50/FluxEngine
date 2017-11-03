@@ -118,7 +118,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 #ifndef _DEBUG
 	// Strip everything not necessary to use the shader
 	ID3DBlob* strippedCode = 0;
-	HR(D3DStripShader(pBuffer, bufferSize, D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, &strippedCode))
+	HR(D3DStripShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, &strippedCode))
 		m_ShaderByteCode.resize((unsigned)strippedCode->GetBufferSize());
 	memcpy(&m_ShaderByteCode[0], strippedCode->GetBufferPointer(), m_ShaderByteCode.size());
 	SafeRelease(strippedCode);
