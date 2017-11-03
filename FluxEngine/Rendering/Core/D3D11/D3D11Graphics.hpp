@@ -147,7 +147,7 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 	if (pVertexShader)
 	{
 		bool buffersChanged = false;
-		const vector<ConstantBuffer*>& buffers = pVertexShader->GetConstantBuffers();
+		const auto& buffers = pVertexShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
 			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::VertexShader][i])
@@ -162,7 +162,7 @@ void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixe
 	if (pPixelShader)
 	{
 		bool buffersChanged = false;
-		const vector<ConstantBuffer*>& buffers = pPixelShader->GetConstantBuffers();
+		const auto& buffers = pPixelShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
 			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::PixelShader][i])

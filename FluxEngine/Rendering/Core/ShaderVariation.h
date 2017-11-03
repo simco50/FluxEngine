@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsDefines.h"
 class Shader;
 class ConstantBuffer;
 class Graphics;
@@ -28,7 +29,7 @@ public:
 	void SetParameter(const string& name, void* pValue);
 
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
-	const vector<ConstantBuffer*>& GetConstantBuffers() const { return m_ConstantBuffers; }
+	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
 	void* const GetShaderObject() const { return m_pShaderObject; }
 	const vector<char>& GetByteCode() const { return m_ShaderByteCode; }
@@ -46,5 +47,5 @@ private:
 	vector<char> m_ShaderByteCode;
 
 	map<string, ShaderParameter> m_ShaderParameters;
-	vector<ConstantBuffer*> m_ConstantBuffers;
+	array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX> m_ConstantBuffers = {};
 };

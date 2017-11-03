@@ -104,48 +104,41 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	endMacro.Definition = 0;
 	macros.push_back(endMacro);
 
-	ID3DBlob* shaderCode = 0;
-	ID3DBlob* errorMsgs = 0;
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), "shader", macros.data(), 0, entryPoint, profile, flags, 0, &shaderCode, &errorMsgs);
+	ComPtr<ID3DBlob> pShaderCode, pErrorBlob;
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), "shader", macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
-		FLUX_LOG(ERROR, D3DBlobToString(errorMsgs));
+		FLUX_LOG(ERROR, D3DBlobToString(pErrorBlob.Get()));
 		return false;
 	}
-	D3DBlobToVector(shaderCode, m_ShaderByteCode);
+	D3DBlobToVector(pShaderCode.Get(), m_ShaderByteCode);
 	ShaderReflection(m_ShaderByteCode.data(), (unsigned int)m_ShaderByteCode.size(), pGraphics);
 
 #ifndef _DEBUG
 	// Strip everything not necessary to use the shader
-	ID3DBlob* strippedCode = 0;
-	HR(D3DStripShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, &strippedCode))
-		m_ShaderByteCode.resize((unsigned)strippedCode->GetBufferSize());
-	memcpy(&m_ShaderByteCode[0], strippedCode->GetBufferPointer(), m_ShaderByteCode.size());
-	SafeRelease(strippedCode);
+	ComPtr<ID3DBlob> pStrippedCode;
+	HR(D3DStripShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, pStrippedCode.GetAddressOf()))
+		m_ShaderByteCode.resize((unsigned)pStrippedCode->GetBufferSize());
+	memcpy(&m_ShaderByteCode[0], pStrippedCode->GetBufferPointer(), m_ShaderByteCode.size());
 #endif // !_DEBUG
-
-	SafeRelease(shaderCode);
-	SafeRelease(errorMsgs);
 
 	return true;
 }
 
 void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
 {
-	m_ConstantBuffers.resize((unsigned int)ShaderParameterType::MAX);
-
-	ID3D11ShaderReflection* reflection = 0;
+	ComPtr<ID3D11ShaderReflection> pShaderReflection;
 	D3D11_SHADER_DESC shaderDesc;
 
-	D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)&reflection);
-	reflection->GetDesc(&shaderDesc);
+	HR(D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)pShaderReflection.GetAddressOf()));
+	pShaderReflection->GetDesc(&shaderDesc);
 
 	map<string, UINT> cbRegisterMap;
 
 	for (unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 	{
 		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
-		reflection->GetResourceBindingDesc(i, &resourceDesc);
+		pShaderReflection->GetResourceBindingDesc(i, &resourceDesc);
 		string resourceName(resourceDesc.Name);
 		if (resourceDesc.Type == D3D_SIT_CBUFFER)
 			cbRegisterMap[resourceName] = resourceDesc.BindPoint;
@@ -153,7 +146,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 
 	for (unsigned int c = 0; c < shaderDesc.ConstantBuffers; ++c)
 	{
-		ID3D11ShaderReflectionConstantBuffer* pConstantBuffer = reflection->GetConstantBufferByIndex(c);
+		ID3D11ShaderReflectionConstantBuffer* pConstantBuffer = pShaderReflection->GetConstantBufferByIndex(c);
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		pConstantBuffer->GetDesc(&bufferDesc);
 		unsigned cbRegister = cbRegisterMap[string(bufferDesc.Name)];
@@ -185,5 +178,4 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			m_ShaderParameters[parameter.Name] = parameter;
 		}
 	}
-	SafeRelease(reflection);
 }

@@ -41,17 +41,17 @@ int FluxCore::Run(HINSTANCE hInstance)
 {
 	Console::Initialize();
 
-#ifdef NDEBUG
+/*#ifdef NDEBUG
 	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 	{
 		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
 	}
 #else
 	FLUX_LOG(WARNING, "[DEBUG] Skipped mounting './Resources.paK'");
-#endif
+#endif*/
 	if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
 	{
-		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+		FLUX_LOG(WARNING, "Failed to mount './Resources'");
 	}
 
 	Config::Initialize();
