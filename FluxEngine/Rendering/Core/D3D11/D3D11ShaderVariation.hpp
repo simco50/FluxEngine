@@ -108,7 +108,8 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	HRESULT hr = D3DCompile(source.c_str(), source.size(), "shader", macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
-		FLUX_LOG(ERROR, D3DBlobToString(pErrorBlob.Get()));
+		std::string error = D3DBlobToString(pErrorBlob.Get());
+		FLUX_LOG(ERROR, error);
 		return false;
 	}
 	D3DBlobToVector(pShaderCode.Get(), m_ShaderByteCode);

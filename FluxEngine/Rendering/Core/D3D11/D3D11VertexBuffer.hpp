@@ -2,6 +2,8 @@
 
 void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic)
 {
+	AUTOPROFILE(CreateVertexBuffer);
+
 	Release();
 
 	SetVertexSize(elements);

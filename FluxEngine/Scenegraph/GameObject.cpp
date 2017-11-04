@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Core/Components/ComponentBase.h"
 #include "Core/Components/Transform.h"
+#include "SceneBase.h"
 
 GameObject::GameObject()
 {
@@ -11,8 +12,6 @@ GameObject::GameObject()
 
 GameObject::~GameObject()
 {
-	for (size_t i = 0; i < m_pChildren.size(); i++)
-		delete m_pChildren[i];
 	for (size_t i = 0; i < m_pComponents.size(); i++)
 		delete m_pComponents[i];
 }
@@ -39,7 +38,7 @@ void GameObject::AddComponent(ComponentBase* pComponent)
 void GameObject::AddChild(GameObject* pChild)
 {
 	pChild->m_pParent = this;
-	m_pChildren.push_back(pChild);
+	m_pScene->AddChild(pChild);
 
 	if (m_IsInitialized)
 		pChild->BaseInitialize(m_pGameContext);
@@ -48,19 +47,6 @@ void GameObject::AddChild(GameObject* pChild)
 Transform* GameObject::GetTransform()
 {
 	return m_pTransform;
-}
-
-GameObject* GameObject::Find(const string& name)
-{
-	for(GameObject* pChild : m_pChildren)
-	{
-		if (pChild->GetName() == name)
-			return pChild;
-		GameObject* pChildOutput = pChild->Find(name);
-		if (pChildOutput != nullptr)
-			return pChildOutput;
-	}
-	return nullptr;
 }
 
 SceneBase* GameObject::GetScene()
@@ -80,8 +66,6 @@ void GameObject::BaseInitialize(GameContext* pGameContext)
 
 	Initialize();
 
-	for (size_t i = 0; i < m_pChildren.size(); i++)
-		m_pChildren[i]->BaseInitialize(pGameContext);
 	for (size_t i = 0; i < m_pComponents.size(); i++)
 		m_pComponents[i]->BaseInitialize(pGameContext);
 
@@ -91,8 +75,6 @@ void GameObject::BaseInitialize(GameContext* pGameContext)
 void GameObject::BaseUpdate()
 {
 	Update();
-	for (size_t i = 0; i < m_pChildren.size(); i++)
-		m_pChildren[i]->BaseUpdate();
 	for (size_t i = 0; i < m_pComponents.size(); i++)
 		m_pComponents[i]->Update();
 }

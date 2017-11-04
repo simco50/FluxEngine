@@ -25,6 +25,11 @@ class AutoProfiler : public Profiler
 public:
 	AutoProfiler(const string& name, const string& description = "");
 	~AutoProfiler();
+
+	unsigned int GetDepth() const { return m_Depth; }
+
+private:
+	unsigned int m_Depth = 0;
 };
 
 #ifdef PROFILING

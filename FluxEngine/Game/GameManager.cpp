@@ -9,24 +9,15 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-}
-
-void GameManager::PrepareGame()
-{
-
-}
-
-void GameManager::Initialize()
-{	
-}
-
-void GameManager::Update()
-{
+	for (SceneBase*& pScene : m_pScenes)
+	{
+		SafeDelete(pScene);
+	}
 }
 
 void GameManager::AddScene(SceneBase* pScene)
 {
-	UNREFERENCED_PARAMETER(pScene);
+	m_pScenes.push_back(pScene);
 }
 
 void GameManager::ReloadScene(SceneBase* pScene)
@@ -36,5 +27,7 @@ void GameManager::ReloadScene(SceneBase* pScene)
 
 void GameManager::LoadScene(const int index)
 {
-	UNREFERENCED_PARAMETER(index);
+	m_ActiveScene = index;
+	if (!m_pScenes[index]->IsInitialized())
+		m_pScenes[index]->Initialize();
 }

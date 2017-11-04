@@ -93,23 +93,23 @@ void ImmediateUI::NewFrame()
 void ImmediateUI::Render()
 {
 	ImGui::Render();
-	ImDrawData* draw_data = ImGui::GetDrawData();
+	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough
-	if(m_pVertexBuffer == nullptr || (int)m_pVertexBuffer->GetCount() < draw_data->TotalVtxCount)
-		m_pVertexBuffer->Create(m_pVertexBuffer->GetCount() + 5000, m_VertexElements, true);
+	if(m_pVertexBuffer == nullptr || (int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
+		m_pVertexBuffer->Create(m_pVertexBuffer->GetVertexCount() + 5000, m_VertexElements, true);
 
 	//Recreate the indexbuffer if it is not large enough
-	if (m_pIndexBuffer == nullptr || (int)m_pIndexBuffer->GetCount() < draw_data->TotalIdxCount)
+	if (m_pIndexBuffer == nullptr || (int)m_pIndexBuffer->GetCount() < pDrawData->TotalIdxCount)
 		m_pIndexBuffer->Create(m_pIndexBuffer->GetCount() + 10000, true, true);
 
 	//Copy the new data to the buffers
 	ImDrawVert* pVertexData = (ImDrawVert*)m_pVertexBuffer->Map(true);
 	ImDrawIdx* IndexData = (ImDrawIdx*)m_pIndexBuffer->Map(true);
 
-	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	for (int n = 0; n < pDrawData->CmdListsCount; n++)
 	{
-		const ImDrawList* cmd_list = draw_data->CmdLists[n];
+		const ImDrawList* cmd_list = pDrawData->CmdLists[n];
 		memcpy(pVertexData, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
 		memcpy(IndexData, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
 		pVertexData += cmd_list->VtxBuffer.Size;
@@ -119,7 +119,9 @@ void ImmediateUI::Render()
 	m_pVertexBuffer->Unmap();
 	m_pIndexBuffer->Unmap();
 
-	m_pGraphics->SetShaders(m_pVertexShader, m_pPixelShader);
+	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
+	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
+
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
 
@@ -136,14 +138,14 @@ void ImmediateUI::Render()
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
-	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	for (int n = 0; n < pDrawData->CmdListsCount; n++)
 	{
-		const ImDrawList* cmd_list = draw_data->CmdLists[n];
-		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+		const ImDrawList* pCmdList = pDrawData->CmdLists[n];
+		for (int cmd_i = 0; cmd_i < pCmdList->CmdBuffer.Size; cmd_i++)
 		{
-			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+			const ImDrawCmd* pcmd = &pCmdList->CmdBuffer[cmd_i];
 			if (pcmd->UserCallback)
-				pcmd->UserCallback(cmd_list, pcmd);
+				pcmd->UserCallback(pCmdList, pcmd);
 			else
 			{
 				m_pGraphics->SetScissorRect(true, {
@@ -152,12 +154,11 @@ void ImmediateUI::Render()
 					(int)pcmd->ClipRect.z, 
 					(int)pcmd->ClipRect.w });
 				m_pGraphics->SetTexture(0, (Texture*)pcmd->TextureId);
-				m_pGraphics->PrepareDraw();
 				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}
-		vertexOffset += cmd_list->VtxBuffer.Size;
+		vertexOffset += pCmdList->VtxBuffer.Size;
 	}
 }
 

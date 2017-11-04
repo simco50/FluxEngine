@@ -31,10 +31,11 @@ public:
 		const int multiSample,
 		const int refreshRate);
 
+	//Window
 	void SetWindowTitle(const string& title);
-
 	void SetWindowPosition(const XMFLOAT2& position);
 
+	//Graphics
 	void SetRenderTarget(RenderTarget* pRenderTarget);
 	void SetRenderTargets(const vector<RenderTarget*>& pRenderTargets);
 
@@ -43,7 +44,7 @@ public:
 
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
-	void SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixelShader);
+	bool SetShader(const ShaderType type, ShaderVariation* pShader);
 
 	void SetViewport(const FloatRect& rect, bool relative = false);
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
@@ -54,9 +55,10 @@ public:
 	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
 	void DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex = 0, const int instanceStart = 0);
 
-	void Clear(const unsigned int flags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue, const float depth = 1.0f, const unsigned char stencil = 0);
+	void Clear(const ClearFlags clearFlags = ClearFlags::All, const XMFLOAT4& color = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
+	
+	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
 
-	void PrepareDraw();
 	void BeginFrame();
 	void EndFrame();
 
@@ -68,19 +70,17 @@ public:
 	int GetWindowHeight() const { return m_WindowHeight; }
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
-
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
 	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
 	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
-
-	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
-
 	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
+	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
+
 private:
-	void SetPrimitiveType(const PrimitiveType type);
+	void PrepareDraw();
 
 	bool RegisterWindowClass();
 	bool MakeWindow(int windowWidth, int windowHeight);
@@ -116,10 +116,15 @@ private:
 	unique_ptr<RasterizerState> m_pRasterizerState;
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
+	//Cache of constantbuffers with a search hash
 	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
-	array<array<void*, (unsigned int)ShaderParameterType::MAX>, (unsigned int)ShaderType::MAX> m_CurrentConstBuffers = {};
 
-	//Clip rect
+	using ShaderConstantBuffers = array<void*, (unsigned int)ShaderParameterType::MAX>;
+	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
+
+	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
+
+	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;
 	bool m_ScissorEnabled = false;
 	bool m_ScissorRectDirty = true;
@@ -129,14 +134,13 @@ private:
 	unsigned int m_FirstDirtyVertexBuffer = numeric_limits<unsigned int>::max();
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
-	PrimitiveType m_CurrentPrimitiveType = PrimitiveType::UNDEFINED;
-	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 
-	ShaderVariation* m_pCurrentVertexShader = nullptr;
-	ShaderVariation* m_pCurrentPixelShader = nullptr;
-
+	//Textures
 	bool m_TexturesDirty = false;
 	unsigned int m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
 	unsigned int m_LastDirtyTexture = 0;
 
+	//Debug data
+	unsigned int m_BatchCount = 0;
+	unsigned int m_PrimitiveCount = 0;
 };

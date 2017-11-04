@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include <Core/FluxCore.h>
+#include "Game/GameManager.h"
+#include "Game/Scenes/DemoScene.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {

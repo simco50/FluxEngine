@@ -4,12 +4,14 @@
 class Particle;
 class Texture;
 class ParticleMaterial;
+class Graphics;
+class VertexBuffer;
 struct ParticleSystem;
 
 class ParticleEmitter : public ComponentBase
 {
 public:
-	ParticleEmitter(ParticleSystem* pSystem = nullptr);
+	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem = nullptr);
 	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;
@@ -45,9 +47,11 @@ private:
 	int m_BufferSize = 0;
 	float m_ParticleSpawnTimer = 0.0f;
 
-	ComPtr<ID3D11Buffer> m_pVertexBuffer;
+	unique_ptr<VertexBuffer> m_pVertexBuffer;
 
 	ParticleMaterial* m_pMaterial = nullptr;
 	wstring m_AssetFile;
+
+	Graphics* m_pGraphics;
 };
 

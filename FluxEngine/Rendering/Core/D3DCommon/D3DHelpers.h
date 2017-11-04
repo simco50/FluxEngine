@@ -2,10 +2,13 @@
 
 inline std::string D3DBlobToString(ID3DBlob* pBlob)
 {
-	return std::string((char*)pBlob->GetBufferPointer(), (char*)pBlob->GetBufferPointer() + pBlob->GetBufferSize());
+	std::string data;
+	data.resize(pBlob->GetBufferSize());
+	memcpy(&data[0], pBlob->GetBufferPointer(), pBlob->GetBufferSize());
+	return data;
 }
 
-void D3DBlobToVector(ID3DBlob* pBlob, vector<char>& buffer)
+inline void D3DBlobToVector(ID3DBlob* pBlob, vector<char>& buffer)
 {
 	buffer.resize(pBlob->GetBufferSize());
 	memcpy(buffer.data(), pBlob->GetBufferPointer(), buffer.size());

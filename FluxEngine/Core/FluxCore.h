@@ -9,6 +9,7 @@ class IndexBuffer;
 class ImmediateUI;
 class InputEngine;
 class FreeCamera;
+class MeshFilter;
 
 class FluxCore
 {
@@ -21,6 +22,12 @@ public:
 	int Run(HINSTANCE hInstance);
 	void GameLoop();
 
+	void UpdatePerFrameParameters();
+
+	void UpdatePerObjectParameters();
+
+	void UpdatePerViewParameters();
+
 	void RenderUI();
 
 	void InitGame();
@@ -32,9 +39,8 @@ private:
 	Shader* m_pShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
-	VertexBuffer* m_pVertexBuffer = nullptr;
+	MeshFilter* m_pMeshFilter = nullptr;
 	VertexBuffer* m_pInstanceBuffer = nullptr;
-	IndexBuffer* m_pIndexBuffer = nullptr;
 
 	Graphics* m_pGraphics = nullptr;
 	unique_ptr<ImmediateUI> m_pImmediateUI;

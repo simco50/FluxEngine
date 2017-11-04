@@ -65,9 +65,6 @@ GameObject* SceneBase::FindObject(const string& name)
 	{
 		if (pObject->GetName() == name)
 			return pObject;
-		GameObject* pChildObject = pObject->Find(name);
-		if (pChildObject != nullptr)
-			return pChildObject;
 	}
 	return nullptr;
 }

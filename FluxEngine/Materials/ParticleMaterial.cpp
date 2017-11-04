@@ -3,45 +3,24 @@
 #include "Rendering/ParticleSystem\ParticleSystem.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
+#include "Rendering/Core/Graphics.h"
 
-ParticleMaterial::ParticleMaterial() : Material()
+ParticleMaterial::ParticleMaterial(Graphics* pGraphics) : Material(pGraphics)
 {
-	m_MaterialDesc.EffectName = "./Resources/Shaders/ParticleRenderer.fx";
-	m_MaterialDesc.HasWorldMatrix = true;
-	m_MaterialDesc.HasViewInverseMatrix = true;
+	m_MaterialDesc.RenderQueue = RenderQueueID::ID_TRANSPARANT;
+	m_MaterialDesc.ShaderFilePath = "Resources/Shaders/Particles.hlsl";
+	m_MaterialDesc.ShaderMask |= ShaderType::VertexShader;
+	m_MaterialDesc.ShaderMask |= ShaderType::PixelShader;
+	m_MaterialDesc.ShaderMask |= ShaderType::GeometryShader;
 }
 
 ParticleMaterial::~ParticleMaterial()
 {
 }
 
-void ParticleMaterial::LoadShaderVariables()
-{
-	BIND_AND_CHECK_NAME(m_pTextureVariable, gParticleTexture, AsShaderResource);
-	BIND_AND_CHECK_SEMANTIC(m_pViewProjVariable, "ViewProj", AsMatrix);
-
-	m_pAdditiveBlendingTechnique = m_pEffect->GetTechniqueByIndex((int)ParticleBlendMode::ADDITIVE);
-	m_pAlphaBlendingTechnique = m_pEffect->GetTechniqueByIndex((int)ParticleBlendMode::ALPHABLEND);
-}
-
 void ParticleMaterial::UpdateShaderVariables()
 {
-	m_pTextureVariable->SetResource((ID3D11ShaderResourceView*)m_pTexture->GetResourceView());
-	XMFLOAT4X4 vp = m_pGameContext->Scene->Camera->GetViewProjection();
-	m_pViewProjVariable->SetMatrix(reinterpret_cast<float*>(&vp));
-}
-
-ID3DX11EffectTechnique* ParticleMaterial::GetTechnique() const
-{
-	switch (m_BlendMode)
-	{
-	case ParticleBlendMode::ALPHABLEND:
-		return m_pAlphaBlendingTechnique;
-	case ParticleBlendMode::ADDITIVE:
-		return m_pAdditiveBlendingTechnique;
-	default:
-		return nullptr;
-	}
+	m_pGraphics->SetTexture(0, m_pTexture);
 }
 
 void ParticleMaterial::SetBlendMode(const ParticleBlendMode mode)

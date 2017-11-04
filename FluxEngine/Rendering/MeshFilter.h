@@ -1,6 +1,8 @@
 #pragma once
 
-class Material;
+class VertexBuffer;
+class IndexBuffer;
+struct VertexElement;
 
 class MeshFilter
 {
@@ -8,14 +10,18 @@ public:
 	MeshFilter();
 	~MeshFilter();
 
-	void Initialize(GameContext* pGameContext);
-	void CreateBuffers(const InputLayoutDesc* pILDesc);
+	//Creates vertex- and indexbuffer according to the element desc
+	void CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc);
 
-	ID3D11Buffer* GetVertexBuffer() const { return m_pVertexBuffer.Get(); }
-	ID3D11Buffer* GetIndexBuffer() const { return m_pIndexBuffer.Get(); }
+	//Returns the vertexbuffer at the specified slot
+	VertexBuffer* GetVertexBuffer(const unsigned int slot) const;
+	const std::vector<VertexBuffer*>& GetVertexBuffers() const { return m_VertexBuffers; }
+	IndexBuffer* GetIndexBuffer() const { return m_pIndexBuffer.get(); }
 
-	int IndexCount() const { return m_IndexCount; }
-	int VertexCount() const { return m_VertexCount; }
+	int GetIndexCount() const { return m_IndexCount; }
+	int GetVertexCount() const { return m_VertexCount; }
+	unsigned int GetVertexBufferCount() const { return (unsigned int)m_VertexBuffers.size(); }
+	bool HasIndexBuffer() const { return m_pIndexBuffer.get(); }
 
 	struct VertexData
 	{
@@ -23,24 +29,24 @@ public:
 		int Count = 0;
 		void* pData;
 	};
+
+	//Return the vertex data of the given semantic
 	VertexData& GetVertexData(const string& semantic);
+	//Same as above but without range checking
 	VertexData& GetVertexDataUnsafe(const string& semantic);
 	bool HasData(const string& semantic) const;
 
 private:
 	friend class MeshLoader;
 
-	GameContext* m_pGameContext = nullptr;
-
 	bool m_BuffersInitialized = false;
-	ComPtr<ID3D11Buffer> m_pVertexBuffer = nullptr;
-	ComPtr<ID3D11Buffer> m_pIndexBuffer = nullptr;
+	std::vector<VertexBuffer*> m_VertexBuffers;
+	unique_ptr<IndexBuffer> m_pIndexBuffer;
 
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;
 	string m_FilePath;
 
 	map<string, VertexData> m_VertexData;
-	void* m_pVertexDataStart = nullptr;
 };
 

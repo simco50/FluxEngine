@@ -19,7 +19,7 @@ public:
 
 	void SetViewport(float x, float y, float width, float height);
 	void UpdateViewport();
-	const D3D11_VIEWPORT& GetViewport() const { return m_Viewport; }
+	const FloatRect& GetViewport() const { return m_Viewport; }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction);
@@ -51,7 +51,7 @@ private:
 
 	bool m_Perspective = true;
 
-	D3D11_VIEWPORT m_Viewport;
+	FloatRect m_Viewport;
 	float m_VpX = 0.0f;
 	float m_VpY = 0.0f;
 	float m_VpWidth = 1.0f;

@@ -49,7 +49,7 @@ bool Graphics::SetMode(const int width,
 	m_pRasterizerState->SetMultisampleEnabled(m_Multisample > 1);
 	m_pDepthStencilState = make_unique<DepthStencilState>();
 
-	Clear(0);
+	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
 
 	return true;
@@ -97,7 +97,7 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned 
 		{
 			m_CurrentVertexBuffers[i] = pBuffer;
 			m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
-			m_pImpl->m_CurrentStrides[i] = pBuffer->GetStride();
+			m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
 			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetBuffer();
 			changed = true;
 		}
@@ -132,48 +132,71 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	}
 }
 
-void Graphics::SetShaders(ShaderVariation* pVertexShader, ShaderVariation* pPixelShader)
+bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 {
-	if (pVertexShader != m_pCurrentVertexShader)
+	if (type == ShaderType::NONE)
+		return false;
+
+	if (m_CurrentShaders[(unsigned int)type] != pShader)
 	{
-		m_pImpl->m_pDeviceContext->VSSetShader((ID3D11VertexShader*)pVertexShader->GetShaderObject(), nullptr, 0);
-		m_pCurrentVertexShader = pVertexShader;
+		m_CurrentShaders[(unsigned int)type] = pShader;
+		switch (type)
+		{
+		default:
+			break;
+		case ShaderType::VertexShader:
+			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::PixelShader:
+			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::GeometryShader:
+			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::ComputeShader:
+			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::NONE:
+			return false;
+			break;
+		}
 	}
-	if (pPixelShader != m_pCurrentVertexShader)
-	{
-		m_pImpl->m_pDeviceContext->PSSetShader((ID3D11PixelShader*)pPixelShader->GetShaderObject(), nullptr, 0);
-		m_pCurrentPixelShader = pPixelShader;
-	}
-	if (pVertexShader)
+
+	if (pShader)
 	{
 		bool buffersChanged = false;
-		const auto& buffers = pVertexShader->GetConstantBuffers();
+		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
-			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::VertexShader][i])
+			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
 			{
-				m_CurrentConstBuffers[(int)ShaderType::VertexShader][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
+				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
 				buffersChanged = true;
 			}
 		}
 		if (buffersChanged)
-			m_pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::VertexShader]);
-	}
-	if (pPixelShader)
-	{
-		bool buffersChanged = false;
-		const auto& buffers = pPixelShader->GetConstantBuffers();
-		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
-			if (buffers[i] != m_CurrentConstBuffers[(int)ShaderType::PixelShader][i])
+			switch (type)
 			{
-				m_CurrentConstBuffers[(int)ShaderType::PixelShader][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
-				buffersChanged = true;
+			case ShaderType::VertexShader:
+				m_pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::PixelShader:
+				m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::GeometryShader:
+				m_pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::ComputeShader:
+				m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			default:
+			case ShaderType::NONE:
+				break;
 			}
 		}
-		if (buffersChanged)
-			m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(int)ShaderType::PixelShader]);
 	}
+	return true;
 }
 
 void Graphics::SetViewport(const FloatRect& rect, bool relative)
@@ -229,26 +252,65 @@ void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
 {
-	SetPrimitiveType(type);
+	PrepareDraw();
+
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	unsigned int primitiveCount = 0;
+	m_pImpl->GetPrimitiveType(type, vertexCount, topology, primitiveCount);
+	if (topology != m_pImpl->m_CurrentPrimitiveType)
+	{
+		m_pImpl->m_CurrentPrimitiveType = topology;
+		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
+	}
+
 	m_pImpl->m_pDeviceContext->Draw(vertexCount, vertexStart);
+
+	++m_BatchCount;
+	m_PrimitiveCount += primitiveCount;
 }
 
 void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
 {
-	SetPrimitiveType(type);
+	PrepareDraw();
+
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	unsigned int primitiveCount = 0;
+	m_pImpl->GetPrimitiveType(type, indexCount, topology, primitiveCount);
+	if (topology != m_pImpl->m_CurrentPrimitiveType)
+	{
+		m_pImpl->m_CurrentPrimitiveType = topology;
+		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
+	}
+
 	m_pImpl->m_pDeviceContext->DrawIndexed(indexCount, indexStart, minVertex);
+
+	++m_BatchCount;
+	m_PrimitiveCount += primitiveCount;
 }
 
 void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex, const int instanceStart)
 {
-	SetPrimitiveType(type);
+	PrepareDraw();
+
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	unsigned int primitiveCount = 0;
+	m_pImpl->GetPrimitiveType(type, instanceCount * indexCount, topology, primitiveCount);
+	if (topology != m_pImpl->m_CurrentPrimitiveType)
+	{
+		m_pImpl->m_CurrentPrimitiveType = topology;
+		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
+	}
+
 	m_pImpl->m_pDeviceContext->DrawIndexedInstanced(indexCount, instanceCount, indexStart, minVertex, instanceStart);
+
+	++m_BatchCount;
+	m_PrimitiveCount += primitiveCount;
 }
 
-void Graphics::Clear(const unsigned int flags, const XMFLOAT4& color, const float depth, const unsigned char stencil)
+void Graphics::Clear(const ClearFlags clearFlags, const XMFLOAT4& color, const float depth, const unsigned char stencil)
 {
-	m_pDefaultRenderTarget->ClearColor(color);
-	m_pDefaultRenderTarget->ClearDepth(flags, depth, stencil);
+	if(m_pDefaultRenderTarget)
+		m_pDefaultRenderTarget->Clear(clearFlags, color, depth, stencil);
 }
 
 void Graphics::PrepareDraw()
@@ -283,7 +345,7 @@ void Graphics::PrepareDraw()
 		m_LastDirtyTexture = 0;
 	}
 
-	if (m_VertexBuffersDirty && m_pCurrentVertexShader && m_pCurrentVertexShader->GetByteCode().size())
+	if (m_VertexBuffersDirty)
 	{
 		//Set the vertex buffers
 		m_pImpl->m_pDeviceContext->IASetVertexBuffers(
@@ -314,7 +376,7 @@ void Graphics::PrepareDraw()
 		else
 		{
 			unique_ptr<InputLayout> pNewInputLayout = make_unique<InputLayout>(this);
-			pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_pCurrentVertexShader);
+			pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
 			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
 			m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
 		}
@@ -335,50 +397,28 @@ void Graphics::PrepareDraw()
 		m_ScissorRectDirty = false;
 	}
 
-	for (ConstantBuffer* pBuffer : m_pCurrentVertexShader->GetConstantBuffers())
+	for (unsigned int i = 0; i < GraphicsConstants::SHADER_TYPES; ++i)
 	{
-		if (pBuffer)
-			pBuffer->Apply();
-	}
-
-	for (ConstantBuffer* pBuffer : m_pCurrentPixelShader->GetConstantBuffers())
-	{
-		if (pBuffer)
-			pBuffer->Apply();
+		ShaderVariation* pShader = m_CurrentShaders[i];
+		if (pShader == nullptr)
+			continue;
+		for (ConstantBuffer* pBuffer : pShader->GetConstantBuffers())
+		{
+			if (pBuffer)
+				pBuffer->Apply();
+		}
 	}
 }
 
 void Graphics::BeginFrame()
 {
+	m_BatchCount = 0;
+	m_PrimitiveCount = 0;
 }
 
 void Graphics::EndFrame()
 {
-	//AUTOPROFILE(Present);
 	m_pImpl->m_pSwapChain->Present(m_Vsync ? 1 : 0, 0);
-}
-
-void Graphics::SetPrimitiveType(const PrimitiveType type)
-{
-	if (m_CurrentPrimitiveType == type)
-		return;
-	m_CurrentPrimitiveType = type;
-	switch (type)
-	{
-	case PrimitiveType::TRIANGLELIST:
-		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		break;
-	case PrimitiveType::POINTLIST:
-		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-		break;
-	case PrimitiveType::TRIANGLESTRIP:
-		m_pImpl->m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		break;
-	case PrimitiveType::UNDEFINED:
-	default:
-		FLUX_LOG(ERROR, "[Graphics::SetPrimitiveType()] > Invalid primitive type");
-		break;
-	}
 }
 
 bool Graphics::EnumerateAdapters()

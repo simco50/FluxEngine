@@ -15,9 +15,6 @@ public:
 	int GetCurrentScene() const { return m_ActiveScene; }
 
 private:
-	void PrepareGame();
-	void Initialize();
-	void Update();
 
 	int m_ActiveScene = -1;
 	bool m_SceneInitialized = false;

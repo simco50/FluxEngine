@@ -19,15 +19,11 @@ public:
 	GameObject* GetParent() const { return m_pParent; }
 	Transform* GetTransform();
 
-	std::vector<GameObject*> GetChildren() const { return m_pChildren; }
-
 	void SetTag(const string& tag) { m_Tag = tag; }
 	const string& GetTag() const { return m_Tag; }
 
 	void SetName(const string& name) { m_Name = name; }
 	const string& GetName() const { return m_Name; }
-
-	GameObject* Find(const string& name);
 
 	template<class T>
 	T* GetComponent()
@@ -74,7 +70,6 @@ private:
 	string m_Name;
 	GameObject* m_pParent = nullptr;
 	SceneBase* m_pScene = nullptr;
-	std::vector<GameObject*> m_pChildren;
 	std::vector<ComponentBase*> m_pComponents;
 	Transform* m_pTransform = nullptr;
 

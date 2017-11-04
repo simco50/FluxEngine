@@ -123,7 +123,7 @@ public:
 
 	DELETE_COPY(VertexBuffer)
 
-		void Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic = false);
+	void Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic = false);
 	void SetData(void* pData);
 
 	void* GetBuffer() const { return m_pBuffer; }
@@ -131,8 +131,8 @@ public:
 	void* Map(bool discard);
 	void Unmap();
 
-	unsigned int GetStride() const { return m_VertexStride; }
-	unsigned int GetCount() const { return m_VertexCount; }
+	unsigned int GetVertexStride() const { return m_VertexStride; }
+	unsigned int GetVertexCount() const { return m_VertexCount; }
 	const vector<VertexElement>& GetElements() const { return m_Elements; }
 
 	unsigned long long GetBufferHash() const { return m_BufferHash; }

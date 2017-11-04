@@ -150,7 +150,6 @@ using namespace DirectX;
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
 #include "Helpers/Utility.h"
-#include "Materials/VertexStructures.h"
 #include "Rendering/Core/ShaderStructs.h"
 
 #include "Diagnostics/Console.h"

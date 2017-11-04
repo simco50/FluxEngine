@@ -2,6 +2,8 @@
 class Texture;
 class Graphics;
 
+enum class ClearFlags;
+
 struct RENDER_TARGET_DESC
 {
 	bool DepthBuffer = true;
@@ -46,8 +48,7 @@ public:
 
 	DELETE_COPY(RenderTarget)
 
-	void ClearColor(const XMFLOAT4& color = (XMFLOAT4)DirectX::Colors::CornflowerBlue);
-	void ClearDepth(const unsigned int depthflags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, const float depth = 1.0f, unsigned char stencil = 0);
+	void Clear(const ClearFlags clearFlags, const XMFLOAT4& color, const float depth, unsigned char stencil);
 
 	bool Create(const RENDER_TARGET_DESC& RenderTargetDesc);
 

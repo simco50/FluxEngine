@@ -54,6 +54,12 @@ void Graphics::OnPause(const bool paused)
 		GameTimer::Start();
 }
 
+void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount)
+{
+	batchCount = m_BatchCount;
+	primitiveCount = m_PrimitiveCount;
+}
+
 bool Graphics::RegisterWindowClass()
 {
 	AUTOPROFILE(RegisterWindowClass);

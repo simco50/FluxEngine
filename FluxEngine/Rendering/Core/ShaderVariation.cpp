@@ -40,9 +40,6 @@ void ShaderVariation::SetParameter(const string& name, void* pValue)
 {
 	auto pParameter = m_ShaderParameters.find(name);
 	if (pParameter == m_ShaderParameters.end())
-	{
-		FLUX_LOG(WARNING, "[ShaderVariation::SetParameter()] > Parameter with name '%s' not found!", name.c_str());
 		return;
-	}
 	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, pValue);
 }

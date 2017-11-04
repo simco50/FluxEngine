@@ -18,6 +18,5 @@ struct InputLayoutDesc
 	};
 	UINT ElementSemantics = 0;
 	UINT VertexStride = 0;
-	vector<D3D11_INPUT_ELEMENT_DESC> LayoutDesc;
-	//vector<ILElement> InputLayoutElements;
+	std::vector<D3D11_INPUT_ELEMENT_DESC> LayoutDesc;
 };

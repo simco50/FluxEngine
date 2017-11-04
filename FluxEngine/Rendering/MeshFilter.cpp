@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "MeshFilter.h"
 
+#include "Rendering/Core/IndexBuffer.h"
+#include "Rendering/Core/VertexBuffer.h"
+
 using namespace std;
 
 MeshFilter::MeshFilter()
@@ -9,7 +12,10 @@ MeshFilter::MeshFilter()
 
 MeshFilter::~MeshFilter()
 {
-	delete[] m_pVertexDataStart;
+	for (VertexBuffer*& pVertexBuffer : m_VertexBuffers)
+	{
+		SafeDelete(pVertexBuffer);
+	}
 	for (auto &it : m_VertexData)
 	{
 		delete[] it.second.pData;
@@ -17,91 +23,80 @@ MeshFilter::~MeshFilter()
 	}
 }
 
-void MeshFilter::Initialize(GameContext* pGameContext)
-{
-	m_pGameContext = pGameContext;
-}
-
-void MeshFilter::CreateBuffers(const InputLayoutDesc* ILDesc)
+void MeshFilter::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc)
 {
 	if (m_BuffersInitialized)
+	{
+		FLUX_LOG(ERROR, "MeshFilter::CreateBuffers() > Buffers are already initialized");
 		return;
+	}
 
-	m_pVertexBuffer.Reset();
-	m_pIndexBuffer.Reset();
+	for (VertexBuffer*& pVertexBuffer : m_VertexBuffers)
+	{
+		SafeDelete(pVertexBuffer);
+	}
+	m_pIndexBuffer.reset();
 
-	int vertexStride = ILDesc->VertexStride;
-	if (ILDesc->VertexStride == 0)
+	VertexBuffer* pVertexBuffer = new VertexBuffer(pGraphics);
+	m_VertexBuffers.push_back(pVertexBuffer);
+	pVertexBuffer->Create(m_VertexCount, elementDesc, false);
+
+	int vertexStride = pVertexBuffer->GetVertexStride();
+	if (vertexStride == 0)
 	{
 		FLUX_LOG(ERROR, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
 		return;
 	}
 
 	void* pDataLocation = new char[vertexStride * m_VertexCount];
-	m_pVertexDataStart = pDataLocation;
+	void* pVertexDataStart = pDataLocation;
 
 	for (int i = 0; i < m_VertexCount; i++)
 	{
-		for (size_t e = 0; e < ILDesc->LayoutDesc.size(); e++)
+		for (size_t e = 0; e < elementDesc.size(); e++)
 		{
-			if (m_VertexData.find(ILDesc->LayoutDesc[e].SemanticName) == m_VertexData.end())
+			string semanticName = VertexElement::GetSemanticOfType(elementDesc[e].Semantic);
+			int elementSize = VertexElement::GetSizeOfType(elementDesc[e].Type);
+			if (!HasData(semanticName))
 			{
+				//Only report a warning for the first element to prevent spam
 				if (i == 0)
-				{
-					string m = string(ILDesc->LayoutDesc[e].SemanticName);
-					wstring msg = wstring(m.begin(), m.end());
-
-					FLUX_LOG(WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data",  msg.c_str());
-				}
+					FLUX_LOG(WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data", semanticName.c_str());
 				//Get the stride of the required dummy data
-				int size;
-				if (e == ILDesc->LayoutDesc.size() - 1)
-					size = vertexStride - ILDesc->LayoutDesc[e].AlignedByteOffset;
-				else
-					size = ILDesc->LayoutDesc[e + 1].AlignedByteOffset - ILDesc->LayoutDesc[e].AlignedByteOffset;
-				vector<char> dummy(size, 0);
-				memcpy(pDataLocation, dummy.data(), size);
-				pDataLocation = (char*)pDataLocation + size;
+				ZeroMemory(pDataLocation, elementSize);
+				pDataLocation = (char*)pDataLocation + elementSize;
 			}
 			else
 			{
-				int stride = GetVertexDataUnsafe(ILDesc->LayoutDesc[e].SemanticName).Stride;
-				void* pData = (char*)GetVertexDataUnsafe(ILDesc->LayoutDesc[e].SemanticName).pData + stride * i;
-				memcpy(pDataLocation, pData, stride);
-				pDataLocation = (char*)pDataLocation + stride;
+				void* pData = (char*)GetVertexDataUnsafe(semanticName).pData + elementSize * i;
+				memcpy(pDataLocation, pData, elementSize);
+				pDataLocation = (char*)pDataLocation + elementSize;
 			}
 		}
 	}
 
-	int bufferSize = (int)((char*)pDataLocation - (char*)m_pVertexDataStart);
-	//Create the vertex buffer
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
-	bd.ByteWidth = bufferSize;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	bd.Usage = D3D11_USAGE_IMMUTABLE;
+	pVertexBuffer->SetData(pVertexDataStart);
 
-	D3D11_SUBRESOURCE_DATA initData;
-	initData.pSysMem = m_pVertexDataStart;
-
-	//HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer));
-
-	//Create the index buffer
-	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
-	bd.ByteWidth = m_IndexCount * sizeof(DWORD);
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	bd.Usage = D3D11_USAGE_IMMUTABLE;
-
-	vector<DWORD> indices(m_IndexCount);
-	memcpy(indices.data(), GetVertexData("INDEX").pData, m_IndexCount * sizeof(DWORD));
-	initData.pSysMem = indices.data();
-	//HR(RenderSystem::Instance().GetDevice()->CreateBuffer(&bd, &initData, &m_pIndexBuffer))
+	if (HasData("INDEX"))
+	{
+		m_pIndexBuffer = make_unique<IndexBuffer>(pGraphics);
+		m_pIndexBuffer->Create(m_IndexCount, false, false);
+		m_pIndexBuffer->SetData(GetVertexData("INDEX").pData);
+	}
 
 	m_BuffersInitialized = true;
+
+	delete[] pVertexDataStart;
+}
+
+VertexBuffer* MeshFilter::GetVertexBuffer(const unsigned int slot) const
+{
+	if (slot >= m_VertexBuffers.size())
+	{
+		FLUX_LOG(ERROR, "[MeshFilter::GetVertexBuffer] > No vertex buffer at slot %i", slot);
+		return nullptr;
+	}
+	return m_VertexBuffers[slot];
 }
 
 MeshFilter::VertexData& MeshFilter::GetVertexData(const string& semantic)

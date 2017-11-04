@@ -29,7 +29,7 @@ PS_INPUT VSMain(VS_INPUT input)
 	PS_INPUT output = (PS_INPUT)0;
 
 	input.position += input.worldPosition;
-	output.position = mul(cWorldViewProjVS, float4(input.position + sin(cElapsedTimeVS) * input.normal * 0.1f, 1.0f));
+	output.position = mul(cWorldViewProjVS, float4(input.position/* + sin(cElapsedTimeVS) * input.normal * 0.1f*/, 1.0f));
 	output.normal = normalize(mul((float3x3)cWorldVS, input.normal));
 	output.texCoord = input.texCoord;
 

@@ -23,6 +23,21 @@ cbuffer cPerObjectVS : register(b2)
 
 #endif
 
+#ifdef COMPILE_GS
+
+cbuffer cPerViewGS : register(b1)
+{
+	float4x4 cViewProjGS;
+	float4x4 cViewInverseGS;
+}
+
+cbuffer cPerObjectGS : register(b2)
+{
+	float4x4 cWorldGS;
+}
+
+#endif
+
 #ifdef COMPILE_PS
 
 cbuffer cPerFramePS : register(b0)

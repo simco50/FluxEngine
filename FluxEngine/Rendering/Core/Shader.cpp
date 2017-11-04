@@ -92,7 +92,10 @@ bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
 			includeFilePath.pop_back();
 
 			unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
-			newFile->Open(FileMode::Read, ContentType::Text);
+			if (newFile == nullptr)
+				return false;
+			if (!newFile->Open(FileMode::Read, ContentType::Text))
+				return false;
 
 			if(!ProcessSource(std::move(newFile), output))
 				return false;
