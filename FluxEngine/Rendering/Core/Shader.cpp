@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "ShaderVariation.h"
 #include "Graphics.h"
+#include "FileSystem\File\PhysicalFile.h"
 
 Shader::Shader(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -54,6 +55,7 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defin
 	}
 
 	m_ShaderCache[searchKey] = std::move(pVariation);
+
 	return m_ShaderCache[searchKey].get();
 }
 
@@ -77,7 +79,9 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 
 std::string Shader::MakeSearchHash(const ShaderType type, const string& defines)
 {
-	return "TYPE=" + (char)type + defines;
+	std::stringstream str;
+	str << "TYPE_" << (int)type << defines;
+	return str.str();
 }
 
 bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)

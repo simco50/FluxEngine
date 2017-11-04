@@ -10,6 +10,8 @@ public:
 	MeshFilter();
 	~MeshFilter();
 
+	DELETE_COPY(MeshFilter)
+
 	//Creates vertex- and indexbuffer according to the element desc
 	void CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc);
 
@@ -45,7 +47,6 @@ private:
 
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;
-	string m_FilePath;
 
 	map<string, VertexData> m_VertexData;
 };

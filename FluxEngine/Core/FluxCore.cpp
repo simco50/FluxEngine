@@ -27,7 +27,6 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	SafeDelete(m_pShader);
-	SafeDelete(m_pInstanceBuffer);
 	SafeDelete(m_pGraphics);
 
 	ResourceManager::Release();
@@ -96,6 +95,32 @@ int FluxCore::Run(HINSTANCE hInstance)
 	return (int)msg.wParam;
 }
 
+void FluxCore::InitGame()
+{
+	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
+	m_pCamera->BaseInitialize(nullptr);
+
+	m_pShader = new Shader(m_pGraphics);
+	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
+	{
+		m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
+		m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
+	}
+
+	//MeshFilter
+	vector<VertexElement> elements;
+	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
+	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
+	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
+	m_pMeshFilter = ResourceManager::Load<MeshFilter>("Resources/Meshes/spot.flux");
+	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
+
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
+
+	//Texture
+	m_pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
+}
+
 void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
@@ -109,13 +134,12 @@ void FluxCore::GameLoop()
 	UpdatePerViewParameters();
 	UpdatePerObjectParameters();
 
-	Texture* pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
-	m_pGraphics->SetTexture(0, pTexture);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pTexture);
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pMeshFilter->GetIndexBuffer());
-	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer(0), m_pInstanceBuffer });
+	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer(0) });
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
@@ -124,7 +148,7 @@ void FluxCore::GameLoop()
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
-	m_pGraphics->DrawIndexedInstanced(PrimitiveType::TRIANGLELIST, m_pMeshFilter->GetIndexCount(), 0, m_pInstanceBuffer->GetVertexCount());
+	m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, m_pMeshFilter->GetIndexCount(), 0, 0);
 
 	RenderUI();
 
@@ -133,45 +157,35 @@ void FluxCore::GameLoop()
 
 void FluxCore::UpdatePerFrameParameters()
 {
-	float dt = GameTimer::DeltaTime();
-	float gt = GameTimer::GameTime();
-	m_pVertexShader->SetParameter("cDeltaTimeVS", &dt);
-	m_pVertexShader->SetParameter("cElapsedTimeVS", &gt);
+	m_pVertexShader->SetParameter("cDeltaTimeVS", GameTimer::DeltaTime());
+	m_pVertexShader->SetParameter("cElapsedTimeVS", GameTimer::GameTime());
 
-	m_pPixelShader->SetParameter("cDeltaTimePS", &gt);
-	m_pPixelShader->SetParameter("cLightDirectionPS", &m_LightDirection);
+	m_pPixelShader->SetParameter("cDeltaTimePS", GameTimer::DeltaTime());
+	m_pPixelShader->SetParameter("cLightDirectionPS", m_LightDirection);
 }
 
 void FluxCore::UpdatePerObjectParameters()
 {
-	XMFLOAT4X4 viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
-	XMMATRIX world = XMMatrixIdentity();
-	XMMATRIX wvp = world * vp;
-	m_pVertexShader->SetParameter("cWorldVS", &world);
-	m_pVertexShader->SetParameter("cWorldViewProjVS", &wvp);
+	Matrix viewProj = m_pCamera->GetCamera()->GetViewProjection();
+	Matrix world = Matrix::CreateFromYawPitchRoll(GameTimer::GameTime(), 0, 0) * Matrix::CreateTranslation(0, sin(GameTimer::GameTime()), 5);
+	m_pVertexShader->SetParameter("cWorldVS", world);
+	m_pVertexShader->SetParameter("cWorldViewProjVS", world * viewProj);
 
-	m_pPixelShader->SetParameter("cColorPS", &m_Color);
-	m_pPixelShader->SetParameter("cWorldPS", &world);
+	m_pPixelShader->SetParameter("cColorPS", m_Color);
+	m_pPixelShader->SetParameter("cWorldPS", world);
 }
 
 void FluxCore::UpdatePerViewParameters()
 {
-	XMFLOAT4X4 viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	XMMATRIX vp = XMLoadFloat4x4(&viewProj);
-	m_pVertexShader->SetParameter("cViewProjVS", &vp);
-	XMFLOAT4X4 view = m_pCamera->GetCamera()->GetView();
-	m_pVertexShader->SetParameter("cViewVS", &view);
-	XMFLOAT4X4 viewInv = m_pCamera->GetCamera()->GetViewInverse();
-	m_pVertexShader->SetParameter("cViewInverseVS", &viewInv);
-	float nearClip = m_pCamera->GetCamera()->GetNearPlane();
-	m_pVertexShader->SetParameter("cNearClipVS", &nearClip);
-	float farClip = m_pCamera->GetCamera()->GetFarPlane();
-	m_pVertexShader->SetParameter("cFarClipVS", &farClip);
+	m_pVertexShader->SetParameter("cViewProjVS", m_pCamera->GetCamera()->GetViewProjection());
+	m_pVertexShader->SetParameter("cViewVS", m_pCamera->GetCamera()->GetView());
+	m_pVertexShader->SetParameter("cViewInverseVS", m_pCamera->GetCamera()->GetViewInverse());
+	m_pVertexShader->SetParameter("cNearClipVS", m_pCamera->GetCamera()->GetNearPlane());
+	m_pVertexShader->SetParameter("cFarClipVS", m_pCamera->GetCamera()->GetFarPlane());
 
-	m_pPixelShader->SetParameter("cViewProjPS", &vp);
-	m_pPixelShader->SetParameter("cViewPS", &view);
-	m_pPixelShader->SetParameter("cViewInversePS", &viewInv);
+	m_pVertexShader->SetParameter("cViewProjPS", m_pCamera->GetCamera()->GetViewProjection());
+	m_pVertexShader->SetParameter("cViewPS", m_pCamera->GetCamera()->GetView());
+	m_pVertexShader->SetParameter("cViewInversePS", m_pCamera->GetCamera()->GetViewInverse());
 }
 
 void FluxCore::RenderUI()
@@ -196,55 +210,4 @@ void FluxCore::RenderUI()
 	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
 
 	m_pImmediateUI->Render();
-}
-
-struct Vertex
-{
-	XMFLOAT3 pos;
-	XMFLOAT2 texCoord;
-	XMFLOAT3 normal;
-};
-
-void FluxCore::InitGame()
-{
-	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
-	m_pCamera->BaseInitialize(nullptr);
-
-	m_pShader =  new Shader(m_pGraphics);
-	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
-	{
-		m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
-		m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, "TEST");
-	}
-
-	//MeshFilter
-	vector<VertexElement> elements;
-	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
-	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
-	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
-	m_pMeshFilter = ResourceManager::Load<MeshFilter>("Resources/Meshes/cube.flux");
-	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
-
-	//InstanceBuffer
-	float spacing = 1.5f;
-	int count = 40;
-	vector<XMFLOAT3> instancePos;
-	for (int x = 0; x < count; ++x)
-	{
-		for (int y = 0; y < count; ++y)
-		{
-			for (int z = 0; z < count; ++z)
-			{
-				instancePos.push_back(XMFLOAT3((-(float)count / 2.0f + x) * spacing, (-(float)count / 2.0f + y) * spacing, (2 + z) * spacing));
-			}
-		}
-	}
-	elements.clear();
-	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::TEXCOORD, 1, true });
-
-	m_pInstanceBuffer = new VertexBuffer(m_pGraphics);
-	m_pInstanceBuffer->Create((unsigned int)instancePos.size(), elements);
-	m_pInstanceBuffer->SetData(instancePos.data());
-	
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 }

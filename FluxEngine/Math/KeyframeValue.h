@@ -76,7 +76,6 @@ struct KeyframeValue
 		return Values.rbegin()->second;
 	}
 
-	//Using extra constant value for performance reasons
 	T ConstantValue;
 private:
 	map<float, T> Values;

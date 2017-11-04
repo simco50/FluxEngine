@@ -38,6 +38,15 @@ void RasterizerState::SetCullMode(const CullMode cullMode)
 	}
 }
 
+void RasterizerState::SetLineAntialias(const bool lineAntiAlias)
+{
+	if (lineAntiAlias != m_LineAntiAlias)
+	{
+		m_LineAntiAlias = lineAntiAlias;
+		m_IsDirty = true;
+	}
+}
+
 void RasterizerState::SetScissorEnabled(const bool enabled)
 {
 	if (enabled != m_ScissorEnabled)

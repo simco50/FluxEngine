@@ -2,7 +2,7 @@
 void IndexBuffer::Create(const int indexCount, const bool smallIndexStride, bool dynamic /*= false*/)
 {
 	AUTOPROFILE(CreateIndexBuffer);
-	Release();
+	SafeRelease(m_pBuffer);
 
 	m_IndexCount = indexCount;
 	m_SmallIndexStride = smallIndexStride;

@@ -20,7 +20,7 @@ ParticleMaterial::~ParticleMaterial()
 
 void ParticleMaterial::UpdateShaderVariables()
 {
-	m_pGraphics->SetTexture(0, m_pTexture);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pTexture);
 }
 
 void ParticleMaterial::SetBlendMode(const ParticleBlendMode mode)

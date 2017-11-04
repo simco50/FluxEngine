@@ -22,6 +22,8 @@ bool Graphics::SetMode(const int width,
 	const int multiSample,
 	const int refreshRate)
 {
+	AUTOPROFILE(CreateGraphics);
+
 	m_WindowType = windowType;
 	m_Resizable = resizable;
 	m_Vsync = vsync;
@@ -226,28 +228,28 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 	m_pImpl->m_pDeviceContext->RSSetViewports(1, &viewport);
 }
 
-void Graphics::SetTexture(const unsigned int index, Texture* pTexture)
+void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 {
-	if (index >= m_pImpl->m_CurrentSamplerStates.size())
+	if ((unsigned int)slot >= m_pImpl->m_CurrentSamplerStates.size())
 	{
-		m_pImpl->m_CurrentSamplerStates.resize(index + 1);
-		m_pImpl->m_CurrentShaderResourceViews.resize(index + 1);
+		m_pImpl->m_CurrentSamplerStates.resize((unsigned int)slot + 1);
+		m_pImpl->m_CurrentShaderResourceViews.resize((unsigned int)slot + 1);
 	}
 
-	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_CurrentShaderResourceViews[index] && pTexture->GetSamplerState() == m_pImpl->m_CurrentSamplerStates[index]))
+	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_CurrentShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_CurrentSamplerStates[(unsigned int)slot]))
 		return;
 
 	if (pTexture)
 		pTexture->UpdateParameters();
 
-	m_pImpl->m_CurrentShaderResourceViews[index] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
-	m_pImpl->m_CurrentSamplerStates[index] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
+	m_pImpl->m_CurrentShaderResourceViews[(unsigned int)slot] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
+	m_pImpl->m_CurrentSamplerStates[(unsigned int)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
 	m_TexturesDirty = true;
-	if (m_FirstDirtyTexture > index)
-		m_FirstDirtyTexture = index;
-	if (m_LastDirtyTexture < index)
-		m_LastDirtyTexture = index;
+	if (m_FirstDirtyTexture > (unsigned int)slot)
+		m_FirstDirtyTexture = (unsigned int)slot;
+	if (m_LastDirtyTexture < (unsigned int)slot)
+		m_LastDirtyTexture = (unsigned int)slot;
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
@@ -256,7 +258,7 @@ void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int v
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	unsigned int primitiveCount = 0;
-	m_pImpl->GetPrimitiveType(type, vertexCount, topology, primitiveCount);
+	GraphicsImpl::GetPrimitiveType(type, vertexCount, topology, primitiveCount);
 	if (topology != m_pImpl->m_CurrentPrimitiveType)
 	{
 		m_pImpl->m_CurrentPrimitiveType = topology;
@@ -275,7 +277,7 @@ void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	unsigned int primitiveCount = 0;
-	m_pImpl->GetPrimitiveType(type, indexCount, topology, primitiveCount);
+	GraphicsImpl::GetPrimitiveType(type, indexCount, topology, primitiveCount);
 	if (topology != m_pImpl->m_CurrentPrimitiveType)
 	{
 		m_pImpl->m_CurrentPrimitiveType = topology;
@@ -294,7 +296,7 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	unsigned int primitiveCount = 0;
-	m_pImpl->GetPrimitiveType(type, instanceCount * indexCount, topology, primitiveCount);
+	GraphicsImpl::GetPrimitiveType(type, instanceCount * indexCount, topology, primitiveCount);
 	if (topology != m_pImpl->m_CurrentPrimitiveType)
 	{
 		m_pImpl->m_CurrentPrimitiveType = topology;
@@ -488,7 +490,7 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 		return false;
 	}
 
-	if (!CheckMultisampleQuality(DXGI_FORMAT_B8G8R8A8_UNORM, m_Multisample))
+	if (!m_pImpl->CheckMultisampleQuality(DXGI_FORMAT_B8G8R8A8_UNORM, m_Multisample))
 		m_Multisample = 1;
 
 	m_pImpl->m_pSwapChain.Reset();
@@ -506,7 +508,7 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
 	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapDesc.SampleDesc.Count = m_Multisample;
-	swapDesc.SampleDesc.Quality = GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
+	swapDesc.SampleDesc.Quality = m_pImpl->GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
 	swapDesc.OutputWindow = m_Hwnd;
 	swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapDesc.Windowed = m_WindowType != WindowType::FULLSCREEN;
@@ -565,33 +567,4 @@ ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int size, const Sha
 	pBuffer->SetSize(size);
 	m_ConstantBuffers[bufferHash] = std::move(pBuffer);
 	return m_ConstantBuffers[bufferHash].get();
-}
-
-unsigned int Graphics::GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const
-{
-	if (sampleCount < 2)
-		return 0; // Not multisampled, should use quality 0
-
-	if (m_pImpl->m_pDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1)
-		return 0xffffffff; // D3D10.1+ standard level
-
-	UINT numLevels = 0;
-	HRESULT hr = m_pImpl->m_pDevice->CheckMultisampleQualityLevels(format, sampleCount, &numLevels);
-	if (hr != S_OK || !numLevels)
-		return 0; // Errored or sample count not supported
-	else
-		return numLevels - 1; // D3D10.0 and below: use the best quality
-}
-
-bool Graphics::CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const
-{
-	if (sampleCount < 2)
-		return true; // Not multisampled, should use quality 0
-
-	UINT numLevels = 0;
-	HRESULT hr = m_pImpl->m_pDevice->CheckMultisampleQualityLevels(format, sampleCount, &numLevels);
-	if (hr != S_OK)
-		return false; // Errored or sample count not supported
-	else
-		return numLevels > 0; // D3D10.0 and below: use the best quality
 }

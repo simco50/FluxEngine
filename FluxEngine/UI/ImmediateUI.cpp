@@ -134,7 +134,7 @@ void ImmediateUI::Render()
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pVertexShader->SetParameter("cViewProjVS", &projectionMatrix);
+	m_pVertexShader->SetParameter("cViewProjVS", projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -153,7 +153,7 @@ void ImmediateUI::Render()
 					(int)pcmd->ClipRect.y, 
 					(int)pcmd->ClipRect.z, 
 					(int)pcmd->ClipRect.w });
-				m_pGraphics->SetTexture(0, (Texture*)pcmd->TextureId);
+				m_pGraphics->SetTexture(TextureSlot::Diffuse, (Texture*)pcmd->TextureId);
 				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;

@@ -49,7 +49,7 @@ public:
 	void SetViewport(const FloatRect& rect, bool relative = false);
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
 
-	void SetTexture(const unsigned int index, Texture* pTexture);
+	void SetTexture(const TextureSlot slot, Texture* pTexture);
 
 	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
 	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
@@ -73,7 +73,6 @@ public:
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
 	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
 	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
-	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
@@ -87,8 +86,6 @@ private:
 	bool EnumerateAdapters();
 	bool CreateDevice(const int windowWidth, const int windowHeight);
 	bool UpdateSwapchain();
-
-	bool CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
 
 	static LRESULT CALLBACK WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

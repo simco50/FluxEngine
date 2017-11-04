@@ -18,7 +18,7 @@ public:
 
 private:
 
-	void* m_pInputLayout;
+	void* m_pInputLayout = nullptr;
 	Graphics* m_pGraphics;
 };
 

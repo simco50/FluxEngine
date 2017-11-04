@@ -5,7 +5,8 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 		(unsigned char)m_ScissorEnabled << 0
 		| (unsigned char)m_MultisampleEnabled << 1
 		| (unsigned char)m_FillMode << 2
-		| (unsigned char)m_CullMode << 6;
+		| (unsigned char)m_CullMode << 6
+		| (unsigned char)m_LineAntiAlias << 10;
 
 	auto state = m_RasterizerStates.find(stateHash);
 	if (state != m_RasterizerStates.end())
@@ -17,7 +18,7 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 	void*& pState = m_RasterizerStates[stateHash];
 
 	D3D11_RASTERIZER_DESC desc = {};
-	desc.AntialiasedLineEnable = false;
+	desc.AntialiasedLineEnable = m_LineAntiAlias;
 	switch (m_CullMode)
 	{
 	case CullMode::FRONT:

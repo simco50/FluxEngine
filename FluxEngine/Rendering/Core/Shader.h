@@ -20,6 +20,8 @@ public:
 
 	static string GetEntryPoint(const ShaderType type);
 
+	const string& GetName() const { return m_ShaderName; }
+
 private:
 	string MakeSearchHash(const ShaderType type, const string& defines);
 

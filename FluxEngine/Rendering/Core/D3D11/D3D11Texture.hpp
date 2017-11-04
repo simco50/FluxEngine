@@ -97,7 +97,7 @@ bool Texture::Create()
 	desc.MipLevels = 1; //#todo mip levels
 	desc.MiscFlags = 0; //#todo D3D11_RESOURCE_MISC_GENERATE_MIPS
 	desc.SampleDesc.Count = m_MultiSample;
-	desc.SampleDesc.Quality = m_pGraphics->GetMultisampleQuality((DXGI_FORMAT)m_TextureFormat, m_MultiSample);
+	desc.SampleDesc.Quality = m_pGraphics->GetImpl()->GetMultisampleQuality((DXGI_FORMAT)m_TextureFormat, m_MultiSample);
 	desc.Usage = (m_Usage == TextureUsage::DYNAMIC) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 
 	if (m_pResource == nullptr)

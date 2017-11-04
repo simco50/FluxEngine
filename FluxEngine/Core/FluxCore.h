@@ -3,13 +3,11 @@
 class Graphics;
 class Shader;
 class ShaderVariation;
-class VertexBuffer;
-class ConstantBuffer;
-class IndexBuffer;
 class ImmediateUI;
 class InputEngine;
 class FreeCamera;
 class MeshFilter;
+class Texture;
 
 class FluxCore
 {
@@ -23,9 +21,7 @@ public:
 	void GameLoop();
 
 	void UpdatePerFrameParameters();
-
 	void UpdatePerObjectParameters();
-
 	void UpdatePerViewParameters();
 
 	void RenderUI();
@@ -40,15 +36,15 @@ private:
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
 	MeshFilter* m_pMeshFilter = nullptr;
-	VertexBuffer* m_pInstanceBuffer = nullptr;
+	Texture* m_pTexture = nullptr;
 
 	Graphics* m_pGraphics = nullptr;
 	unique_ptr<ImmediateUI> m_pImmediateUI;
 	unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
-	XMFLOAT4 m_Color = XMFLOAT4(1, 1, 1, 1);
-	XMFLOAT3 m_LightDirection = XMFLOAT3(-0.577f, -0.577f, 0.577f);
+	Color m_Color = Color(1, 1, 1, 1);
+	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
 
 	int m_IndexCount = -1;
 

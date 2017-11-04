@@ -43,7 +43,7 @@ cbuffer cPerObjectGS : register(b2)
 cbuffer cPerFramePS : register(b0)
 {
 	float cDeltaTimePS;
-	float4 cLightDirectionPS;
+	float3 cLightDirectionPS;
 }
 
 cbuffer cPerViewPS : register(b1)

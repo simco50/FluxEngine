@@ -3,7 +3,11 @@
 
 bool ShaderVariation::Create(Graphics* pGraphics)
 {
-	Compile(pGraphics);
+	if (!Compile(pGraphics))
+	{
+		FLUX_LOG(ERROR, "[ShaderVariation::Create()] > Failed to compile shader");
+		return false;
+	}
 
 	if (m_ShaderByteCode.size() == 0)
 	{
@@ -33,7 +37,8 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 
 bool ShaderVariation::Compile(Graphics* pGraphics)
 {
-	AUTOPROFILE_DESC(ShaderVariation_Compile, m_ShaderType == ShaderType::PixelShader ? "Pixel shader" : "Vertex shader");
+	string shaderName = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
+	AUTOPROFILE_DESC(ShaderVariation_Compile, shaderName);
 
 	const string& source = m_pParentShader->GetSource();
 

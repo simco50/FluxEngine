@@ -3,6 +3,8 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 {
 	AUTOPROFILE(CreateInputLayout);
 
+	SafeRelease(m_pInputLayout);
+
 	vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
 
 	for (unsigned int i = 0; i < bufferCount; ++i)

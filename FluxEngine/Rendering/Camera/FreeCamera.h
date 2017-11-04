@@ -7,8 +7,8 @@ public:
 	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~FreeCamera();
 
-	void Initialize();
-	void Update();
+	void Initialize() override;
+	void Update() override;
 	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }

@@ -33,13 +33,13 @@ float Profiler::Stop()
 	return (float)((m_StopTime - m_StartTime) * m_SecondsPerCount);
 }
 
-AutoProfiler::AutoProfiler(const string& name, const string& description) :
+AutoProfilerBlock::AutoProfilerBlock(const string& name, const string& description) :
 	Profiler(name, description)
 {
 	Start();
 }
 
-AutoProfiler::~AutoProfiler()
+AutoProfilerBlock::~AutoProfilerBlock()
 {
 	const float time = Stop();
 	stringstream str;

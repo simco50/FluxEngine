@@ -22,7 +22,6 @@ ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) :
 	m_BufferSize = m_pParticleSystem->MaxParticles;
 }
 
-
 ParticleEmitter::~ParticleEmitter()
 {
 	for (size_t i = 0; i < m_Particles.size(); i++)
@@ -70,14 +69,15 @@ void ParticleEmitter::CreateVertexBuffer()
 {
 	m_pVertexBuffer.reset();
 
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = m_BufferSize * sizeof(ParticleVertex);
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bd.MiscFlags = 0;
+	vector<VertexElement> elementDesc = {
+		VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, 0),
+		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, 0),
+		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, 0),
+		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, 0),
+	};
 	
 	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
+	m_pVertexBuffer->Create(m_BufferSize, elementDesc, true);
 }
 
 void ParticleEmitter::SortParticles()
@@ -190,6 +190,8 @@ void ParticleEmitter::Update()
 		CreateVertexBuffer();
 	}
 
+	/*
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
 	m_pGraphics->Draw(PrimitiveType::POINTLIST, 0, m_ParticleCount);
+	*/
 }

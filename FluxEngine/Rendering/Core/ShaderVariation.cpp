@@ -35,11 +35,3 @@ void ShaderVariation::SetDefines(const string& defines)
 		m_Defines.push_back(define);
 	}
 }
-
-void ShaderVariation::SetParameter(const string& name, void* pValue)
-{
-	auto pParameter = m_ShaderParameters.find(name);
-	if (pParameter == m_ShaderParameters.end())
-		return;
-	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, pValue);
-}

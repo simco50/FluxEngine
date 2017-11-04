@@ -21,7 +21,6 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 	}
 
 	MeshFilter* pMeshFilter = new MeshFilter();
-	pMeshFilter->m_FilePath = assetFile;
 
 	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
 	if (pFile == nullptr)

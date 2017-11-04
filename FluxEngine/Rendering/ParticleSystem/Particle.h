@@ -1,9 +1,6 @@
 #pragma once
 #include "ParticleSystem.h"
 
-struct GameContext;
-
-
 class Particle
 {
 public:

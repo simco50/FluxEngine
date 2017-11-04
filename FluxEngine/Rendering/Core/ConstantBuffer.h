@@ -28,7 +28,6 @@ public:
 	void* GetBuffer() const { return m_pBuffer; }
 
 private:
-
 	bool m_IsDirty = false;
 	void* m_pBuffer = nullptr;
 	unsigned int m_Size = 0;

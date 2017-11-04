@@ -31,8 +31,8 @@ public:
 	float GetFarPlane() const { return m_FarPlane; }
 
 protected:
-	void Initialize();
-	void Update();
+	void Initialize() override;
+	void Update() override;
 private:
 	InputEngine* m_pInput = nullptr;
 	Graphics* m_pGraphics = nullptr;

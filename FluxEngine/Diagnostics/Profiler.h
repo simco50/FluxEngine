@@ -1,4 +1,5 @@
 #pragma once
+
 class Profiler
 {
 public:
@@ -20,22 +21,20 @@ private:
 	__int64 m_StopTime = 0;
 };
 
-class AutoProfiler : public Profiler
+class AutoProfilerBlock : public Profiler
 {
 public:
-	AutoProfiler(const string& name, const string& description = "");
-	~AutoProfiler();
-
-	unsigned int GetDepth() const { return m_Depth; }
+	AutoProfilerBlock(const string& name, const string& description = "");
+	~AutoProfilerBlock();
 
 private:
-	unsigned int m_Depth = 0;
 };
 
+#define PROFILING
 #ifdef PROFILING
 
-#define AUTOPROFILE(name) AutoProfiler name ## Profiler(#name)
-#define AUTOPROFILE_DESC(name, description) AutoProfiler name ## Profiler(#name, description)
+#define AUTOPROFILE(name) AutoProfilerBlock name ## AutoProfilerBlock(#name)
+#define AUTOPROFILE_DESC(name, description) AutoProfilerBlock name ## AutoProfilerBlock(#name, description)
 
 #else
 

@@ -21,8 +21,6 @@ public:
 	bool IsSmallStride() const { return m_SmallIndexStride; }
 
 private:
-	void Release();
-
 	void* m_pBuffer = nullptr;
 
 	bool m_Dynamic = false;

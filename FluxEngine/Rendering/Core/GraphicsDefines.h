@@ -32,7 +32,6 @@ enum class PrimitiveType : unsigned char
 	TRIANGLELIST,
 	POINTLIST,
 	TRIANGLESTRIP,
-	UNDEFINED,
 };
 
 //The windwo type
@@ -48,7 +47,6 @@ enum class FillMode : unsigned char
 {
 	SOLID,
 	WIREFRAME,
-	UNDEFINED,
 };
 
 //The cull mode of the rasterizer state
@@ -57,7 +55,6 @@ enum class CullMode : unsigned char
 	FRONT,
 	BACK,
 	NONE,
-	UNDEFINED,
 };
 
 //The blend mode of the blend state
@@ -116,6 +113,13 @@ enum class ShaderParameterType
 	PerView = 1,
 	PerObject = 2,
 	Custom = 3,
+	MAX
+};
+
+//Predefined texture slot per convention
+enum class TextureSlot
+{
+	Diffuse = 0,
 	MAX
 };
 

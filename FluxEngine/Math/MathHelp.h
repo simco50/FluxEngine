@@ -1,6 +1,6 @@
 #pragma once
 
-inline float randF(float min, float max)
+inline float RandF(float min, float max)
 {
 	float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	float diff = max - min;
@@ -8,7 +8,7 @@ inline float randF(float min, float max)
 	return min + r;
 }
 
-inline int randI(int min, int max)
+inline int RandI(int min, int max)
 {
 	return min + rand() % (max - min + 1);
 }

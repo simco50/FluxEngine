@@ -17,10 +17,11 @@ public:
 	void SetMultisampleEnabled(const bool enabled);
 	void SetFillMode(const FillMode fillMode);
 	void SetCullMode(const CullMode cullMode);
+	void SetLineAntialias(const bool lineAntiAlias);
 
 private:
 	bool m_IsDirty = true;
-
+	bool m_LineAntiAlias = false;
 	bool m_ScissorEnabled = false;
 	bool m_MultisampleEnabled = true;
 

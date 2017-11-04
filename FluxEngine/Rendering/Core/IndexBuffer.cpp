@@ -14,10 +14,5 @@ IndexBuffer::IndexBuffer(Graphics* pGraphics) :
 
 IndexBuffer::~IndexBuffer()
 {
-	Release();
-}
-
-void IndexBuffer::Release()
-{
 	SafeRelease(m_pBuffer);
 }
