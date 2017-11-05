@@ -7,9 +7,6 @@ environment:
       resources: .\FluxGame\Resources\
     - configuration: Release
       resources: .\FluxGame\Resources.pak
-configuration:
-  - Release
-  - Debug
 platform:
   - x64
   - Win32
