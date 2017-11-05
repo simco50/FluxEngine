@@ -24,12 +24,8 @@ void Console::Initialize()
 	localtime_s(&localTime, &timer);
 	stringstream filePathStream;
 	filePathStream  << ".\\Logs\\" 
-		<< 1900 + localTime.tm_year << "-" 
-		<< setfill('0') << setw(2) << localTime.tm_mon + 1 
-		<< "-" << setw(2) << localTime.tm_mday 
-		<< "_" << setw(2) << localTime.tm_hour 
-		<< "-" << setw(2) << localTime.tm_min 
-		<< "-" << setw(2) << localTime.tm_sec << ".log";
+		<< 1900 + localTime.tm_year << "-" <<
+		GetTimeStamp() << ".log";
 
 	m_pFileLog = new PhysicalFile(filePathStream.str());
 

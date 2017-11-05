@@ -2,10 +2,7 @@
 #include "Config.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-const std::string Config::ENGINE_INI = "Config/Engine.ini";
-const std::string Config::GAME_INI = "Config/Game.ini";
 std::map<Config::Type, ConfigFile> Config::m_Configs;
-
 
 Config::Config()
 {
@@ -96,10 +93,10 @@ bool Config::PopulateConfigValues(const Type t)
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = make_unique<PhysicalFile>(ENGINE_INI);
+		pFile = make_unique<PhysicalFile>(Paths::EngineIniFile);
 		break;
 	case Type::GameIni:
-		pFile = make_unique<PhysicalFile>(GAME_INI);
+		pFile = make_unique<PhysicalFile>(Paths::GameIniFile);
 		break;
 	default:
 		return false;
@@ -137,10 +134,10 @@ bool Config::FlushConfigValues(const Type t)
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = make_unique<PhysicalFile>(ENGINE_INI);
+		pFile = make_unique<PhysicalFile>(Paths::EngineIniFile);
 		break;
 	case Type::GameIni:
-		pFile = make_unique<PhysicalFile>(GAME_INI);
+		pFile = make_unique<PhysicalFile>(Paths::GameIniFile);
 		break;
 	case Type::MAX_TYPES:
 	default:

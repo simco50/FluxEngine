@@ -32,5 +32,7 @@ public:
 	virtual bool IsOpen() const override;
 
 private:
+	void CreateDirectoryTree(const string& path);
+
 	FileHandle m_Handle = FILE_HANDLE_INVALID;
 };

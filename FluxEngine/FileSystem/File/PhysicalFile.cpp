@@ -20,22 +20,18 @@ bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 		creation_disposition = OPEN_EXISTING;
 		break;
 	case FileMode::Write:
+	{
 		access = GENERIC_WRITE;
 		creation_disposition = CREATE_ALWAYS;
-		if (CreateDirectory(GetDirectoryPath().c_str(), nullptr) == 0)
-		{
-			if (GetLastError() == ERROR_PATH_NOT_FOUND)
-				return false;
-		}
+
+		CreateDirectoryTree(m_FileName);
 		break;
+	}
 	case FileMode::ReadWrite:
 		access = GENERIC_READ | GENERIC_WRITE;
 		creation_disposition = CREATE_NEW;
-		if (CreateDirectory(GetDirectoryPath().c_str(), nullptr) == 0)
-		{
-			if (GetLastError() == ERROR_PATH_NOT_FOUND)
-				return false;
-		}
+
+		CreateDirectoryTree(m_FileName);
 		break;
 	default:
 		return false;
@@ -67,6 +63,17 @@ bool PhysicalFile::Close()
 bool PhysicalFile::IsOpen() const
 {
 	return m_Handle != INVALID_HANDLE_VALUE;
+}
+
+void PhysicalFile::CreateDirectoryTree(const string& path)
+{
+	size_t slash = path.find('\\', 0);
+	while (slash != string::npos)
+	{
+		string dirToCreate = path.substr(0, slash);
+		CreateDirectory(dirToCreate.c_str(), 0);
+		slash = path.find('\\', slash + 1);
+	}
 }
 
 unsigned int PhysicalFile::Write(const char* pBuffer, const unsigned int size)

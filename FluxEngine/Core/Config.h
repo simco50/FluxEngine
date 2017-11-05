@@ -68,9 +68,6 @@ private:
 	static bool PopulateConfigValues(const Type t);
 	static bool FlushConfigValues(const Type t);
 
-	static const string ENGINE_INI;
-	static const string GAME_INI;
-
 	static map<Type, ConfigFile> m_Configs;
 };
 

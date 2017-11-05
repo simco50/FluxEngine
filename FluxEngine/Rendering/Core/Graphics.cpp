@@ -12,6 +12,8 @@
 #include "BlendState.h"
 #include "Shader.h"
 
+
+
 #ifdef D3D11
 #include "D3D11/D3D11Graphics.hpp"
 #include "D3D11/D3D11GraphicsImpl.h"
@@ -267,6 +269,10 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+
+	case WM_KEYDOWN:
+		if (wParam == 'P')
+			TakeScreenshot("Screenshot.png");
 
 	default:
 		break;

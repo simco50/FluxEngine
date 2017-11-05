@@ -64,6 +64,7 @@ public:
 	void BeginFrame();
 	void EndFrame();
 
+	void TakeScreenshot(const string& fileOutput);
 	void OnPause(const bool paused);
 
 	//Getters
@@ -81,6 +82,7 @@ public:
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
 
 private:
+
 	void PrepareDraw();
 
 	bool RegisterWindowClass();
