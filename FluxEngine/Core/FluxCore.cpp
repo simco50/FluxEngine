@@ -49,7 +49,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		FLUX_LOG(WARNING, "Failed to mount './Resources'");
 	}
-
+	
 	Config::Initialize();
 
 	m_pGraphics = new Graphics(hInstance);

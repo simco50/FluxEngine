@@ -7,6 +7,12 @@ platform:
 - x64
 - Win32
 shallow_clone: true
+
+matrix:
+  - configuration: Debug
+    resources: .\FluxGame\Resources\
+  - configuration: Release
+    resources: .\FluxGame\Resources.pak
 #init:
 #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #on_finish:
@@ -18,11 +24,11 @@ before_build:
 - ps: .\scripts\MakeVS2017.bat
 after_build:
 - cmd: >-
-    .\FluxPak\CreateResponseFile.bat
+#    .\FluxPak\CreateResponseFile.bat
+#
+#    .\FluxPak\CreatePakFile.bat "C:/Projects/FluxEngine/"
 
-    .\FluxPak\CreatePakFile.bat "C:/Projects/FluxEngine/"
-
-    7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* .\FluxGame\Resources.pak .\FluxGame\Resources\
+    7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* %resources%
 build:
   project: FluxEngine_vs2017.sln
   parallel: true

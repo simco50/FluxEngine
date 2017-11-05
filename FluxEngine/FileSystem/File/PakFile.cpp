@@ -44,8 +44,6 @@ unsigned int PakFile::Read(const unsigned int size, char* pBuffer)
 		if (!CacheUncompressedData())
 			return 0;
 
-		if(m_FilePointer)
-
 		memcpy(pBuffer, m_UncompressedCache.data() + m_FilePointer, sizeToRead);
 		read = sizeToRead;
 	}
