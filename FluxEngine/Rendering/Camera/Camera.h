@@ -40,7 +40,7 @@ private:
 	float m_Size = 50.0f;
 	float m_FoV = 60.0f;
 
-	float m_NearPlane = 1.0f;
+	float m_NearPlane = 0.01f;
 	float m_FarPlane = 200.0f;
 
 	XMFLOAT4X4 m_View;

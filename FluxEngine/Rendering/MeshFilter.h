@@ -41,6 +41,7 @@ public:
 private:
 	friend class MeshLoader;
 
+	string m_MeshName;
 	bool m_BuffersInitialized = false;
 	std::vector<VertexBuffer*> m_VertexBuffers;
 	unique_ptr<IndexBuffer> m_pIndexBuffer;

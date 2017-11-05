@@ -36,7 +36,7 @@ private:
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
 	MeshFilter* m_pMeshFilter = nullptr;
-	Texture* m_pTexture = nullptr;
+	Texture* m_pDiffuseTexture = nullptr;
 
 	Graphics* m_pGraphics = nullptr;
 	unique_ptr<ImmediateUI> m_pImmediateUI;

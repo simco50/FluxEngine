@@ -2,7 +2,6 @@
 #include "stdafx.h"
 
 #include "ResourceManager.h"
-#include "EffectLoader.h"
 #include "MeshLoader.h"
 #include "TextureLoader.h"
 #include "ParticleSystemLoader.h"
@@ -36,7 +35,6 @@ void ResourceManager::Initialize(Graphics* pGraphics)
 	{
 		m_pGraphics = pGraphics;
 		m_IsInitialized = true;
-		AddLoader(new EffectLoader());
 		AddLoader(new MeshLoader());
 		AddLoader(new TextureLoader());
 		AddLoader(new ParticleSystemLoader());

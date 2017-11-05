@@ -44,6 +44,16 @@ struct VertexElement
 	bool PerInstance;
 	unsigned int Offset;
 
+	unsigned long long GetHash()
+	{
+		unsigned long long hash = 0;
+		hash |=
+			(int)Type << 0
+			| (int)Semantic << 3
+			| Index << 7;
+		return hash;
+	}
+
 	static char* GetSemanticOfType(VertexElementSemantic semantic)
 	{
 		switch (semantic)

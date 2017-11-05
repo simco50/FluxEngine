@@ -112,13 +112,13 @@ void FluxCore::InitGame()
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
 	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
-	m_pMeshFilter = ResourceManager::Load<MeshFilter>("Resources/Meshes/spot.flux");
+	m_pMeshFilter = ResourceManager::Load<MeshFilter>("Resources/Meshes/flash.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 
 	//Texture
-	m_pTexture = ResourceManager::Load<Texture>("Resources/Textures/spot.png");
+	m_pDiffuseTexture = ResourceManager::Load<Texture>("Resources/Textures/Flash_Diffuse.jpg");
 }
 
 void FluxCore::GameLoop()
@@ -134,7 +134,7 @@ void FluxCore::GameLoop()
 	UpdatePerViewParameters();
 	UpdatePerObjectParameters();
 
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pTexture);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pDiffuseTexture);
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
@@ -167,7 +167,7 @@ void FluxCore::UpdatePerFrameParameters()
 void FluxCore::UpdatePerObjectParameters()
 {
 	Matrix viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	Matrix world = Matrix::CreateFromYawPitchRoll(GameTimer::GameTime(), 0, 0) * Matrix::CreateTranslation(0, sin(GameTimer::GameTime()), 5);
+	Matrix world = Matrix::CreateFromYawPitchRoll(XM_PI, 0, 0) * Matrix::CreateTranslation(0, -1, 3);
 	m_pVertexShader->SetParameter("cWorldVS", world);
 	m_pVertexShader->SetParameter("cWorldViewProjVS", world * viewProj);
 

@@ -120,6 +120,7 @@ enum class ShaderParameterType
 enum class TextureSlot
 {
 	Diffuse = 0,
+	Normal,
 	MAX
 };
 

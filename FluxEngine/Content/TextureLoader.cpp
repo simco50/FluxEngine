@@ -4,6 +4,9 @@
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/D3D11/D3D11GraphicsImpl.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "External/stb_image.h"
+
 TextureLoader::TextureLoader()
 {
 }
@@ -22,41 +25,18 @@ Texture* TextureLoader::LoadContent(const string& assetFile)
 	pFile->ReadAllBytes(buffer);
 	pFile->Close();
 
-	TexMetadata metaData;
-	ScratchImage image;
+	int width, height, bpp;
+	unsigned char* pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
+	vector<unsigned char> pixels;
+	pixels.resize(width * height * bpp);
+	memcpy(pixels.data(), pPixels, pixels.size());
 
-	size_t pointPos = assetFile.rfind(L'.');
-	if (pointPos == wstring::npos)
-	{
-		stringstream stream;
-		stream << "TextureLoader::LoadContent() -> File '" << assetFile << "' has a wrong extension" << endl;
-		FLUX_LOG(ERROR, stream.str());
-		return nullptr;
-	}
-	++pointPos;
-	string extension = assetFile.substr(pointPos, assetFile.length() - pointPos);
-	if (extension == "dds")
-	{
-		HR(LoadFromDDSMemory(buffer.data(), buffer.size(), DDS_FLAGS_NONE, &metaData, image));
-	}
-	else if (extension == "tga")
-	{
-		HR(LoadFromTGAMemory(buffer.data(), buffer.size(), &metaData, image));
-	}
-	else
-	{
-		HR(LoadFromWICMemory(buffer.data(), buffer.size(), WIC_FLAGS_NONE, &metaData, image));
-	}
+	Texture* pTexture = new Texture(m_pGraphics);
+	pTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
+	pTexture->SetData(pPixels);
 
-	ID3D11Resource* pTexture;
-	ID3D11ShaderResourceView* pSRV;
-	
-	HR(CreateTexture(m_pGraphics->GetImpl()->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pTexture));
-	HR(CreateShaderResourceView(m_pGraphics->GetImpl()->GetDevice(), image.GetImages(), image.GetImageCount(), metaData, &pSRV));
-
-
-
-	return new Texture(m_pGraphics, pTexture, pSRV);
+	stbi_image_free(pPixels);
+	return pTexture;
 }
 
 void TextureLoader::Destroy(Texture* objToDestroy)

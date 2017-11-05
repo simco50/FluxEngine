@@ -34,17 +34,20 @@ PS_INPUT VSMain(VS_INPUT input)
 	input.position += input.worldPosition;
 	#endif
 	output.position = mul(cWorldViewProjVS, float4(input.position, 1.0f));
-	output.normal = normalize(mul((float3x3)cWorldVS, input.normal));
 	output.texCoord = input.texCoord;
+
+	output.normal = normalize(mul((float3x3)cWorldVS, input.normal));
 
 	return output;
 }
 #endif
 
 #ifdef COMPILE_PS
+
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-	float diffuseStrength = saturate(dot(input.normal, -cLightDirectionPS));
+	float3 normal = normalize(input.normal);
+	float diffuseStrength = saturate(dot(normal, -cLightDirectionPS));
 	float4 sample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
 	return float4((sample.rgb * cColorPS.rgb) * diffuseStrength, 1.0f);
 }

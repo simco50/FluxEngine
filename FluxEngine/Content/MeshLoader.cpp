@@ -20,13 +20,14 @@ MeshFilter* MeshLoader::LoadContent(const string& assetFile)
 		return nullptr;
 	}
 
-	MeshFilter* pMeshFilter = new MeshFilter();
-
 	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
 	if (pFile == nullptr)
 		return nullptr;
 	if (!pFile->Open(FileMode::Read, ContentType::Binary))
 		return nullptr;
+
+	MeshFilter* pMeshFilter = new MeshFilter();
+	pMeshFilter->m_MeshName = Paths::GetFileName(assetFile);
 
 	string magic = pFile->ReadSizedString();
 	char minVersion, maxVersion;

@@ -39,8 +39,6 @@ workspace "FluxEngine"
 		{ 
 			"$(ProjectDir)",
 			"../Libraries/ImgUI/include",
-			"../Libraries/DX_Effects11/include",
-			"../Libraries/DX_Tex/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
 		}
@@ -48,9 +46,7 @@ workspace "FluxEngine"
 		libdirs
 		{
 			"../Libraries/Imgui/lib/%{cfg.platform}",
-			"../Libraries/DX_Tex/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
-			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 		}
 
@@ -97,8 +93,6 @@ workspace "FluxEngine"
 			"$(ProjectDir)/../FluxEngine",
 			"$(ProjectDir)",
 			"../Libraries/ImgUI/include",
-			"../Libraries/DX_Effects11/include",
-			"../Libraries/DX_Tex/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
 		}
@@ -106,9 +100,7 @@ workspace "FluxEngine"
 		libdirs
 		{
 			"../Libraries/Imgui/lib/%{cfg.platform}",
-			"../Libraries/DX_Tex/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
-			"../Libraries/DX_Effects11/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 		}
 

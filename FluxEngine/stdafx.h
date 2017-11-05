@@ -66,6 +66,7 @@ using namespace physx;
 #pragma comment(lib, "d3d11.lib")
 #include <d3dcompiler.h>
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dxguid.lib")
 
 //DirectXMath
 #include <DirectXMath.h>
@@ -73,20 +74,6 @@ using namespace physx;
 #include <DirectXPackedVector.h>
 #include <DirectXCollision.h>
 using namespace DirectX;
-
-#include "d3dx11effect.h"
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxEffects11_Debug.lib")
-#else 
-#pragma comment(lib, "DxEffects11_Release.lib")
-#endif
-
-#include "DirectXTex.h"
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DirectXTex_Debug.lib")
-#else 
-#pragma comment(lib, "DirectXTex_Release.lib")
-#endif
 
 #pragma endregion D3D
 
@@ -146,6 +133,7 @@ using namespace DirectX;
 #pragma region
 #undef ERROR
 //Engine core include
+#include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
