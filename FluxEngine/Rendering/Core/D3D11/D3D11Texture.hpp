@@ -57,7 +57,6 @@ void Texture::UpdateParameters()
 	desc.MaxAnisotropy = 1;
 	desc.MinLOD = numeric_limits<float>::min();
 	desc.MaxLOD = numeric_limits<float>::max();
-	desc.MipLODBias = 0;
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
 }

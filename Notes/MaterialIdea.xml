@@ -1,0 +1,28 @@
+<Material name="TestShader">
+	<Shaders>
+		<Shader type="Pixel">
+			<Source>Resources/Shaders/Diffuse.hlsl</Source>
+			<Defines>
+				<Define define="test"/>
+			</Defines>
+		</Shader>
+		<Shader type="Vertex">
+			<Source>Resources/Shaders/Diffuse.hlsl</Source>
+		</Shader>
+	</Shaders>
+
+	<Properties>
+		<CullMode>Back</CullMode>
+		<Blending>true</Blending>
+	</Properties>
+
+	<Parameters>
+		<Texture slot="Diffuse">Resources/Textures/Flash.jpg</Texture>
+		<Value name="LightDirection">0.25 0.75 20.0</Texture>
+	</Parameters>
+
+	<Passes>
+		<Pass name="Pass1">
+		</Pass>
+	</Passes>
+</Material>
