@@ -1,11 +1,5 @@
 version: 1.0.{build}
 image: Visual Studio 2017
-configuration:
-- Release
-- Debug
-platform:
-- x64
-- Win32
 shallow_clone: true
 environment:
   matrix:
@@ -13,6 +7,12 @@ environment:
       resources: .\FluxGame\Resources\
     - configuration: Release
       resources: .\FluxGame\Resources.pak
+configuration:
+  - Release
+  - Debug
+platform:
+  - x64
+  - Win32
 #init:
 #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #on_finish:
@@ -21,13 +21,13 @@ environment:
 #  appveyor_rdp_password:
 #    secure: isPeZD3/K+h+07yX2nK8kQ==
 before_build:
-- ps: .\scripts\MakeVS2017.bat
+  - ps: .\scripts\MakeVS2017.bat
 after_build:
-- cmd: 7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* %resources%
+  - cmd: 7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* %resources%
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
   verbosity: minimal
 artifacts:
-- path: 'FluxGame_$(platform)_$(configuration).zip'
-  name: Build_$(platform)_$(configuration)
+  - path: 'FluxGame_$(platform)_$(configuration).zip'
+    name: Build_$(platform)_$(configuration)
