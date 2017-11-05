@@ -7,7 +7,7 @@
 #include "Core/Components/Transform.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
-#include "Materials/ParticleMaterial.h"
+#include "Rendering/ParticleMaterial.h"
 #include "../Core/VertexBuffer.h"
 #include "../Core/GraphicsDefines.h"
 #include "../Core/Graphics.h"

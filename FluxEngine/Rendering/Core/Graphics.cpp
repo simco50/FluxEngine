@@ -45,6 +45,21 @@ void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 	}
 }
 
+Shader* Graphics::GetShader(const string filePath)
+{
+	string shaderName = Paths::GetFileNameWithoutExtension(filePath);
+	auto pIt = m_Shaders.find(shaderName);
+	if (pIt != m_Shaders.end())
+		return pIt->second.get();
+
+	unique_ptr<Shader> pShader = make_unique<Shader>(this);
+	if (!pShader->Load(filePath))
+		return nullptr;
+
+	m_Shaders[shaderName] = std::move(pShader);
+	return m_Shaders[shaderName].get();
+}
+
 void Graphics::OnPause(const bool paused)
 {
 	m_Paused = paused;

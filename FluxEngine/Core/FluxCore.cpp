@@ -26,7 +26,6 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
-	SafeDelete(m_pShader);
 	SafeDelete(m_pGraphics);
 
 	ResourceManager::Release();
@@ -100,8 +99,8 @@ void FluxCore::InitGame()
 	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
 	m_pCamera->BaseInitialize(nullptr);
 
-	m_pShader = new Shader(m_pGraphics);
-	if (m_pShader->Load("Resources/Shaders/Diffuse.hlsl"))
+	m_pShader = m_pGraphics->GetShader("Resources/Shaders/Diffuse.hlsl");
+	if (m_pShader)
 	{
 		m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
 		m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);

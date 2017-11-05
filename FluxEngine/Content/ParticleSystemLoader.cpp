@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ParticleSystemLoader.h"
-#include "Helpers/json.hpp"
+#include "External/NlohmannJson/json.hpp"
 #include "Rendering/ParticleSystem/Particle.h"
 
 using json = nlohmann::json;

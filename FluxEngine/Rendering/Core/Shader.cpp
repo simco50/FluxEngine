@@ -18,9 +18,8 @@ bool Shader::Load(const string& filePath)
 {
 	AUTOPROFILE(Shader_Load);
 
-	unsigned int slashIdx = (unsigned int)filePath.rfind('/') + 1;
-	m_FileDir = filePath.substr(0, slashIdx);
-	m_ShaderName = filePath.substr(slashIdx, filePath.rfind('.') - slashIdx);
+	m_ShaderName = Paths::GetFileNameWithoutExtension(filePath);
+	m_FileDir = Paths::GetDirectoryPath(filePath);
 
 	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
 	if (!pPtr->Open(FileMode::Read, ContentType::Text))

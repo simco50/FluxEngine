@@ -5,7 +5,7 @@
 #include "Rendering/Core/D3D11/D3D11GraphicsImpl.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "External/stb_image.h"
+#include "External/Stb/stb_image.h"
 
 TextureLoader::TextureLoader()
 {
@@ -19,6 +19,8 @@ TextureLoader::~TextureLoader()
 Texture* TextureLoader::LoadContent(const string& assetFile)
 {
 	unique_ptr<IFile> pFile = FileSystem::GetFile(assetFile);
+	if (pFile == nullptr)
+		return nullptr;
 	if (!pFile->Open(FileMode::Read, ContentType::Binary))
 		return nullptr;
 	vector<char> buffer;

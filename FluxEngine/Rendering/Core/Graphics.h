@@ -11,6 +11,7 @@ class BlendState;
 class RasterizerState;
 class DepthStencilState;
 class ConstantBuffer;
+class Shader;
 
 class GraphicsImpl;
 
@@ -58,6 +59,7 @@ public:
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const XMFLOAT4& color = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
+	Shader* GetShader(const string filePath);
 
 	void BeginFrame();
 	void EndFrame();
@@ -120,11 +122,12 @@ private:
 	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
 
 	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
+	map<string, unique_ptr<Shader>> m_Shaders;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;
 	bool m_ScissorEnabled = false;
-	bool m_ScissorRectDirty = true;
+	bool m_ScissorRectDirty = false;
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};

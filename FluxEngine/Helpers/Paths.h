@@ -21,7 +21,24 @@ struct Paths
 		return filePath.substr(it.base() - filePath.begin());
 	}
 
-	static std::string GetDirectoryName(const std::string& filePath)
+	static std::string GetFileNameWithoutExtension(const std::string& filePath)
+	{
+		std::string fileName = GetFileName(filePath);
+		size_t dotPos = fileName.find('.');
+		if (dotPos == string::npos)
+			return fileName;
+		return fileName.substr(0, dotPos);
+	}
+
+	static std::string GetFileExtenstion(const std::string& filePath)
+	{
+		size_t dotPos = filePath.rfind('.');
+		if (dotPos == string::npos)
+			return filePath;
+		return filePath.substr(dotPos + 1);
+	}
+
+	static std::string GetDirectoryPath(const std::string& filePath)
 	{
 		auto it = std::find_if(filePath.rbegin(), filePath.rend(), [](const char c)
 		{

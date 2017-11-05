@@ -110,7 +110,8 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	macros.push_back(endMacro);
 
 	ComPtr<ID3DBlob> pShaderCode, pErrorBlob;
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), "shader", macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
+
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), shaderName.c_str(), macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
 		std::string error = D3DBlobToString(pErrorBlob.Get());

@@ -448,7 +448,7 @@ bool Graphics::EnumerateAdapters()
 		}
 
 		wstring gpuDesc(desc.Description);
-		FLUX_LOG(INFO, "[%i] %s", adapterCount, string(gpuDesc.begin(), gpuDesc.end()).c_str());
+		FLUX_LOG(INFO, "\t[%i] %s", adapterCount, string(gpuDesc.begin(), gpuDesc.end()).c_str());
 
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
