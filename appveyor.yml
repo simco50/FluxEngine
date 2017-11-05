@@ -23,12 +23,7 @@ environment:
 before_build:
 - ps: .\scripts\MakeVS2017.bat
 after_build:
-- cmd: >-
-#    .\FluxPak\CreateResponseFile.bat
-#
-#    .\FluxPak\CreatePakFile.bat "C:/Projects/FluxEngine/"
-
-    7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* %resources%
+- cmd: 7z a FluxGame_%platform%_%configuration%.zip .\Build\FluxGame_%platform%_%configuration%\* %resources%
 build:
   project: FluxEngine_vs2017.sln
   parallel: true
