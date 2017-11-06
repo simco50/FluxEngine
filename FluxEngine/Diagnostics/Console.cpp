@@ -23,7 +23,7 @@ void Console::Initialize()
 	tm localTime;
 	localtime_s(&localTime, &timer);
 	stringstream filePathStream;
-	filePathStream  << ".\\Logs\\" 
+	filePathStream  << Paths::LogsFolder << "\\"
 		<< 1900 + localTime.tm_year << "-" <<
 		GetTimeStamp() << ".log";
 

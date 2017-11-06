@@ -272,7 +272,7 @@ LRESULT Graphics::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_KEYDOWN:
 		if (wParam == 'P')
-			TakeScreenshot("Screenshot.png");
+			TakeScreenshot();
 
 	default:
 		break;

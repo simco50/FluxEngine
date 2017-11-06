@@ -557,8 +557,14 @@ bool Graphics::UpdateSwapchain()
 	return true;
 }
 
-void Graphics::TakeScreenshot(const string& /*fileOutput*/)
+void Graphics::TakeScreenshot()
 {
+	if(m_Multisample != 1)
+	{
+		FLUX_LOG(WARNING, "[Graphics::TakeScreenshot] > Screenshot of multisampled rendertarget is currently not supported");
+		return;
+	}
+
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;

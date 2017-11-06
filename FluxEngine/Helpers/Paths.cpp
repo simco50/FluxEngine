@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Paths.h"
 
+
+const std::string Paths::LogsFolder =			"Saved\\Logs";
 const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
 const std::string Paths::GameIniFile =			"Config\\Game.ini";
 const std::string Paths::EngineIniFile =		"Config\\Engine.ini";

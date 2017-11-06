@@ -64,7 +64,7 @@ public:
 	void BeginFrame();
 	void EndFrame();
 
-	void TakeScreenshot(const string& fileOutput);
+	void TakeScreenshot();
 	void OnPause(const bool paused);
 
 	//Getters

@@ -9,6 +9,7 @@ struct Paths
 	static std::string GetFileExtenstion(const std::string& filePath);
 	static std::string GetDirectoryPath(const std::string& filePath);
 
+	static const std::string LogsFolder;
 	static const std::string ScreenshotFolder;
 	static const std::string GameIniFile;
 	static const std::string EngineIniFile;
