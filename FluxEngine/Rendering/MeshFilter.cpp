@@ -14,14 +14,9 @@ MeshFilter::MeshFilter()
 
 MeshFilter::~MeshFilter()
 {
-	for (VertexBuffer*& pVertexBuffer : m_VertexBuffers)
-	{
-		SafeDelete(pVertexBuffer);
-	}
 	for (auto &it : m_VertexData)
 	{
-		delete[] it.second.pData;
-		it.second.pData = nullptr;
+		SafeDeleteArray(it.second.pData);
 	}
 }
 
@@ -35,17 +30,13 @@ void MeshFilter::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& eleme
 
 	AUTOPROFILE(MeshFilter_CreateBuffers);
 
-	for (VertexBuffer*& pVertexBuffer : m_VertexBuffers)
-	{
-		SafeDelete(pVertexBuffer);
-	}
+	m_pVertexBuffer.reset();
 	m_pIndexBuffer.reset();
 
-	VertexBuffer* pVertexBuffer = new VertexBuffer(pGraphics);
-	m_VertexBuffers.push_back(pVertexBuffer);
-	pVertexBuffer->Create(m_VertexCount, elementDesc, false);
+	m_pVertexBuffer = make_unique<VertexBuffer>(pGraphics);
+	m_pVertexBuffer->Create(m_VertexCount, elementDesc, false);
 
-	int vertexStride = pVertexBuffer->GetVertexStride();
+	int vertexStride = m_pVertexBuffer->GetVertexStride();
 	if (vertexStride == 0)
 	{
 		FLUX_LOG(ERROR, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
@@ -180,7 +171,7 @@ void MeshFilter::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& eleme
 	}
 #endif
 
-	pVertexBuffer->SetData(pVertexDataStart);
+	m_pVertexBuffer->SetData(pVertexDataStart);
 
 	if (HasData("INDEX"))
 	{
@@ -193,16 +184,6 @@ void MeshFilter::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& eleme
 
 	delete[] pVertexDataStart;
 } 
-
-VertexBuffer* MeshFilter::GetVertexBuffer(const unsigned int slot) const
-{
-	if (slot >= m_VertexBuffers.size())
-	{
-		FLUX_LOG(ERROR, "[MeshFilter::GetVertexBuffer] > No vertex buffer at slot %i", slot);
-		return nullptr;
-	}
-	return m_VertexBuffers[slot];
-}
 
 MeshFilter::VertexData& MeshFilter::GetVertexData(const string& semantic)
 {

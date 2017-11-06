@@ -16,14 +16,12 @@ public:
 	void CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc);
 
 	//Returns the vertexbuffer at the specified slot
-	VertexBuffer* GetVertexBuffer(const unsigned int slot) const;
-	const std::vector<VertexBuffer*>& GetVertexBuffers() const { return m_VertexBuffers; }
+	VertexBuffer* GetVertexBuffer() const { return m_pVertexBuffer.get(); }
 	IndexBuffer* GetIndexBuffer() const { return m_pIndexBuffer.get(); }
+	bool HasIndexBuffer() const { return m_pIndexBuffer.get() != nullptr; }
 
 	int GetIndexCount() const { return m_IndexCount; }
 	int GetVertexCount() const { return m_VertexCount; }
-	unsigned int GetVertexBufferCount() const { return (unsigned int)m_VertexBuffers.size(); }
-	bool HasIndexBuffer() const { return m_pIndexBuffer.get(); }
 
 	struct VertexData
 	{
@@ -43,7 +41,7 @@ private:
 
 	string m_MeshName;
 	bool m_BuffersInitialized = false;
-	std::vector<VertexBuffer*> m_VertexBuffers;
+	unique_ptr<VertexBuffer> m_pVertexBuffer;
 	unique_ptr<IndexBuffer> m_pIndexBuffer;
 
 	int m_IndexCount = 0;

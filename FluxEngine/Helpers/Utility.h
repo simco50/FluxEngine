@@ -19,6 +19,16 @@ inline void SafeDelete(T*& object)
 }
 
 template<typename T>
+inline void SafeDeleteArray(T*& object)
+{
+	if (object)
+	{
+		delete[] object;
+		object = nullptr;
+	}
+}
+
+template<typename T>
 inline void SafeRelease(T*& object)
 {
 	if (object)

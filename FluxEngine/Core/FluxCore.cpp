@@ -138,7 +138,7 @@ void FluxCore::GameLoop()
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
 	m_pGraphics->SetIndexBuffer(m_pMeshFilter->GetIndexBuffer());
-	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer(0) });
+	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer() });
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
