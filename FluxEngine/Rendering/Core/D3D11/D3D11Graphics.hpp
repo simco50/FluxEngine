@@ -530,6 +530,8 @@ bool Graphics::UpdateSwapchain()
 	if (!m_pImpl->m_pSwapChain.IsValid())
 		return false;
 
+	m_pImpl->m_pBackbufferResolveTexture.Reset();
+
 	assert(m_pImpl->m_pDevice.IsValid());
 	assert(m_pImpl->m_pSwapChain.IsValid());
 
