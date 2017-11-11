@@ -14,8 +14,10 @@ FreeCamera::~FreeCamera()
 {
 }
 
-void FreeCamera::Initialize()
+void FreeCamera::OnSceneSet(Scene* pScene)
 {
+	SceneNode::OnSceneSet(pScene);
+
 	m_pCamera = new Camera(m_pInput, m_pGraphics);
 	AddComponent(m_pCamera);
 	AudioListener* pAudioListener = new AudioListener();
@@ -24,6 +26,8 @@ void FreeCamera::Initialize()
 
 void FreeCamera::Update()
 {
+	SceneNode::Update();
+
 	if(m_UseMouseAndKeyboard)
 		KeyboardMouse();
 	//if (m_UseController)

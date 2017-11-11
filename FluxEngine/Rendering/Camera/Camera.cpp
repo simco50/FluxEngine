@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Camera.h"
 
-#include "Scenegraph/GameObject.h"
+#include "Scenegraph/SceneNode.h"
 #include "Core/Components/Transform.h"
 #include "Math/SimpleMath.h"
 #include "Rendering/Core/Graphics.h"
@@ -28,8 +28,9 @@ void Camera::UpdateViewport()
 	m_Viewport.Bottom = m_VpHeight;
 }
 
-void Camera::Initialize()
+void Camera::OnNodeSet(SceneNode* pNode)
 {
+	Component::OnNodeSet(pNode);
 	UpdateViewport();
 }
 
@@ -45,9 +46,9 @@ void Camera::Update()
 		projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
 	
-	XMVECTOR worldPos = XMLoadFloat3(&m_pGameObject->GetTransform()->GetWorldPosition());
-	XMVECTOR lookAt = XMLoadFloat3(&m_pGameObject->GetTransform()->GetForward());
-	XMVECTOR upDirection = XMLoadFloat3(&m_pGameObject->GetTransform()->GetUp());
+	XMVECTOR worldPos = XMLoadFloat3(&m_pNode->GetTransform()->GetWorldPosition());
+	XMVECTOR lookAt = XMLoadFloat3(&m_pNode->GetTransform()->GetForward());
+	XMVECTOR upDirection = XMLoadFloat3(&m_pNode->GetTransform()->GetUp());
 	view = XMMatrixLookAtLH(worldPos, worldPos + lookAt, upDirection);
 	viewInv = XMMatrixInverse(nullptr, view);
 	viewProjInv = XMMatrixInverse(nullptr, view * projection);

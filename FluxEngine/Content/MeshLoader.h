@@ -1,15 +1,15 @@
 #pragma once
 #include "ResourceLoader.h"
-class MeshFilter;
+class Mesh;
 
-class MeshLoader : public ResourceLoader<MeshFilter>
+class MeshLoader : public ResourceLoader<Mesh>
 {
 public:
 	MeshLoader();
 	~MeshLoader();
 
-	MeshFilter* LoadContent(const string& assetFile) override;
-	void Destroy(MeshFilter* objToDestroy) override;
+	Mesh* LoadContent(const string& assetFile) override;
+	void Destroy(Mesh* objToDestroy) override;
 
 private:
 	static const int SE_VERSION = 5;

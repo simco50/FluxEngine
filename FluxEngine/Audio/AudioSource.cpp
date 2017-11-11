@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "AudioSource.h"
-#include "Scenegraph/GameObject.h"
+#include "Scenegraph/SceneNode.h"
 #include "Core/Components/Transform.h"
 #include "AudioEngine.h"
 
@@ -17,16 +17,18 @@ AudioSource::~AudioSource()
 {
 }
 
-void AudioSource::Initialize()
+void AudioSource::OnSceneSet(Scene* pScene)
 {
+	Component::OnSceneSet(pScene);
+
 	m_pFmodSystem = AudioEngine::Instance().GetSystem();
-	if(m_pSound == nullptr)
+	if (m_pSound == nullptr)
 		m_pSound = AudioEngine::Instance().LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
 }
 
 void AudioSource::Update()
 {
-	XMFLOAT3 pos = m_pGameObject->GetTransform()->GetWorldPosition();
+	XMFLOAT3 pos = m_pNode->GetTransform()->GetWorldPosition();
 	FMOD_VECTOR listenerPosition;
 	listenerPosition.x = pos.x;
 	listenerPosition.y = pos.y;

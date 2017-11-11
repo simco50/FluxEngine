@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "InputEngine.h"
-#include "Game/GameManager.h"
 #include "Rendering/Core/Graphics.h"
 
 InputEngine::InputEngine(Graphics* pGraphics):

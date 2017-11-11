@@ -11,6 +11,7 @@
 #include "../Core/VertexBuffer.h"
 #include "../Core/GraphicsDefines.h"
 #include "../Core/Graphics.h"
+#include "../../Scenegraph/Scene.h"
 
 ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
 	m_pParticleSystem(pSystem),
@@ -52,8 +53,10 @@ void ParticleEmitter::Reset()
 		p->Reset();
 }
 
-void ParticleEmitter::Initialize()
+void ParticleEmitter::OnSceneSet(Scene* pScene)
 {
+	Component::OnSceneSet(pScene);
+
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	m_pMaterial = new ParticleMaterial(m_pGraphics);
@@ -87,16 +90,16 @@ void ParticleEmitter::SortParticles()
 	case ParticleSortingMode::FrontToBack:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
 			return d1 > d2;
 		});
 		break;
 	case ParticleSortingMode::BackToFront:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pGameContext->Scene->Camera->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
 			return d1 < d2;
 		});
 	case ParticleSortingMode::OldestFirst:

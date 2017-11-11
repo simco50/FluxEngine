@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Transform.h"
-#include "Scenegraph/GameObject.h"
+#include "Scenegraph/SceneNode.h"
 
-Transform::Transform()
+Transform::Transform(SceneNode *pNode) :
+	m_pNode(pNode)
 {
 	m_Scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	XMVECTOR quat = XMQuaternionIdentity();
@@ -38,7 +39,7 @@ void Transform::OnLocalChange()
 	XMMATRIX xmLocalScale = XMMatrixScaling(m_Scale.x, m_Scale.y, m_Scale.z);
 
 	XMMATRIX xmLocalMatrix = xmLocalScale * xmLocalRotation * xmLocalTranslation;
-	GameObject* pParent = m_pGameObject->GetParent();
+	SceneNode* pParent = m_pNode->GetParent();
 
 	XMMATRIX xmWorldMatrix = xmLocalMatrix;
 	if (pParent != nullptr)
@@ -69,7 +70,7 @@ void Transform::OnLocalChange()
 
 void Transform::OnWorldChange()
 {
-	GameObject* pParent = m_pGameObject->GetParent();
+	SceneNode* pParent = m_pNode->GetParent();
 
 	XMMATRIX xmWorldTranslation = XMMatrixTranslation(m_WorldPosition.x, m_WorldPosition.y, m_WorldPosition.z);
 	XMVECTOR xmRotation = XMLoadFloat4(&m_WorldRotation);

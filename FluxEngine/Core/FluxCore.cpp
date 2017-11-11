@@ -7,7 +7,7 @@
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Core/IndexBuffer.h"
-#include "Rendering/MeshFilter.h"
+#include "Rendering/Mesh.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/Core/RasterizerState.h"
@@ -17,6 +17,9 @@
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/Core/RenderTarget.h"
 #include "Rendering/Core/Texture.h"
+#include "Rendering/Geometry.h"
+#include "Scenegraph/Scene.h"
+#include "Rendering/Model.h"
 
 using namespace std;
 
@@ -97,7 +100,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 void FluxCore::InitGame()
 {
 	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
-	m_pCamera->BaseInitialize(nullptr);
+	m_pCamera->OnSceneSet(nullptr);
 
 	m_pShader = m_pGraphics->GetShader("Resources/Shaders/Diffuse.hlsl");
 	if (m_pShader)
@@ -111,8 +114,17 @@ void FluxCore::InitGame()
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
 	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
-	m_pMeshFilter = ResourceManager::Load<MeshFilter>("Resources/Meshes/flash.flux");
+	
+
+	m_pScene = make_unique<Scene>(m_pGraphics);
+	SceneNode* pNode = new SceneNode();
+	m_pMeshFilter = make_unique<Mesh>();
+	m_pMeshFilter->Load("Resources/Meshes/Cube.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
+	Model* pModel = new Model();
+	pModel->SetMesh(m_pMeshFilter.get());
+	pNode->AddComponent(pModel);
+	m_pScene->AddChild(pNode);
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 
@@ -124,7 +136,7 @@ void FluxCore::GameLoop()
 {
 	GameTimer::Tick();
 	m_pInput->Update();
-	m_pCamera->BaseUpdate();
+	m_pCamera->Update();
 
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
@@ -137,8 +149,8 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
-	m_pGraphics->SetIndexBuffer(m_pMeshFilter->GetIndexBuffer());
-	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer() });
+	/*m_pGraphics->SetIndexBuffer(m_pMeshFilter->GetIndexBuffer());
+	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer() });*/
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
@@ -147,7 +159,12 @@ void FluxCore::GameLoop()
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
-	m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, m_pMeshFilter->GetIndexCount(), 0, 0);
+	//m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, m_pMeshFilter->GetIndexCount(), 0, 0);
+
+	/*for (int i = 0; i < m_pMeshFilter->GetGeometryCount(); ++i)
+		m_pMeshFilter->GetGeometry(i)->Draw(m_pGraphics);*/
+
+	m_pScene->Update();
 
 	RenderUI();
 

@@ -1,5 +1,6 @@
 #pragma once
-#include "ComponentBase.h"
+
+class SceneNode;
 
 enum class Space
 {
@@ -15,11 +16,14 @@ enum TransformElement
 };
 DEFINE_ENUM_FLAG_OPERATORS(TransformElement)
 
-class Transform : public ComponentBase
+class Transform
 {
 public:
-	Transform();
+	Transform(SceneNode* pNode);
 	~Transform();
+
+	void Initialize();
+	void Update();
 
 	//Absolute
 	void SetPosition(const XMFLOAT3& newPosition, const Space space = Space::WORLD);
@@ -68,12 +72,10 @@ public:
 	void UpdateDirections();
 
 	bool HasChanged() const { return m_HasChanged; }
-	
-protected:
-	void Initialize();
-	void Update();
 
 private:
+	SceneNode* m_pNode;
+
 	XMFLOAT3 m_Up;
 	XMFLOAT3 m_Right;
 	XMFLOAT3 m_Forward;

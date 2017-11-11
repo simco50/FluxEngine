@@ -1,14 +1,14 @@
 #pragma once
-#include "Scenegraph\GameObject.h"
+#include "Scenegraph\SceneNode.h"
 
-class FreeCamera : public GameObject
+class FreeCamera : public SceneNode
 {
 public:
 	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~FreeCamera();
 
-	void Initialize() override;
-	void Update() override;
+	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void Update() override;
 	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }

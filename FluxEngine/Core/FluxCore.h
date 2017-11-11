@@ -6,8 +6,9 @@ class ShaderVariation;
 class ImmediateUI;
 class InputEngine;
 class FreeCamera;
-class MeshFilter;
+class Mesh;
 class Texture;
+class Scene;
 
 class FluxCore
 {
@@ -29,13 +30,15 @@ public:
 	void InitGame();
 
 private:
+	unique_ptr<Scene> m_pScene;
+
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
 	Shader* m_pShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
-	MeshFilter* m_pMeshFilter = nullptr;
+	unique_ptr<Mesh> m_pMeshFilter;
 	Texture* m_pDiffuseTexture = nullptr;
 
 	Graphics* m_pGraphics = nullptr;

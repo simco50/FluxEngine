@@ -1,7 +1,7 @@
 #pragma once
-#include "Core/Components/ComponentBase.h"
+#include "Scenegraph/Component.h"
 
-class AudioSource : public ComponentBase
+class AudioSource : public Component
 {
 public:
 	AudioSource(const wstring& filePath, const FMOD_MODE& mode);
@@ -18,8 +18,8 @@ public:
 	FMOD::Channel* GetChannel() const { return m_pChannel; }
 
 private:
-	void Initialize();
-	void Update();
+	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void Update() override;
 
 	FMOD_MODE m_Mode;
 	wstring m_FilePath;

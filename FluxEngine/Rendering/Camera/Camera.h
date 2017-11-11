@@ -1,11 +1,11 @@
 #pragma once
-#include "Core/Components/ComponentBase.h"
+#include "SceneGraph/Component.h"
 
 class MeshRenderer;
 class InputEngine;
 class Graphics;
 
-class Camera : public ComponentBase
+class Camera : public Component
 {
 public:
 	Camera(InputEngine* pInput, Graphics* pGraphics);
@@ -31,7 +31,7 @@ public:
 	float GetFarPlane() const { return m_FarPlane; }
 
 protected:
-	void Initialize() override;
+	void OnNodeSet(SceneNode* pNode) override;
 	void Update() override;
 private:
 	InputEngine* m_pInput = nullptr;

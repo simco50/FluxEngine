@@ -1,14 +1,14 @@
 #pragma once
-#include "Core/Components/ComponentBase.h"
+#include "Scenegraph/Component.h"
 
-class AudioListener : public ComponentBase
+class AudioListener : public Component
 {
 public:
 	AudioListener();
 	~AudioListener();
 private:
-	void Initialize();
-	void Update();
+	virtual void OnSceneSet(Scene* pScene) override;
+	void Update() override; 
 
 	FMOD::System* m_pFmodSystem = nullptr;
 	FMOD_VECTOR m_LastPosition;
