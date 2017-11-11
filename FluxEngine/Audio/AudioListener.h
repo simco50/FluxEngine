@@ -7,7 +7,7 @@ public:
 	AudioListener();
 	~AudioListener();
 private:
-	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void OnNodeSet(SceneNode* pNode) override;
 	void Update() override; 
 
 	FMOD::System* m_pFmodSystem = nullptr;

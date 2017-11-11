@@ -10,7 +10,6 @@ Scene::Scene(Graphics* pGraphics)
 	m_pRenderer = make_unique<Renderer>(pGraphics);
 }
 
-
 Scene::~Scene()
 {
 	for (SceneNode*& pNode : m_pNodes)
@@ -36,7 +35,12 @@ void Scene::AddChild(SceneNode* pNode)
 	m_pNodes.push_back(pNode);
 }
 
-SceneNode* Scene::Find(const std::string name)
+Camera* Scene::GetCamera() const
+{
+	return m_pRenderer->GetCamera(0);
+}
+
+SceneNode* Scene::FindNode(const std::string name)
 {
 	for (SceneNode* pNode : m_pNodes)
 	{

@@ -5,6 +5,7 @@
 #include "Rendering/Core/Graphics.h"
 #include "Geometry.h"
 #include "Core/ShaderVariation.h"
+#include "Camera/Camera.h"
 
 Renderer::Renderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -19,15 +20,26 @@ Renderer::~Renderer()
 
 void Renderer::Draw()
 {
-	for (Drawable* pDrawable : m_Drawables)
+	for (Camera* pCamera : m_Cameras)
 	{
-		const vector<Batch>& batches = pDrawable->GetBatches();
-		for (const Batch& batch : batches)
+		if (pCamera == nullptr)
+			continue;
+
+		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
+		for (Drawable* pDrawable : m_Drawables)
 		{
-			if (batch.pGeometry)
+			if (pDrawable == nullptr)
+				continue;
+
+			const vector<Batch>& batches = pDrawable->GetBatches();
+			for (const Batch& batch : batches)
 			{
-				SetMaterial(batch.pMaterial);
-				batch.pGeometry->Draw(m_pGraphics);
+				if (batch.pGeometry)
+				{
+					SetMaterial(batch.pMaterial);
+
+					batch.pGeometry->Draw(m_pGraphics);
+				}
 			}
 		}
 	}
@@ -35,7 +47,54 @@ void Renderer::Draw()
 
 void Renderer::AddDrawable(Drawable* pDrawable)
 {
+	for (Drawable*& pD : m_Drawables)
+	{
+		if (pD == nullptr)
+		{
+			pD = pDrawable;
+			return;
+		}
+	}
 	m_Drawables.push_back(pDrawable);
+}
+
+bool Renderer::RemoveDrawable(Drawable* pDrawable)
+{
+	for (Drawable*& pD : m_Drawables)
+	{
+		if (pD == pDrawable)
+		{
+			pD = nullptr;
+			return true;
+		}
+	}
+	return false;
+}
+
+void Renderer::AddCamera(Camera* pCamera)
+{
+	for (Camera*& pC : m_Cameras)
+	{
+		if (pC == nullptr)
+		{
+			pC = pCamera;
+			return;
+		}
+	}
+	m_Cameras.push_back(pCamera);
+}
+
+bool Renderer::RemoveCamera(Camera* pCamera)
+{
+	for (Camera*& pC : m_Cameras)
+	{
+		if (pC == pCamera)
+		{
+			pC = nullptr;
+			return true;
+		}
+	}
+	return false;
 }
 
 void Renderer::SetMaterial(Material* pMaterial)

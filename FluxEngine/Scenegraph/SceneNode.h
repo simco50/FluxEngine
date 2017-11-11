@@ -26,9 +26,9 @@ public:
 private:
 	std::string m_Name;
 
-	Scene* m_pScene;
-	std::vector<Component*> m_Components;
 	SceneNode* m_pParent = nullptr;
+	Scene* m_pScene = nullptr;
 
 	unique_ptr<Transform> m_pTransform;
+	std::vector<Component*> m_Components;
 };

@@ -4,7 +4,7 @@
 class AudioSource : public Component
 {
 public:
-	AudioSource(const wstring& filePath, const FMOD_MODE& mode);
+	AudioSource(const string& filePath, const FMOD_MODE& mode);
 	AudioSource(FMOD::Sound* pSound);
 	~AudioSource();
 
@@ -18,11 +18,10 @@ public:
 	FMOD::Channel* GetChannel() const { return m_pChannel; }
 
 private:
-	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void Update() override;
 
 	FMOD_MODE m_Mode;
-	wstring m_FilePath;
+	string m_FilePath;
 	FMOD::Sound* m_pSound = nullptr;
 	FMOD::Channel* m_pChannel = nullptr;
 

@@ -12,9 +12,9 @@ AudioListener::~AudioListener()
 {
 }
 
-void AudioListener::OnSceneSet(Scene* pScene)
+void AudioListener::OnNodeSet(SceneNode* pNode)
 {
-	Component::OnSceneSet(pScene);
+	Component::OnNodeSet(pNode);
 
 	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 

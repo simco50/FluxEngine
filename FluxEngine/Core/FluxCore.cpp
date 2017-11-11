@@ -20,6 +20,7 @@
 #include "Rendering/Geometry.h"
 #include "Scenegraph/Scene.h"
 #include "Rendering/Model.h"
+#include "Audio/AudioSource.h"
 
 using namespace std;
 
@@ -99,9 +100,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 void FluxCore::InitGame()
 {
-	m_pCamera = make_unique<FreeCamera>(m_pInput.get(), m_pGraphics);
-	m_pCamera->OnSceneSet(nullptr);
-
 	m_pShader = m_pGraphics->GetShader("Resources/Shaders/Diffuse.hlsl");
 	if (m_pShader)
 	{
@@ -114,22 +112,23 @@ void FluxCore::InitGame()
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
 	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
-	
 
 	m_pScene = make_unique<Scene>(m_pGraphics);
 	SceneNode* pNode = new SceneNode();
 	m_pMeshFilter = make_unique<Mesh>();
-	m_pMeshFilter->Load("Resources/Meshes/Cube.flux");
+	m_pMeshFilter->Load("Resources/Meshes/Spot.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
 	Model* pModel = new Model();
 	pModel->SetMesh(m_pMeshFilter.get());
 	pNode->AddComponent(pModel);
 	m_pScene->AddChild(pNode);
-
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 
+	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
+	m_pScene->AddChild(m_pCamera);
+
 	//Texture
-	m_pDiffuseTexture = ResourceManager::Load<Texture>("Resources/Textures/Flash_Diffuse.jpg");
+	m_pDiffuseTexture = ResourceManager::Load<Texture>("Resources/Textures/Spot.png");
 }
 
 void FluxCore::GameLoop()
@@ -149,8 +148,6 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
-	/*m_pGraphics->SetIndexBuffer(m_pMeshFilter->GetIndexBuffer());
-	m_pGraphics->SetVertexBuffers({ m_pMeshFilter->GetVertexBuffer() });*/
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
@@ -158,12 +155,6 @@ void FluxCore::GameLoop()
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::LESS);
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
-
-	//m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, m_pMeshFilter->GetIndexCount(), 0, 0);
-
-	/*for (int i = 0; i < m_pMeshFilter->GetGeometryCount(); ++i)
-		m_pMeshFilter->GetGeometry(i)->Draw(m_pGraphics);*/
-
 	m_pScene->Update();
 
 	RenderUI();
@@ -183,7 +174,7 @@ void FluxCore::UpdatePerFrameParameters()
 void FluxCore::UpdatePerObjectParameters()
 {
 	Matrix viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	Matrix world = Matrix::CreateFromYawPitchRoll(XM_PI, 0, 0) * Matrix::CreateTranslation(0, -1, 3);
+	Matrix world = Matrix::CreateTranslation(0, 0, 3);
 	m_pVertexShader->SetParameter("cWorldVS", world);
 	m_pVertexShader->SetParameter("cWorldViewProjVS", world * viewProj);
 

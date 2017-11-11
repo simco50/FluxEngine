@@ -18,7 +18,6 @@ public:
 	const XMFLOAT4X4& GetProjection() const { return m_Projection; }
 
 	void SetViewport(float x, float y, float width, float height);
-	void UpdateViewport();
 	const FloatRect& GetViewport() const { return m_Viewport; }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
@@ -31,7 +30,7 @@ public:
 	float GetFarPlane() const { return m_FarPlane; }
 
 protected:
-	void OnNodeSet(SceneNode* pNode) override;
+	void OnSceneSet(Scene* pScene) override;
 	void Update() override;
 private:
 	InputEngine* m_pInput = nullptr;

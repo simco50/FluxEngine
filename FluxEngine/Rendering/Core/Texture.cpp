@@ -6,6 +6,8 @@
 #include "D3D11/D3D11Texture.hpp"
 #endif
 
+#include "External/Stb/stb_image.h"
+
 Texture::Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV) :
 	m_pGraphics(pGraphics),
 	m_pResource(pTexture),
@@ -24,6 +26,32 @@ Texture::Texture(Graphics* pGraphics) :
 Texture::~Texture()
 {
 	Release();
+}
+
+bool Texture::Load(const std::string& filePath)
+{
+	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	if (pFile == nullptr)
+		return false;
+	if (!pFile->Open(FileMode::Read, ContentType::Binary))
+		return false;
+	vector<char> buffer;
+	pFile->ReadAllBytes(buffer);
+	pFile->Close();
+
+	int width, height, bpp;
+	unsigned char* pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
+	vector<unsigned char> pixels;
+	pixels.resize(width * height * bpp);
+	memcpy(pixels.data(), pPixels, pixels.size());
+
+	if (!SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+		return false;
+	if (!SetData(pPixels))
+		return false;
+
+	stbi_image_free(pPixels);
+	return true;
 }
 
 bool Texture::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)

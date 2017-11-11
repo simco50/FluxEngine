@@ -26,6 +26,8 @@ void SceneNode::Update()
 void SceneNode::OnSceneSet(Scene* pScene)
 {
 	m_pScene = pScene;
+
+	//The component don't have the scene assigned yet
 	for (Component* pComponent : m_Components)
 		pComponent->OnSceneSet(pScene);
 }
@@ -39,5 +41,9 @@ void SceneNode::AddChild(SceneNode* pNode)
 void SceneNode::AddComponent(Component* pComponent)
 {
 	m_Components.push_back(pComponent);
+
+	//If the node is already added to the scene
 	pComponent->OnNodeSet(this);
+	if (m_pScene)
+		pComponent->OnSceneSet(m_pScene);
 }

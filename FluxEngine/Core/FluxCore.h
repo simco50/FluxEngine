@@ -31,6 +31,7 @@ public:
 
 private:
 	unique_ptr<Scene> m_pScene;
+	unique_ptr<Mesh> m_pMeshFilter;
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -38,7 +39,6 @@ private:
 	Shader* m_pShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
-	unique_ptr<Mesh> m_pMeshFilter;
 	Texture* m_pDiffuseTexture = nullptr;
 
 	Graphics* m_pGraphics = nullptr;
@@ -51,5 +51,5 @@ private:
 
 	int m_IndexCount = -1;
 
-	unique_ptr<FreeCamera> m_pCamera;
+	FreeCamera* m_pCamera = nullptr;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "Math/KeyframeValue.h"
+#include "Content/Resource.h"
 
 struct ParticleVertex
 {
@@ -29,10 +30,14 @@ enum class ParticleBlendMode
 	ADDITIVE = 1,
 };
 
-struct ParticleSystem
+struct ParticleSystem : public Resource
 {
+public:
+
 	ParticleSystem() {}
 	~ParticleSystem() {}
+
+	virtual bool Load(const std::string& filePath) override;
 
 	//General
 	float Duration = 1.0f;
@@ -49,7 +54,7 @@ struct ParticleSystem
 
 	//Emission
 	int Emission = 10;
-	map<float, int> Bursts;
+	std::map<float, int> Bursts;
 
 	//Shape
 	enum class ShapeType
@@ -80,5 +85,7 @@ struct ParticleSystem
 	//Rendering
 	ParticleSortingMode SortingMode = ParticleSortingMode::FrontToBack;
 	ParticleBlendMode BlendMode = ParticleBlendMode::ALPHABLEND;
-	string ImagePath = "";
+	std::string ImagePath = "";
+
+	static const int VERSION = 2;
 };

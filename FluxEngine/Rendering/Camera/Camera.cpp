@@ -1,10 +1,14 @@
 #include "stdafx.h"
 #include "Camera.h"
 
+#include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
+
 #include "Core/Components/Transform.h"
 #include "Math/SimpleMath.h"
+
 #include "Rendering/Core/Graphics.h"
+#include "Rendering/Renderer.h"
 
 Camera::Camera(InputEngine* pInput, Graphics* pGraphics):
 	m_pInput(pInput), m_pGraphics(pGraphics)
@@ -20,18 +24,10 @@ Camera::~Camera()
 {
 }
 
-void Camera::UpdateViewport()
+void Camera::OnSceneSet(Scene* pScene)
 {
-	m_Viewport.Left = m_VpX * m_pGraphics->GetWindowWidth();
-	m_Viewport.Top = m_VpY * m_pGraphics->GetWindowHeight();
-	m_Viewport.Right = m_VpWidth;
-	m_Viewport.Bottom = m_VpHeight;
-}
-
-void Camera::OnNodeSet(SceneNode* pNode)
-{
-	Component::OnNodeSet(pNode);
-	UpdateViewport();
+	Component::OnSceneSet(pScene);
+	pScene->GetRenderer()->AddCamera(this);
 }
 
 void Camera::Update()
@@ -46,9 +42,9 @@ void Camera::Update()
 		projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
 	
-	XMVECTOR worldPos = XMLoadFloat3(&m_pNode->GetTransform()->GetWorldPosition());
-	XMVECTOR lookAt = XMLoadFloat3(&m_pNode->GetTransform()->GetForward());
-	XMVECTOR upDirection = XMLoadFloat3(&m_pNode->GetTransform()->GetUp());
+	Vector3 worldPos = XMLoadFloat3(&m_pNode->GetTransform()->GetWorldPosition());
+	Vector3 lookAt = XMLoadFloat3(&m_pNode->GetTransform()->GetForward());
+	Vector3 upDirection = XMLoadFloat3(&m_pNode->GetTransform()->GetUp());
 	view = XMMatrixLookAtLH(worldPos, worldPos + lookAt, upDirection);
 	viewInv = XMMatrixInverse(nullptr, view);
 	viewProjInv = XMMatrixInverse(nullptr, view * projection);
@@ -58,17 +54,14 @@ void Camera::Update()
 	XMStoreFloat4x4(&m_Projection, projection);
 	XMStoreFloat4x4(&m_ViewProjection, view * projection);
 	XMStoreFloat4x4(&m_ViewProjectionInverse, viewProjInv);
-
-	UpdateViewport();
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)
 {
-	m_VpX = x;
-	m_VpY = y;
-	m_VpWidth = width;
-	m_VpHeight = height;
-	UpdateViewport();
+	m_Viewport.Left = x;
+	m_Viewport.Top = y;
+	m_Viewport.Right = width + x;
+	m_Viewport.Bottom = height + y;
 }
 
 void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
