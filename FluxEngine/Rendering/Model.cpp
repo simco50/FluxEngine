@@ -2,6 +2,8 @@
 #include "Model.h"
 #include "Scenegraph\Scene.h"
 #include "Mesh.h"
+#include "Scenegraph/SceneNode.h"
+#include "Core/Components/Transform.h"
 
 Model::Model()
 {
@@ -21,6 +23,12 @@ void Model::OnSceneSet(Scene* pScene)
 void Model::OnNodeSet(SceneNode* pNode)
 {	
 	Drawable::OnNodeSet(pNode);
+
+	int geometries = m_pMesh->GetGeometryCount();
+	for (int i = 0; i < geometries; ++i)
+	{
+		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+	}
 }
 
 void Model::SetMesh(Mesh* pMesh)
@@ -28,7 +36,9 @@ void Model::SetMesh(Mesh* pMesh)
 	int geometries = pMesh->GetGeometryCount();
 	m_Batches.resize(geometries);
 	for (int i = 0; i < geometries; ++i)
+	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
+	}
 	m_pMesh = pMesh;
 }
 

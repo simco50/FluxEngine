@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Rendering/Core/Graphics.h"
 #include "Geometry.h"
+#include "Core/ShaderVariation.h"
 
 Renderer::Renderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)

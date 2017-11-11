@@ -10,7 +10,7 @@ struct Batch
 {
 	Material* pMaterial;
 	Geometry* pGeometry;
-	XMFLOAT3X3* pModelMatrix;
+	const XMFLOAT4X4* pModelMatrix;
 };
 
 class Drawable : public Component

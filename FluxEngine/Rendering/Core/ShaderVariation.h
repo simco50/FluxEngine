@@ -28,6 +28,7 @@ public:
 
 	template<typename T>
 	void SetParameter(const std::string& name, const T& value);
+	void SetParameter(const std::string& name, const void* value, int size);
 
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }

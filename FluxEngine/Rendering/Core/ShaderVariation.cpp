@@ -35,3 +35,19 @@ void ShaderVariation::SetDefines(const string& defines)
 		m_Defines.push_back(define);
 	}
 }
+
+void ShaderVariation::SetParameter(const std::string& name, const void* value, int size)
+{
+	auto pParameter = m_ShaderParameters.find(name);
+	if (pParameter == m_ShaderParameters.end())
+		return;
+#ifdef _DEBUG
+	if (size != pParameter->second.Size)
+	{
+		FLUX_LOG(ERROR, "[ShaderVariation::SetParameter] > Size mismatch. Parameter '%s' expected value with size '%i' but input value's size is '%i'", name.c_str(), pParameter->second.Size, size);
+		return;
+	}
+#endif
+	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, value);
+
+}
