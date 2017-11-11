@@ -17,6 +17,8 @@ public:
 	Renderer* GetRenderer() const { return m_pRenderer.get(); }
 	Camera* GetCamera() const { return m_pCamera; }
 
+	SceneNode* Find(const std::string name);
+
 private:
 	unique_ptr<Renderer> m_pRenderer;
 	std::vector<SceneNode*> m_pNodes;

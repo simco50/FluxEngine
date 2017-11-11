@@ -35,3 +35,13 @@ void Scene::AddChild(SceneNode* pNode)
 	pNode->OnSceneSet(this);
 	m_pNodes.push_back(pNode);
 }
+
+SceneNode* Scene::Find(const std::string name)
+{
+	for (SceneNode* pNode : m_pNodes)
+	{
+		if (pNode->GetName() == name)
+			return pNode;
+	}
+	return nullptr;
+}

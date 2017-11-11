@@ -8,16 +8,16 @@ class Geometry;
 
 struct Batch
 {
-	Material* pMaterial;
-	Geometry* pGeometry;
-	const XMFLOAT4X4* pModelMatrix;
+	Material* pMaterial = nullptr;
+	Geometry* pGeometry = nullptr;
+	const XMFLOAT4X4* pModelMatrix = nullptr;
 };
 
 class Drawable : public Component
 {
 public:
 	Drawable() {}
-	~Drawable() {};
+	virtual ~Drawable() {}
 
 	virtual void OnSceneSet(Scene* pScene) override;
 

@@ -12,7 +12,6 @@ Model::Model()
 
 Model::~Model()
 {
-
 }
 
 void Model::OnSceneSet(Scene* pScene)
@@ -24,10 +23,9 @@ void Model::OnNodeSet(SceneNode* pNode)
 {	
 	Drawable::OnNodeSet(pNode);
 
-	int geometries = m_pMesh->GetGeometryCount();
-	for (int i = 0; i < geometries; ++i)
+	for (Batch& batch : m_Batches)
 	{
-		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		batch.pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
 	}
 }
 
@@ -45,7 +43,9 @@ void Model::SetMesh(Mesh* pMesh)
 void Model::SetMaterial(Material* pMaterial)
 {
 	for (Batch& batch : m_Batches)
+	{
 		batch.pMaterial = pMaterial;
+	}
 }
 
 void Model::SetMaterial(int index, Material* pMaterial)
@@ -56,4 +56,8 @@ void Model::SetMaterial(int index, Material* pMaterial)
 		return;
 	}
 	m_Batches[index].pMaterial = pMaterial;
+}
+
+void Model::Update()
+{
 }

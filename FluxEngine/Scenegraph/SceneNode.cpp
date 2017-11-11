@@ -12,7 +12,7 @@ SceneNode::SceneNode()
 
 SceneNode::~SceneNode()
 {
-	for (Component* pComponent : m_Components)
+	for (Component*& pComponent : m_Components)
 		SafeDelete(pComponent);
 }
 

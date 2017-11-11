@@ -24,8 +24,11 @@ void Renderer::Draw()
 		const vector<Batch>& batches = pDrawable->GetBatches();
 		for (const Batch& batch : batches)
 		{
-			SetMaterial(batch.pMaterial);
-			batch.pGeometry->Draw(m_pGraphics);
+			if (batch.pGeometry)
+			{
+				SetMaterial(batch.pMaterial);
+				batch.pGeometry->Draw(m_pGraphics);
+			}
 		}
 	}
 }

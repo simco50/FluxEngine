@@ -16,7 +16,6 @@ public:
 
 	virtual bool Load(const std::string& filePath) override;
 
-	//Creates vertex- and indexbuffer according to the element desc
 	void CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc);
 
 	int GetGeometryCount() const { return m_GeometryCount; }

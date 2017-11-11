@@ -6,6 +6,9 @@ class Transform;
 class Component
 {
 public:
+	Component() {}
+	virtual ~Component() {}
+
 	virtual void OnSceneSet(Scene* pScene)
 	{
 		if (m_pScene)
@@ -20,7 +23,7 @@ public:
 	}
 	Transform* GetTransform();
 
-	virtual void Update() {}
+	virtual void Update() = 0;
 
 protected:
 	Scene* m_pScene = nullptr;

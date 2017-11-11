@@ -12,7 +12,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
 	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
 
-	//_CrtSetBreakAlloc(1744);
+	//_CrtSetBreakAlloc(4322);
 #endif
 
 	unique_ptr<FluxCore> pCore = make_unique<FluxCore>();

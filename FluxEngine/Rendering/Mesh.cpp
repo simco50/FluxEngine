@@ -7,8 +7,6 @@
 #include <thread>
 #include "Geometry.h"
 
-using namespace std;
-
 Mesh::Mesh()
 {
 }
@@ -22,13 +20,13 @@ bool Mesh::Load(const std::string& filePath)
 	std::string extension = Paths::GetFileExtenstion(filePath);
 	if (extension != "flux")
 	{
-		stringstream stream;
+		std::stringstream stream;
 		stream << "MeshLoader::LoadContent() -> '" << filePath << "' has a wrong file extension";
 		FLUX_LOG(ERROR, stream.str());
 		return false;
 	}
 
-	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Binary))
@@ -42,7 +40,7 @@ bool Mesh::Load(const std::string& filePath)
 	UNREFERENCED_PARAMETER(maxVersion);
 	if (minVersion != MESH_VERSION)
 	{
-		stringstream stream;
+		std::stringstream stream;
 		stream << "MeshLoader::LoadContent() File '" << filePath << "' version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
 		FLUX_LOG(ERROR, stream.str());
 	}
@@ -51,7 +49,7 @@ bool Mesh::Load(const std::string& filePath)
 
 	for (int i = 0; i < m_GeometryCount; ++i)
 	{
-		unique_ptr<Geometry> pGeometry = make_unique<Geometry>();
+		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
 		for (;;)
 		{
 			string block = pFile->ReadSizedString();
@@ -84,7 +82,7 @@ bool Mesh::Load(const std::string& filePath)
 void Mesh::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc)
 {
 	AUTOPROFILE(Mesh_CreateBuffers);
-	for (unique_ptr<Geometry>& pGeometry : m_Geometries)
+	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
 	{
 		CreateBuffersForGeometry(pGraphics, elementDesc, pGeometry.get());
 	}
@@ -92,7 +90,7 @@ void Mesh::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc
 
 void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
-	unique_ptr<VertexBuffer> pVertexBuffer = make_unique<VertexBuffer>(pGraphics);
+	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(pGraphics);
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
 
 	int vertexStride = pVertexBuffer->GetVertexStride();
@@ -130,7 +128,7 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 			string semanticName;
 			unsigned int elementSize;
 		};
-		vector<ElementInfo> elementInfo;
+		std::vector<ElementInfo> elementInfo;
 		for (VertexElement& element : elementDesc)
 			elementInfo.push_back(element);
 
@@ -221,7 +219,7 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 #endif
 
 #ifdef CACHE_MESHES
-		unique_ptr<PhysicalFile> pCacheFile = make_unique<PhysicalFile>(str.str());
+		std::unique_ptr<PhysicalFile> pCacheFile = std::make_unique<PhysicalFile>(str.str());
 		if (pCacheFile->Open(FileMode::Write, ContentType::Binary))
 		{
 			pCacheFile->Write((char*)pVertexDataStart, vertexStride * m_VertexCount);
@@ -236,8 +234,7 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 
 	if (pGeometry->HasData("INDEX"))
 	{
-		unique_ptr<IndexBuffer> pIndexBuffer = make_unique<IndexBuffer>(pGraphics);
-		pIndexBuffer = make_unique<IndexBuffer>(pGraphics);
+		std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(pGraphics);
 		pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
 		pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
 		pGeometry->SetIndexBuffer(pIndexBuffer.get());

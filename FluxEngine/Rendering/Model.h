@@ -7,7 +7,7 @@ class Model : public Drawable
 {
 public:
 	Model();
-	~Model();
+	virtual ~Model();
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
@@ -15,7 +15,9 @@ public:
 	void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
-		
+
+	virtual void Update() override;
+
 private:
 	Mesh* m_pMesh = nullptr;
 };
