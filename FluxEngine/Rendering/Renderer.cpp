@@ -37,8 +37,14 @@ void Renderer::AddDrawable(Drawable* pDrawable)
 
 void Renderer::SetMaterial(Material* pMaterial)
 {
+	if (pMaterial == nullptr)
+	{
+		//Set the default material
+	}
+
 	if (pMaterial == m_pCurrentMaterial)
 		return;
+
 	m_pCurrentMaterial = pMaterial;
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, pMaterial->GetShader(ShaderType::VertexShader));

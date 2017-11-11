@@ -48,6 +48,6 @@ void ShaderVariation::SetParameter(const std::string& name, const void* value, i
 		return;
 	}
 #endif
-	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, value);
+	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, size, value);
 
 }
