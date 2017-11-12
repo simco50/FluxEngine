@@ -88,9 +88,6 @@ void InputEngine::UpdateGamepadStates()
 
 		m_OldGamepadState[i] = m_CurrGamepadState[i];
 
-		//XINPUT_STATE state;
-		//ZeroMemory(&state, sizeof(XINPUT_STATE));
-
 		dwResult = XInputGetState(i, &m_CurrGamepadState[i]);
 		m_ConnectedGamepads[i] = (dwResult == ERROR_SUCCESS);
 	}

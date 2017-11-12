@@ -49,6 +49,7 @@ void Transform::OnLocalChange()
 		m_WorldPosition = m_Position;
 		m_WorldRotation = m_Rotation;
 		m_WorldScale = m_Scale;
+		m_WorldMatrix = localMatrix;
 	}
 
 	UpdateDirections();
@@ -60,9 +61,9 @@ void Transform::OnWorldChange()
 {
 	SceneNode* pParent = m_pNode->GetParent();
 
-	Matrix worldTranslation = Matrix::CreateTranslation(m_Position);
-	Matrix worldRotation = Matrix::CreateFromQuaternion(m_Rotation);
-	Matrix worldScale = Matrix::CreateScale(m_Scale);
+	Matrix worldTranslation = Matrix::CreateTranslation(m_WorldPosition);
+	Matrix worldRotation = Matrix::CreateFromQuaternion(m_WorldRotation);
+	Matrix worldScale = Matrix::CreateScale(m_WorldScale);
 	m_WorldMatrix = worldScale * worldRotation * worldTranslation;
 
 	if(pParent != nullptr)
@@ -96,7 +97,8 @@ void Transform::Translate(const Vector3& translation, const Space space)
 {
 	if (space == Space::SELF)
 	{
-		m_WorldPosition = m_WorldPosition.Transform(translation, m_WorldMatrix);
+		
+		m_WorldPosition = Vector3::Transform(translation, m_WorldMatrix);
 	}
 	else
 	{
