@@ -1,4 +1,9 @@
 #include "D3D11GraphicsImpl.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "External/Stb/stb_image_write.h"
+#include "FileSystem/File/PhysicalFile.h"
+
 bool Texture::SetData(void* pData)
 {
 	if (m_Usage == TextureUsage::STATIC)
@@ -17,6 +22,81 @@ bool Texture::SetData(void* pData)
 		FLUX_LOG(ERROR, "[Texture::SetData()] > Not yet implemented!");
 		return false;
 	}
+	return true;
+}
+
+bool Texture::Save(const std::string& filePath)
+{
+	std::string extension = Paths::GetFileExtenstion(filePath);
+
+	if (extension != "png")
+	{
+		FLUX_LOG(ERROR, "[Texture::Save] > Only .png is supported");
+		return false;
+	}
+
+	AUTOPROFILE(Texture_Save);
+
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.ArraySize = 1;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Width = m_Width;
+	desc.Height = m_Height;
+	desc.MipLevels = 1;
+	desc.MiscFlags = 0;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+
+	ComPtr<ID3D11Texture2D> pStagingTexture;
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
+
+	//If we are using MSAA, we need to resolve the resource first
+	if (m_MultiSample > 1)
+	{
+		ComPtr<ID3D11Texture2D> pResolveTexture;
+
+		D3D11_TEXTURE2D_DESC resolveTexDesc = {};
+		resolveTexDesc.ArraySize = 1;
+		resolveTexDesc.CPUAccessFlags = 0;
+		resolveTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		resolveTexDesc.Width = m_Width;
+		resolveTexDesc.Height = m_Height;
+		resolveTexDesc.MipLevels = 1;
+		resolveTexDesc.MiscFlags = 0;
+		resolveTexDesc.SampleDesc.Count = 1;
+		resolveTexDesc.SampleDesc.Quality = 0;
+		resolveTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateTexture2D(&resolveTexDesc, nullptr, pResolveTexture.GetAddressOf()));
+
+		m_pGraphics->GetImpl()->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pResource, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		m_pGraphics->GetImpl()->GetDeviceContext()->CopyResource(pStagingTexture.Get(), pResolveTexture.Get());
+	}
+	else
+	{
+		m_pGraphics->GetImpl()->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pResource);
+	}
+
+	D3D11_MAPPED_SUBRESOURCE pData = {};
+	m_pGraphics->GetImpl()->GetDeviceContext()->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &pData);
+
+	stbi_write_png_to_func([](void *context, void *data, int size)
+	{
+		UNREFERENCED_PARAMETER(context);
+
+		stringstream str;
+		str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
+		PhysicalFile pFile(str.str());
+		if (!pFile.Open(FileMode::Write, ContentType::Binary))
+			return;
+		if (!pFile.Write((char*)data, size))
+			return;
+		pFile.Close();
+
+	}, nullptr, m_Width, m_Height, 4, pData.pData, pData.RowPitch);
+	m_pGraphics->GetImpl()->GetDeviceContext()->Unmap(pStagingTexture.Get(), 0);
 	return true;
 }
 

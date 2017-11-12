@@ -104,7 +104,7 @@ std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphi
 				auto pIt = pMaterial->m_Textures.find(slotType);
 				checkf(pIt == pMaterial->m_Textures.end(), "Texture for slot already defined");
 
-				pMaterial->m_Textures[slotType] = ResourceManager::Load<Texture>(pParameter->Attribute("value"));
+				//pMaterial->m_Textures[slotType] = ResourceManager::Load<Texture>(pParameter->Attribute("value"));
 			}
 			else if (parameterType == "Value")
 			{

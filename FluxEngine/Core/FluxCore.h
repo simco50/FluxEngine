@@ -30,8 +30,8 @@ public:
 	void InitGame();
 
 private:
-	unique_ptr<Scene> m_pScene;
-	unique_ptr<Mesh> m_pMeshFilter;
+	std::unique_ptr<Scene> m_pScene;
+	std::unique_ptr<Mesh> m_pMeshFilter;
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -39,11 +39,11 @@ private:
 	Shader* m_pShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
 	ShaderVariation* m_pPixelShader = nullptr;
-	Texture* m_pDiffuseTexture = nullptr;
+	std::unique_ptr<Texture> m_pDiffuseTexture;
 
 	Graphics* m_pGraphics = nullptr;
-	unique_ptr<ImmediateUI> m_pImmediateUI;
-	unique_ptr<InputEngine> m_pInput;
+	std::unique_ptr<ImmediateUI> m_pImmediateUI;
+	std::unique_ptr<InputEngine> m_pInput;
 
 	float m_DeltaTime = 0;
 	Color m_Color = Color(1, 1, 1, 1);

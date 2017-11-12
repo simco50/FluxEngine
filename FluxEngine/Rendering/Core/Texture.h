@@ -70,6 +70,7 @@ public:
 	DELETE_COPY(Texture)
 
 	virtual bool Load(const std::string& filePath) override;
+	virtual bool Save(const std::string& filePath) override;
 
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(void* pData);

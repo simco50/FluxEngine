@@ -32,7 +32,6 @@ FluxCore::~FluxCore()
 {
 	SafeDelete(m_pGraphics);
 
-	ResourceManager::Release();
 	Console::Release();
 	Config::Flush();
 }
@@ -70,7 +69,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 
 	m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
-	ResourceManager::Initialize(m_pGraphics);
 	m_pInput = make_unique<InputEngine>(m_pGraphics);
 	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
 
@@ -128,7 +126,8 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(m_pCamera);
 
 	//Texture
-	m_pDiffuseTexture = ResourceManager::Load<Texture>("Resources/Textures/Spot.png");
+	m_pDiffuseTexture = make_unique<Texture>(m_pGraphics);
+	m_pDiffuseTexture->Load("Resources/Textures/Spot.png");
 }
 
 void FluxCore::GameLoop()
@@ -144,7 +143,7 @@ void FluxCore::GameLoop()
 	UpdatePerViewParameters();
 	UpdatePerObjectParameters();
 
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pDiffuseTexture);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pDiffuseTexture.get());
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);

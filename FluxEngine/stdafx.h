@@ -147,8 +147,6 @@ using namespace DirectX;
 #include "Core/GameTimer.h"
 #include "Input/InputEngine.h"
 
-#include "Content/ResourceManager.h"
-
 #include "Audio/AudioEngine.h"
 
 #include "Math/MathHelp.h"

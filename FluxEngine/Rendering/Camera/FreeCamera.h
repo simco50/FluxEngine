@@ -23,9 +23,9 @@ private:
 	void KeyboardMouse();
 	void Controller();
 
-	float m_MoveSpeed = 10.0f;
+	float m_MoveSpeed = 5.0f;
 	float m_ShiftMultiplier = 3.0f;
-	float m_RotationSpeed = 30.0f;
+	float m_RotationSpeed = 20.0f;
 	Camera *m_pCamera = nullptr;
 
 	bool m_UseMouseAndKeyboard = true;

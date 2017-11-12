@@ -2,7 +2,6 @@
 #include "stdafx.h"
 
 #include "ParticleEmitter.h"
-#include "Content/ResourceManager.h"
 #include "Particle.h"
 #include "Core/Components/Transform.h"
 #include "Rendering/Core/Texture.h"

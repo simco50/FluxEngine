@@ -54,3 +54,13 @@ inline float DegToRad(float deg)
 {
 	return deg * 0.01745329251f;
 }
+
+inline float Lerp(float a, float b, float t)
+{
+	return a + t * (b - a);
+}
+
+inline float InverseLerp(float a, float b, float value)
+{
+	return (value - a) / (b - a);
+}

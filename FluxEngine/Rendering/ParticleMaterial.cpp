@@ -25,5 +25,6 @@ void ParticleMaterial::SetBlendMode(const ParticleBlendMode mode)
 
 void ParticleMaterial::SetTexture(const string& path)
 {
-	m_pTexture = ResourceManager::Load<Texture>(path);
+	UNREFERENCED_PARAMETER(path);
+	m_pTexture = nullptr;
 }

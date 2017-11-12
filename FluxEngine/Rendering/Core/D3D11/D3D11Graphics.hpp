@@ -1,7 +1,7 @@
 #include "D3D11GraphicsImpl.h"
 #include "FileSystem/File/PhysicalFile.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+//#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
 
 Graphics::~Graphics()
@@ -561,69 +561,9 @@ bool Graphics::UpdateSwapchain()
 
 void Graphics::TakeScreenshot()
 {
-	AUTOPROFILE(TakeScreenshot);
-
-	D3D11_TEXTURE2D_DESC desc = {};
-	desc.ArraySize = 1;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.Height = m_WindowHeight;
-	desc.Width = m_WindowWidth;
-	desc.MipLevels = 1;
-	desc.MiscFlags = 0;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_STAGING;
-
-	ComPtr<ID3D11Texture2D> pStagingTexture;
-	HR(m_pImpl->m_pDevice->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
-
-	//If we are using MSAA, we need to resolve the backbuffer first
-	if (m_Multisample > 1)
-	{
-		if (!m_pImpl->m_pBackbufferResolveTexture.IsValid())
-		{
-			D3D11_TEXTURE2D_DESC resolveTexDesc = {};
-			resolveTexDesc.ArraySize = 1;
-			resolveTexDesc.CPUAccessFlags = 0;
-			resolveTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			resolveTexDesc.Height = m_WindowHeight;
-			resolveTexDesc.Width = m_WindowWidth;
-			resolveTexDesc.MipLevels = 1;
-			resolveTexDesc.MiscFlags = 0;
-			resolveTexDesc.SampleDesc.Count = 1;
-			resolveTexDesc.SampleDesc.Quality = 0;
-			resolveTexDesc.Usage = D3D11_USAGE_DEFAULT;
-
-			HR(m_pImpl->m_pDevice->CreateTexture2D(&resolveTexDesc, nullptr, m_pImpl->m_pBackbufferResolveTexture.GetAddressOf()));
-		}
-
-		m_pImpl->m_pDeviceContext->ResolveSubresource(m_pImpl->m_pBackbufferResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
-		m_pImpl->m_pDeviceContext->CopyResource(pStagingTexture.Get(), m_pImpl->m_pBackbufferResolveTexture.Get());
-	}
-	else
-	{
-		m_pImpl->m_pDeviceContext->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource());
-	}
-
-	D3D11_MAPPED_SUBRESOURCE pData = {};
-	m_pImpl->m_pDeviceContext->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &pData);
-
-	stbi_write_png_to_func([](void *context, void *data, int size) 
-	{
-		UNREFERENCED_PARAMETER(context);
-
-		stringstream str;
-		str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
-		PhysicalFile pFile(str.str());
-		if (!pFile.Open(FileMode::Write))
-			return;
-		if (!pFile.Write((char*)data, size))
-			return;
-		pFile.Close();
-
-	}, nullptr, m_WindowWidth, m_WindowHeight, 4, pData.pData, pData.RowPitch);
-	m_pImpl->m_pDeviceContext->Unmap(pStagingTexture.Get(), 0);
+	stringstream str;
+	str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
+	m_pDefaultRenderTarget->GetRenderTexture()->Save(str.str());
 }
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex)

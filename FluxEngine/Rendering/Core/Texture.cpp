@@ -6,6 +6,7 @@
 #include "D3D11/D3D11Texture.hpp"
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 
 Texture::Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV) :
