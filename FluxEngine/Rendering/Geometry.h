@@ -14,7 +14,7 @@ public:
 	void SetVertexBuffer(VertexBuffer* pVertexBuffer) { m_pVertexBuffer = pVertexBuffer; }
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer) { m_pIndexBuffer = pIndexBuffer; }
 
-	void Draw(Graphics* pGraphics);
+	void Draw(Graphics* pGraphics) const;
 
 	struct VertexData
 	{

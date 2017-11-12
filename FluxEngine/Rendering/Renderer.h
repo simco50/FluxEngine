@@ -21,8 +21,8 @@ public:
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 
 private:
-	void SetMaterial(Material* pMaterial);
-	Material* m_pCurrentMaterial = nullptr;
+	void SetMaterial(const Material* pMaterial);
+	const Material* m_pCurrentMaterial = nullptr;
 
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;

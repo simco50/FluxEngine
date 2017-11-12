@@ -13,7 +13,7 @@ Geometry::~Geometry()
 		SafeDeleteArray(vertexData.second.pData);
 }
 
-void Geometry::Draw(Graphics* pGraphics)
+void Geometry::Draw(Graphics* pGraphics) const
 {
 	pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	pGraphics->SetVertexBuffer(m_pVertexBuffer);

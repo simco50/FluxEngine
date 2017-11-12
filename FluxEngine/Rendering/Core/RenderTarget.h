@@ -48,7 +48,7 @@ public:
 
 	DELETE_COPY(RenderTarget)
 
-	void Clear(const ClearFlags clearFlags, const XMFLOAT4& color, const float depth, unsigned char stencil);
+	void Clear(const ClearFlags clearFlags, const Color& color, const float depth, unsigned char stencil);
 
 	bool Create(const RENDER_TARGET_DESC& RenderTargetDesc);
 

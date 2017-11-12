@@ -11,11 +11,11 @@ public:
 	Camera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~Camera();
 
-	const XMFLOAT4X4& GetView() const { return m_View; }
-	const XMFLOAT4X4& GetViewInverse() const { return m_ViewInverse; }
-	const XMFLOAT4X4& GetViewProjection() const { return m_ViewProjection; }
-	const XMFLOAT4X4& GetViewProjectionInverse() const { return m_ViewProjectionInverse; }
-	const XMFLOAT4X4& GetProjection() const { return m_Projection; }
+	const Matrix& GetView() const { return m_View; }
+	const Matrix& GetViewInverse() const { return m_ViewInverse; }
+	const Matrix& GetViewProjection() const { return m_ViewProjection; }
+	const Matrix& GetViewProjectionInverse() const { return m_ViewProjectionInverse; }
+	const Matrix& GetProjection() const { return m_Projection; }
 
 	void SetViewport(float x, float y, float width, float height);
 	const FloatRect& GetViewport() const { return m_Viewport; }
@@ -42,11 +42,11 @@ private:
 	float m_NearPlane = 0.01f;
 	float m_FarPlane = 200.0f;
 
-	XMFLOAT4X4 m_View;
-	XMFLOAT4X4 m_ViewInverse;
-	XMFLOAT4X4 m_ViewProjection;
-	XMFLOAT4X4 m_ViewProjectionInverse;
-	XMFLOAT4X4 m_Projection;
+	Matrix m_View;
+	Matrix m_ViewInverse;
+	Matrix m_ViewProjection;
+	Matrix m_ViewProjectionInverse;
+	Matrix m_Projection;
 
 	bool m_Perspective = true;
 

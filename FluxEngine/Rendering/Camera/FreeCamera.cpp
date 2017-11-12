@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FreeCamera.h"
 #include "Camera.h"
-#include "Core/Components/Transform.h"
+#include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
 
 FreeCamera::FreeCamera(InputEngine* pInput, Graphics* pGraphics) : 
@@ -89,6 +89,6 @@ void FreeCamera::Controller()
 	GetTransform()->Translate(moveDirection, Space::SELF);
 
 	//Rotation
-	GetTransform()->Rotate(XMFLOAT3(-rightStick.y * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, 0.0f), Space::SELF);
-	GetTransform()->Rotate(XMFLOAT3(0.0f, rightStick.x * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f), Space::WORLD);
+	GetTransform()->Rotate(-rightStick.y * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, 0.0f, Space::SELF);
+	GetTransform()->Rotate(0.0f, rightStick.x * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, Space::WORLD);
 }

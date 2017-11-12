@@ -66,9 +66,9 @@ public:
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 
 	POINT GetMousePosition(bool previousFrame = false) const {return (previousFrame)?m_OldMousePosition:m_CurrMousePosition; }
-	XMFLOAT2 GetMouseMovement() const { return m_MouseMovement; }
-	void SetMouseMovement(const XMFLOAT2 &mouseMovement) { m_MouseMove = true;  m_MouseMovement = mouseMovement; }
-	XMFLOAT2 GetThumbstickPosition(bool leftThumbstick = true, GamepadIndex playerIndex = GamepadIndex::PlayerOne) const;
+	const Vector2& GetMouseMovement() const { return m_MouseMovement; }
+	void SetMouseMovement(const Vector2 &mouseMovement) { m_MouseMove = true;  m_MouseMovement = mouseMovement; }
+	Vector2 GetThumbstickPosition(bool leftThumbstick = true, GamepadIndex playerIndex = GamepadIndex::PlayerOne) const;
 	float GetTriggerPressure(bool leftTrigger = true, GamepadIndex playerIndex = GamepadIndex::PlayerOne) const;
 	void SetVibration(float leftVibration, float rightVibration, GamepadIndex playerIndex = GamepadIndex::PlayerOne) const;
 
@@ -95,7 +95,7 @@ private:
 	POINT m_CurrMousePosition;
 	POINT m_OldMousePosition;
 	bool m_MouseMove;
-	XMFLOAT2 m_MouseMovement;
+	Vector2 m_MouseMovement;
 
 	XINPUT_STATE m_OldGamepadState[XUSER_MAX_COUNT], m_CurrGamepadState[XUSER_MAX_COUNT];
 	bool m_ConnectedGamepads[XUSER_MAX_COUNT];

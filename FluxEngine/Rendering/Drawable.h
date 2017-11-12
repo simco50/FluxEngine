@@ -8,9 +8,9 @@ class Geometry;
 
 struct Batch
 {
-	Material* pMaterial = nullptr;
-	Geometry* pGeometry = nullptr;
-	const XMFLOAT4X4* pModelMatrix = nullptr;
+	const Material* pMaterial = nullptr;
+	const Geometry* pGeometry = nullptr;
+	const Matrix* pModelMatrix = nullptr;
 };
 
 class Drawable : public Component

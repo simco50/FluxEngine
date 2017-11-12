@@ -1,6 +1,6 @@
 #include "D3D11GraphicsImpl.h"
 
-void RenderTarget::Clear(const ClearFlags clearFlags, const XMFLOAT4& color, const float depth, unsigned char stencil)
+void RenderTarget::Clear(const ClearFlags clearFlags, const Color& color, const float depth, unsigned char stencil)
 {
 	if (m_pRenderTexture && (unsigned int)clearFlags & (unsigned int)ClearFlags::RenderTarget)
 		m_pGraphics->GetImpl()->GetDeviceContext()->ClearRenderTargetView(

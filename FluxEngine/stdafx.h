@@ -130,6 +130,9 @@ using namespace DirectX;
 #endif
 #pragma endregion XINPUT
 
+#include "Math/SimpleMath.h"
+using namespace DirectX::SimpleMath;
+
 #pragma region
 #undef ERROR
 //Engine core include
@@ -156,8 +159,7 @@ using namespace DirectX;
 #include "FileSystem/File/File.h"
 
 using namespace Smart_COM;
-#include "Math/SimpleMath.h"
-using namespace DirectX::SimpleMath;
+
 #pragma endregion ENGINE INCLUDES
 
 #pragma region

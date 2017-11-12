@@ -129,7 +129,7 @@ void InputEngine::Update()
 	if (m_MouseMove)
 		m_MouseMove = false;
 	else
-		m_MouseMovement = XMFLOAT2(0, 0);
+		m_MouseMovement = Vector2(0, 0);
 
 	m_OldMousePosition = m_CurrMousePosition;
 	if(GetCursorPos(&m_CurrMousePosition))
@@ -173,19 +173,19 @@ bool InputEngine::IsGamepadButtonDown(WORD button, GamepadIndex playerIndex) con
 	return (m_CurrGamepadState[playerIndex].Gamepad.wButtons&button) != 0 ? true : false;
 }
 
-XMFLOAT2 InputEngine::GetThumbstickPosition(bool leftThumbstick, GamepadIndex playerIndex) const
+Vector2 InputEngine::GetThumbstickPosition(bool leftThumbstick, GamepadIndex playerIndex) const
 {
-	XMFLOAT2 pos;
+	Vector2 pos;
 	if(leftThumbstick)
 	{
-		pos = XMFLOAT2(m_CurrGamepadState[playerIndex].Gamepad.sThumbLX, m_CurrGamepadState[playerIndex].Gamepad.sThumbLY);
+		pos = Vector2(m_CurrGamepadState[playerIndex].Gamepad.sThumbLX, m_CurrGamepadState[playerIndex].Gamepad.sThumbLY);
 		
 		if(pos.x>-XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pos.x<XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)pos.x = 0;
 		if(pos.y>-XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pos.y<XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)pos.y = 0;
 	}
 	else
 	{
-		pos = XMFLOAT2(m_CurrGamepadState[playerIndex].Gamepad.sThumbRX, m_CurrGamepadState[playerIndex].Gamepad.sThumbRY);
+		pos = Vector2(m_CurrGamepadState[playerIndex].Gamepad.sThumbRX, m_CurrGamepadState[playerIndex].Gamepad.sThumbRY);
 
 		if(pos.x>-XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pos.x<XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)pos.x = 0;
 		if(pos.y>-XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pos.y<XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)pos.y = 0;
@@ -288,9 +288,9 @@ void InputEngine::UpdateKeyboard()
 
 float InputEngine::GetTriggerPressure(bool leftTrigger, GamepadIndex playerIndex) const
 {
-	if(leftTrigger)
-		return m_CurrGamepadState[playerIndex].Gamepad.bLeftTrigger/255.0f;
-	return m_CurrGamepadState[playerIndex].Gamepad.bRightTrigger/255.0f;
+	if (leftTrigger)
+		return m_CurrGamepadState[playerIndex].Gamepad.bLeftTrigger / 255.0f;
+	return m_CurrGamepadState[playerIndex].Gamepad.bRightTrigger / 255.0f;
 }
 
 void InputEngine::SetVibration(float leftVibration, float rightVibration, GamepadIndex playerIndex) const
@@ -299,7 +299,7 @@ void InputEngine::SetVibration(float leftVibration, float rightVibration, Gamepa
     ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 
     vibration.wLeftMotorSpeed = static_cast<WORD>(leftVibration * 65535);
-    vibration.wRightMotorSpeed = static_cast<WORD>(rightVibration * 65535);
+	vibration.wRightMotorSpeed = static_cast<WORD>(rightVibration * 65535);
 
     XInputSetState(playerIndex, &vibration);
 }

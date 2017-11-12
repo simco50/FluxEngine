@@ -110,7 +110,7 @@ void Texture::UpdateParameters()
 	SafeRelease(m_pSamplerState);
 
 	D3D11_SAMPLER_DESC desc = {};
-	XMFLOAT4 borderColor = XMFLOAT4();
+	Color borderColor = Color();
 	TextureAddressMode mode = TextureAddressMode::WRAP;
 	switch (mode)
 	{

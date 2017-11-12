@@ -97,7 +97,7 @@ bool Renderer::RemoveCamera(Camera* pCamera)
 	return false;
 }
 
-void Renderer::SetMaterial(Material* pMaterial)
+void Renderer::SetMaterial(const Material* pMaterial)
 {
 	if (pMaterial == nullptr)
 	{

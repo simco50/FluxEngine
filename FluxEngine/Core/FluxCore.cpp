@@ -137,7 +137,7 @@ void FluxCore::GameLoop()
 	m_pCamera->Update();
 
 	m_pGraphics->BeginFrame();
-	m_pGraphics->Clear(ClearFlags::All, XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
+	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
 
 	UpdatePerFrameParameters();
 	UpdatePerViewParameters();

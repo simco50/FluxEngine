@@ -313,7 +313,7 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 	m_PrimitiveCount += primitiveCount;
 }
 
-void Graphics::Clear(const ClearFlags clearFlags, const XMFLOAT4& color, const float depth, const unsigned char stencil)
+void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
 	if(m_pDefaultRenderTarget)
 		m_pDefaultRenderTarget->Clear(clearFlags, color, depth, stencil);

@@ -3,14 +3,14 @@
 
 #include "ParticleEmitter.h"
 #include "Particle.h"
-#include "Core/Components/Transform.h"
+#include "SceneGraph/Transform.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/ParticleMaterial.h"
-#include "../Core/VertexBuffer.h"
-#include "../Core/GraphicsDefines.h"
-#include "../Core/Graphics.h"
-#include "../../Scenegraph/Scene.h"
+#include "Rendering/Core/VertexBuffer.h"
+#include "Rendering/Core/GraphicsDefines.h"
+#include "Rendering/Core/Graphics.h"
+#include "Scenegraph/Scene.h"
 
 ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
 	m_pParticleSystem(pSystem),

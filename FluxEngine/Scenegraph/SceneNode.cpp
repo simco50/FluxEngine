@@ -2,7 +2,7 @@
 #include "SceneNode.h"
 #include "Scene.h"
 #include "Component.h"
-#include "Core/Components/Transform.h"
+#include "Transform.h"
 
 SceneNode::SceneNode()
 {

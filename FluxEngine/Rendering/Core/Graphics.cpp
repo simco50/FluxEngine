@@ -31,7 +31,7 @@ void Graphics::SetWindowTitle(const string& title)
 	SetWindowText(m_Hwnd, title.c_str());
 }
 
-void Graphics::SetWindowPosition(const XMFLOAT2& position)
+void Graphics::SetWindowPosition(const Vector2& position)
 {
 	SetWindowPos(m_Hwnd, HWND_TOP, (int)position.x, (int)position.y, -1, -1, SWP_NOSIZE);
 }

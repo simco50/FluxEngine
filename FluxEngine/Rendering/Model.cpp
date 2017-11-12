@@ -3,7 +3,7 @@
 #include "Scenegraph\Scene.h"
 #include "Mesh.h"
 #include "Scenegraph/SceneNode.h"
-#include "Core/Components/Transform.h"
+#include "SceneGraph/Transform.h"
 
 Model::Model()
 {
