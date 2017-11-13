@@ -1,7 +1,7 @@
 #include "D3D11GraphicsImpl.h"
 void IndexBuffer::Create(const int indexCount, const bool smallIndexStride, bool dynamic /*= false*/)
 {
-	AUTOPROFILE(CreateIndexBuffer);
+	AUTOPROFILE(IndexBuffer_Create);
 	SafeRelease(m_pBuffer);
 
 	m_IndexCount = indexCount;

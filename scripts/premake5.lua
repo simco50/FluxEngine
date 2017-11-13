@@ -112,7 +112,7 @@ workspace "FluxEngine"
 		 	optimize "Off"
 		 	postbuildcommands
 			{ 
-				"copy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\" /y /D",
+				"xcopy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\" /Y /F /D",
 			}
 
 		filter { "configurations:Release" }
@@ -123,7 +123,7 @@ workspace "FluxEngine"
 		 	optimize "Full"
 		 	postbuildcommands
 			{ 
-				"copy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\" /y /D",
+				"xcopy \"..\\Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\" /Y /F /D",
 				"dir \"$(SolutionDir)FluxGame\\Resources\\\" /s /b /a-d > \"$(SolutionDir)\\FluxPak\\ResponseFile.txt\"",
 				"\"$(SolutionDir)FluxPak\\PakFileCompression.exe\" -r \"$(SolutionDir)\\FluxPak\\ResponseFile.txt\" -p \"$(SolutionDir)FluxGame\\Resources.pak\" -b \"$(SolutionDir)FluxGame/Resources/",
 			}
@@ -131,13 +131,13 @@ workspace "FluxEngine"
 		filter { "platforms:x64" }
 			postbuildcommands
 			{ 
-				"copy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /y /D",
+				"xcopy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "platforms:x86" }
 			postbuildcommands
 			{ 
-				"copy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /y /D",
+				"xcopy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 newaction {

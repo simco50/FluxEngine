@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Components/ComponentBase.h"
+#include "Scenegraph/Component.h"
 
 class Particle;
 class Texture;
@@ -8,7 +8,7 @@ class Graphics;
 class VertexBuffer;
 struct ParticleSystem;
 
-class ParticleEmitter : public ComponentBase
+class ParticleEmitter : public Component
 {
 public:
 	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem = nullptr);
@@ -28,8 +28,8 @@ public:
 	int GetParticleCount() const { return m_ParticleCount; }
 
 protected:
-	void Initialize();
-	void Update();
+	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void Update() override;
 
 private:
 	void CreateVertexBuffer();

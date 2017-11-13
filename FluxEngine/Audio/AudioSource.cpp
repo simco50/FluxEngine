@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include "AudioSource.h"
-#include "Scenegraph/GameObject.h"
-#include "Core/Components/Transform.h"
+#include "Scenegraph/SceneNode.h"
+#include "SceneGraph/Transform.h"
 #include "AudioEngine.h"
 
-AudioSource::AudioSource(const wstring& filePath, const FMOD_MODE& mode): m_Mode(mode), m_FilePath(filePath)
+AudioSource::AudioSource(const string& filePath, const FMOD_MODE& mode): m_Mode(mode), m_FilePath(filePath)
 {
-
+	m_pFmodSystem = AudioEngine::Instance().GetSystem();
+	if (m_pSound == nullptr)
+		m_pSound = AudioEngine::Instance().LoadSound(m_FilePath, m_Mode, nullptr);
 }
 
 AudioSource::AudioSource(FMOD::Sound* pSound): m_Mode(0), m_pSound(pSound)
@@ -17,16 +19,9 @@ AudioSource::~AudioSource()
 {
 }
 
-void AudioSource::Initialize()
-{
-	m_pFmodSystem = AudioEngine::Instance().GetSystem();
-	if(m_pSound == nullptr)
-		m_pSound = AudioEngine::Instance().LoadSound(string(m_FilePath.begin(), m_FilePath.end()), m_Mode, nullptr);
-}
-
 void AudioSource::Update()
 {
-	XMFLOAT3 pos = m_pGameObject->GetTransform()->GetWorldPosition();
+	Vector3 pos = m_pNode->GetTransform()->GetWorldPosition();
 	FMOD_VECTOR listenerPosition;
 	listenerPosition.x = pos.x;
 	listenerPosition.y = pos.y;

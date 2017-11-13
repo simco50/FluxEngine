@@ -1,48 +1,65 @@
 #include "stdafx.h"
 #include "Profiler.h"
+#include "FileSystem\File\PhysicalFile.h"
 
-Profiler::Profiler() :
-	m_Name("")
+Profiler::Profiler()
 {
+	m_pRootBlock = std::make_unique<AutoProfilerBlock>("Root", "", nullptr);
+	m_pCurrentBlock = m_pRootBlock.get();
 
-}
-
-Profiler::Profiler(const string& name, const string& description) :
-	m_Name(name),
-	m_Description(description)
-{
-
+	QueryPerformanceFrequency((LARGE_INTEGER*)&m_Frequency);
 }
 
 Profiler::~Profiler()
 {
+	__int64 endTime;
+	QueryPerformanceCounter((LARGE_INTEGER*)&endTime);
+	m_pRootBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0f / m_Frequency;
+
+	unique_ptr<PhysicalFile> pFile = make_unique<PhysicalFile>("Profiler.log");
+	pFile->Open(FileMode::Write, ContentType::Text);
+	OutputLog(pFile.get());
+	pFile->Close();
 }
 
-void Profiler::Start()
+void Profiler::OutputLog(IFile* pFile)
 {
-	__int64 countsPerSec;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
-	m_SecondsPerCount = 1000.0f / (double)(countsPerSec);
-
-	QueryPerformanceCounter((LARGE_INTEGER*)&m_StartTime);
+	m_pCurrentBlock = m_pRootBlock->Children.front().get();
+	int depth = 0;
+	for (;;)
+	{
+		*pFile << "[" << m_pCurrentBlock->Frame << "]\t";
+		for (int i = 0; i < depth; ++i)
+		{
+			*pFile << "\t";
+		}
+		*pFile << m_pCurrentBlock->ToString() << IFile::endl;
+		while (m_pCurrentBlock->Children.size() == 0)
+		{
+			m_pCurrentBlock = m_pCurrentBlock->pParent;
+			if (m_pCurrentBlock == nullptr)
+				return;
+			m_pCurrentBlock->Children.pop();
+			--depth;
+		}
+		m_pCurrentBlock = m_pCurrentBlock->Children.front().get();
+		depth++;
+	}
 }
 
-float Profiler::Stop()
+void Profiler::BeginBlock(const std::string& name, const std::string& description)
 {
-	QueryPerformanceCounter((LARGE_INTEGER*)&m_StopTime);
-	return (float)((m_StopTime - m_StartTime) * m_SecondsPerCount);
+	std::unique_ptr<AutoProfilerBlock> pBlock = std::make_unique<AutoProfilerBlock>(name, description, m_pCurrentBlock);
+	pBlock->Frame = GameTimer::Ticks();
+	AutoProfilerBlock* pNewBlock = pBlock.get();
+	m_pCurrentBlock->Children.push(std::move(pBlock));
+	m_pCurrentBlock = pNewBlock;
 }
 
-AutoProfilerBlock::AutoProfilerBlock(const string& name, const string& description) :
-	Profiler(name, description)
+void Profiler::EndBlock()
 {
-	Start();
-}
-
-AutoProfilerBlock::~AutoProfilerBlock()
-{
-	const float time = Stop();
-	stringstream str;
-	str << "[" << m_Name << "] " << m_Description << " > " << time << " ms";
-	FLUX_LOG(INFO, str.str());
+	__int64 endTime;
+	QueryPerformanceCounter((LARGE_INTEGER*)&endTime);
+	m_pCurrentBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0f / m_Frequency;
+	m_pCurrentBlock = m_pCurrentBlock->pParent;
 }

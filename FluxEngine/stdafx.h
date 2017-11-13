@@ -20,6 +20,7 @@
 #include <sstream>
 #include <memory>
 #include <iomanip>
+#include <queue>
 using namespace std;
 
 #pragma endregion STL
@@ -130,6 +131,9 @@ using namespace DirectX;
 #endif
 #pragma endregion XINPUT
 
+#include "Math/SimpleMath.h"
+using namespace DirectX::SimpleMath;
+
 #pragma region
 #undef ERROR
 //Engine core include
@@ -141,13 +145,12 @@ using namespace DirectX;
 #include "Rendering/Core/ShaderStructs.h"
 
 #include "Diagnostics/Console.h"
+#include "Diagnostics/PerfTimer.h"
 #include "Diagnostics/Profiler.h"
 
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
 #include "Input/InputEngine.h"
-
-#include "Content/ResourceManager.h"
 
 #include "Audio/AudioEngine.h"
 
@@ -158,8 +161,7 @@ using namespace DirectX;
 #include "FileSystem/File/File.h"
 
 using namespace Smart_COM;
-#include "Math/SimpleMath.h"
-using namespace DirectX::SimpleMath;
+
 #pragma endregion ENGINE INCLUDES
 
 #pragma region

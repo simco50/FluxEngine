@@ -15,6 +15,8 @@ FileSystem::~FileSystem()
 
 bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, const ArchiveType type)
 {
+	AUTOPROFILE_DESC(FileSystem_Mount, path);
+
 	std::unique_ptr<IMountPoint> pPtr = CreateMountPoint(FixPath(path), type);
 	if (pPtr == nullptr)
 		return false;

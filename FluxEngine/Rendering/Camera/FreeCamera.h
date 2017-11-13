@@ -1,14 +1,14 @@
 #pragma once
-#include "Scenegraph\GameObject.h"
+#include "Scenegraph\SceneNode.h"
 
-class FreeCamera : public GameObject
+class FreeCamera : public SceneNode
 {
 public:
 	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~FreeCamera();
 
-	void Initialize() override;
-	void Update() override;
+	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void Update() override;
 	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }
@@ -23,9 +23,9 @@ private:
 	void KeyboardMouse();
 	void Controller();
 
-	float m_MoveSpeed = 10.0f;
+	float m_MoveSpeed = 5.0f;
 	float m_ShiftMultiplier = 3.0f;
-	float m_RotationSpeed = 30.0f;
+	float m_RotationSpeed = 20.0f;
 	Camera *m_pCamera = nullptr;
 
 	bool m_UseMouseAndKeyboard = true;

@@ -15,6 +15,8 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	m_pGraphics(pGraphics),
 	m_pInput(pInput)
 {
+	AUTOPROFILE(ImmediateUI_Initialize);
+
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
@@ -93,6 +95,7 @@ void ImmediateUI::NewFrame()
 void ImmediateUI::Render()
 {
 	ImGui::Render();
+
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough
@@ -132,6 +135,8 @@ void ImmediateUI::Render()
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::ALPHA, false);
 
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
+
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	m_pVertexShader->SetParameter("cViewProjVS", projectionMatrix);

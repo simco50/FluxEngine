@@ -28,12 +28,15 @@ public:
 
 	template<typename T>
 	void SetParameter(const std::string& name, const T& value);
+	void SetParameter(const std::string& name, const void* value, int size);
 
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
 	void* const GetShaderObject() const { return m_pShaderObject; }
 	const vector<char>& GetByteCode() const { return m_ShaderByteCode; }
+
+	const std::string& GetName() const { return m_Name; }
 
 private:
 	bool Compile(Graphics* pGraphics);
@@ -45,6 +48,7 @@ private:
 
 	void* m_pShaderObject = nullptr;
 
+	string m_Name;
 	vector<string> m_Defines;
 	vector<char> m_ShaderByteCode;
 

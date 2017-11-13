@@ -16,10 +16,10 @@ Shader::~Shader()
 
 bool Shader::Load(const string& filePath)
 {
-	AUTOPROFILE(Shader_Load);
-
 	m_ShaderName = Paths::GetFileNameWithoutExtension(filePath);
 	m_FileDir = Paths::GetDirectoryPath(filePath);
+
+	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 
 	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
 	if (!pPtr->Open(FileMode::Read, ContentType::Text))

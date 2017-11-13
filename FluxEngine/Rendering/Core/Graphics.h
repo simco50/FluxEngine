@@ -34,7 +34,7 @@ public:
 
 	//Window
 	void SetWindowTitle(const string& title);
-	void SetWindowPosition(const XMFLOAT2& position);
+	void SetWindowPosition(const Vector2& position);
 
 	//Graphics
 	void SetRenderTarget(RenderTarget* pRenderTarget);
@@ -56,7 +56,7 @@ public:
 	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
 	void DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex = 0, const int instanceStart = 0);
 
-	void Clear(const ClearFlags clearFlags = ClearFlags::All, const XMFLOAT4& color = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
+	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
 	Shader* GetShader(const string filePath);
@@ -104,6 +104,7 @@ private:
 	int m_Multisample = 1;
 	int m_RefreshRate = 60;
 	string m_WindowTitle;
+	string m_WindowClassName = "wndClass";
 
 	bool m_Paused = false;
 	bool m_Maximized = false;

@@ -31,7 +31,7 @@ void Graphics::SetWindowTitle(const string& title)
 	SetWindowText(m_Hwnd, title.c_str());
 }
 
-void Graphics::SetWindowPosition(const XMFLOAT2& position)
+void Graphics::SetWindowPosition(const Vector2& position)
 {
 	SetWindowPos(m_Hwnd, HWND_TOP, (int)position.x, (int)position.y, -1, -1, SWP_NOSIZE);
 }
@@ -79,7 +79,7 @@ void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCou
 
 bool Graphics::RegisterWindowClass()
 {
-	AUTOPROFILE(RegisterWindowClass);
+	AUTOPROFILE_DESC(Graphics_RegisterWindowClass, m_WindowClassName);
 
 	WNDCLASSA wc;
 
@@ -90,7 +90,7 @@ bool Graphics::RegisterWindowClass()
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wc.lpfnWndProc = WndProcStatic;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpszClassName = "wndClass";
+	wc.lpszClassName = m_WindowClassName.c_str();
 	wc.lpszMenuName = nullptr;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
@@ -105,7 +105,7 @@ bool Graphics::RegisterWindowClass()
 
 bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 {
-	AUTOPROFILE(MakeWindow);
+	AUTOPROFILE_DESC(Graphics_MakeWindow, m_WindowClassName);
 
 	int displayWidth = GetSystemMetrics(SM_CXSCREEN);
 	int displayHeight = GetSystemMetrics(SM_CYSCREEN);
@@ -142,7 +142,7 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	int y = (displayHeight - windowHeight) / 2;
 
 	m_Hwnd = CreateWindowA(
-		"wndClass",
+		m_WindowClassName.c_str(),
 		m_WindowTitle.c_str(),
 		windowStyle,
 		x,
@@ -161,6 +161,8 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	ShowWindow(m_Hwnd, SW_SHOWDEFAULT);
 	if (!UpdateWindow(m_Hwnd))
 		return false;
+
+	TrackMouseEvent(nullptr);
 
 	return true;
 }

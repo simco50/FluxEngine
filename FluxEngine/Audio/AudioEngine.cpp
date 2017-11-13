@@ -5,6 +5,8 @@ using namespace std;
 
 AudioEngine::AudioEngine()
 {
+	AUTOPROFILE(AudioEngine_Initialize);
+
 	FMOD_RESULT result;
 
 	result = FMOD::System_Create(&m_pSystem);
@@ -24,6 +26,8 @@ FMOD::Sound* AudioEngine::LoadSound(const std::string& filePath, const FMOD_MODE
 	auto it = m_Sounds.find(filePath);
 	if(it != m_Sounds.end())
 		return it->second;
+
+	AUTOPROFILE_DESC(AudioEngine_LoadSound, Paths::GetFileName(filePath));
 
 	FMOD::Sound* pSound = nullptr;
 	FMOD_RESULT result = m_pSystem->createSound(filePath.c_str(), mode, exInfo, &pSound);

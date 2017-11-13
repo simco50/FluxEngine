@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include <Core/FluxCore.h>
-#include "Game/GameManager.h"
-#include "Game/Scenes/DemoScene.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
@@ -14,7 +12,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
 	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
 
-	//_CrtSetBreakAlloc(1744);
+	//_CrtSetBreakAlloc(4322);
 #endif
 
 	unique_ptr<FluxCore> pCore = make_unique<FluxCore>();
