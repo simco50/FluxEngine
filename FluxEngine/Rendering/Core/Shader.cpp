@@ -28,11 +28,14 @@ bool Shader::Load(const string& filePath)
 		return false;
 	}
 
-	stringstream codeStream;
-	if (!ProcessSource(std::move(pPtr), codeStream))
-		return false;
+	{
+		AUTOPROFILE(Shader_ProcessSource);
+		stringstream codeStream;
+		if (!ProcessSource(std::move(pPtr), codeStream))
+			return false;
 
-	m_ShaderSource = codeStream.str();
+		m_ShaderSource = codeStream.str();
+	}
 
 	return true;
 }

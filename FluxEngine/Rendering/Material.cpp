@@ -17,7 +17,7 @@ Material::~Material()
 
 std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphics)
 {
-	AUTOPROFILE(Material_Load);
+	AUTOPROFILE_DESC(Material_Load, Paths::GetFileName(filePath));
 
 	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)

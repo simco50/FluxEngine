@@ -31,6 +31,8 @@ name.ConstantValue = data[#name]["Constant"];
 
 bool ParticleSystem::Load(const std::string& filePath)
 {
+	AUTOPROFILE_DESC(ParticleSystem_Load, Paths::GetFileName(filePath));
+
 	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;

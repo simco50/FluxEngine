@@ -19,6 +19,8 @@ void IndexBuffer::Create(const int indexCount, const bool smallIndexStride, bool
 
 void IndexBuffer::SetData(void* pData)
 {
+	AUTOPROFILE(IndexBuffer_SetData);
+
 	D3D11_BOX destBox;
 	destBox.left = 0;
 	destBox.right = m_IndexCount * (m_SmallIndexStride ? 2 : 4);

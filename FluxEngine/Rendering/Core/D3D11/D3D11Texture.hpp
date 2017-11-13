@@ -6,6 +6,8 @@
 
 bool Texture::SetData(void* pData)
 {
+	AUTOPROFILE(Texture_SetData);
+
 	if (m_Usage == TextureUsage::STATIC)
 	{
 		D3D11_BOX box = {};
@@ -152,6 +154,8 @@ void Texture::UpdateProperties(void* pTexture)
 
 bool Texture::Create()
 {
+	AUTOPROFILE(Texture_Create);
+
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
 	//#todo Create a SRV from a RT and DB

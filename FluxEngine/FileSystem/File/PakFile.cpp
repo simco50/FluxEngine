@@ -126,6 +126,8 @@ bool PakFile::CacheUncompressedData()
 
 bool PakFile::Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData)
 {
+	AUTOPROFILE_DESC(PakFile_Decompress, m_pTableEntry->FilePath);
+
 	const size_t BUFSIZE = 128 * 1024;
 
 	z_stream strm;
@@ -179,6 +181,8 @@ bool PakFile::Decompress(void *pInData, size_t inDataSize, std::vector<char> &ou
 
 bool PakFile::Compress(void *pInData, size_t inDataSize, std::vector<char> &outData)
 {
+	AUTOPROFILE_DESC(PakFile_Compress, m_pTableEntry->FilePath);
+
 	const size_t BUFSIZE = 128 * 1024;
 	unsigned char temp_buffer[BUFSIZE];
 

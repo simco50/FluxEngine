@@ -14,7 +14,7 @@ Profiler::~Profiler()
 {
 	__int64 endTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&endTime);
-	m_pRootBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0f / m_Frequency;
+	m_pRootBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0 / m_Frequency;
 
 	unique_ptr<PhysicalFile> pFile = make_unique<PhysicalFile>("Profiler.log");
 	pFile->Open(FileMode::Write, ContentType::Text);

@@ -18,6 +18,8 @@ RenderTarget::~RenderTarget()
 
 bool RenderTarget::Create(const RENDER_TARGET_DESC& RenderTargetDesc)
 {
+	AUTOPROFILE(RenderTarget_Create);
+
 	if (!RenderTargetDesc.IsValid())
 		return false;
 

@@ -32,7 +32,7 @@ public:
 
 		__int64 BeginTime;
 		std::queue<std::unique_ptr<AutoProfilerBlock>> Children;
-		float Time = 0;
+		double Time = 0.0;
 	};
 
 	void BeginBlock(const std::string& name, const std::string& description = "");

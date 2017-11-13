@@ -162,8 +162,6 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 	if (!UpdateWindow(m_Hwnd))
 		return false;
 
-	TrackMouseEvent(nullptr);
-
 	return true;
 }
 

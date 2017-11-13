@@ -23,6 +23,8 @@ void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements
 
 void VertexBuffer::SetData(void* pData)
 {
+	AUTOPROFILE(VertexBuffer_SetData);
+
 	D3D11_BOX destBox;
 	destBox.left = 0;
 	destBox.right = m_VertexCount * m_VertexStride;

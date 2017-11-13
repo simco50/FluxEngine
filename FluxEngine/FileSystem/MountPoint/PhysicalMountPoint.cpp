@@ -8,10 +8,7 @@ bool PhysicalMountPoint::OnMount()
 	if (!RegisterDirectory(m_PhysicalPath))
 		return false;
 
-	sort(m_FileEntries.begin(), m_FileEntries.end(), [](const PhysicalFileEntry& a, const PhysicalFileEntry& b)
-	{
-		return a.FilePath > b.FilePath;
-	});
+	sort(m_FileEntries.begin(), m_FileEntries.end(), [](const PhysicalFileEntry& a, const PhysicalFileEntry& b) { return a.FilePath > b.FilePath; });
 
 	return true;
 }
