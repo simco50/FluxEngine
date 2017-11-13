@@ -1,5 +1,6 @@
 #pragma once
-#include "..\GraphicsDefines.h"
+#include "Rendering/Core/GraphicsDefines.h"
+#include "Rendering/Core/D3DCommon/D3DHelpers.h"
 
 class InputLayout;
 

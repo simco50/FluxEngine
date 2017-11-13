@@ -21,6 +21,7 @@
 #include "Scenegraph/Scene.h"
 #include "Rendering/Model.h"
 #include "Audio/AudioSource.h"
+#include "Rendering/ParticleSystem/ParticleEmitter.h"
 
 using namespace std;
 
@@ -129,6 +130,12 @@ void FluxCore::InitGame()
 	Model* pModel = new Model();
 	pModel->SetMesh(m_pMeshFilter.get());
 	pNode->AddComponent(pModel);
+
+	/*ParticleSystem* pSystem = new ParticleSystem();
+	pSystem->Load("Resources/ParticleSystems/Lava.json");
+	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, pSystem);
+	pNode->AddComponent(pEmitter);*/
+
 	m_pScene->AddChild(pNode);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 

@@ -1,5 +1,4 @@
 #include "D3D11GraphicsImpl.h"
-#include "../D3DCommon/D3DHelpers.h"
 
 bool ShaderVariation::Create(Graphics* pGraphics)
 {

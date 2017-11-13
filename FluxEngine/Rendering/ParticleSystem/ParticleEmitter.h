@@ -1,5 +1,5 @@
 #pragma once
-#include "Scenegraph/Component.h"
+#include "Rendering/Drawable.h"
 
 class Particle;
 class Texture;
@@ -8,10 +8,10 @@ class Graphics;
 class VertexBuffer;
 struct ParticleSystem;
 
-class ParticleEmitter : public Component
+class ParticleEmitter : public Drawable
 {
 public:
-	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem = nullptr);
+	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem);
 	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;
@@ -29,6 +29,7 @@ public:
 
 protected:
 	virtual void OnSceneSet(Scene* pScene) override;
+	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void Update() override;
 
 private:
@@ -47,6 +48,7 @@ private:
 	int m_BufferSize = 0;
 	float m_ParticleSpawnTimer = 0.0f;
 
+	unique_ptr<Geometry> m_pGeometry;
 	unique_ptr<VertexBuffer> m_pVertexBuffer;
 
 	ParticleMaterial* m_pMaterial = nullptr;

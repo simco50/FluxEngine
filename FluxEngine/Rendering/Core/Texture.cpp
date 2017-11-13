@@ -42,11 +42,15 @@ bool Texture::Load(const std::string& filePath)
 	pFile->ReadAllBytes(buffer);
 	pFile->Close();
 
+	unsigned char* pPixels = nullptr;
 	int width, height, bpp;
-	unsigned char* pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
-	vector<unsigned char> pixels;
-	pixels.resize(width * height * bpp);
-	memcpy(pixels.data(), pPixels, pixels.size());
+	{
+		AUTOPROFILE(Texture_Load_FromMemory);
+		pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
+		vector<unsigned char> pixels;
+		pixels.resize(width * height * bpp);
+		memcpy(pixels.data(), pPixels, pixels.size());
+	}
 
 	if (!SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
 		return false;

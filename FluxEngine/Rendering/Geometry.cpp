@@ -18,9 +18,9 @@ void Geometry::Draw(Graphics* pGraphics) const
 	pGraphics->SetIndexBuffer(m_pIndexBuffer);
 	pGraphics->SetVertexBuffer(m_pVertexBuffer);
 	if (m_pIndexBuffer)
-		pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, m_IndexCount, 0);
+		pGraphics->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
 	else
-		pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, m_VertexCount);
+		pGraphics->Draw(m_PrimitiveType, 0, m_VertexCount);
 }
 
 Geometry::VertexData& Geometry::GetVertexData(const string& semantic)
@@ -40,4 +40,19 @@ bool Geometry::HasData(const string& semantic) const
 {
 	auto it = m_VertexData.find(semantic);
 	return !(it == m_VertexData.end());
+}
+
+int Geometry::GetDataCount(const std::string& semantic)
+{
+	auto pIt = m_VertexData.find(semantic);
+	if (pIt == m_VertexData.end())
+		return 0;
+	return pIt->second.Count;
+}
+
+void Geometry::SetDrawRange(PrimitiveType type, int indexCount, int vertexCount)
+{
+	m_PrimitiveType = type;
+	m_IndexCount = indexCount;
+	m_VertexCount = vertexCount;
 }

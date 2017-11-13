@@ -104,6 +104,8 @@ unsigned int PhysicalFile::ReadAllBytes(std::vector<char>& pBuffer)
 	if (m_Handle == FILE_HANDLE_INVALID)
 		return false;
 
+	AUTOPROFILE_DESC(PhysicalFile_ReadAllBytes, m_FileName);
+
 	unsigned int size = GetSize();
 	pBuffer.resize(size);
 

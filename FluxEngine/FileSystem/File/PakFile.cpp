@@ -14,6 +14,9 @@ unsigned int PakFile::ReadAllBytes(std::vector<char>& pBuffer)
 {
 	if (!SetPointer(0))
 		return 0;
+
+	AUTOPROFILE_DESC(PhysicalFile_ReadAllBytes, m_FileName);
+
 	pBuffer.resize(m_pTableEntry->UncompressedSize);
 	return Read((unsigned int)pBuffer.size(), pBuffer.data());
 }
@@ -108,6 +111,8 @@ bool PakFile::CacheUncompressedData()
 		if (m_pMountPoint == nullptr)
 			return false;
 		const PakMountPoint* pMountPoint = ((PakMountPoint*)m_pMountPoint);
+
+		AUTOPROFILE_DESC(PakFile_CacheUncompressedData, m_pMountPoint->GetPhysicalPath());
 
 		std::vector<char> tempBuffer;
 		tempBuffer.resize(m_pTableEntry->CompressedSize);

@@ -1,5 +1,6 @@
 #pragma once
 #include "Scenegraph/Component.h"
+#include "Rendering/Core/GraphicsDefines.h"
 
 class Graphics;
 class IndexBuffer;
@@ -28,15 +29,17 @@ public:
 	//Same as above but without range checking
 	VertexData& GetVertexDataUnsafe(const std::string& semantic);
 	bool HasData(const std::string& semantic) const;
+	int GetDataCount(const std::string& semantic);
+
+	void SetDrawRange(PrimitiveType type, int indexCount, int vertexCount);
 
 	int GetVertexCount() const { return m_VertexCount; }
 	int GetIndexCount() const { return m_IndexCount; }
 
 private:
-	friend class Mesh;
-
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;
+	PrimitiveType m_PrimitiveType = PrimitiveType::TRIANGLELIST;
 
 	IndexBuffer* m_pIndexBuffer = nullptr;
 	VertexBuffer* m_pVertexBuffer = nullptr;

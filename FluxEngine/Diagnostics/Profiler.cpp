@@ -22,18 +22,25 @@ Profiler::~Profiler()
 	pFile->Close();
 }
 
-void Profiler::OutputLog(IFile* pFile)
+void Profiler::OutputLog(IFile* pFile, int maxDepth)
 {
 	m_pCurrentBlock = m_pRootBlock->Children.front().get();
 	int depth = 0;
 	for (;;)
 	{
-		*pFile << "[" << m_pCurrentBlock->Frame << "]\t";
-		for (int i = 0; i < depth; ++i)
+		if (depth <= maxDepth)
 		{
-			*pFile << "\t";
+			*pFile << "[" << m_pCurrentBlock->Frame << "]\t";
+			for (int i = 0; i < depth; ++i)
+			{
+				*pFile << "\t";
+			}
+			if (m_pCurrentBlock->Description.empty())
+				*pFile << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Time << " ms" << IFile::endl;
+			else
+				*pFile << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Description << " : " << m_pCurrentBlock->Time << " ms" << IFile::endl;
 		}
-		*pFile << m_pCurrentBlock->ToString() << IFile::endl;
+
 		while (m_pCurrentBlock->Children.size() == 0)
 		{
 			m_pCurrentBlock = m_pCurrentBlock->pParent;

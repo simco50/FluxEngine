@@ -57,8 +57,8 @@ bool Mesh::Load(const std::string& filePath)
 			string block = pFile->ReadSizedString();
 			for (char& c : block)
 				c = (char)toupper(c);
-			if (block == "END")
-				break;
+			/*if (block == "END")
+				break;*/
 			if (block == "ENDMESH")
 				break;
 
@@ -71,9 +71,7 @@ bool Mesh::Load(const std::string& filePath)
 			pFile->Read(length * stride, (char*)pGeometry->GetVertexDataUnsafe(block).pData);
 		}
 
-		pGeometry->m_VertexCount = pGeometry->GetVertexData("POSITION").Count;
-		pGeometry->m_IndexCount = pGeometry->GetVertexData("INDEX").Count;
-
+		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pGeometry->GetDataCount("INDEX"), pGeometry->GetDataCount("POSITION"));
 		m_Geometries.push_back(std::move(pGeometry));
 	}
 

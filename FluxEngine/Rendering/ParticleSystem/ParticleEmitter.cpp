@@ -11,6 +11,8 @@
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
 #include "Scenegraph/Scene.h"
+#include "Rendering/Geometry.h"
+#include "Scenegraph/SceneNode.h"
 
 ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
 	m_pParticleSystem(pSystem),
@@ -20,6 +22,11 @@ ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) :
 	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
 		m_Particles[i] = new Particle(m_pParticleSystem);
 	m_BufferSize = m_pParticleSystem->MaxParticles;
+
+	m_pGeometry = make_unique<Geometry>();
+	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
+	m_Batches.resize(1);
+	m_Batches[0].pGeometry = m_pGeometry.get();
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -54,17 +61,24 @@ void ParticleEmitter::Reset()
 
 void ParticleEmitter::OnSceneSet(Scene* pScene)
 {
-	Component::OnSceneSet(pScene);
+	Drawable::OnSceneSet(pScene);
 
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
-	m_pMaterial = new ParticleMaterial(m_pGraphics);
+	//m_pMaterial = new ParticleMaterial(m_pGraphics);
+	m_Batches[0].pMaterial = m_pMaterial;
 	CreateVertexBuffer();
-	m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
-	m_pMaterial->SetBlendMode(m_pParticleSystem->BlendMode);
+	//m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
+	//m_pMaterial->SetBlendMode(m_pParticleSystem->BlendMode);
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	if (m_pParticleSystem->PlayOnAwake)
 		Play();
+}
+
+void ParticleEmitter::OnNodeSet(SceneNode* pNode)
+{
+	Drawable::OnNodeSet(pNode);
+	m_Batches[0].pModelMatrix = &pNode->GetTransform()->GetWorldMatrix();
 }
 
 void ParticleEmitter::CreateVertexBuffer()
@@ -191,9 +205,5 @@ void ParticleEmitter::Update()
 		FLUX_LOG(WARNING, "ParticleEmitter::Render() > VertexBuffer too small! Increasing size...");
 		CreateVertexBuffer();
 	}
-
-	/*
-	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
-	m_pGraphics->Draw(PrimitiveType::POINTLIST, 0, m_ParticleCount);
-	*/
+	m_pGeometry->SetDrawRange(PrimitiveType::POINTLIST, 0, m_ParticleCount);
 }

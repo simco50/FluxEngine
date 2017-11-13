@@ -8,7 +8,7 @@ public:
 
 	~Profiler();
 
-	void OutputLog(IFile* pFile);
+	void OutputLog(IFile* pFile, int maxDepth = 20);
 
 	struct AutoProfilerBlock
 	{
@@ -22,14 +22,6 @@ public:
 		std::string Description;
 		AutoProfilerBlock* pParent;
 		int Frame = -1;
-
-		std::string ToString() const
-		{
-			std::stringstream ss;
-			ss << "[" << Name << "] > " << Description << " : " << Time << " ms";
-			return ss.str();
-		}
-
 		__int64 BeginTime;
 		std::queue<std::unique_ptr<AutoProfilerBlock>> Children;
 		double Time = 0.0;
