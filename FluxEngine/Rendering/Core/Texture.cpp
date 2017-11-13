@@ -31,6 +31,8 @@ Texture::~Texture()
 
 bool Texture::Load(const std::string& filePath)
 {
+	AUTOPROFILE_DESC(Texture_Load, Paths::GetFileName(filePath));
+
 	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
@@ -57,6 +59,8 @@ bool Texture::Load(const std::string& filePath)
 
 bool Texture::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
 {
+	AUTOPROFILE(Texture_SetSize);
+
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
 		FLUX_LOG(ERROR, "[Texture::SetSize()] > Multisampling is only supported for rendertarget or depth-stencil textures");

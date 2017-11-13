@@ -15,6 +15,8 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	m_pGraphics(pGraphics),
 	m_pInput(pInput)
 {
+	AUTOPROFILE(ImmediateUI_Initialize);
+
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
@@ -93,6 +95,7 @@ void ImmediateUI::NewFrame()
 void ImmediateUI::Render()
 {
 	ImGui::Render();
+
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough

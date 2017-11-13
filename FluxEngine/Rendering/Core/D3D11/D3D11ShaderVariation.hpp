@@ -3,6 +3,8 @@
 
 bool ShaderVariation::Create(Graphics* pGraphics)
 {
+	AUTOPROFILE_DESC(ShaderVariation_Create, m_pParentShader->GetName());
+
 	if (!Compile(pGraphics))
 	{
 		FLUX_LOG(ERROR, "[ShaderVariation::Create()] > Failed to compile shader");
@@ -37,8 +39,8 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 
 bool ShaderVariation::Compile(Graphics* pGraphics)
 {
-	string shaderName = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
-	AUTOPROFILE_DESC(ShaderVariation_Compile, shaderName);
+	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
+	AUTOPROFILE_DESC(ShaderVariation_Compile, m_Name);
 
 	const string& source = m_pParentShader->GetSource();
 
@@ -111,7 +113,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 
 	ComPtr<ID3DBlob> pShaderCode, pErrorBlob;
 
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), shaderName.c_str(), macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), m_Name.c_str(), macros.data(), 0, entryPoint, profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
 		std::string error = D3DBlobToString(pErrorBlob.Get());
@@ -134,6 +136,8 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 
 void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graphics* pGraphics)
 {
+	AUTOPROFILE(ShaderVariation_ShaderReflection);
+
 	ComPtr<ID3D11ShaderReflection> pShaderReflection;
 	D3D11_SHADER_DESC shaderDesc;
 

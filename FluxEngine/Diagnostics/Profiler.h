@@ -1,44 +1,62 @@
 #pragma once
+#include "Helpers/Singleton.h"
 
-class Profiler
+class Profiler : public Singleton<Profiler>
 {
 public:
 	Profiler();
-	Profiler(const string& name = "", const string& description = "");
+
 	~Profiler();
 
-	void Start();
-	float Stop();
+	void OutputLog(IFile* pFile);
 
-protected:
-	string m_Name;
-	string m_Description;
+	struct AutoProfilerBlock
+	{
+		AutoProfilerBlock(const std::string& name, const std::string& description, AutoProfilerBlock* pParent) :
+			Name(name), Description(description), pParent(pParent)
+		{
+			QueryPerformanceCounter((LARGE_INTEGER*)&BeginTime);
+		}
 
-private:
-	double m_SecondsPerCount = 0.0f;
+		std::string Name;
+		std::string Description;
+		AutoProfilerBlock* pParent;
+		int Frame = -1;
 
-	__int64 m_StartTime = 0;
-	__int64 m_StopTime = 0;
+		std::string ToString() const
+		{
+			std::stringstream ss;
+			ss << "[" << Name << "] > " << Description << " : " << Time << " ms";
+			return ss.str();
+		}
+
+		__int64 BeginTime;
+		std::queue<std::unique_ptr<AutoProfilerBlock>> Children;
+		float Time = 0;
+	};
+
+	void BeginBlock(const std::string& name, const std::string& description = "");
+
+	void EndBlock();
+
+	std::unique_ptr<AutoProfilerBlock> m_pRootBlock;
+	AutoProfilerBlock* m_pCurrentBlock = nullptr;
+	__int64 m_Frequency;
 };
 
-class AutoProfilerBlock : public Profiler
+class AutoProfiler
 {
 public:
-	AutoProfilerBlock(const string& name, const string& description = "");
-	~AutoProfilerBlock();
-
-private:
+	AutoProfiler(const std::string& name, const std::string& description = "")
+	{
+		Profiler::Instance().BeginBlock(name, description);
+	}
+	~AutoProfiler()
+	{
+		Profiler::Instance().EndBlock();
+	}
 };
 
-#define PROFILING
-#ifdef PROFILING
+#define AUTOPROFILE(name) AutoProfiler Profiler_##name(#name)
 
-#define AUTOPROFILE(name) AutoProfilerBlock name ## AutoProfilerBlock(#name)
-#define AUTOPROFILE_DESC(name, description) AutoProfilerBlock name ## AutoProfilerBlock(#name, description)
-
-#else
-
-#define AUTOPROFILE(name) 0
-#define AUTOPROFILE_DESC(name, description) 0
-
-#endif
+#define AUTOPROFILE_DESC(name, desc) AutoProfiler Profiler_##name(#name, desc)

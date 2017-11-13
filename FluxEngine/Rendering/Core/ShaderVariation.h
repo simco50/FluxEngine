@@ -36,6 +36,8 @@ public:
 	void* const GetShaderObject() const { return m_pShaderObject; }
 	const vector<char>& GetByteCode() const { return m_ShaderByteCode; }
 
+	const std::string& GetName() const { return m_Name; }
+
 private:
 	bool Compile(Graphics* pGraphics);
 
@@ -46,6 +48,7 @@ private:
 
 	void* m_pShaderObject = nullptr;
 
+	string m_Name;
 	vector<string> m_Defines;
 	vector<char> m_ShaderByteCode;
 

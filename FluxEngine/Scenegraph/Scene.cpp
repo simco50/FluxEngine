@@ -18,7 +18,7 @@ Scene::~Scene()
 
 void Scene::Initialize()
 {
-
+	AUTOPROFILE(Scene_Initialize);
 }
 
 void Scene::Update()

@@ -104,6 +104,7 @@ private:
 	int m_Multisample = 1;
 	int m_RefreshRate = 60;
 	string m_WindowTitle;
+	string m_WindowClassName = "wndClass";
 
 	bool m_Paused = false;
 	bool m_Maximized = false;

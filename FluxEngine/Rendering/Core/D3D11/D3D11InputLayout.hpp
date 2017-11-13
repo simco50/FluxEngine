@@ -1,7 +1,7 @@
 #include "D3D11GraphicsImpl.h"
 void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation)
 {
-	AUTOPROFILE(CreateInputLayout);
+	AUTOPROFILE_DESC(InputLayout_Create, pVariation->GetName());
 
 	SafeRelease(m_pInputLayout);
 

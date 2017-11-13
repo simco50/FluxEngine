@@ -11,7 +11,7 @@ void* BlendState::GetOrCreate(Graphics* pGraphics)
 	if (state != m_BlendStates.end())
 		return state->second;
 
-	AUTOPROFILE(CreateBlendState);
+	AUTOPROFILE_DESC(BlendState_Create, ToHex(stateHash));
 
 	m_BlendStates[stateHash] = nullptr;
 	void*& pBlendState = m_BlendStates[stateHash];

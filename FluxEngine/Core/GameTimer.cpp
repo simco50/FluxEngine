@@ -12,6 +12,8 @@ double GameTimer::m_DeltaTime = 0.0;
 
 bool GameTimer::m_IsStopped = false;
 
+int GameTimer::m_Ticks = 0;;
+
 GameTimer::GameTimer()
 {
 
@@ -28,6 +30,7 @@ void GameTimer::Tick()
 		m_DeltaTime = 0.0f;
 		return;
 	}
+	++m_Ticks;
 
 	__int64 currTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTime);

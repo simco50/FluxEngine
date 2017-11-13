@@ -26,7 +26,7 @@ bool Graphics::SetMode(const int width,
 	const int multiSample,
 	const int refreshRate)
 {
-	AUTOPROFILE(CreateGraphics);
+	AUTOPROFILE(Graphics_SetMode);
 
 	m_WindowType = windowType;
 	m_Resizable = resizable;
@@ -429,7 +429,7 @@ void Graphics::EndFrame()
 
 bool Graphics::EnumerateAdapters()
 {
-	AUTOPROFILE(EnumerateAdapters);
+	AUTOPROFILE(Graphics_EnumerateAdapters);
 
 	//Create the factor
 	HR(CreateDXGIFactory(IID_PPV_ARGS(m_pImpl->m_pFactory.GetAddressOf())));
@@ -440,6 +440,7 @@ bool Graphics::EnumerateAdapters()
 	unsigned long bestMemory = 0;
 
 	IDXGIAdapter* pAdapter = nullptr;
+	FLUX_LOG(INFO, "Adapters:");
 	while (m_pImpl->m_pFactory->EnumAdapters(adapterCount, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_ADAPTER_DESC desc;
@@ -464,7 +465,7 @@ bool Graphics::EnumerateAdapters()
 
 bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 {
-	AUTOPROFILE(CreateDevice);
+	AUTOPROFILE(Graphics_CreateDevice);
 
 	EnumerateAdapters();
 
@@ -499,6 +500,8 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 
 	m_pImpl->m_pSwapChain.Reset();
 
+	AUTOPROFILE(Graphics_CreateSwapchain);
+
 	//Create swap chain desctriptor
 	DXGI_SWAP_CHAIN_DESC swapDesc;
 	swapDesc.BufferCount = 1;
@@ -525,7 +528,7 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 
 bool Graphics::UpdateSwapchain()
 {
-	AUTOPROFILE(UpdateSwapchain);
+	AUTOPROFILE(Graphics_UpdateSwapchain);
 
 	if (!m_pImpl->m_pSwapChain.IsValid())
 		return false;

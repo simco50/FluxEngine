@@ -17,6 +17,8 @@ Mesh::~Mesh()
 
 bool Mesh::Load(const std::string& filePath)
 {
+	AUTOPROFILE_DESC(Mesh_Load, Paths::GetFileName(filePath));
+
 	std::string extension = Paths::GetFileExtenstion(filePath);
 	if (extension != "flux")
 	{
@@ -81,7 +83,7 @@ bool Mesh::Load(const std::string& filePath)
 
 void Mesh::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc)
 {
-	AUTOPROFILE(Mesh_CreateBuffers);
+	AUTOPROFILE_DESC(Mesh_CreateBuffers, m_MeshName);
 	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
 	{
 		CreateBuffersForGeometry(pGraphics, elementDesc, pGeometry.get());

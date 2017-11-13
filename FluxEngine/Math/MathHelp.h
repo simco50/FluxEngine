@@ -64,3 +64,31 @@ inline float InverseLerp(float a, float b, float value)
 {
 	return (value - a) / (b - a);
 }
+
+inline std::string ToBinary(unsigned int number)
+{
+	std::stringstream nr;
+	while (number != 0)
+	{ 
+		nr << number % 2;
+		number /= 2;
+	}
+	nr << "b0";
+	string out = nr.str();
+	reverse(out.begin(), out.end());
+	return out;
+}
+
+inline std::string ToHex(unsigned int number)
+{
+	std::stringstream nr;
+	while (number != 0)
+	{
+		nr << number % 16;
+		number /= 16;
+	}
+	nr << "x0";
+	string out = nr.str();
+	reverse(out.begin(), out.end());
+	return out;
+}

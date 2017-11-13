@@ -2,7 +2,7 @@
 
 void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic)
 {
-	AUTOPROFILE(CreateVertexBuffer);
+	AUTOPROFILE(VertexBuffer_Create);
 
 	Release();
 

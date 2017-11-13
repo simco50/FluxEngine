@@ -18,6 +18,8 @@ Console::~Console()
 
 void Console::Initialize()
 {
+	AUTOPROFILE(Console_Initialize);
+
 	time_t timer;
 	time(&timer);
 	tm localTime;

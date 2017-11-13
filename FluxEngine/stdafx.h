@@ -20,6 +20,7 @@
 #include <sstream>
 #include <memory>
 #include <iomanip>
+#include <queue>
 using namespace std;
 
 #pragma endregion STL
@@ -144,6 +145,7 @@ using namespace DirectX::SimpleMath;
 #include "Rendering/Core/ShaderStructs.h"
 
 #include "Diagnostics/Console.h"
+#include "Diagnostics/PerfTimer.h"
 #include "Diagnostics/Profiler.h"
 
 #include "Core/GeneralStructs.h"

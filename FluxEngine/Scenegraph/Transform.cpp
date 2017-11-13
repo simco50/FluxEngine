@@ -97,13 +97,11 @@ void Transform::Translate(const Vector3& translation, const Space space)
 {
 	if (space == Space::SELF)
 	{
-		
 		m_WorldPosition = Vector3::Transform(translation, m_WorldMatrix);
 	}
 	else
 	{
 		m_WorldPosition += translation;
-
 	}
 	OnWorldChange();
 }

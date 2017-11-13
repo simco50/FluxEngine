@@ -13,6 +13,7 @@ public:
 	static void Stop();
 	static void Tick();
 	static bool IsPaused() { return m_IsStopped; }
+	static int Ticks() { return m_Ticks; }
 
 private:
 	static double m_SecondsPerCount;
@@ -25,5 +26,7 @@ private:
 	static __int64 m_CurrTime;
 
 	static bool m_IsStopped;
+
+	static int m_Ticks;
 };
 

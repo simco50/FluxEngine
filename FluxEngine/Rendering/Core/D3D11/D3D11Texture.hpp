@@ -35,7 +35,7 @@ bool Texture::Save(const std::string& filePath)
 		return false;
 	}
 
-	AUTOPROFILE(Texture_Save);
+	AUTOPROFILE_DESC(Texture_Save, Paths::GetFileName(filePath));
 
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
@@ -105,7 +105,7 @@ void Texture::UpdateParameters()
 	if ((m_pSamplerState && !m_ParametersDirty) || m_pResource == nullptr)
 		return;
 
-	AUTOPROFILE(CreateTextureSampler);
+	AUTOPROFILE(Texture_CreateTextureSampler);
 
 	SafeRelease(m_pSamplerState);
 

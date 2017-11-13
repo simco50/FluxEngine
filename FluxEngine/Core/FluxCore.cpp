@@ -38,43 +38,48 @@ FluxCore::~FluxCore()
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
-	Console::Initialize();
+	AUTOPROFILE(FluxCore_Run);
+	{
+		AUTOPROFILE(FluxCore_Initialize);
+
+		Console::Initialize();
 
 #ifdef NDEBUG
-	if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
-	{
-		FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+		if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
+		{
+			FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
 	}
 #else
-	FLUX_LOG(WARNING, "[DEBUG] Skipped mounting './Resources.paK'");
+		FLUX_LOG(WARNING, "[DEBUG] Skipped mounting './Resources.paK'");
 #endif
-	if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
-	{
-		FLUX_LOG(WARNING, "Failed to mount './Resources'");
+		if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
+		{
+			FLUX_LOG(WARNING, "Failed to mount './Resources'");
+		}
+
+		Config::Initialize();
+
+		m_pGraphics = new Graphics(hInstance);
+		if (!m_pGraphics->SetMode(
+			Config::GetInt("Width", "Window", 1240),
+			Config::GetInt("Height", "Window", 720),
+			(WindowType)Config::GetInt("WindowMode", "Window", 0),
+			Config::GetBool("Resizable", "Window", 1),
+			Config::GetBool("VSync", "Window", 1),
+			Config::GetInt("MSAA", "Window", 8),
+			Config::GetInt("RefreshRate", "Window", 60)))
+		{
+			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
+		}
+
+		m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
+		m_pInput = make_unique<InputEngine>(m_pGraphics);
+		m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
+
+		GameTimer::Reset();
+
+		InitGame();
 	}
-
-	Config::Initialize();
-
-	m_pGraphics = new Graphics(hInstance);
-	if (!m_pGraphics->SetMode(
-		Config::GetInt("Width", "Window", 1240),
-		Config::GetInt("Height", "Window", 720),
-		(WindowType)Config::GetInt("WindowMode", "Window", 0),
-		Config::GetBool("Resizable", "Window", 1),
-		Config::GetBool("VSync", "Window", 1),
-		Config::GetInt("MSAA", "Window", 8),
-		Config::GetInt("RefreshRate", "Window", 60)))
-	{
-		FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
-	}
-
-	m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
-	m_pInput = make_unique<InputEngine>(m_pGraphics);
-	m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
-
-	GameTimer::Reset();
-
-	InitGame();
 
 	//Game loop
 	MSG msg = {};
@@ -87,8 +92,11 @@ int FluxCore::Run(HINSTANCE hInstance)
 		}
 		else
 		{
-			if(!GameTimer::IsPaused())
+			if (!GameTimer::IsPaused())
+			{
+				GameTimer::Tick();
 				GameLoop();
+			}
 			else
 				Sleep(100);
 		}
@@ -98,6 +106,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 void FluxCore::InitGame()
 {
+	AUTOPROFILE(FluxCore_InitGame);
+
 	m_pShader = m_pGraphics->GetShader("Resources/Shaders/Diffuse.hlsl");
 	if (m_pShader)
 	{
@@ -132,7 +142,6 @@ void FluxCore::InitGame()
 
 void FluxCore::GameLoop()
 {
-	GameTimer::Tick();
 	m_pInput->Update();
 	m_pCamera->Update();
 
