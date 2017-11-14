@@ -1,8 +1,4 @@
 #include "D3D11GraphicsImpl.h"
-#include "FileSystem/File/PhysicalFile.h"
-
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "External/Stb/stb_image_write.h"
 
 Graphics::~Graphics()
 {
@@ -95,8 +91,7 @@ void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned 
 
 	for (unsigned int i = 0; i < GraphicsConstants::MAX_VERTEX_BUFFERS; ++i)
 	{
-		VertexBuffer* pBuffer = nullptr;
-		pBuffer = i >= pBuffers.size() ? nullptr : pBuffers[i];
+		VertexBuffer* pBuffer = i >= pBuffers.size() ? nullptr : pBuffers[i];
 		bool changed = false;
 
 		if (pBuffer)
@@ -164,7 +159,6 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 			break;
 		case ShaderType::NONE:
 			return false;
-			break;
 		}
 	}
 
@@ -554,7 +548,7 @@ bool Graphics::UpdateSwapchain()
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	desc.MultiSample = m_Multisample;
-	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
+	m_pDefaultRenderTarget = make_unique<RenderTarget>(this);
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);

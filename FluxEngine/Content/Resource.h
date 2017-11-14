@@ -4,7 +4,7 @@ class Resource
 {
 public:
 	Resource();
-	~Resource();
+	virtual ~Resource();
 
 	DELETE_COPY(Resource)
 
@@ -12,7 +12,7 @@ public:
 	virtual bool Save(const std::string& filePath);
 
 	void SetName(const std::string& name) { m_Name = name; }
-	const std::string& GetName() { return m_Name; }
+	const std::string& GetName() const { return m_Name; }
 
 protected:
 	string m_Name;

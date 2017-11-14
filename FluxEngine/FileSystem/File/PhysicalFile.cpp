@@ -3,7 +3,7 @@
 
 PhysicalFile::~PhysicalFile()
 {
-	Close();
+	PhysicalFile::Close();
 }
 
 bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
@@ -41,10 +41,10 @@ bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 		m_FileName.c_str(),
 		access,
 		0,
-		NULL,
+		nullptr,
 		creation_disposition,
 		FILE_ATTRIBUTE_NORMAL,
-		NULL
+		nullptr
 	);
 
 	return m_Handle != FILE_HANDLE_INVALID;
@@ -71,7 +71,7 @@ void PhysicalFile::CreateDirectoryTree(const string& path)
 	while (slash != string::npos)
 	{
 		string dirToCreate = path.substr(0, slash);
-		CreateDirectory(dirToCreate.c_str(), 0);
+		CreateDirectory(dirToCreate.c_str(), nullptr);
 		slash = path.find('\\', slash + 1);
 	}
 }
@@ -144,7 +144,7 @@ bool PhysicalFile::SetPointer(const unsigned int position)
 {
 	if (m_Handle == INVALID_HANDLE_VALUE)
 		return false;
-	if (SetFilePointer(m_Handle, position, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+	if (SetFilePointer(m_Handle, position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return false;
 	return true;
 }
@@ -153,7 +153,7 @@ bool PhysicalFile::MovePointer(const int delta)
 {
 	if (m_Handle == INVALID_HANDLE_VALUE)
 		return false;
-	if (SetFilePointer(m_Handle, delta, 0, FILE_CURRENT) == INVALID_SET_FILE_POINTER)
+	if (SetFilePointer(m_Handle, delta, nullptr, FILE_CURRENT) == INVALID_SET_FILE_POINTER)
 		return false;
 	return true;
 }

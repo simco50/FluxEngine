@@ -5,7 +5,7 @@ class Particle
 {
 public:
 	Particle(ParticleSystem* emitterSettings);
-	~Particle(void);
+	~Particle();
 
 	void Update();
 	void Init();

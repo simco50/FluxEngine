@@ -4,9 +4,7 @@
 #include "ParticleEmitter.h"
 #include "Particle.h"
 #include "SceneGraph/Transform.h"
-#include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
-#include "Rendering/ParticleMaterial.h"
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
@@ -34,9 +32,6 @@ ParticleEmitter::~ParticleEmitter()
 	for (size_t i = 0; i < m_Particles.size(); i++)
 		delete m_Particles[i];
 	m_Particles.clear();
-
-	delete m_pMaterial;
-	m_pMaterial = nullptr;
 }
 
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
@@ -45,8 +40,8 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	CreateVertexBuffer();
-	m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
-	m_pMaterial->SetBlendMode(m_pParticleSystem->BlendMode);
+	//m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
+	//m_pMaterial->SetBlendMode(m_pParticleSystem->BlendingMode);
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	Reset();
 }
@@ -66,10 +61,10 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	//m_pMaterial = new ParticleMaterial(m_pGraphics);
-	m_Batches[0].pMaterial = m_pMaterial;
-	CreateVertexBuffer();
+	//m_Batches[0].pMaterial = m_pMaterial;
 	//m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
 	//m_pMaterial->SetBlendMode(m_pParticleSystem->BlendMode);
+	CreateVertexBuffer();
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	if (m_pParticleSystem->PlayOnAwake)
 		Play();
@@ -86,10 +81,10 @@ void ParticleEmitter::CreateVertexBuffer()
 	m_pVertexBuffer.reset();
 
 	vector<VertexElement> elementDesc = {
-		VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, 0),
-		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, 0),
-		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, 0),
-		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, 0),
+		VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, false),
+		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, false),
+		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, false),
+		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
 	};
 	
 	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);

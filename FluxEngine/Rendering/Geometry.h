@@ -1,5 +1,4 @@
 #pragma once
-#include "Scenegraph/Component.h"
 #include "Rendering/Core/GraphicsDefines.h"
 
 class Graphics;

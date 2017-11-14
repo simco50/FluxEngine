@@ -1,6 +1,7 @@
 #pragma once
 #include "Math/KeyframeValue.h"
 #include "Content/Resource.h"
+#include "Rendering/Core/GraphicsDefines.h"
 
 struct ParticleVertex
 {
@@ -24,18 +25,12 @@ enum class ParticleSortingMode
 	YoungestFirst,
 };
 
-enum class ParticleBlendMode
-{
-	ALPHABLEND = 0,
-	ADDITIVE = 1,
-};
-
 struct ParticleSystem : public Resource
 {
 public:
 
 	ParticleSystem() {}
-	~ParticleSystem() {}
+	virtual ~ParticleSystem() {}
 
 	virtual bool Load(const std::string& filePath) override;
 
@@ -72,7 +67,7 @@ public:
 		bool EmitFromVolume = false;
 		float Angle = 30.0f;
 	};
-	Shape Shape;
+	Shape Shape = {};
 
 	//Animation
 	KeyframeValue<float> Size = 1.0f;
@@ -84,7 +79,7 @@ public:
 
 	//Rendering
 	ParticleSortingMode SortingMode = ParticleSortingMode::FrontToBack;
-	ParticleBlendMode BlendMode = ParticleBlendMode::ALPHABLEND;
+	BlendMode BlendingMode = BlendMode::ALPHA;
 	std::string ImagePath = "";
 
 	static const int VERSION = 2;

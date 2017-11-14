@@ -66,5 +66,5 @@ public:
 
 protected:
 	std::string m_FileName;
-	ContentType m_ContentType;
+	ContentType m_ContentType = ContentType::Binary;
 };

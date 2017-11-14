@@ -33,7 +33,7 @@ public:
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
-	void* const GetShaderObject() const { return m_pShaderObject; }
+	const void* GetShaderObject() const { return m_pShaderObject; }
 	const vector<char>& GetByteCode() const { return m_ShaderByteCode; }
 
 	const std::string& GetName() const { return m_Name; }

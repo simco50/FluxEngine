@@ -28,8 +28,8 @@ private:
 	StencilOperation m_StencilTestFailOperation = StencilOperation::KEEP;
 	StencilOperation m_StencilTestZFailOperation = StencilOperation::KEEP;
 	unsigned int m_StencilRef = 0;
-	unsigned char m_StencilCompareMask;
-	unsigned char m_StencilWriteMask;
+	unsigned char m_StencilCompareMask = 0;
+	unsigned char m_StencilWriteMask = 0;
 
 	map<unsigned int, void*> m_DepthStencilStates;
 };

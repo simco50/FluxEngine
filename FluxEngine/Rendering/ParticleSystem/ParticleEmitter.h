@@ -3,7 +3,6 @@
 
 class Particle;
 class Texture;
-class ParticleMaterial;
 class Graphics;
 class VertexBuffer;
 struct ParticleSystem;
@@ -51,7 +50,6 @@ private:
 	unique_ptr<Geometry> m_pGeometry;
 	unique_ptr<VertexBuffer> m_pVertexBuffer;
 
-	ParticleMaterial* m_pMaterial = nullptr;
 	wstring m_AssetFile;
 
 	Graphics* m_pGraphics;

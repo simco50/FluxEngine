@@ -167,7 +167,7 @@ bool Graphics::MakeWindow(int windowWidth, int windowHeight)
 
 LRESULT CALLBACK Graphics::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	Graphics* pThis = nullptr;
+	Graphics* pThis;
 
 	if (message == WM_NCCREATE)
 	{

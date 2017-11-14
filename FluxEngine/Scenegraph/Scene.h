@@ -8,7 +8,7 @@ class Scene
 {
 public:
 	Scene(Graphics* pGraphics);
-	~Scene();
+	virtual ~Scene();
 
 	virtual void Initialize();
 	virtual void Update();
@@ -17,7 +17,7 @@ public:
 	Renderer* GetRenderer() const { return m_pRenderer.get(); }
 	Camera* GetCamera() const;
 
-	SceneNode* FindNode(const std::string name);
+	SceneNode* FindNode(const std::string& name);
 
 private:
 	unique_ptr<Renderer> m_pRenderer;

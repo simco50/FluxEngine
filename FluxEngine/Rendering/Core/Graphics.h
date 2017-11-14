@@ -96,7 +96,7 @@ private:
 
 	int m_WindowWidth = 1240;
 	int m_WindowHeight = 720;
-	HWND m_Hwnd;
+	HWND m_Hwnd = nullptr;
 	HINSTANCE m_hInstance;
 	WindowType m_WindowType = WindowType::WINDOWED;
 	bool m_Resizable = true;

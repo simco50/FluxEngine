@@ -1,3 +1,4 @@
+#pragma once
 #include "GraphicsDefines.h"
 
 class Graphics;

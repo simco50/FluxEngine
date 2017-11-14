@@ -9,10 +9,9 @@
 string Http::HttpGet(string host, string path)
 {
 	WSADATA wsaData;
-	int result;
 
 	// Initialize Winsock
-	result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0)
 		throw SocketError("WSAStartUp", result);
 

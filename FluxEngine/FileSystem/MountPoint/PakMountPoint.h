@@ -7,10 +7,10 @@ class PhysicalFile;
 struct PakFileHeader
 {
 	char ID[4] = { "PAK" };
-	char Version;
+	char Version = 0;
 	char FolderPath[100];
 	char PakName[50];
-	unsigned char NumEntries;
+	unsigned char NumEntries = 0;
 };
 
 struct PakFileEntry
@@ -25,7 +25,7 @@ struct PakFileEntry
 class PakMountPoint : public IMountPoint
 {
 public:
-	PakMountPoint(const std::string physicalPath) : IMountPoint(physicalPath)
+	PakMountPoint(const std::string& physicalPath) : IMountPoint(physicalPath)
 	{}
 	virtual ~PakMountPoint()
 	{}
@@ -40,6 +40,6 @@ private:
 	static const int PAK_VERSION = 1;
 
 	std::unique_ptr<PhysicalFile> m_pPakFile;
-	PakFileHeader m_Header;
+	PakFileHeader m_Header = PakFileHeader();
 	std::vector<PakFileEntry> m_FileEntries;
 };

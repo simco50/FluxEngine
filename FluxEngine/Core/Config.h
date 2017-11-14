@@ -51,9 +51,9 @@ public:
 	};
 
 	static int GetInt(const string& name, const string& section, const int defaultValue = 0, const Type type = Type::EngineIni);
-	static float GetFloat(const string& name, const string& section, const float defaultValue = 0, const Type type = Type::EngineIni);
-	static const string& GetString(const string& name, const string& section, const string& defaultValue = 0, const Type type = Type::EngineIni);
-	static bool GetBool(const string& name, const string& section, const bool defaultValue = 0, const Type type = Type::EngineIni);
+	static float GetFloat(const string& name, const string& section, const float defaultValue = 0.0f, const Type type = Type::EngineIni);
+	static const string& GetString(const string& name, const string& section, const string& defaultValue = "", const Type type = Type::EngineIni);
+	static bool GetBool(const string& name, const string& section, const bool defaultValue = false, const Type type = Type::EngineIni);
 
 	template<typename T>
 	static bool SetValue(const string& name, const string& section, const T& value, const Type type = Type::EngineIni);

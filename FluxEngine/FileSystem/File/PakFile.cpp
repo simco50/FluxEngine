@@ -40,7 +40,7 @@ unsigned int PakFile::Read(const unsigned int size, char* pBuffer)
 	if (sizeToRead <= 0)
 		return 0;
 
-	unsigned int read = 0;
+	unsigned int read;
 	if (m_pTableEntry->Compressed)
 	{
 		//If the file is compressed we have to cache the uncompressed data if we want to use it later

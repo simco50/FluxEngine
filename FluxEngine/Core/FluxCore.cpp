@@ -5,8 +5,6 @@
 #include "Rendering/Core/ShaderVariation.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "Rendering/Core/ConstantBuffer.h"
-#include "Rendering/Core/IndexBuffer.h"
 #include "Rendering/Mesh.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
@@ -14,14 +12,10 @@
 #include "Rendering/Core/BlendState.h"
 #include "Rendering/Core/DepthStencilState.h"
 #include "Config.h"
-#include "Rendering/ParticleSystem/ParticleSystem.h"
-#include "Rendering/Core/RenderTarget.h"
 #include "Rendering/Core/Texture.h"
-#include "Rendering/Geometry.h"
 #include "Scenegraph/Scene.h"
 #include "Rendering/Model.h"
-#include "Audio/AudioSource.h"
-#include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Rendering/Core/ConstantBuffer.h"
 
 using namespace std;
 
@@ -65,8 +59,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 			Config::GetInt("Width", "Window", 1240),
 			Config::GetInt("Height", "Window", 720),
 			(WindowType)Config::GetInt("WindowMode", "Window", 0),
-			Config::GetBool("Resizable", "Window", 1),
-			Config::GetBool("VSync", "Window", 1),
+			Config::GetBool("Resizable", "Window", true),
+			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
 			Config::GetInt("RefreshRate", "Window", 60)))
 		{

@@ -10,7 +10,7 @@ bool Texture::SetData(void* pData)
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
-		D3D11_BOX box = {};
+		D3D11_BOX box;
 		box.back = 1;
 		box.front = 0;
 		box.left = 0;
@@ -200,10 +200,6 @@ bool Texture::Create()
 
 	if ((desc.BindFlags & D3D11_BIND_RENDER_TARGET) == D3D11_BIND_RENDER_TARGET)
 	{
-		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-		rtvDesc.Format = desc.Format;
-		rtvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, nullptr, (ID3D11RenderTargetView**)&m_pRenderTargetView));
 	}
 

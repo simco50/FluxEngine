@@ -26,6 +26,4 @@ class AutoPerfTimer : public PerfTimer
 public:
 	AutoPerfTimer(const string& name, const string& description = "");
 	~AutoPerfTimer();
-
-private:
 };

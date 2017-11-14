@@ -94,7 +94,7 @@ private:
 	bool m_KeyboardState0Active = false;
 	POINT m_CurrMousePosition;
 	POINT m_OldMousePosition;
-	bool m_MouseMove;
+	bool m_MouseMove = false;
 	Vector2 m_MouseMovement;
 
 	XINPUT_STATE m_OldGamepadState[XUSER_MAX_COUNT], m_CurrGamepadState[XUSER_MAX_COUNT];

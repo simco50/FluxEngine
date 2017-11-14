@@ -208,10 +208,11 @@ void Console::InitializeConsoleWindow()
 
 		//Disable Close-Button
 		HWND hwnd = GetConsoleWindow();
-		if (hwnd != NULL)
+		if (hwnd != nullptr)
 		{
 			HMENU hMenu = GetSystemMenu(hwnd, FALSE);
-			if (hMenu != NULL) DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+			if (hMenu != nullptr)
+				DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
 		}
 	}
 }

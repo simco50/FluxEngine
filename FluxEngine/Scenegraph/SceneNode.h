@@ -8,7 +8,7 @@ class SceneNode
 public:
 	SceneNode();
 	SceneNode(const std::string& name);
-	~SceneNode();
+	virtual ~SceneNode();
 
 	virtual void OnSceneSet(Scene* pScene);
 	virtual void Update();

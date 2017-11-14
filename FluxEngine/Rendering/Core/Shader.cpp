@@ -75,7 +75,6 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 		return "CSMain";
 	default:
 		return "";
-		break;
 	}
 }
 

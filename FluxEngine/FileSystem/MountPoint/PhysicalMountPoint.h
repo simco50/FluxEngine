@@ -16,7 +16,7 @@ struct PhysicalFileEntry
 class PhysicalMountPoint : public IMountPoint
 {
 public:
-	PhysicalMountPoint(const std::string physicalPath) : IMountPoint(physicalPath)
+	PhysicalMountPoint(const std::string& physicalPath) : IMountPoint(physicalPath)
 	{}
 	virtual ~PhysicalMountPoint() 
 	{}

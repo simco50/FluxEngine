@@ -10,7 +10,7 @@ class Mesh : public Resource
 {
 public:
 	Mesh();
-	~Mesh();
+	virtual ~Mesh();
 
 	DELETE_COPY(Mesh)
 

@@ -17,7 +17,8 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 	m_RasterizerStates[stateHash] = nullptr;
 	void*& pState = m_RasterizerStates[stateHash];
 
-	D3D11_RASTERIZER_DESC desc = {};
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
 	desc.AntialiasedLineEnable = m_LineAntiAlias;
 	desc.CullMode = D3D11CullMode(m_CullMode);
 	desc.DepthBias = 0;

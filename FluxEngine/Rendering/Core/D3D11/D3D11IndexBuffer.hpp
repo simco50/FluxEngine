@@ -34,13 +34,11 @@ void IndexBuffer::SetData(void* pData)
 
 void* IndexBuffer::Map(bool discard)
 {
-	void* pBuffer = nullptr;
-
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	mappedData.pData = nullptr;
 
 	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
-		pBuffer = mappedData.pData;
+	void* pBuffer = mappedData.pData;
 
 	m_HardwareLocked = true;
 	return pBuffer;

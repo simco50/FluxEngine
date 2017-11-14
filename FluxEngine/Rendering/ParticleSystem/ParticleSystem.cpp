@@ -1,9 +1,7 @@
-#pragma once
 #include "stdafx.h"
 #include "ParticleSystem.h"
 
 #include "External/NlohmannJson/json.hpp"
-#include "Rendering/ParticleSystem/Particle.h"
 
 using json = nlohmann::json;
 
@@ -96,7 +94,7 @@ bool ParticleSystem::Load(const std::string& filePath)
 
 		//Rendering
 		SortingMode = (ParticleSortingMode)data["SortingMode"].get<int>();
-		BlendMode = (ParticleBlendMode)data["BlendMode"].get<int>();
+		BlendingMode = (BlendMode)data["BlendMode"].get<int>();
 		ImagePath = data["ImagePath"].get<string>();
 	}
 	catch (exception exception)

@@ -10,10 +10,10 @@
 #include "External/Stb/stb_image.h"
 
 Texture::Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV) :
-	m_pGraphics(pGraphics),
 	m_pResource(pTexture),
 	m_pShaderResourceView(pTextureSRV),
-	m_Usage(TextureUsage::STATIC)
+	m_Usage(TextureUsage::STATIC),
+	m_pGraphics(pGraphics)
 {
 	UpdateProperties(pTexture);
 }
@@ -42,7 +42,7 @@ bool Texture::Load(const std::string& filePath)
 	pFile->ReadAllBytes(buffer);
 	pFile->Close();
 
-	unsigned char* pPixels = nullptr;
+	unsigned char* pPixels;
 	int width, height, bpp;
 	{
 		AUTOPROFILE(Texture_Load_FromMemory);

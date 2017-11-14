@@ -9,7 +9,7 @@ Particle::Particle(ParticleSystem* emitterSettings) :
 }
 
 
-Particle::~Particle(void)
+Particle::~Particle()
 {
 }
 

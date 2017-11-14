@@ -100,8 +100,8 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 		return;
 	}
 
-	void* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
-	void* pVertexDataStart = pDataLocation;
+	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
+	char* pVertexDataStart = pDataLocation;
 
 #ifdef CACHE_MESHES
 	unsigned long long hash = pVertexBuffer->GetBufferHash();

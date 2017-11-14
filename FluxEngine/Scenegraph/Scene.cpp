@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Scene.h"
 #include "SceneNode.h"
-#include "Rendering\Drawable.h"
-#include "Rendering\Geometry.h"
 #include "Rendering\Renderer.h"
 
 Scene::Scene(Graphics* pGraphics)
@@ -40,7 +38,7 @@ Camera* Scene::GetCamera() const
 	return m_pRenderer->GetCamera(0);
 }
 
-SceneNode* Scene::FindNode(const std::string name)
+SceneNode* Scene::FindNode(const std::string& name)
 {
 	for (SceneNode* pNode : m_pNodes)
 	{
