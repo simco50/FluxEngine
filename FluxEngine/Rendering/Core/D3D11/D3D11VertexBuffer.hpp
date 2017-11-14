@@ -11,6 +11,7 @@ void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements
 	m_Elements = elements;
 
 	m_VertexCount = vertexCount;
+	m_Dynamic = dynamic;
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -38,6 +39,12 @@ void VertexBuffer::SetData(void* pData)
 
 void* VertexBuffer::Map(bool discard)
 {
+	if (!m_Dynamic)
+	{
+		FLUX_LOG(ERROR, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
+		return nullptr;
+	}
+
 	void* pBuffer = nullptr;
 
 	D3D11_MAPPED_SUBRESOURCE mappedData;
@@ -46,15 +53,15 @@ void* VertexBuffer::Map(bool discard)
 	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
 		pBuffer = mappedData.pData;
 
-	m_HardwareLocked = true;
+	m_Mapped = true;
 	return pBuffer;
 }
 
 void VertexBuffer::Unmap()
 {
-	if (m_HardwareLocked)
+	if (m_Mapped)
 	{
 		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pBuffer, 0);
-		m_HardwareLocked = false;
+		m_Mapped = false;
 	}
 }

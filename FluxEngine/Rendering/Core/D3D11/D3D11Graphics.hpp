@@ -546,14 +546,14 @@ bool Graphics::UpdateSwapchain()
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pImpl->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
-	RENDER_TARGET_DESC desc = {};
+	RenderTargetDesc desc = {};
 	desc.Width = m_WindowWidth;
 	desc.Height = m_WindowHeight;
-	desc.pColor = pBackbuffer;
-	desc.pDepth = nullptr;
+	desc.pColorResource = pBackbuffer;
+	desc.pDepthResource = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
-	desc.MsaaSampleCount = m_Multisample;
+	desc.MultiSample = m_Multisample;
 	m_pDefaultRenderTarget = unique_ptr<RenderTarget>(new RenderTarget(this));
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());

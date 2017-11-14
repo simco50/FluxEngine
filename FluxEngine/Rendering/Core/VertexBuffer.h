@@ -156,8 +156,8 @@ private:
 	void* m_pBuffer = nullptr;
 
 	bool m_Dynamic = false;
+	bool m_Mapped = false;
 	vector<VertexElement> m_Elements;
-	bool m_HardwareLocked = false;
 
 	unsigned int m_VertexCount = 0;
 	unsigned int m_VertexStride = 0;

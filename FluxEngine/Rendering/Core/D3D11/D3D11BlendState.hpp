@@ -2,6 +2,7 @@
 
 void* BlendState::GetOrCreate(Graphics* pGraphics)
 {
+	//Check if the blend state already exists in the cache
 	unsigned int stateHash =
 		(unsigned char)m_BlendMode << 0
 		| (unsigned char)m_AlphaToCoverage << 8
@@ -18,6 +19,7 @@ void* BlendState::GetOrCreate(Graphics* pGraphics)
 
 	D3D11_BLEND_DESC desc = {};
 	desc.AlphaToCoverageEnable = m_AlphaToCoverage;
+	//IndependentBlendEnable == false as we only use blending on one rendertarget
 	desc.IndependentBlendEnable = false;
 	desc.RenderTarget[0] = D3D11RenderTargetBlendDesc(m_BlendMode, (unsigned char)m_ColorWriteMask);
 
