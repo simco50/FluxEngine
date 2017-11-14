@@ -29,6 +29,27 @@ inline D3D11_COMPARISON_FUNC D3D11ComparisonFunction(CompareMode mode)
 	return D3D11_COMPARISON_LESS;
 }
 
+inline D3D11_FILL_MODE D3D11FillMode(FillMode mode)
+{
+	switch (mode)
+	{
+	case FillMode::SOLID: return D3D11_FILL_SOLID;
+	case FillMode::WIREFRAME: return D3D11_FILL_WIREFRAME;
+	}
+	return D3D11_FILL_SOLID;
+}
+
+inline D3D11_CULL_MODE D3D11CullMode(CullMode mode)
+{
+	switch (mode)
+	{
+	case CullMode::BACK: return D3D11_CULL_BACK;
+	case CullMode::NONE: return D3D11_CULL_NONE;
+	case CullMode::FRONT: return D3D11_CULL_FRONT;
+	}
+	return D3D11_CULL_BACK;
+}
+
 inline D3D11_STENCIL_OP D3D11StencilOperation(StencilOperation operation)
 {
 	switch (operation)

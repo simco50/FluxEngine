@@ -19,31 +19,11 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 
 	D3D11_RASTERIZER_DESC desc = {};
 	desc.AntialiasedLineEnable = m_LineAntiAlias;
-	switch (m_CullMode)
-	{
-	case CullMode::FRONT:
-		desc.CullMode = D3D11_CULL_FRONT;
-		break;
-	case CullMode::BACK:
-		desc.CullMode = D3D11_CULL_BACK;
-		break;
-	case CullMode::NONE:
-		desc.CullMode = D3D11_CULL_NONE;
-		break;
-	}
-
+	desc.CullMode = D3D11CullMode(m_CullMode);
 	desc.DepthBias = 0;
 	desc.DepthBiasClamp = 0.0f;
 	desc.DepthClipEnable = true;
-	switch (m_FillMode)
-	{
-	case FillMode::SOLID:
-		desc.FillMode = D3D11_FILL_SOLID;
-		break;
-	case FillMode::WIREFRAME:
-		desc.FillMode = D3D11_FILL_WIREFRAME;
-		break;
-	}
+	desc.FillMode = D3D11FillMode(m_FillMode);
 	desc.FrontCounterClockwise = false;
 	desc.MultisampleEnable = m_MultisampleEnabled;
 	desc.ScissorEnable = m_ScissorEnabled;
