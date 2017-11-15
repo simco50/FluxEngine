@@ -119,7 +119,7 @@ void FluxCore::InitGame()
 	m_pScene = make_unique<Scene>(m_pGraphics);
 	SceneNode* pNode = new SceneNode();
 	m_pMeshFilter = make_unique<Mesh>();
-	m_pMeshFilter->Load("Resources/Meshes/Spot.flux");
+	m_pMeshFilter->Load("Resources/Meshes/spot.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
 	Model* pModel = new Model();
 	pModel->SetMesh(m_pMeshFilter.get());
@@ -183,7 +183,7 @@ void FluxCore::UpdatePerFrameParameters()
 void FluxCore::UpdatePerObjectParameters()
 {
 	Matrix viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	Matrix world = Matrix::CreateTranslation(0, 0, 3);
+	Matrix world = Matrix::CreateTranslation(0, 0, 0);
 	m_pVertexShader->SetParameter("cWorldVS", world);
 	m_pVertexShader->SetParameter("cWorldViewProjVS", world * viewProj);
 

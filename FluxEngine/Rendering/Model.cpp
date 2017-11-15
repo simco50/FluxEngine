@@ -31,11 +31,17 @@ void Model::OnNodeSet(SceneNode* pNode)
 
 void Model::SetMesh(Mesh* pMesh)
 {
-	int geometries = pMesh->GetGeometryCount();
-	m_Batches.resize(geometries);
-	for (int i = 0; i < geometries; ++i)
+	if (pMesh)
 	{
-		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
+		int geometries = pMesh->GetGeometryCount();
+		m_Batches.resize(geometries);
+		for (int i = 0; i < geometries; ++i)
+			m_Batches[i].pGeometry = pMesh->GetGeometry(i);
+		m_BoundingBox = pMesh->GetBoundingBox();
+	}
+	else
+	{
+		m_BoundingBox = BoundingBox();
 	}
 	m_pMesh = pMesh;
 }

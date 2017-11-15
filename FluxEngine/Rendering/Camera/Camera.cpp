@@ -47,6 +47,9 @@ void Camera::Update()
 	
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
+
+	BoundingFrustum::CreateFromMatrix(m_Frustum, m_Projection);
+	m_Frustum.Transform(m_Frustum, m_ViewInverse);
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)

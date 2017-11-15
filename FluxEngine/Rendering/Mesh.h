@@ -20,9 +20,10 @@ public:
 
 	int GetGeometryCount() const { return m_GeometryCount; }
 	Geometry* GetGeometry(int slot) const { return m_Geometries[slot].get(); }
+	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 
 private:
-	static const int MESH_VERSION = 6;
+	static const int MESH_VERSION = 7;
 
 	void CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& elementDesc, Geometry* pGeometry);
 
@@ -32,6 +33,8 @@ private:
 	vector<unique_ptr<IndexBuffer>> m_IndexBuffers;
 
 	vector<unique_ptr<Geometry>> m_Geometries;
+
+	BoundingBox m_BoundingBox;
 
 	int m_GeometryCount = 0;
 };

@@ -47,6 +47,8 @@ bool Mesh::Load(const std::string& filePath)
 		FLUX_LOG(ERROR, stream.str());
 	}
 
+	pFile->Read(sizeof(BoundingBox), (char*)&m_BoundingBox);
+
 	*pFile >> m_GeometryCount;
 
 	for (int i = 0; i < m_GeometryCount; ++i)
@@ -57,8 +59,6 @@ bool Mesh::Load(const std::string& filePath)
 			string block = pFile->ReadSizedString();
 			for (char& c : block)
 				c = (char)toupper(c);
-			/*if (block == "END")
-				break;*/
 			if (block == "ENDMESH")
 				break;
 
