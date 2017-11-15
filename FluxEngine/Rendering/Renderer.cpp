@@ -31,6 +31,9 @@ void Renderer::Draw()
 			if (pDrawable == nullptr)
 				continue;
 
+			if(!pCamera->GetFrustum().Intersects(pDrawable->GetBoundingBox()))
+				continue;
+
 			const vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{

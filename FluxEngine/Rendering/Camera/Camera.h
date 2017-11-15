@@ -29,7 +29,7 @@ public:
 	float GetNearPlane() const { return m_NearPlane; }
 	float GetFarPlane() const { return m_FarPlane; }
 
-	const BoundingFrustum& GetFrustrum() const { return m_Frustum; }
+	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
 
 protected:
 	void OnSceneSet(Scene* pScene) override;
