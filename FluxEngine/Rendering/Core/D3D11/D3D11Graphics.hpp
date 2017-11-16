@@ -160,6 +160,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		case ShaderType::NONE:
 			return false;
 		}
+		m_ShaderProgramDirty = true;
 	}
 
 	if (pShader)

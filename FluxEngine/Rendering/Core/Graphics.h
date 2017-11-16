@@ -12,6 +12,7 @@ class RasterizerState;
 class DepthStencilState;
 class ConstantBuffer;
 class Shader;
+class ShaderProgram;
 
 class GraphicsImpl;
 
@@ -60,6 +61,7 @@ public:
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
 	Shader* GetShader(const string filePath);
+	bool SetShaderParameter(const std::string& name, const void* pData);
 
 	void BeginFrame();
 	void EndFrame();
@@ -126,6 +128,10 @@ private:
 
 	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
 	map<string, unique_ptr<Shader>> m_Shaders;
+
+	ShaderProgram* m_pCurrentShaderProgram = nullptr;
+	map<unsigned int, unique_ptr<ShaderProgram>> m_ShaderPrograms;
+	bool m_ShaderProgramDirty = false;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;

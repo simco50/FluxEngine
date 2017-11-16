@@ -16,6 +16,8 @@
 #include "Scenegraph/Scene.h"
 #include "Rendering/Model.h"
 #include "Rendering/Core/ConstantBuffer.h"
+#include "Scenegraph/Transform.h"
+#include "Rendering/Material.h"
 
 using namespace std;
 
@@ -103,12 +105,8 @@ void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
 
-	m_pShader = m_pGraphics->GetShader("Resources/Shaders/Diffuse.hlsl");
-	if (m_pShader)
-	{
-		m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader);
-		m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader);
-	}
+	m_pMaterial = make_unique<Material>(m_pGraphics);
+	m_pMaterial->Load("Resources/Materials/TestMaterial.xml");
 
 	//MeshFilter
 	vector<VertexElement> elements;
@@ -117,28 +115,32 @@ void FluxCore::InitGame()
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
 
 	m_pScene = make_unique<Scene>(m_pGraphics);
-	SceneNode* pNode = new SceneNode();
 	m_pMeshFilter = make_unique<Mesh>();
 	m_pMeshFilter->Load("Resources/Meshes/spot.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
-	Model* pModel = new Model();
-	pModel->SetMesh(m_pMeshFilter.get());
-	pNode->AddComponent(pModel);
 
-	/*ParticleSystem* pSystem = new ParticleSystem();
-	pSystem->Load("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, pSystem);
-	pNode->AddComponent(pEmitter);*/
+	for (int x = 0; x < 5; ++x)
+	{
+		for (int y = 0; y < 5; ++y)
+		{
+			for (int z = 0; z < 5; ++z)
+			{
+				m_pNode = new SceneNode();
+				Model* pModel = new Model();
+				pModel->SetMesh(m_pMeshFilter.get());
+				m_pNode->AddComponent(pModel);
 
-	m_pScene->AddChild(pNode);
+				pModel->SetMaterial(m_pMaterial.get());
+
+				m_pScene->AddChild(m_pNode);
+				m_pNode->GetTransform()->Translate((float)x*2, (float)y*2, (float)z*2);
+			}
+		}
+	}
+
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-
 	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
-
-	//Texture
-	m_pDiffuseTexture = make_unique<Texture>(m_pGraphics);
-	m_pDiffuseTexture->Load("Resources/Textures/Spot.png");
 }
 
 void FluxCore::GameLoop()
@@ -149,14 +151,6 @@ void FluxCore::GameLoop()
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
 
-	UpdatePerFrameParameters();
-	UpdatePerViewParameters();
-	UpdatePerObjectParameters();
-
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pDiffuseTexture.get());
-
-	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
-	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
 	m_pGraphics->SetScissorRect(false);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
@@ -169,39 +163,6 @@ void FluxCore::GameLoop()
 	RenderUI();
 
 	m_pGraphics->EndFrame();
-}
-
-void FluxCore::UpdatePerFrameParameters()
-{
-	m_pVertexShader->SetParameter("cDeltaTimeVS", GameTimer::DeltaTime());
-	m_pVertexShader->SetParameter("cElapsedTimeVS", GameTimer::GameTime());
-
-	m_pPixelShader->SetParameter("cDeltaTimePS", GameTimer::DeltaTime());
-	m_pPixelShader->SetParameter("cLightDirectionPS", m_LightDirection);
-}
-
-void FluxCore::UpdatePerObjectParameters()
-{
-	Matrix viewProj = m_pCamera->GetCamera()->GetViewProjection();
-	Matrix world = Matrix::CreateTranslation(0, 0, 0);
-	m_pVertexShader->SetParameter("cWorldVS", world);
-	m_pVertexShader->SetParameter("cWorldViewProjVS", world * viewProj);
-
-	m_pPixelShader->SetParameter("cColorPS", m_Color);
-	m_pPixelShader->SetParameter("cWorldPS", world);
-}
-
-void FluxCore::UpdatePerViewParameters()
-{
-	m_pVertexShader->SetParameter("cViewProjVS", m_pCamera->GetCamera()->GetViewProjection());
-	m_pVertexShader->SetParameter("cViewVS", m_pCamera->GetCamera()->GetView());
-	m_pVertexShader->SetParameter("cViewInverseVS", m_pCamera->GetCamera()->GetViewInverse());
-	m_pVertexShader->SetParameter("cNearClipVS", m_pCamera->GetCamera()->GetNearPlane());
-	m_pVertexShader->SetParameter("cFarClipVS", m_pCamera->GetCamera()->GetFarPlane());
-
-	m_pVertexShader->SetParameter("cViewProjPS", m_pCamera->GetCamera()->GetViewProjection());
-	m_pVertexShader->SetParameter("cViewPS", m_pCamera->GetCamera()->GetView());
-	m_pVertexShader->SetParameter("cViewInversePS", m_pCamera->GetCamera()->GetViewInverse());
 }
 
 void FluxCore::RenderUI()
@@ -223,7 +184,7 @@ void FluxCore::RenderUI()
 	ImGui::End();
 
 	ImGui::ColorPicker4("Color Picker", &m_Color.x);
-	ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
+	//ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
 
 	m_pImmediateUI->Render();
 }

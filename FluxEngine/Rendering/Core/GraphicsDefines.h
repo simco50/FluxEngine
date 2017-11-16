@@ -8,11 +8,11 @@ namespace GraphicsConstants
 
 enum class ShaderType : unsigned int
 {
-	NONE = 0,
-	VertexShader = 1 << 0,
-	PixelShader = 1 << 1,
-	GeometryShader = 1 << 2,
-	ComputeShader = 1 << 3,
+	VertexShader = 0,
+	PixelShader,
+	GeometryShader,
+	ComputeShader,
+	NONE,
 };
 
 inline ShaderType operator|(const ShaderType a, const ShaderType b)

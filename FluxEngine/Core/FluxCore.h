@@ -9,6 +9,8 @@ class FreeCamera;
 class Mesh;
 class Texture;
 class Scene;
+class SceneNode;
+class Material;
 
 class FluxCore
 {
@@ -21,10 +23,6 @@ public:
 	int Run(HINSTANCE hInstance);
 	void GameLoop();
 
-	void UpdatePerFrameParameters();
-	void UpdatePerObjectParameters();
-	void UpdatePerViewParameters();
-
 	void RenderUI();
 
 	void InitGame();
@@ -36,10 +34,7 @@ private:
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	Shader* m_pShader = nullptr;
-	ShaderVariation* m_pVertexShader = nullptr;
-	ShaderVariation* m_pPixelShader = nullptr;
-	std::unique_ptr<Texture> m_pDiffuseTexture;
+	unique_ptr<Material> m_pMaterial;
 
 	Graphics* m_pGraphics = nullptr;
 	std::unique_ptr<ImmediateUI> m_pImmediateUI;
@@ -47,9 +42,10 @@ private:
 
 	float m_DeltaTime = 0;
 	Color m_Color = Color(1, 1, 1, 1);
-	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
 
 	int m_IndexCount = -1;
 
 	FreeCamera* m_pCamera = nullptr;
+
+	SceneNode* m_pNode = nullptr;
 };

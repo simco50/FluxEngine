@@ -1,26 +1,34 @@
 #pragma once
 #include "Rendering\Core\GraphicsDefines.h"
+#include "Content\Resource.h"
 
 class Shader;
 class ShaderVariation;
 class Graphics;
 class Texture;
 
-class Material
+class Material : public Resource
 {
 public:
-	Material(Graphics* pGraphics)
+	Material(Graphics* pGraphics) :
+		m_pGraphics(pGraphics)
 	{
-		UNREFERENCED_PARAMETER(pGraphics);
 	}
 	~Material();
 
-	static unique_ptr<Material> Load(std::string filePath, Graphics* pGraphics);
+	virtual bool Load(const std::string& filePath) override;
 
-	ShaderVariation* GetShader(const ShaderType type) const { return m_ShaderVariations[(unsigned int)type]; }
-	Texture* GetTexture(const TextureSlot slot) const { return m_Textures.at(slot); }
+	ShaderVariation* GetShader(const ShaderType type) const;
+	const vector<pair<TextureSlot, Texture*>> GetTextures() const { return m_Textures; }
+	const vector<pair<string, unsigned int>>& GetShaderParameters() const { return m_Parameters; }
+	const vector<char>& GetParameterBuffer() const { return m_ParameterBuffer; }
+
 
 private:
+	Graphics* m_pGraphics;
+
+	void ParseValue(const std::string name, const std::string valueString);
+
 	string m_Name;
 	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_ShaderVariations = {};
 	map<string, Shader*> m_Shaders;
@@ -28,5 +36,10 @@ private:
 	CullMode m_CullMode = CullMode::BACK;
 	bool m_Blending = false;
 
-	map<TextureSlot, Texture*> m_Textures;
+	vector<pair<TextureSlot, Texture*>> m_Textures;
+	vector<unique_ptr<Texture>> m_TextureCache;
+
+	int m_BufferOffset = 0;
+	vector<pair<string, unsigned int>> m_Parameters;
+	vector<char> m_ParameterBuffer;
 };

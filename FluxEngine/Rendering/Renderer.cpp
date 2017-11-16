@@ -6,6 +6,7 @@
 #include "Geometry.h"
 #include "Core/ShaderVariation.h"
 #include "Camera/Camera.h"
+#include "Rendering/Core/Texture.h"
 
 Renderer::Renderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -20,29 +21,34 @@ Renderer::~Renderer()
 
 void Renderer::Draw()
 {
+
 	for (Camera* pCamera : m_Cameras)
 	{
 		if (pCamera == nullptr)
 			continue;
 
+		
 		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
+
 		for (Drawable* pDrawable : m_Drawables)
 		{
 			if (pDrawable == nullptr)
 				continue;
 
-			if(!pCamera->GetFrustum().Intersects(pDrawable->GetBoundingBox()))
+			if(!pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				continue;
 
 			const vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{
-				if (batch.pGeometry)
-				{
-					SetMaterial(batch.pMaterial);
+				if (batch.pGeometry == nullptr)
+					continue;
 
-					batch.pGeometry->Draw(m_pGraphics);
-				}
+				SetPerMaterialParameters(batch.pMaterial);
+				SetPerBatchParameters(batch, pCamera);
+				SetPerFrameParameters();
+				SetPerCameraParameters(pCamera);
+				batch.pGeometry->Draw(m_pGraphics);
 			}
 		}
 	}
@@ -100,15 +106,53 @@ bool Renderer::RemoveCamera(Camera* pCamera)
 	return false;
 }
 
-void Renderer::SetMaterial(const Material* pMaterial)
+void Renderer::SetPerFrameParameters()
+{
+	int frame = GameTimer::Ticks();
+	if (frame != m_CurrentFrame)
+	{
+		m_CurrentFrame = frame;
+		float deltaTime = GameTimer::DeltaTime();
+		m_pGraphics->SetShaderParameter("cDeltaTimeVS", &deltaTime);
+		m_pGraphics->SetShaderParameter("cElapsedTimeVS", &deltaTime);
+
+		m_pGraphics->SetShaderParameter("cDeltaTimePS", &deltaTime);
+		m_pGraphics->SetShaderParameter("cLightDirectionPS", &m_LightDirection);
+	}
+}
+
+void Renderer::SetPerCameraParameters(Camera* pCamera)
+{
+	if (m_pCurrentCamera != pCamera)
+	{
+		m_pCurrentCamera = pCamera;
+		Matrix viewProj = pCamera->GetViewProjection();
+		Matrix view = pCamera->GetView();
+		Matrix viewInv = pCamera->GetViewInverse();
+		float nearPlane = pCamera->GetNearPlane();
+		float farPlane = pCamera->GetFarPlane();
+
+		m_pGraphics->SetShaderParameter("cViewProjVS", &viewProj);
+		m_pGraphics->SetShaderParameter("cViewVS", &view);
+		m_pGraphics->SetShaderParameter("cViewInverseVS", &viewInv);
+		m_pGraphics->SetShaderParameter("cNearClipVS", &nearPlane);
+		m_pGraphics->SetShaderParameter("cFarClipVS", &farPlane);
+
+		m_pGraphics->SetShaderParameter("cViewProjPS", &viewProj);
+		m_pGraphics->SetShaderParameter("cViewPS", &view);
+		m_pGraphics->SetShaderParameter("cViewInversePS", &viewInv);
+	}
+}
+
+void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 {
 	if (pMaterial == nullptr)
 	{
 		//Set the default material
 	}
 
-	if (pMaterial == m_pCurrentMaterial)
-		return;
+	/*if (pMaterial == m_pCurrentMaterial)
+		return;*/
 
 	m_pCurrentMaterial = pMaterial;
 
@@ -116,4 +160,25 @@ void Renderer::SetMaterial(const Material* pMaterial)
 	m_pGraphics->SetShader(ShaderType::PixelShader, pMaterial->GetShader(ShaderType::PixelShader));
 	m_pGraphics->SetShader(ShaderType::GeometryShader, pMaterial->GetShader(ShaderType::GeometryShader));
 	m_pGraphics->SetShader(ShaderType::ComputeShader, pMaterial->GetShader(ShaderType::ComputeShader));
+
+	const auto& pParameters = pMaterial->GetShaderParameters();
+	const auto& pParameterBuffer = pMaterial->GetParameterBuffer();
+	for (const auto& pParameter : pParameters)
+	{
+		m_pGraphics->SetShaderParameter(pParameter.first, &pParameterBuffer[pParameter.second]);
+	}
+
+	const auto& pTextures = pMaterial->GetTextures();
+	for (const auto& pTexture : pTextures)
+	{
+		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
+	}
+}
+
+void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
+{
+	m_pGraphics->SetShaderParameter("cWorldPS", batch.pModelMatrix);
+	m_pGraphics->SetShaderParameter("cWorldVS", batch.pModelMatrix);
+	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
+	m_pGraphics->SetShaderParameter("cWorldViewProjVS", &wvp);
 }

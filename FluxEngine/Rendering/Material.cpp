@@ -6,43 +6,41 @@
 #include "Core/Graphics.h"
 #include "Core/Shader.h"
 #include "Core/ShaderVariation.h"
+#include "Core/Texture.h"
 
 namespace XML = tinyxml2;
 
 Material::~Material()
 {
-	for (auto pShader : m_Shaders)
-		SafeDelete(pShader.second);
 }
 
-std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphics)
+bool Material::Load(const std::string& filePath)
 {
 	AUTOPROFILE_DESC(Material_Load, Paths::GetFileName(filePath));
 
 	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
-		return nullptr;
+		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Text))
-		return nullptr;
+		return false;
 	vector<char> buffer;
 	if (!pFile->ReadAllBytes(buffer))
-		return nullptr;
-	unique_ptr<Material> pMaterial = make_unique<Material>(pGraphics);
+		return false;
 
 	XML::XMLDocument document;
 	if (document.Parse(buffer.data(), buffer.size()) != XML::XML_SUCCESS)
 	{
 		FLUX_LOG(ERROR, "[Material::Load] > %s", document.ErrorStr());
-		return nullptr;
+		return false;
 	}
-	
+
 	XML::XMLElement* pRootNode = document.FirstChildElement();
-	pMaterial->m_Name = pRootNode->Attribute("name");
+	m_Name = pRootNode->Attribute("name");
 
 	//Load the shader data
 	XML::XMLElement* pShaders = pRootNode->FirstChildElement("Shaders");
 	if (pShaders == nullptr)
-		return nullptr;
+		return false;
 
 	XML::XMLElement* pShader = pShaders->FirstChildElement();
 	while (pShader != nullptr)
@@ -58,24 +56,19 @@ std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphi
 		else if (shaderType == "Compute")
 			type = ShaderType::ComputeShader;
 		else
-			return nullptr;
+			return false;
 
-		checkf(pMaterial->m_ShaderVariations[(unsigned int)type] == nullptr, "Shader for slot already defined");
+		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "Shader for slot already defined");
 
 		string source = pShader->Attribute("source");
-		auto pIt = pMaterial->m_Shaders.find(source);
-		if (pIt == pMaterial->m_Shaders.end())
-		{
-			pMaterial->m_Shaders[source] = new Shader(pGraphics);
-			pMaterial->m_Shaders[source]->Load(source);
-		}
+		m_Shaders[source] = m_pGraphics->GetShader(source);
 
 		const char* pAttribute = pShader->Attribute("defines");
 		string defines = "";
 		if (pAttribute)
 			defines = pAttribute;
 
-		pMaterial->m_ShaderVariations[(unsigned int)type] = pMaterial->m_Shaders[source]->GetVariation(type, defines);
+		m_ShaderVariations[(unsigned int)type] = m_Shaders[source]->GetVariation(type, defines);
 		pShader = pShader->NextSiblingElement();
 	}
 
@@ -98,17 +91,19 @@ std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphi
 					slotType = TextureSlot::Normal;
 				else if (stoi(slot) < (int)TextureSlot::MAX)
 					slotType = (TextureSlot)stoi(slot);
-				else 
-					return nullptr;
-					
-				auto pIt = pMaterial->m_Textures.find(slotType);
-				checkf(pIt == pMaterial->m_Textures.end(), "Texture for slot already defined");
+				else
+					return false;
 
-				//pMaterial->m_Textures[slotType] = ResourceManager::Load<Texture>(pParameter->Attribute("value"));
+				unique_ptr<Texture> pTexture = make_unique<Texture>(m_pGraphics);
+				pTexture->Load(pParameter->Attribute("value"));
+				m_TextureCache.push_back(std::move(pTexture));
+				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, m_TextureCache[m_TextureCache.size() - 1].get()));
 			}
 			else if (parameterType == "Value")
 			{
-				///
+				string name = pParameter->Attribute("name");
+				string value = pParameter->Attribute("value");
+				ParseValue(name, value);
 			}
 
 			pParameter = pParameter->NextSiblingElement();
@@ -127,22 +122,60 @@ std::unique_ptr<Material> Material::Load(std::string filePath, Graphics* pGraphi
 			{
 				string value = pProperty->Attribute("value");
 				if (value == "Back")
-					pMaterial->m_CullMode = CullMode::BACK;
+					m_CullMode = CullMode::BACK;
 				else if (value == "Front")
-					pMaterial->m_CullMode = CullMode::FRONT;
+					m_CullMode = CullMode::FRONT;
 				else
-					pMaterial->m_CullMode = CullMode::NONE;
+					m_CullMode = CullMode::NONE;
 			}
 			else if (propertyType == "Blending")
 			{
-				pMaterial->m_Blending = pProperty->BoolAttribute("value");
+				m_Blending = pProperty->BoolAttribute("value");
 			}
 			else
-				return nullptr;
+				return false;
 
 			pProperty = pProperty->NextSiblingElement();
 		}
 	}
-	
-	return std::move(pMaterial);
+
+	return true;
+}
+
+ShaderVariation* Material::GetShader(const ShaderType type) const
+{
+	return m_ShaderVariations[(unsigned int)type];
+}
+
+void Material::ParseValue(const std::string name, const std::string valueString)
+{
+	stringstream stream(valueString);
+	string stringValue;
+	vector<string> values;
+	while (getline(stream, stringValue, ' '))
+	{
+		values.push_back(stringValue);
+	}
+	bool isInt = values[0].find('.') == string::npos;
+	if (isInt)
+	{
+		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(int));
+		for (int i = 0; i < values.size(); ++i)
+		{
+			int v = stoi(values[i]);
+			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(int));
+			m_BufferOffset += sizeof(int);
+		}
+	}
+	else
+	{
+		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(float));
+		for (int i = 0; i < values.size(); ++i)
+		{
+			float v = stof(values[i]);
+			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(float));
+			m_BufferOffset += sizeof(float);
+		}
+	}
+	m_Parameters.push_back(pair<string, unsigned int>(name, (unsigned int)(m_ParameterBuffer.size() - values.size() * sizeof(float))));
 }

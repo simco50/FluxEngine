@@ -1,0 +1,15 @@
+[FluxEngine\Diagnostics\Console.cpp:189]: (warning) Return value of function freopen_s() is not used.
+[FluxEngine\Diagnostics\Console.cpp:190]: (warning) Return value of function freopen_s() is not used.
+[FluxEngine\Diagnostics\Console.cpp:191]: (warning) Return value of function freopen_s() is not used.
+[FluxEngine\Diagnostics\Profiler.cpp:7]: (performance) Variable 'm_pRootBlock' is assigned in constructor body. Consider performing initialization in initialization list.
+[FluxEngine\FileSystem\File\PakFile.cpp:35]: (style) C-style pointer casting
+[FluxEngine\FileSystem\File\PakFile.cpp:113]: (style) C-style pointer casting
+[FluxEngine\FileSystem\File\PakFile.cpp:40]: (style) Checking if unsigned variable 'sizeToRead' is less than zero.
+[FluxEngine\FileSystem\File\PakFile.h:35]: (style) Unused private function: 'PakFile::Compress'
+[FluxEngine\Input\InputEngine.cpp:71]: (style) The scope of the variable 'dwResult' can be reduced.
+[FluxEngine\Input\InputEngine.cpp:83]: (style) The scope of the variable 'dwResult' can be reduced.
+[FluxEngine\Rendering\ParticleSystem\ParticleEmitter.cpp:153]: (style) C-style pointer casting
+[FluxEngine\Rendering\ParticleSystem\ParticleSystem.cpp:100]: (style) Exception should be caught by reference.
+[FluxEngine\UI\ImmediateUI.cpp:161]: (style) C-style pointer casting
+[FluxEngine\WWW\md5.cpp:15]: (warning) Member variable 'MD5::m_buffer' is not initialized in the constructor.
+[FluxEngine\Math\SimpleMath.h:818]: (warning) The class 'Viewport' has 'operator=' but lack of 'copy constructor'.
