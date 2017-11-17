@@ -7,6 +7,9 @@
 #include "Core/ShaderVariation.h"
 #include "Camera/Camera.h"
 #include "Rendering/Core/Texture.h"
+#include "Core/BlendState.h"
+#include "Core/RasterizerState.h"
+#include "Core/DepthStencilState.h"
 
 Renderer::Renderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -173,6 +176,16 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	{
 		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
 	}
+
+	//Blend state
+	m_pGraphics->GetBlendState()->SetBlendMode(pMaterial->GetBlendMode(), pMaterial->GetAlphaToCoverage());
+	
+	//Rasterizer state
+	m_pGraphics->GetRasterizerState()->SetCullMode(pMaterial->GetCullMode());
+	m_pGraphics->GetRasterizerState()->SetFillMode(pMaterial->GetFillMode());
+	
+	//Depth stencil state
+	m_pGraphics->GetDepthStencilState()->SetDepthTest(pMaterial->GetDepthTestMode());
 }
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)

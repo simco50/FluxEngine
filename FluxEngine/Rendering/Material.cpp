@@ -40,7 +40,10 @@ bool Material::Load(const std::string& filePath)
 	//Load the shader data
 	XML::XMLElement* pShaders = pRootNode->FirstChildElement("Shaders");
 	if (pShaders == nullptr)
+	{
+		FLUX_LOG(ERROR, "[Material::Load()] > '%s' : does not have a 'Shaders' section. This is required", m_Name.c_str());
 		return false;
+	}
 
 	XML::XMLElement* pShader = pShaders->FirstChildElement();
 	while (pShader != nullptr)
@@ -56,7 +59,10 @@ bool Material::Load(const std::string& filePath)
 		else if (shaderType == "Compute")
 			type = ShaderType::ComputeShader;
 		else
+		{
+			FLUX_LOG(ERROR, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
 			return false;
+		}
 
 		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "Shader for slot already defined");
 
@@ -89,10 +95,11 @@ bool Material::Load(const std::string& filePath)
 					slotType = TextureSlot::Diffuse;
 				else if (slot == "Normal")
 					slotType = TextureSlot::Normal;
-				else if (stoi(slot) < (int)TextureSlot::MAX)
-					slotType = (TextureSlot)stoi(slot);
 				else
+				{
+					FLUX_LOG(ERROR, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
 					return false;
+				}
 
 				unique_ptr<Texture> pTexture = make_unique<Texture>(m_pGraphics);
 				pTexture->Load(pParameter->Attribute("value"));
@@ -104,6 +111,10 @@ bool Material::Load(const std::string& filePath)
 				string name = pParameter->Attribute("name");
 				string value = pParameter->Attribute("value");
 				ParseValue(name, value);
+			}
+			else
+			{
+				FLUX_LOG(WARNING, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
 			}
 
 			pParameter = pParameter->NextSiblingElement();
@@ -125,15 +136,27 @@ bool Material::Load(const std::string& filePath)
 					m_CullMode = CullMode::BACK;
 				else if (value == "Front")
 					m_CullMode = CullMode::FRONT;
-				else
+				else if (value == "None")
 					m_CullMode = CullMode::NONE;
+				else
+					FLUX_LOG(WARNING, "[Material::Load()] > %s : Cull mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 			}
-			else if (propertyType == "Blending")
+			else if (propertyType == "BlendMode")
 			{
-				m_Blending = pProperty->BoolAttribute("value");
+				string value = pProperty->Attribute("value");
+				if (value == "Replace")
+					m_BlendMode = BlendMode::REPLACE;
+				else if (value == "Alpha")
+					m_BlendMode = BlendMode::ALPHA;
+				else if (value == "Add")
+					m_BlendMode = BlendMode::ADD;
+				else if (value == "AddAlpha")
+					m_BlendMode = BlendMode::ADDALPHA;
+				else
+					FLUX_LOG(WARNING, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 			}
 			else
-				return false;
+				FLUX_LOG(WARNING, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
 
 			pProperty = pProperty->NextSiblingElement();
 		}
@@ -147,8 +170,11 @@ ShaderVariation* Material::GetShader(const ShaderType type) const
 	return m_ShaderVariations[(unsigned int)type];
 }
 
+//#todo: This is really hacky and unsafe, should find a better way to store arbitrary shader values
 void Material::ParseValue(const std::string name, const std::string valueString)
 {
+	AUTOPROFILE_DESC(Material_ParseValue, name);
+
 	stringstream stream(valueString);
 	string stringValue;
 	vector<string> values;
