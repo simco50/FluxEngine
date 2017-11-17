@@ -160,7 +160,7 @@ void Material::ParseValue(const std::string name, const std::string valueString)
 	if (isInt)
 	{
 		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(int));
-		for (int i = 0; i < values.size(); ++i)
+		for (size_t i = 0; i < values.size(); ++i)
 		{
 			int v = stoi(values[i]);
 			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(int));
@@ -170,7 +170,7 @@ void Material::ParseValue(const std::string name, const std::string valueString)
 	else
 	{
 		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(float));
-		for (int i = 0; i < values.size(); ++i)
+		for (size_t i = 0; i < values.size(); ++i)
 		{
 			float v = stof(values[i]);
 			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(float));
