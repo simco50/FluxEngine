@@ -1,4 +1,4 @@
-#define PI 3.141592f;
+#define PI 3.141592f
 
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
@@ -30,9 +30,9 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 origin, float3
 {
 	GS_DATA data = (GS_DATA)0;
 	offset = float3(mul(offset.xy, rotation), offset.z);
-	offset = mul(offset, (float3x3)cViewInverseGS);
+	offset = mul((float3x3)cViewInverse, offset);
 	float3 pos = offset + origin;
-	data.position = mul(float4(pos, 1.0f), cViewProjGS);
+	data.position = mul(cViewProj, float4(pos, 1.0f));
 	data.texCoord = texCoord;
 	data.color = col;
 	triStream.Append(data);
@@ -41,7 +41,7 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 origin, float3
 [maxvertexcount(4)]
 void GSMain(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 {
-	float3 origin = mul(float4(vertex[0].position, 1), cWorldGS).xyz;
+	float3 origin = mul(float4(vertex[0].position, 1), cWorld).xyz;
 
 	float3 topLeft = float3(-vertex[0].size / 2.0f, vertex[0].size / 2.0f, 0.0f);
 	float3 topRight = float3(vertex[0].size / 2.0f, vertex[0].size / 2.0f, 0.0f);

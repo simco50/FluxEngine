@@ -18,6 +18,8 @@
 #include "Rendering/Core/ConstantBuffer.h"
 #include "Scenegraph/Transform.h"
 #include "Rendering/Material.h"
+#include "Rendering/ParticleSystem/ParticleSystem.h"
+#include "Rendering/ParticleSystem/ParticleEmitter.h"
 
 using namespace std;
 
@@ -105,7 +107,12 @@ void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
 
-	m_pMaterial = make_unique<Material>(m_pGraphics);
+	m_pScene = make_unique<Scene>(m_pGraphics);
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
+	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
+	m_pScene->AddChild(m_pCamera);
+
+	/*m_pMaterial = make_unique<Material>(m_pGraphics);
 	m_pMaterial->Load("Resources/Materials/TestMaterial.xml");
 
 	//MeshFilter
@@ -114,7 +121,7 @@ void FluxCore::InitGame()
 	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
 	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
 
-	m_pScene = make_unique<Scene>(m_pGraphics);
+	
 	m_pMeshFilter = make_unique<Mesh>();
 	m_pMeshFilter->Load("Resources/Meshes/spot.flux");
 	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
@@ -138,9 +145,15 @@ void FluxCore::InitGame()
 		}
 	}
 
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
-	m_pScene->AddChild(m_pCamera);
+	*/
+
+	m_pNode = new SceneNode("Particles");
+	m_pParticleSystem = make_unique<ParticleSystem>();
+	m_pParticleSystem->Load("Resources/ParticleSystems/Iris.json");
+	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem.get());
+	pEmitter->SetSystem(m_pParticleSystem.get());
+	m_pNode->AddComponent(pEmitter);
+	m_pScene->AddChild(m_pNode);
 }
 
 void FluxCore::GameLoop()
@@ -182,9 +195,6 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::End();
-
-	ImGui::ColorPicker4("Color Picker", &m_Color.x);
-	//ImGui::SliderFloat3("Light Direction", &m_LightDirection.x, -1, 1);
 
 	m_pImmediateUI->Render();
 }

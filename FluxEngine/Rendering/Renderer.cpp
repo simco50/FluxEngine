@@ -24,12 +24,13 @@ Renderer::~Renderer()
 
 void Renderer::Draw()
 {
+	m_pCurrentMaterial = nullptr;
+	m_pCurrentCamera = nullptr;
 
 	for (Camera* pCamera : m_Cameras)
 	{
 		if (pCamera == nullptr)
 			continue;
-
 		
 		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
 
@@ -116,11 +117,9 @@ void Renderer::SetPerFrameParameters()
 	{
 		m_CurrentFrame = frame;
 		float deltaTime = GameTimer::DeltaTime();
-		m_pGraphics->SetShaderParameter("cDeltaTimeVS", &deltaTime);
-		m_pGraphics->SetShaderParameter("cElapsedTimeVS", &deltaTime);
-
-		m_pGraphics->SetShaderParameter("cDeltaTimePS", &deltaTime);
-		m_pGraphics->SetShaderParameter("cLightDirectionPS", &m_LightDirection);
+		m_pGraphics->SetShaderParameter("cDeltaTime", &deltaTime);
+		m_pGraphics->SetShaderParameter("cElapsedTime", &deltaTime);
+		m_pGraphics->SetShaderParameter("cLightDirection", &m_LightDirection);
 	}
 }
 
@@ -135,15 +134,11 @@ void Renderer::SetPerCameraParameters(Camera* pCamera)
 		float nearPlane = pCamera->GetNearPlane();
 		float farPlane = pCamera->GetFarPlane();
 
-		m_pGraphics->SetShaderParameter("cViewProjVS", &viewProj);
-		m_pGraphics->SetShaderParameter("cViewVS", &view);
-		m_pGraphics->SetShaderParameter("cViewInverseVS", &viewInv);
-		m_pGraphics->SetShaderParameter("cNearClipVS", &nearPlane);
-		m_pGraphics->SetShaderParameter("cFarClipVS", &farPlane);
-
-		m_pGraphics->SetShaderParameter("cViewProjPS", &viewProj);
-		m_pGraphics->SetShaderParameter("cViewPS", &view);
-		m_pGraphics->SetShaderParameter("cViewInversePS", &viewInv);
+		m_pGraphics->SetShaderParameter("cViewProj", &viewProj);
+		m_pGraphics->SetShaderParameter("cView", &view);
+		m_pGraphics->SetShaderParameter("cViewInverse", &viewInv);
+		m_pGraphics->SetShaderParameter("cNearClip", &nearPlane);
+		m_pGraphics->SetShaderParameter("cFarClip", &farPlane);
 	}
 }
 
@@ -190,8 +185,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
-	m_pGraphics->SetShaderParameter("cWorldPS", batch.pModelMatrix);
-	m_pGraphics->SetShaderParameter("cWorldVS", batch.pModelMatrix);
+	m_pGraphics->SetShaderParameter("cWorld", batch.pModelMatrix);
 	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cWorldViewProjVS", &wvp);
+	m_pGraphics->SetShaderParameter("cWorldViewProj", &wvp);
 }

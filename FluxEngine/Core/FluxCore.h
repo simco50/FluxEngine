@@ -11,6 +11,7 @@ class Texture;
 class Scene;
 class SceneNode;
 class Material;
+class ParticleSystem;
 
 class FluxCore
 {
@@ -22,9 +23,7 @@ public:
 
 	int Run(HINSTANCE hInstance);
 	void GameLoop();
-
 	void RenderUI();
-
 	void InitGame();
 
 private:
@@ -39,13 +38,12 @@ private:
 	Graphics* m_pGraphics = nullptr;
 	std::unique_ptr<ImmediateUI> m_pImmediateUI;
 	std::unique_ptr<InputEngine> m_pInput;
+	std::unique_ptr<ParticleSystem> m_pParticleSystem;
 
 	float m_DeltaTime = 0;
 	Color m_Color = Color(1, 1, 1, 1);
 
 	int m_IndexCount = -1;
-
 	FreeCamera* m_pCamera = nullptr;
-
 	SceneNode* m_pNode = nullptr;
 };

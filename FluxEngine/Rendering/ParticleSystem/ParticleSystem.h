@@ -25,7 +25,7 @@ enum class ParticleSortingMode
 	YoungestFirst,
 };
 
-struct ParticleSystem : public Resource
+class ParticleSystem : public Resource
 {
 public:
 

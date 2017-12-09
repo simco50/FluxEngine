@@ -170,6 +170,19 @@ ShaderVariation* Material::GetShader(const ShaderType type) const
 	return m_ShaderVariations[(unsigned int)type];
 }
 
+void Material::SetTexture(const TextureSlot slot, Texture* pTexture)
+{
+	for (auto& p : m_Textures)
+	{
+		if (p.first == slot)
+		{
+			p.second = pTexture;
+			return;
+		}
+	}
+	m_Textures.push_back(std::pair<TextureSlot, Texture*>(slot, pTexture));
+}
+
 //#todo: This is really hacky and unsafe, should find a better way to store arbitrary shader values
 void Material::ParseValue(const std::string name, const std::string valueString)
 {

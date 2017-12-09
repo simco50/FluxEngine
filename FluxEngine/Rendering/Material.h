@@ -23,6 +23,8 @@ public:
 	const vector<pair<string, unsigned int>>& GetShaderParameters() const { return m_Parameters; }
 	const vector<char>& GetParameterBuffer() const { return m_ParameterBuffer; }
 
+	void SetTexture(const TextureSlot slot, Texture* pTexture);
+
 	void SetCullMode(CullMode mode) { m_CullMode = mode; }
 	void SetBlendMode(BlendMode mode) { m_BlendMode = mode; }
 	void SetDepthTestMode(CompareMode mode) { m_DepthTestMode = mode; }

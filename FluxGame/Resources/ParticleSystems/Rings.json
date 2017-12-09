@@ -116,5 +116,5 @@
   },
   "SortingMode": 0,
   "BlendMode": 1,
-  "ImagePath": ".\\Resources\\Textures\\gradientground.png"
+  "ImagePath": "Resources\\Textures\\gradientground.png"
 }

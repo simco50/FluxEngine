@@ -6,11 +6,11 @@
 
 	<Properties>
 		<CullMode value="Back"/>
-		<Blending value="true"/>
+		<BlendMode value="Replace"/>
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/splash.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/spot.png"/>
 		<Value name="cColorPS" value="1.0 1.0 1.0 1.0"/>
 	</Parameters>
 </Material>

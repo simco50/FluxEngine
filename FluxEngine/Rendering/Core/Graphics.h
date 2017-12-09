@@ -59,7 +59,7 @@ public:
 
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
-	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
+	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
 	Shader* GetShader(const string filePath);
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
@@ -121,7 +121,7 @@ private:
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	//Cache of constantbuffers with a search hash
-	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
+	map<std::string, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 
 	using ShaderConstantBuffers = array<void*, (unsigned int)ShaderParameterType::MAX>;
 	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
