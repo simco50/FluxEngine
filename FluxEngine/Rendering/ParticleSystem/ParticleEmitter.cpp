@@ -43,6 +43,7 @@ ParticleEmitter::~ParticleEmitter()
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
 	m_pParticleSystem = pSettings;
+	CalculateBoundingBox();
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	CreateVertexBuffer();
@@ -140,10 +141,34 @@ void ParticleEmitter::SortParticles()
 	}
 }
 
+void ParticleEmitter::CalculateBoundingBox()
+{
+	//#todo: We might not want to do this every frame
+	Vector3 max = {};
+	auto p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.x < b->GetVertexInfo().Position.x;
+	});
+	max.x = abs((*p)->GetVertexInfo().Position.x);
+	p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.y < b->GetVertexInfo().Position.y;
+	});
+	max.y = abs((*p)->GetVertexInfo().Position.y);
+	p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.z < b->GetVertexInfo().Position.z;
+	});
+	max.z = abs((*p)->GetVertexInfo().Position.z);
+	m_BoundingBox = BoundingBox(Vector3(0.0f, max.y / 2.0f, 0.0f), Vector3(max.x, max.y / 2, max.z));
+}
+
 void ParticleEmitter::Update()
 {
 	if (m_Playing == false)
 		return;
+
+	CalculateBoundingBox();
 
 	m_Timer += GameTimer::DeltaTime();
 	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)

@@ -36,6 +36,8 @@ private:
 	void CreateVertexBuffer();
 	void SortParticles();
 
+	void CalculateBoundingBox();
+
 	bool m_Playing = false;
 	float m_Timer = 0.0f;
 

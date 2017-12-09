@@ -10,7 +10,7 @@ public:
 	void Update();
 	void Init();
 
-	const ParticleVertex &GetVertexInfo() { return m_VertexInfo; }
+	const ParticleVertex &GetVertexInfo() const { return m_VertexInfo; }
 	bool IsActive() { return m_IsActive; }
 	void Reset();
 

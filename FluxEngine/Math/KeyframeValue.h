@@ -76,6 +76,11 @@ struct KeyframeValue
 		return Values.rbegin()->second;
 	}
 
+	const map<float, T>& GetData() const
+	{
+		return Values;
+	}
+
 	T ConstantValue;
 private:
 	map<float, T> Values;
