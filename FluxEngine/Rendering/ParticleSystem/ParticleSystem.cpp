@@ -94,7 +94,9 @@ bool ParticleSystem::Load(const std::string& filePath)
 
 		//Rendering
 		SortingMode = (ParticleSortingMode)data["SortingMode"].get<int>();
-		BlendingMode = (BlendMode)data["BlendMode"].get<int>();
+		int blendMode = data["BlendMode"].get<int>();
+		//#todo Currently hacky way to convert own format blending mode to the one of the engine
+		BlendingMode = blendMode == 0 ? BlendMode::ALPHA : BlendMode::ADD;
 		ImagePath = data["ImagePath"].get<string>();
 	}
 	catch (exception exception)

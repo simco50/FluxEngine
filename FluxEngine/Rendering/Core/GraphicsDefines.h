@@ -6,8 +6,7 @@ namespace GraphicsConstants
 	static const int SHADER_TYPES = 4;
 }
 
-enum class ShaderType : unsigned int
-{
+enum class ShaderType{
 	VertexShader = 0,
 	PixelShader,
 	GeometryShader,
@@ -29,38 +28,38 @@ inline ShaderType& operator|=(ShaderType& a, const ShaderType b)
 //The primitive topology for rendering
 enum class PrimitiveType : unsigned char
 {
-	TRIANGLELIST,
+	TRIANGLELIST = 0,
 	POINTLIST,
 	TRIANGLESTRIP,
 };
 
 //The windwo type
-enum class WindowType : unsigned char
+enum class WindowType
 {
-	WINDOWED,
+	WINDOWED = 0,
 	BORDERLESS,
 	FULLSCREEN,
 };
 
 //The fillmode of the rasterizer state
-enum class FillMode : unsigned char
+enum class FillMode
 {
-	SOLID,
+	SOLID = 0,
 	WIREFRAME,
 };
 
 //The cull mode of the rasterizer state
-enum class CullMode : unsigned char
+enum class CullMode
 {
-	FRONT,
+	FRONT = 0,
 	BACK,
 	NONE,
 };
 
 //The blend mode of the blend state
-enum class BlendMode : unsigned char
+enum class BlendMode
 {
-	REPLACE,
+	REPLACE = 0,
 	ADD,
 	MULTIPLY,
 	ALPHA,
@@ -73,7 +72,7 @@ enum class BlendMode : unsigned char
 };
 
 //Color write mode of the blend state
-enum class ColorWrite : unsigned char //MAX 5!
+enum class ColorWrite
 {
 	NONE = 0,
 	RED = 1 << 0,
@@ -84,9 +83,9 @@ enum class ColorWrite : unsigned char //MAX 5!
 };
 
 //Compare mode for rendering state
-enum class CompareMode : unsigned char
+enum class CompareMode
 {
-	ALWAYS,
+	ALWAYS = 0,
 	EQUAL,
 	NOTEQUAL,
 	LESS,
@@ -97,9 +96,9 @@ enum class CompareMode : unsigned char
 };
 
 //Sntecil operation for the depth stencil state
-enum class StencilOperation : unsigned char
+enum class StencilOperation
 {
-	KEEP,
+	KEEP = 0,
 	ZERO,
 	REF,
 	INCR,
@@ -126,7 +125,7 @@ enum class TextureSlot
 
 enum class TextureAddressMode
 {
-	WRAP,
+	WRAP = 0,
 	MIRROR,
 	CLAMP,
 	BORDER,
@@ -135,7 +134,7 @@ enum class TextureAddressMode
 
 enum class TextureFilter
 {
-	MIN_MAG_MIP_POINT,
+	MIN_MAG_MIP_POINT = 0,
 	MIN_MAG_POINT_MIP_LINEAR,
 	MIN_POINT_MAG_LINEAR_MIP_POINT,
 	MIN_POINT_MAG_MIP_LINEAR,
@@ -176,7 +175,7 @@ enum class TextureFilter
 //Bitflag to clear textures
 enum class ClearFlags
 {
-	NONE,
+	NONE = 0,
 	Depth = 1 << 0,
 	Stencil = 1 << 1,
 	RenderTarget = 1 << 2,

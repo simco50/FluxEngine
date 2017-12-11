@@ -3,50 +3,56 @@
 
 #include "ParticleEmitter.h"
 #include "Particle.h"
+
 #include "SceneGraph/Transform.h"
+#include "Scenegraph/Scene.h"
+#include "Scenegraph/SceneNode.h"
+
+#include "Rendering/Geometry.h"
+#include "Rendering/Material.h"
+#include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
-#include "Scenegraph/Scene.h"
-#include "Rendering/Geometry.h"
-#include "Scenegraph/SceneNode.h"
-#include "Rendering/Material.h"
-#include "../Core/Texture.h"
 
 ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
 	m_pParticleSystem(pSystem),
 	m_pGraphics(pGraphics)
 {
-	m_Particles.resize(m_pParticleSystem->MaxParticles);
-	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
-		m_Particles[i] = new Particle(m_pParticleSystem);
-	m_BufferSize = m_pParticleSystem->MaxParticles;
-
 	m_pGeometry = make_unique<Geometry>();
-	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
 	m_pMaterial = make_unique<Material>(m_pGraphics);
 	m_pMaterial->Load("Resources/Materials/Particles.xml");
 	m_pMaterial->SetDepthTestMode(CompareMode::ALWAYS);
 	m_Batches[0].pMaterial = m_pMaterial.get();
+
+	SetSystem(pSystem);
 }
 
 ParticleEmitter::~ParticleEmitter()
 {
-	for (size_t i = 0; i < m_Particles.size(); i++)
-		delete m_Particles[i];
-	m_Particles.clear();
+	FreeParticles();
 }
 
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
 	m_pParticleSystem = pSettings;
-	CalculateBoundingBox();
+	if (pSettings == nullptr)
+		return;
+
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
-	CreateVertexBuffer();
+
+	FreeParticles();
+	m_Particles.resize(m_pParticleSystem->MaxParticles);
+	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
+		m_Particles[i] = new Particle(m_pParticleSystem);
+	m_BufferSize = (int)m_Particles.size();
+	CreateVertexBuffer(m_BufferSize);
+	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
+
 	m_pTexture.reset();
 	m_pTexture = make_unique<Texture>(m_pGraphics);
 	if (!m_pTexture->Load(pSettings->ImagePath))
@@ -55,6 +61,8 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 		return;
 	}
 	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture.get());
+	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
+
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	Reset();
 }
@@ -71,12 +79,19 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 {
 	Drawable::OnSceneSet(pScene);
 
-	if (m_pParticleSystem->ImagePath == "")
-		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
-	CreateVertexBuffer();
-	m_BurstIterator = m_pParticleSystem->Bursts.begin();
-	if (m_pParticleSystem->PlayOnAwake)
-		Play();
+	if (m_pParticleSystem)
+	{
+		m_Draw = true;
+		CreateVertexBuffer(m_BufferSize);
+		m_BurstIterator = m_pParticleSystem->Bursts.begin();
+		if (m_pParticleSystem->PlayOnAwake)
+			Play();
+	}
+	else
+	{
+		m_Draw = false;
+		Stop();
+	}
 }
 
 void ParticleEmitter::OnNodeSet(SceneNode* pNode)
@@ -85,25 +100,32 @@ void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 	m_Batches[0].pModelMatrix = &pNode->GetTransform()->GetWorldMatrix();
 }
 
-void ParticleEmitter::CreateVertexBuffer()
+void ParticleEmitter::FreeParticles()
+{
+	for (size_t i = 0; i < m_Particles.size(); i++)
+		delete m_Particles[i];
+	m_Particles.clear();
+}
+
+void ParticleEmitter::CreateVertexBuffer(const int bufferSize)
 {
 	m_pVertexBuffer.reset();
 
 	vector<VertexElement> elementDesc = {
-		VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, false),
-		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, false),
-		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, false),
-		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
+		/*Position*/	VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, false),
+		/*Color*/		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, false),
+		/*Scale*/		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, false),
+		/*Rotation*/	VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
 	};
 
 	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
-	m_pVertexBuffer->Create(m_BufferSize, elementDesc, true);
+	m_pVertexBuffer->Create(bufferSize, elementDesc, true);
 }
 
-void ParticleEmitter::SortParticles()
+void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 {
-	switch (m_pParticleSystem->SortingMode)
+	switch (sortMode)
 	{
 	case ParticleSortingMode::FrontToBack:
 		sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
@@ -143,8 +165,7 @@ void ParticleEmitter::SortParticles()
 
 void ParticleEmitter::CalculateBoundingBox()
 {
-	//#todo: We might not want to do this every frame
-	Vector3 max = {};
+	Vector3 max;
 	auto p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.x < b->GetVertexInfo().Position.x;
@@ -180,7 +201,7 @@ void ParticleEmitter::Update()
 	float emissionTime = 1.0f / m_pParticleSystem->Emission;
 	m_ParticleSpawnTimer += GameTimer::DeltaTime();
 
-	SortParticles();
+	SortParticles(m_pParticleSystem->SortingMode);
 
 	m_ParticleCount = 0;
 
@@ -232,7 +253,7 @@ void ParticleEmitter::Update()
 	{
 		m_BufferSize = m_pParticleSystem->MaxParticles + 500;
 		FLUX_LOG(WARNING, "ParticleEmitter::Render() > VertexBuffer too small! Increasing size...");
-		CreateVertexBuffer();
+		CreateVertexBuffer(m_BufferSize);
 	}
 	m_pGeometry->SetDrawRange(PrimitiveType::POINTLIST, 0, m_ParticleCount);
 }

@@ -7,6 +7,6 @@
 
 	<Properties>
 		<CullMode value="Back"/>
-		<BlendMode value="Add"/>
+		<BlendMode value="Alpha"/>
 	</Properties>
 </Material>

@@ -1,6 +1,6 @@
 #pragma once
 
-enum class ShaderType : unsigned int;
+enum class ShaderType;
 
 class Graphics;
 class ShaderVariation;

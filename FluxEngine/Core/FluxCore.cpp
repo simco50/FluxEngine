@@ -1,23 +1,25 @@
 #include "stdafx.h"
 #include "FluxCore.h"
+#include "Config.h"
 #include "UI/ImmediateUI.h"
+
+#include "Scenegraph/Scene.h"
+#include "Scenegraph/Transform.h"
+
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/ShaderVariation.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "Rendering/Mesh.h"
-#include "Rendering/Camera/FreeCamera.h"
-#include "Rendering/Camera/Camera.h"
 #include "Rendering/Core/RasterizerState.h"
 #include "Rendering/Core/BlendState.h"
 #include "Rendering/Core/DepthStencilState.h"
-#include "Config.h"
 #include "Rendering/Core/Texture.h"
-#include "Scenegraph/Scene.h"
-#include "Rendering/Model.h"
 #include "Rendering/Core/ConstantBuffer.h"
-#include "Scenegraph/Transform.h"
+#include "Rendering/Mesh.h"
+#include "Rendering/Model.h"
 #include "Rendering/Material.h"
+#include "Rendering/Camera/FreeCamera.h"
+#include "Rendering/Camera/Camera.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/ParticleSystem/ParticleEmitter.h"
 
@@ -112,46 +114,10 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
 
-	/*m_pMaterial = make_unique<Material>(m_pGraphics);
-	m_pMaterial->Load("Resources/Materials/TestMaterial.xml");
-
-	//MeshFilter
-	vector<VertexElement> elements;
-	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::POSITION });
-	elements.push_back({ VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD });
-	elements.push_back({ VertexElementType::VECTOR3, VertexElementSemantic::NORMAL });
-
-	
-	m_pMeshFilter = make_unique<Mesh>();
-	m_pMeshFilter->Load("Resources/Meshes/spot.flux");
-	m_pMeshFilter->CreateBuffers(m_pGraphics, elements);
-
-	for (int x = 0; x < 5; ++x)
-	{
-		for (int y = 0; y < 5; ++y)
-		{
-			for (int z = 0; z < 5; ++z)
-			{
-				m_pNode = new SceneNode();
-				Model* pModel = new Model();
-				pModel->SetMesh(m_pMeshFilter.get());
-				m_pNode->AddComponent(pModel);
-
-				pModel->SetMaterial(m_pMaterial.get());
-
-				m_pScene->AddChild(m_pNode);
-				m_pNode->GetTransform()->Translate((float)x*2, (float)y*2, (float)z*2);
-			}
-		}
-	}
-
-	*/
-
 	m_pNode = new SceneNode("Particles");
 	m_pParticleSystem = make_unique<ParticleSystem>();
-	m_pParticleSystem->Load("Resources/ParticleSystems/Iris.json");
+	m_pParticleSystem->Load("Resources/ParticleSystems/Lava.json");
 	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem.get());
-	pEmitter->SetSystem(m_pParticleSystem.get());
 	m_pNode->AddComponent(pEmitter);
 	m_pScene->AddChild(m_pNode);
 }

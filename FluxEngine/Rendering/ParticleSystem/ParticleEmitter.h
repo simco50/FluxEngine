@@ -8,6 +8,8 @@ class VertexBuffer;
 class ParticleSystem;
 class Material;
 
+enum class ParticleSortingMode;
+
 class ParticleEmitter : public Drawable
 {
 public:
@@ -33,8 +35,9 @@ protected:
 	virtual void Update() override;
 
 private:
-	void CreateVertexBuffer();
-	void SortParticles();
+	void FreeParticles();
+	void CreateVertexBuffer(const int bufferSize);
+	void SortParticles(const ParticleSortingMode sortMode);
 
 	void CalculateBoundingBox();
 

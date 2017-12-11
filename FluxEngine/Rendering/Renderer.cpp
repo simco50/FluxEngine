@@ -38,7 +38,8 @@ void Renderer::Draw()
 		{
 			if (pDrawable == nullptr)
 				continue;
-
+			if (!pDrawable->DrawEnabled())
+				continue;
 			if(!pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				continue;
 

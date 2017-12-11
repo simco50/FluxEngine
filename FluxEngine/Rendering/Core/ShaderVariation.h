@@ -4,7 +4,7 @@ class Shader;
 class ConstantBuffer;
 class Graphics;
 
-enum class ShaderType : unsigned int;
+enum class ShaderType;
 
 struct ShaderParameter
 {
