@@ -20,7 +20,7 @@ PS_INPUT VSMain(VS_INPUT input)
 {
       PS_INPUT output = (PS_INPUT)0;
 
-      output.position = mul(cViewProjVS, float4(input.position.xy, 0.f, 1.f));
+      output.position = mul(cViewProj, float4(input.position.xy, 0.f, 1.f));
       output.color = input.color;
       output.texCoord  = input.texCoord;
 

@@ -3,6 +3,7 @@
 class Graphics;
 class Drawable;
 class Material;
+struct Batch;
 
 class Renderer
 {
@@ -21,10 +22,18 @@ public:
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 
 private:
-	void SetMaterial(const Material* pMaterial);
+	void SetPerFrameParameters();
+	void SetPerCameraParameters(Camera* pCamera);
+	void SetPerMaterialParameters(const Material* pMaterial);
+	void SetPerBatchParameters(const Batch& batch, Camera* pCamera);
+
 	const Material* m_pCurrentMaterial = nullptr;
 
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;
 	std::vector<Camera*> m_Cameras;
+	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
+
+	int m_CurrentFrame = 0;
+	Camera* m_pCurrentCamera = nullptr;
 };

@@ -1,20 +1,16 @@
 <Material name="TestShader">
 	<Shaders>
-		<Shader type="Pixel" source="Resources/Shaders/Diffuse.hlsl" defines="test yes"/>
+		<Shader type="Pixel" source="Resources/Shaders/Diffuse.hlsl"/>
 		<Shader type="Vertex" source="Resources/Shaders/Diffuse.hlsl"/>
 	</Shaders>
 
 	<Properties>
 		<CullMode value="Back"/>
-		<Blending value="true"/>
+		<BlendMode value="Replace"/>
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Flash_Diffuse.jpg"/>
-		<Value name="LightDirection" value="0.25 0.75 20.0"/>
+		<Texture slot="Diffuse" value="Resources/Textures/spot.png"/>
+		<Value name="cColorPS" value="1.0 1.0 1.0 1.0"/>
 	</Parameters>
-
-	<Passes>
-		<Pass name="Pass1"/>
-	</Passes>
 </Material>

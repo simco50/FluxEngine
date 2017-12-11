@@ -1,0 +1,12 @@
+<Material name="TestShader">
+	<Shaders>
+		<Shader type="Vertex" source="Resources/Shaders/Particles.hlsl"/>
+		<Shader type="Geometry" source="Resources/Shaders/Particles.hlsl"/>
+		<Shader type="Pixel" source="Resources/Shaders/Particles.hlsl"/>
+	</Shaders>
+
+	<Properties>
+		<CullMode value="Back"/>
+		<BlendMode value="Add"/>
+	</Properties>
+</Material>

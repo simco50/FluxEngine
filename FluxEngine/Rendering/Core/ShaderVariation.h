@@ -26,10 +26,6 @@ public:
 	void Release();
 	void SetDefines(const string& defines);
 
-	template<typename T>
-	void SetParameter(const std::string& name, const T& value);
-	void SetParameter(const std::string& name, const void* value, int size);
-
 	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
@@ -55,19 +51,3 @@ private:
 	map<string, ShaderParameter> m_ShaderParameters;
 	array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX> m_ConstantBuffers = {};
 };
-
-template<typename T>
-void ShaderVariation::SetParameter(const std::string& name, const T& value)
-{
-	auto pParameter = m_ShaderParameters.find(name);
-	if (pParameter == m_ShaderParameters.end())
-		return;
-#ifdef _DEBUG
-	if (sizeof(T) != pParameter->second.Size)
-	{
-		FLUX_LOG(ERROR, "[ShaderVariation::SetParameter] > Size mismatch. Parameter '%s' expected value with size '%i' but input value's size is '%i'", name.c_str(), pParameter->second.Size, sizeof(value));
-		return;
-	}
-#endif
-	pParameter->second.pBuffer->SetParameter(pParameter->second.Offset, pParameter->second.Size, &value);
-}

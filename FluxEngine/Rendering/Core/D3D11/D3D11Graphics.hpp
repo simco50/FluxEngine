@@ -160,6 +160,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		case ShaderType::NONE:
 			return false;
 		}
+		m_ShaderProgramDirty = true;
 	}
 
 	if (pShader)
@@ -563,18 +564,20 @@ void Graphics::TakeScreenshot()
 	m_pDefaultRenderTarget->GetRenderTexture()->Save(str.str());
 }
 
-ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex)
+ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)
 {
-	unsigned int bufferHash = size << 0
-		| (unsigned char)shaderType << 16
-		| (unsigned char)registerIndex << 24;
-
-	auto pIt = m_ConstantBuffers.find(bufferHash);
+	auto pIt = m_ConstantBuffers.find(name);
 	if (pIt != m_ConstantBuffers.end())
+	{
+		if ((unsigned int)pIt->second->GetSize() != size)
+		{
+			FLUX_LOG(ERROR, "[Graphics::GetOrCreateConstantBuffer] > Constant buffer with name '%s' already exists but with a different size", name.c_str());
+			return nullptr;
+		}
 		return pIt->second.get();
-
+	}
 	unique_ptr<ConstantBuffer> pBuffer = make_unique<ConstantBuffer>(this);
 	pBuffer->SetSize(size);
-	m_ConstantBuffers[bufferHash] = std::move(pBuffer);
-	return m_ConstantBuffers[bufferHash].get();
+	m_ConstantBuffers[name] = std::move(pBuffer);
+	return m_ConstantBuffers[name].get();
 }

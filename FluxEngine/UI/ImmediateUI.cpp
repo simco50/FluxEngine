@@ -124,6 +124,7 @@ void ImmediateUI::Render()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
+	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
@@ -139,7 +140,7 @@ void ImmediateUI::Render()
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pVertexShader->SetParameter("cViewProjVS", projectionMatrix);
+	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

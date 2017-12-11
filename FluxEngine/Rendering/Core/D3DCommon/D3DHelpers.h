@@ -132,7 +132,7 @@ inline D3D11_RENDER_TARGET_BLEND_DESC D3D11RenderTargetBlendDesc(BlendMode mode,
 		desc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 		break;
 	case BlendMode::ADD:
-		desc.SrcBlend = D3D11_BLEND_ONE;
+		desc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
 		desc.DestBlend = D3D11_BLEND_ONE;
 		desc.BlendOp = D3D11_BLEND_OP_ADD;
 		desc.SrcBlendAlpha = D3D11_BLEND_ONE;

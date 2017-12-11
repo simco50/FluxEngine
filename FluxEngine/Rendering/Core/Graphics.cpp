@@ -19,6 +19,7 @@
 #include "D3D11/D3D11GraphicsImpl.h"
 #endif
 #include "UI/ImmediateUI.h"
+#include "ShaderProgram.h"
 
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)
@@ -75,6 +76,33 @@ void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCou
 {
 	batchCount = m_BatchCount;
 	primitiveCount = m_PrimitiveCount;
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+{
+	if (m_ShaderProgramDirty)
+	{
+		unsigned int hash = 0;
+		for (ShaderVariation* pVariation : m_CurrentShaders)
+		{
+			hash <<= 8;
+			if (pVariation == nullptr)
+				continue;
+			hash |= pVariation->GetName().size();
+		}
+		auto pIt = m_ShaderPrograms.find(hash);
+		if (pIt != m_ShaderPrograms.end())
+			m_pCurrentShaderProgram = pIt->second.get();
+		else
+		{
+			AUTOPROFILE(Graphics_SetShaderParameter_CreateShaderProgram);
+			unique_ptr<ShaderProgram> pShaderProgram = make_unique<ShaderProgram>(m_CurrentShaders);
+			m_ShaderPrograms[hash] = std::move(pShaderProgram);
+			m_pCurrentShaderProgram = m_ShaderPrograms[hash].get();
+		}
+		m_ShaderProgramDirty = false;
+	}
+	return m_pCurrentShaderProgram->SetParameter(name, pData);
 }
 
 bool Graphics::RegisterWindowClass()

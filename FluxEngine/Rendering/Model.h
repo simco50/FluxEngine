@@ -16,6 +16,8 @@ public:
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
 
+	virtual BoundingBox GetWorldBoundingBox() const override;
+
 	virtual void Update() override;
 
 private:

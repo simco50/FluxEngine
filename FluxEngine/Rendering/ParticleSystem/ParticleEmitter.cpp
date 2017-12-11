@@ -11,6 +11,8 @@
 #include "Scenegraph/Scene.h"
 #include "Rendering/Geometry.h"
 #include "Scenegraph/SceneNode.h"
+#include "Rendering/Material.h"
+#include "../Core/Texture.h"
 
 ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
 	m_pParticleSystem(pSystem),
@@ -25,6 +27,10 @@ ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) :
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
+	m_pMaterial = make_unique<Material>(m_pGraphics);
+	m_pMaterial->Load("Resources/Materials/Particles.xml");
+	m_pMaterial->SetDepthTestMode(CompareMode::ALWAYS);
+	m_Batches[0].pMaterial = m_pMaterial.get();
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -37,11 +43,18 @@ ParticleEmitter::~ParticleEmitter()
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
 	m_pParticleSystem = pSettings;
+	CalculateBoundingBox();
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	CreateVertexBuffer();
-	//m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
-	//m_pMaterial->SetBlendMode(m_pParticleSystem->BlendingMode);
+	m_pTexture.reset();
+	m_pTexture = make_unique<Texture>(m_pGraphics);
+	if (!m_pTexture->Load(pSettings->ImagePath))
+	{
+		FLUX_LOG(ERROR, "[ParticleEmitter::SetSystem] > Failed to load texture '%s'", pSettings->ImagePath.c_str());
+		return;
+	}
+	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture.get());
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	Reset();
 }
@@ -60,10 +73,6 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 
 	if (m_pParticleSystem->ImagePath == "")
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
-	//m_pMaterial = new ParticleMaterial(m_pGraphics);
-	//m_Batches[0].pMaterial = m_pMaterial;
-	//m_pMaterial->SetTexture(m_pParticleSystem->ImagePath);
-	//m_pMaterial->SetBlendMode(m_pParticleSystem->BlendMode);
 	CreateVertexBuffer();
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	if (m_pParticleSystem->PlayOnAwake)
@@ -86,8 +95,9 @@ void ParticleEmitter::CreateVertexBuffer()
 		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, false),
 		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
 	};
-	
+
 	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
+	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 	m_pVertexBuffer->Create(m_BufferSize, elementDesc, true);
 }
 
@@ -131,10 +141,34 @@ void ParticleEmitter::SortParticles()
 	}
 }
 
+void ParticleEmitter::CalculateBoundingBox()
+{
+	//#todo: We might not want to do this every frame
+	Vector3 max = {};
+	auto p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.x < b->GetVertexInfo().Position.x;
+	});
+	max.x = abs((*p)->GetVertexInfo().Position.x);
+	p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.y < b->GetVertexInfo().Position.y;
+	});
+	max.y = abs((*p)->GetVertexInfo().Position.y);
+	p = max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
+	{
+		return a->GetVertexInfo().Position.z < b->GetVertexInfo().Position.z;
+	});
+	max.z = abs((*p)->GetVertexInfo().Position.z);
+	m_BoundingBox = BoundingBox(Vector3(0.0f, max.y / 2.0f, 0.0f), Vector3(max.x, max.y / 2, max.z));
+}
+
 void ParticleEmitter::Update()
 {
 	if (m_Playing == false)
 		return;
+
+	CalculateBoundingBox();
 
 	m_Timer += GameTimer::DeltaTime();
 	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)

@@ -12,6 +12,7 @@ class RasterizerState;
 class DepthStencilState;
 class ConstantBuffer;
 class Shader;
+class ShaderProgram;
 
 class GraphicsImpl;
 
@@ -58,8 +59,9 @@ public:
 
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
-	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int size, const ShaderType shaderType, unsigned int registerIndex);
+	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
 	Shader* GetShader(const string filePath);
+	bool SetShaderParameter(const std::string& name, const void* pData);
 
 	void BeginFrame();
 	void EndFrame();
@@ -119,13 +121,17 @@ private:
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	//Cache of constantbuffers with a search hash
-	map<unsigned int, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
+	map<std::string, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 
 	using ShaderConstantBuffers = array<void*, (unsigned int)ShaderParameterType::MAX>;
 	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
 
 	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
 	map<string, unique_ptr<Shader>> m_Shaders;
+
+	ShaderProgram* m_pCurrentShaderProgram = nullptr;
+	map<unsigned int, unique_ptr<ShaderProgram>> m_ShaderPrograms;
+	bool m_ShaderProgramDirty = false;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;

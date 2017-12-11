@@ -5,7 +5,8 @@ class Particle;
 class Texture;
 class Graphics;
 class VertexBuffer;
-struct ParticleSystem;
+class ParticleSystem;
+class Material;
 
 class ParticleEmitter : public Drawable
 {
@@ -35,6 +36,8 @@ private:
 	void CreateVertexBuffer();
 	void SortParticles();
 
+	void CalculateBoundingBox();
+
 	bool m_Playing = false;
 	float m_Timer = 0.0f;
 
@@ -47,8 +50,10 @@ private:
 	int m_BufferSize = 0;
 	float m_ParticleSpawnTimer = 0.0f;
 
+	unique_ptr<Texture> m_pTexture;
 	unique_ptr<Geometry> m_pGeometry;
 	unique_ptr<VertexBuffer> m_pVertexBuffer;
+	unique_ptr<Material> m_pMaterial;
 
 	wstring m_AssetFile;
 
