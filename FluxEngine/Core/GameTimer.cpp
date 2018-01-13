@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "GameTimer.h"
 
 __int64 GameTimer::m_BaseTime = 0;

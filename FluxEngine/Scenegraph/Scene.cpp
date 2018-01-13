@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "Scene.h"
 #include "SceneNode.h"
 #include "Rendering\Renderer.h"

@@ -3,7 +3,7 @@
 // Copyright (c) 2014,2015 Stephan Brumme. All rights reserved.
 // see http://create.stephan-brumme.com/disclaimer.html
 //
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "md5.h"
 
 #ifndef _MSC_VER

@@ -19,8 +19,8 @@ workspace "FluxEngine"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
-		pchheader "stdafx.h"
-		pchsource "../FluxEngine/stdafx.cpp"
+		pchheader "FluxEngine.h"
+		pchsource "../FluxEngine/FluxEngine.cpp"
 		kind "StaticLib"
 		characterset ("MBCS")
 		defines { "_CONSOLE", "D3D11" }
@@ -70,8 +70,8 @@ workspace "FluxEngine"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
 
-		pchheader "stdafx.h"
-		pchsource "../FluxGame/stdafx.cpp"
+		pchheader "FluxGame.h"
+		pchsource "../FluxGame/FluxGame.cpp"
 		kind "WindowedApp"
 		characterset ("MBCS")
 		defines { "_CONSOLE" }

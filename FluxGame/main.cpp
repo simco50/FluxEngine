@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxGame.h"
 #include <Core/FluxCore.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)

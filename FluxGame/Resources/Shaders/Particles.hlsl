@@ -41,7 +41,7 @@ void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 origin, float3
 [maxvertexcount(4)]
 void GSMain(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 {
-	float3 origin = mul(float4(vertex[0].position, 1), cWorld).xyz;
+	float3 origin = mul(cWorld, float4(vertex[0].position, 1)).xyz;
 
 	float3 topLeft = float3(-vertex[0].size / 2.0f, vertex[0].size / 2.0f, 0.0f);
 	float3 topRight = float3(vertex[0].size / 2.0f, vertex[0].size / 2.0f, 0.0f);

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "File.h"
 
 bool IFile::GetLine(std::string& outLine, const char delimiter /*= '\n'*/)

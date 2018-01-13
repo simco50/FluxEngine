@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "Material.h"
 
 #include "External/TinyXml/tinyxml2.h"

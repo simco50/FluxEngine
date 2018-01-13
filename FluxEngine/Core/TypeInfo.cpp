@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "FluxEngine.h"
 #include "TypeInfo.h"
 
 
@@ -15,14 +15,8 @@ TypeInfo::~TypeInfo()
 
 bool TypeInfo::IsTypeOf(const TypeInfo* typeInfo) const
 {
-	const TypeInfo* pInfo = this;
-	while (pInfo != nullptr)
-	{
-		if (typeInfo == pInfo)
-			return true;
-		pInfo = pInfo->m_pBaseTypeInfo;
-	}
-	return false;
+	check(typeInfo);
+	return IsTypeOf(typeInfo->GetType());
 }
 
 bool TypeInfo::IsTypeOf(const StringHash& type) const
