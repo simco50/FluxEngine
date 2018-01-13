@@ -3,9 +3,12 @@ class Scene;
 class Component;
 class Transform;
 
-class SceneNode
+class SceneNode : public Object
 {
+	FLUX_OBJECT(SceneNode, Object)
+
 public:
+
 	SceneNode();
 	SceneNode(const std::string& name);
 	virtual ~SceneNode();
@@ -23,12 +26,22 @@ public:
 	void SetName(const std::string& name) { m_Name = name; }
 	const std::string& GetName() const { return m_Name; }
 
-private:
-	std::string m_Name;
+	template<class T>
+	T* GetComponent()
+	{
+		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
+	}
+
+	Component* GetComponent(StringHash type);
+
+protected:
+	unique_ptr<Transform> m_pTransform;
+	std::vector<Component*> m_Components;
 
 	SceneNode* m_pParent = nullptr;
 	Scene* m_pScene = nullptr;
 
-	unique_ptr<Transform> m_pTransform;
-	std::vector<Component*> m_Components;
+private:
+	std::string m_Name;
+
 };

@@ -3,6 +3,8 @@
 
 class AudioListener : public Component
 {
+	FLUX_OBJECT(AudioListener, Component)
+
 public:
 	AudioListener();
 	~AudioListener();

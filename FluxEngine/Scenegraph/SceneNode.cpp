@@ -53,3 +53,13 @@ void SceneNode::AddComponent(Component* pComponent)
 	if (m_pScene)
 		pComponent->OnSceneSet(m_pScene);
 }
+
+Component* SceneNode::GetComponent(StringHash type)
+{
+	for (Component* pComponent : m_Components)
+	{
+		if (type == pComponent->GetType())
+			return pComponent;
+	}
+	return nullptr;
+}

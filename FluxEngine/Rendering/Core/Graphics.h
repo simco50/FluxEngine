@@ -82,9 +82,7 @@ public:
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
-
 private:
-
 	void PrepareDraw();
 
 	bool RegisterWindowClass();
@@ -120,13 +118,14 @@ private:
 	unique_ptr<RasterizerState> m_pRasterizerState;
 	unique_ptr<DepthStencilState> m_pDepthStencilState;
 
-	//Cache of constantbuffers with a search hash
+	//All ConstantBuffers
 	map<std::string, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
-
+	//Reference to all current ConstantBuffers
 	using ShaderConstantBuffers = array<void*, (unsigned int)ShaderParameterType::MAX>;
 	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
-
+	//References to all current shaders
 	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
+	//All shaders
 	map<string, unique_ptr<Shader>> m_Shaders;
 
 	ShaderProgram* m_pCurrentShaderProgram = nullptr;

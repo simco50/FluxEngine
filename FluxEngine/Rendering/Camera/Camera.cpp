@@ -5,10 +5,10 @@
 #include "Scenegraph/SceneNode.h"
 
 #include "SceneGraph/Transform.h"
-#include "Math/SimpleMath.h"
 
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Renderer.h"
+#include "Audio/AudioListener.h"
 
 Camera::Camera(InputEngine* pInput, Graphics* pGraphics):
 	m_pInput(pInput), m_pGraphics(pGraphics)
@@ -68,9 +68,6 @@ void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 {
-	UNREFERENCED_PARAMETER(startPoint);
-	UNREFERENCED_PARAMETER(direction);
-
 	POINT mousePos =  m_pInput->GetMousePosition();
 	Vector2 ndc;
 	float hw = m_Viewport.GetWidth() / 2.0f;

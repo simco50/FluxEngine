@@ -3,8 +3,20 @@ class Scene;
 class SceneNode;
 class Transform;
 
-class Component
+#ifdef _DEBUG
+#define REQUIRE_COMPONENT(T) \
+std::stringstream str; \
+str << GetTypeName() << " requires " << T::GetTypeNameStatic(); \
+std::string err = str.str(); \
+checkf(GetComponent<T>() != nullptr, err.c_str())
+#else
+#define REQUIRE_COMPONENT(T)
+#endif
+
+class Component : public Object
 {
+	FLUX_OBJECT(Component, Object)
+
 public:
 	Component();
 	virtual ~Component();
@@ -16,6 +28,13 @@ public:
 	virtual void OnSceneRemoved();
 
 	Transform* GetTransform();
+
+	Component* GetComponent(StringHash type);
+	template<typename T>
+	T* GetComponent()
+	{
+		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
+	}
 
 	virtual void Update() = 0;
 

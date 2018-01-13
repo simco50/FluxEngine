@@ -11,15 +11,13 @@
 #include "DepthStencilState.h"
 #include "BlendState.h"
 #include "Shader.h"
-
-
+#include "UI/ImmediateUI.h"
+#include "ShaderProgram.h"
 
 #ifdef D3D11
 #include "D3D11/D3D11Graphics.hpp"
 #include "D3D11/D3D11GraphicsImpl.h"
 #endif
-#include "UI/ImmediateUI.h"
-#include "ShaderProgram.h"
 
 Graphics::Graphics(HINSTANCE hInstance) :
 	m_hInstance(hInstance)

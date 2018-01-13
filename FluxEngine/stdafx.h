@@ -160,6 +160,9 @@ using namespace DirectX::SimpleMath;
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File/File.h"
 
+#include "Core/TypeInfo.h"
+#include "Core/Object.h"
+
 using namespace Smart_COM;
 
 #pragma endregion ENGINE INCLUDES

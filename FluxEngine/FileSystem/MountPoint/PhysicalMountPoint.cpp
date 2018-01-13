@@ -3,6 +3,12 @@
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystem/FileSystemHelpers.h"
 
+PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath) : 
+	IMountPoint(physicalPath, numeric_limits<int>::max())
+{
+
+}
+
 bool PhysicalMountPoint::OnMount()
 {
 	if (!RegisterDirectory(m_PhysicalPath))

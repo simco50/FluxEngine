@@ -18,10 +18,10 @@ void FreeCamera::OnSceneSet(Scene* pScene)
 {
 	SceneNode::OnSceneSet(pScene);
 
-	m_pCamera = new Camera(m_pInput, m_pGraphics);
-	AddComponent(m_pCamera);
 	AudioListener* pAudioListener = new AudioListener();
 	AddComponent(pAudioListener);
+	m_pCamera = new Camera(m_pInput, m_pGraphics);
+	AddComponent(m_pCamera);
 }
 
 void FreeCamera::Update()

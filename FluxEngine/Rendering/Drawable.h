@@ -15,6 +15,8 @@ struct Batch
 
 class Drawable : public Component
 {
+	FLUX_OBJECT(Drawable, Component)
+
 public:
 	Drawable() {}
 	virtual ~Drawable() {}

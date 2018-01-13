@@ -5,6 +5,8 @@ class Mesh;
 
 class Model : public Drawable
 {
+	FLUX_OBJECT(Model, Drawable)
+
 public:
 	Model();
 	virtual ~Model();

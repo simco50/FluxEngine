@@ -4,6 +4,11 @@
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystem/FileSystemHelpers.h"
 
+PakMountPoint::PakMountPoint(const std::string& physicalPath) : 
+	IMountPoint(physicalPath, -1)
+{
+}
+
 bool PakMountPoint::OnMount()
 {
 	//A pak file is a regular file so load that first
@@ -18,6 +23,8 @@ bool PakMountPoint::OnMount()
 
 	if (m_Header.Version != PAK_VERSION)
 		return false;
+
+	//#todo: Set the order of the mount point depending on the pak header data
 
 	//Read in all the table entries
 	m_FileEntries.resize(m_Header.NumEntries);

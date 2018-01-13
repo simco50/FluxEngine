@@ -68,12 +68,10 @@ bool Material::Load(const std::string& filePath)
 
 		string source = pShader->Attribute("source");
 		m_Shaders[source] = m_pGraphics->GetShader(source);
-
 		const char* pAttribute = pShader->Attribute("defines");
 		string defines = "";
 		if (pAttribute)
 			defines = pAttribute;
-
 		m_ShaderVariations[(unsigned int)type] = m_Shaders[source]->GetVariation(type, defines);
 		pShader = pShader->NextSiblingElement();
 	}

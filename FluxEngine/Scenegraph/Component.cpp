@@ -47,3 +47,9 @@ Transform* Component::GetTransform()
 	checkf(m_pNode, "[Component::GetTransform()] > Component is not attached to a SceneNode");
 	return m_pNode->GetTransform();
 }
+
+Component* Component::GetComponent(StringHash type)
+{
+	checkf(m_pNode, "Component is not attached to a SceneNode");
+	return m_pNode->GetComponent(type);
+}

@@ -25,8 +25,7 @@ struct PakFileEntry
 class PakMountPoint : public IMountPoint
 {
 public:
-	PakMountPoint(const std::string& physicalPath) : IMountPoint(physicalPath)
-	{}
+	PakMountPoint(const std::string& physicalPath);
 	virtual ~PakMountPoint()
 	{}
 

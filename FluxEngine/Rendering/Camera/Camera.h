@@ -1,12 +1,14 @@
 #pragma once
+
 #include "SceneGraph/Component.h"
 
-class MeshRenderer;
 class InputEngine;
 class Graphics;
 
 class Camera : public Component
 {
+	FLUX_OBJECT(Camera, Component)
+
 public:
 	Camera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~Camera();

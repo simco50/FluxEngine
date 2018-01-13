@@ -25,6 +25,15 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 		return false;
 
 	m_MountPoints.push_back(MountPointPair(FixPath(virtualPath), std::move(pPtr)));
+
+	//Sort the mountpoints depending on their priority
+	sort(m_MountPoints.begin(), m_MountPoints.end(), 
+		[](const MountPointPair& a, const MountPointPair& b)
+	{
+		return a.second->GetOrder() > b.second->GetOrder();
+	}
+	);
+
 	return true;
 }
 

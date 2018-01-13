@@ -12,6 +12,8 @@ enum class ParticleSortingMode;
 
 class ParticleEmitter : public Drawable
 {
+	FLUX_OBJECT(ParticleEmitter, Drawable)
+
 public:
 	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem);
 	~ParticleEmitter();

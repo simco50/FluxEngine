@@ -3,6 +3,8 @@
 
 class FreeCamera : public SceneNode
 {
+	FLUX_OBJECT(FreeCamera, SceneNode)
+
 public:
 	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
 	virtual ~FreeCamera();

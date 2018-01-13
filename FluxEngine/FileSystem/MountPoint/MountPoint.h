@@ -7,7 +7,9 @@ class PakFile;
 class IMountPoint
 {
 public:
-	IMountPoint(const std::string& physicalPath);
+
+	IMountPoint(const std::string& physicalPath, const int order = -1);
+
 	virtual ~IMountPoint() {}
 
 	virtual bool OnMount() = 0;
@@ -15,7 +17,9 @@ public:
 	virtual bool HasFile(const std::string& filePath) const = 0;
 
 	const std::string& GetPhysicalPath() const { return m_PhysicalPath; }
+	int GetOrder() const { return m_Order; }
 
 protected:
 	std::string m_PhysicalPath;
+	int m_Order = -1;
 };

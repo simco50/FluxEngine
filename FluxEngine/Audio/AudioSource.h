@@ -3,6 +3,8 @@
 
 class AudioSource : public Component
 {
+	FLUX_OBJECT(AudioSource, Component)
+
 public:
 	AudioSource(const string& filePath, const FMOD_MODE& mode);
 	AudioSource(FMOD::Sound* pSound);
