@@ -111,9 +111,9 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(m_pCamera);
 
 	m_pNode = new SceneNode("Particles");
-	m_pParticleSystem = make_unique<ParticleSystem>();
-	m_pParticleSystem->Load("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem.get());
+
+	m_pParticleSystem = ResourceManager::Instance().Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
+	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem);
 	m_pNode->AddComponent(pEmitter);
 	m_pScene->AddChild(m_pNode);
 }

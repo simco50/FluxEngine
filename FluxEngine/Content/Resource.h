@@ -1,7 +1,9 @@
 #pragma once
 
-class Resource
+class Resource : public Object
 {
+	FLUX_OBJECT(Resource, Object)
+
 public:
 	Resource();
 	virtual ~Resource();

@@ -8,6 +8,8 @@ struct VertexElement;
 
 class Mesh : public Resource
 {
+	FLUX_OBJECT(Mesh, Resource)
+
 public:
 	Mesh();
 	virtual ~Mesh();

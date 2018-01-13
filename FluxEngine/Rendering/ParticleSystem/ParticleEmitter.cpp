@@ -23,10 +23,9 @@ ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) :
 	m_pGeometry = make_unique<Geometry>();
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
-	m_pMaterial = make_unique<Material>(m_pGraphics);
-	m_pMaterial->Load("Resources/Materials/Particles.xml");
+	m_pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Particles.xml", m_pGraphics);
 	m_pMaterial->SetDepthTestMode(CompareMode::ALWAYS);
-	m_Batches[0].pMaterial = m_pMaterial.get();
+	m_Batches[0].pMaterial = m_pMaterial;
 
 	SetSystem(pSystem);
 }
@@ -53,14 +52,8 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	CreateVertexBuffer(m_BufferSize);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 
-	m_pTexture.reset();
-	m_pTexture = make_unique<Texture>(m_pGraphics);
-	if (!m_pTexture->Load(pSettings->ImagePath))
-	{
-		FLUX_LOG(ERROR, "[ParticleEmitter::SetSystem] > Failed to load texture '%s'", pSettings->ImagePath.c_str());
-		return;
-	}
-	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture.get());
+	m_pTexture = ResourceManager::Instance().Load<Texture>(pSettings->ImagePath, m_pGraphics);
+	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture);
 	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
 
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();

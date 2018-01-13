@@ -53,3 +53,12 @@ inline string GetTimeStamp()
 		<< "-" << setw(2) << localTime.tm_sec;
 	return str.str();
 }
+
+template<typename ...Args>
+std::string Printf(const std::string& format, Args... args)
+{
+	auto size = std::snprintf(nullptr, 0, format.c_str(), args...);
+	std::string output(size + 1, '\0');
+	sprintf_s(&output[0], output.size(), format.c_str(), args...);
+	return output;
+}

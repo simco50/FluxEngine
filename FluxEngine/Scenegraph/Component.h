@@ -5,13 +5,12 @@ class Transform;
 
 #ifdef _DEBUG
 #define REQUIRE_COMPONENT(T) \
-std::stringstream str; \
-str << GetTypeName() << " requires " << T::GetTypeNameStatic(); \
-std::string err = str.str(); \
+std::string err = Printf("%s requires %s", GetTypeName().c_str(), T::GetTypeNameStatic().c_str()); \
 checkf(GetComponent<T>() != nullptr, err.c_str())
 #else
 #define REQUIRE_COMPONENT(T)
 #endif
+
 
 class Component : public Object
 {

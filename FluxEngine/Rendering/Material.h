@@ -9,6 +9,8 @@ class Texture;
 
 class Material : public Resource
 {
+	FLUX_OBJECT(Material, Resource)
+
 public:
 	Material(Graphics* pGraphics) :
 		m_pGraphics(pGraphics)
@@ -54,7 +56,6 @@ private:
 	FillMode m_FillMode = FillMode::SOLID;
 
 	vector<pair<TextureSlot, Texture*>> m_Textures;
-	vector<unique_ptr<Texture>> m_TextureCache;
 
 	int m_BufferOffset = 0;
 	vector<pair<string, unsigned int>> m_Parameters;

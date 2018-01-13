@@ -24,12 +24,8 @@ void Console::Initialize()
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	stringstream filePathStream;
-	filePathStream  << Paths::LogsFolder << "\\"
-		<< 1900 + localTime.tm_year << "-" <<
-		GetTimeStamp() << ".log";
-
-	m_pFileLog = new PhysicalFile(filePathStream.str());
+	const std::string filePath = Printf("%s\\%s.log", Paths::LogsFolder.c_str(), GetTimeStamp().c_str());
+	m_pFileLog = new PhysicalFile(filePath);
 
 	if (!m_pFileLog->Open(FileMode::Write, ContentType::Text))
 	{

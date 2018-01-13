@@ -27,6 +27,8 @@ enum class ParticleSortingMode
 
 class ParticleSystem : public Resource
 {
+	FLUX_OBJECT(ParticleSystem, Resource)
+
 public:
 
 	ParticleSystem() {}

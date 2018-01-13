@@ -99,10 +99,8 @@ bool Material::Load(const std::string& filePath)
 					return false;
 				}
 
-				unique_ptr<Texture> pTexture = make_unique<Texture>(m_pGraphics);
-				pTexture->Load(pParameter->Attribute("value"));
-				m_TextureCache.push_back(std::move(pTexture));
-				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, m_TextureCache[m_TextureCache.size() - 1].get()));
+				Texture* pTexture = ResourceManager::Instance().Load<Texture>(pParameter->Attribute("value"), m_pGraphics);
+				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, pTexture));
 			}
 			else if (parameterType == "Value")
 			{

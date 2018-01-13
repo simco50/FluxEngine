@@ -27,8 +27,8 @@ public:
 	void InitGame();
 
 private:
-	std::unique_ptr<Scene> m_pScene;
-	std::unique_ptr<Mesh> m_pMeshFilter;
+	Mesh* m_pMeshFilter = nullptr;
+	ParticleSystem* m_pParticleSystem = nullptr;
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -36,9 +36,9 @@ private:
 	unique_ptr<Material> m_pMaterial;
 
 	Graphics* m_pGraphics = nullptr;
+	std::unique_ptr<Scene> m_pScene;
 	std::unique_ptr<ImmediateUI> m_pImmediateUI;
 	std::unique_ptr<InputEngine> m_pInput;
-	std::unique_ptr<ParticleSystem> m_pParticleSystem;
 
 	float m_DeltaTime = 0;
 	Color m_Color = Color(1, 1, 1, 1);

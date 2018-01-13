@@ -13,6 +13,8 @@ enum class TextureUsage
 
 class Texture : public Resource
 {
+	FLUX_OBJECT(Texture, Resource)
+
 public:
 	Texture(Graphics* pGraphics);
 	Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV);

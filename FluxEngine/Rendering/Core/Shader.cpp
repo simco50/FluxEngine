@@ -80,9 +80,7 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 
 std::string Shader::MakeSearchHash(const ShaderType type, const string& defines)
 {
-	std::stringstream str;
-	str << "TYPE_" << (int)type << defines;
-	return str.str();
+	return Printf("TYPE_%i%s", type, defines.c_str());
 }
 
 bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
