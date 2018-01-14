@@ -131,11 +131,8 @@ void FluxCore::InitGame()
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 	pModel->SetMaterial(pMaterial);
 
-	
-
 	m_pModelNode->AddComponent(pModel);
 	m_pScene->AddChild(m_pModelNode);
-
 }
 
 void FluxCore::GameLoop()
@@ -145,12 +142,6 @@ void FluxCore::GameLoop()
 
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
-
-	m_pGraphics->SetScissorRect(false);
-	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
-	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
-	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::LESS);
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();

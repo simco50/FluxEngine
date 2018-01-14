@@ -5,7 +5,7 @@ class Transform;
 
 #ifdef _DEBUG
 #define REQUIRE_COMPONENT(T) \
-std::string err = Printf("%s requires %s", GetTypeName().c_str(), T::GetTypeNameStatic().c_str()); \
+std::string err = Printf("[RequireComponent] > '%s' requires a component of type '%s'", GetTypeName().c_str(), T::GetTypeNameStatic().c_str()); \
 checkf(GetComponent<T>() != nullptr, err.c_str())
 #else
 #define REQUIRE_COMPONENT(T)

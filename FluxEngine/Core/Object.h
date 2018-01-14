@@ -17,12 +17,17 @@ public:
 	Object() {}
 	virtual ~Object() {}
 
-	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); } \
-	virtual const std::string& GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); } \
-	virtual const TypeInfo* GetTypeInfo() const { return GetTypeInfoStatic(); } \
-	static StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
-	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
-	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; } \
+	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
+	virtual const std::string& GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
+	virtual const TypeInfo* GetTypeInfo() const { return GetTypeInfoStatic(); }
+	static StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); }
+	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
+	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; }
+
+	bool IsTypeOf(const TypeInfo* pTypeInfo) { return GetTypeInfo()->IsTypeOf(pTypeInfo); }
+	bool IsTypeOf(StringHash type) { return GetTypeInfo()->IsTypeOf(type); }
+	template<typename T>
+	bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
 
 private:
 

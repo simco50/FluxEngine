@@ -64,7 +64,7 @@ bool Material::Load(const std::string& filePath)
 			return false;
 		}
 
-		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "Shader for slot already defined");
+		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] >Shader for slot already defined");
 
 		string source = pShader->Attribute("source");
 		m_Shaders[source] = m_pGraphics->GetShader(source);
