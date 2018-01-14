@@ -11,7 +11,6 @@ checkf(GetComponent<T>() != nullptr, err.c_str())
 #define REQUIRE_COMPONENT(T)
 #endif
 
-
 class Component : public Object
 {
 	FLUX_OBJECT(Component, Object)

@@ -50,8 +50,8 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 	//Create vertex buffer
 	m_pVertexBuffer.reset();
 	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
-	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::POSITION));
-	m_VertexElements.push_back(VertexElement(VertexElementType::VECTOR2, VertexElementSemantic::TEXCOORD));
+	m_VertexElements.push_back(VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::POSITION));
+	m_VertexElements.push_back(VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD));
 	m_VertexElements.push_back(VertexElement(VertexElementType::UBYTE4_NORM, VertexElementSemantic::COLOR));
 	m_pVertexBuffer->Create(START_VERTEX_COUNT, m_VertexElements, true);
 

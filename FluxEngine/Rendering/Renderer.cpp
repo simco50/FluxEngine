@@ -10,6 +10,7 @@
 #include "Core/BlendState.h"
 #include "Core/RasterizerState.h"
 #include "Core/DepthStencilState.h"
+#include "ParticleSystem/ParticleEmitter.h"
 
 Renderer::Renderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -43,6 +44,8 @@ void Renderer::Draw()
 			if(!pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				continue;
 
+			ParticleEmitter* emitter = DynamicCast<ParticleEmitter>(pDrawable);
+			emitter;
 			const vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{
@@ -182,6 +185,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	
 	//Depth stencil state
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(pMaterial->GetDepthTestMode());
+	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(pMaterial->GetDepthEnabled());
 }
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)

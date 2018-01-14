@@ -6,9 +6,9 @@ enum class VertexElementType : unsigned char
 {
 	INT,
 	FLOAT,
-	VECTOR2,
-	VECTOR3,
-	VECTOR4,
+	FLOAT2,
+	FLOAT3,
+	FLOAT4,
 	UBYTE4,
 	UBYTE4_NORM,
 	MAX_VERTEX_ELEMENT_TYPES
@@ -93,11 +93,11 @@ struct VertexElement
 			return DXGI_FORMAT_R8G8B8A8_UNORM;
 		case VertexElementType::INT:
 			return DXGI_FORMAT_R32_SINT;
-		case VertexElementType::VECTOR2:
+		case VertexElementType::FLOAT2:
 			return DXGI_FORMAT_R32G32_FLOAT;
-		case VertexElementType::VECTOR3:
+		case VertexElementType::FLOAT3:
 			return DXGI_FORMAT_R32G32B32_FLOAT;
-		case VertexElementType::VECTOR4:
+		case VertexElementType::FLOAT4:
 			return DXGI_FORMAT_R32G32B32A32_FLOAT;
 		}
 		FLUX_LOG(WARNING, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
@@ -113,11 +113,11 @@ struct VertexElement
 		case VertexElementType::UBYTE4_NORM:
 		case VertexElementType::INT:
 			return 4;
-		case VertexElementType::VECTOR2:
+		case VertexElementType::FLOAT2:
 			return 8;
-		case VertexElementType::VECTOR3:
+		case VertexElementType::FLOAT3:
 			return 12;
-		case VertexElementType::VECTOR4:
+		case VertexElementType::FLOAT4:
 			return 16;
 		}
 		FLUX_LOG(WARNING, "[VertexElement::GetSizeOfType()] Invalid vertex type!");

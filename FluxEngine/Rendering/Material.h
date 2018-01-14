@@ -32,12 +32,14 @@ public:
 	void SetDepthTestMode(CompareMode mode) { m_DepthTestMode = mode; }
 	void SetAlphaToCoverage(bool enabled) { m_AlphaToCoverage = enabled; }
 	void SetFillMode(FillMode mode) { m_FillMode = mode; }
+	void SetDepthEnabled(bool enabled) { m_DepthEnabled = enabled; }
 
 	CullMode GetCullMode() const { return m_CullMode; }
 	BlendMode GetBlendMode() const { return m_BlendMode; }
 	CompareMode GetDepthTestMode() const { return m_DepthTestMode; }
 	bool GetAlphaToCoverage() const { return m_AlphaToCoverage; }
 	FillMode GetFillMode() const { return m_FillMode; }
+	bool GetDepthEnabled() const { return m_DepthEnabled; }
 
 private:
 	Graphics* m_pGraphics;
@@ -53,6 +55,7 @@ private:
 	BlendMode m_BlendMode = BlendMode::REPLACE;
 	CompareMode m_DepthTestMode = CompareMode::LESSEQUAL;
 	bool m_AlphaToCoverage = false;
+	bool m_DepthEnabled = true;
 	FillMode m_FillMode = FillMode::SOLID;
 
 	vector<pair<TextureSlot, Texture*>> m_Textures;

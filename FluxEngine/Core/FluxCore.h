@@ -46,4 +46,5 @@ private:
 	int m_IndexCount = -1;
 	FreeCamera* m_pCamera = nullptr;
 	SceneNode* m_pNode = nullptr;
+	SceneNode* m_pModelNode = nullptr;
 };

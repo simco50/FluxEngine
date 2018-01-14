@@ -116,6 +116,26 @@ void FluxCore::InitGame()
 	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem);
 	m_pNode->AddComponent(pEmitter);
 	m_pScene->AddChild(m_pNode);
+
+	m_pModelNode = new SceneNode();
+	Model* pModel = new Model();
+	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Cube.flux");
+	std::vector<VertexElement> desc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
+	};
+	pMesh->CreateBuffers(m_pGraphics, desc);
+	pModel->SetMesh(pMesh);
+	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
+	pModel->SetMaterial(pMaterial);
+
+	
+
+	m_pModelNode->AddComponent(pModel);
+	m_pScene->AddChild(m_pModelNode);
+
 }
 
 void FluxCore::GameLoop()

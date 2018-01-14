@@ -4,6 +4,7 @@ workspace "FluxEngine"
 	configurations { "Debug", "Release" }
     platforms {"x86", "x64"}
     warnings "Extra"
+    rtti "Off"
 
     filter { "platforms:x64" }
 		architecture "x64"

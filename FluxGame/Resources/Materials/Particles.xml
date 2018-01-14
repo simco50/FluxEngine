@@ -1,4 +1,4 @@
-<Material name="TestShader">
+<Material name="Particles">
 	<Shaders>
 		<Shader type="Vertex" source="Resources/Shaders/Particles.hlsl"/>
 		<Shader type="Geometry" source="Resources/Shaders/Particles.hlsl"/>

@@ -34,4 +34,3 @@ void InputLayout::Create(vector<VertexBuffer*> vertexBuffers, ShaderVariation* p
 {
 	Create(vertexBuffers.data(), (unsigned int)vertexBuffers.size(), pVariation);
 }
-

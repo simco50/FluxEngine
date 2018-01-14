@@ -1,5 +1,10 @@
 #pragma once
 
+//Force to disable RTTI because we have our own system
+#ifdef _CPPRTTI
+#error RTTI is enabled. Disable using "/GR-"
+#endif
+
 #ifdef _DEBUG
 #define PROFILING
 #endif

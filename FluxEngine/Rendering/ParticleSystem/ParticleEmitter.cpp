@@ -55,6 +55,7 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	m_pTexture = ResourceManager::Instance().Load<Texture>(pSettings->ImagePath, m_pGraphics);
 	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture);
 	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
+	m_pMaterial->SetDepthEnabled(false);
 
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	Reset();
@@ -105,8 +106,8 @@ void ParticleEmitter::CreateVertexBuffer(const int bufferSize)
 	m_pVertexBuffer.reset();
 
 	vector<VertexElement> elementDesc = {
-		/*Position*/	VertexElement(VertexElementType::VECTOR3, VertexElementSemantic::POSITION, 0, false),
-		/*Color*/		VertexElement(VertexElementType::VECTOR4, VertexElementSemantic::COLOR, 0, false),
+		/*Position*/	VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
+		/*Color*/		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 		/*Scale*/		VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 0, false),
 		/*Rotation*/	VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
 	};
