@@ -23,7 +23,6 @@ public:
 	~Transform();
 
 	void Initialize();
-	void Update();
 
 	//Absolute
 	void SetPosition(const Vector3& newPosition, const Space space = Space::WORLD);
@@ -67,8 +66,6 @@ public:
 	void OnWorldChange();
 	void UpdateDirections();
 
-	bool HasChanged() const { return m_HasChanged; }
-
 private:
 	SceneNode* m_pNode;
 
@@ -84,7 +81,4 @@ private:
 	Quaternion m_Rotation;
 	Vector3 m_Position;
 	Vector3 m_Scale;
-
-	bool m_PrevChanged = false;
-	bool m_HasChanged = false;
 };

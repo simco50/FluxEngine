@@ -47,7 +47,7 @@ private:
 	void ParseValue(const std::string name, const std::string valueString);
 
 	string m_Name;
-	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_ShaderVariations = {};
+	array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
 	map<string, Shader*> m_Shaders;
 	
 	//Properties

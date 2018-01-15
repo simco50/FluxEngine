@@ -49,7 +49,7 @@ bool Material::Load(const std::string& filePath)
 	while (pShader != nullptr)
 	{
 		string shaderType = pShader->Attribute("type");
-		ShaderType type = ShaderType::NONE;
+		ShaderType type;
 		if (shaderType == "Vertex")
 			type = ShaderType::VertexShader;
 		else if (shaderType == "Pixel")

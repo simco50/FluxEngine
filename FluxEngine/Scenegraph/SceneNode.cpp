@@ -24,7 +24,6 @@ SceneNode::~SceneNode()
 
 void SceneNode::Update()
 {
-	m_pTransform->Update();
 	for (Component* pComponent : m_Components)
 		pComponent->Update();
 }

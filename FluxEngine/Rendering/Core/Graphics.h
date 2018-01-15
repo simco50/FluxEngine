@@ -121,10 +121,10 @@ private:
 	//All ConstantBuffers
 	map<std::string, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 	//Reference to all current ConstantBuffers
-	using ShaderConstantBuffers = array<void*, (unsigned int)ShaderParameterType::MAX>;
-	array<ShaderConstantBuffers, GraphicsConstants::SHADER_TYPES> m_CurrentConstBuffers = {};
+	using ShaderConstantBuffers = array<void*, (size_t)ShaderParameterType::MAX>;
+	array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 	//References to all current shaders
-	array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> m_CurrentShaders = {};
+	array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
 	//All shaders
 	map<string, unique_ptr<Shader>> m_Shaders;
 

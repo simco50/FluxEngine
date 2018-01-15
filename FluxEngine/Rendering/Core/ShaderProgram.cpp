@@ -3,7 +3,7 @@
 #include "ShaderVariation.h"
 #include "ConstantBuffer.h"
 
-ShaderProgram::ShaderProgram(const array<ShaderVariation*, GraphicsConstants::SHADER_TYPES> shaders)
+ShaderProgram::ShaderProgram(const array<ShaderVariation*, (size_t)ShaderType::MAX> shaders)
 {
 	for (ShaderVariation* pShader : shaders)
 	{

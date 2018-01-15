@@ -135,16 +135,11 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 
 bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 {
-	if (type == ShaderType::NONE)
-		return false;
-
 	if (m_CurrentShaders[(unsigned int)type] != pShader)
 	{
 		m_CurrentShaders[(unsigned int)type] = pShader;
 		switch (type)
 		{
-		default:
-			break;
 		case ShaderType::VertexShader:
 			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
 			break;
@@ -157,7 +152,8 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		case ShaderType::ComputeShader:
 			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
 			break;
-		case ShaderType::NONE:
+		default:
+			FLUX_LOG(ERROR, "[Graphics::SetShader] > Shader type not implemented");
 			return false;
 		}
 		m_ShaderProgramDirty = true;
@@ -192,7 +188,6 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 				m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
 			default:
-			case ShaderType::NONE:
 				break;
 			}
 		}
@@ -398,7 +393,7 @@ void Graphics::PrepareDraw()
 		m_ScissorRectDirty = false;
 	}
 
-	for (unsigned int i = 0; i < GraphicsConstants::SHADER_TYPES; ++i)
+	for (size_t i = 0; i < (size_t)ShaderType::MAX; ++i)
 	{
 		ShaderVariation* pShader = m_CurrentShaders[i];
 		if (pShader == nullptr)

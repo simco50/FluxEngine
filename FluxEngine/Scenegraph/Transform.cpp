@@ -19,17 +19,6 @@ void Transform::Initialize()
 	OnLocalChange();
 }
 
-void Transform::Update()
-{
-	if(m_PrevChanged)
-	{
-		m_HasChanged = false;
-		m_PrevChanged = false;
-	}
-	else
-		m_PrevChanged = m_HasChanged;
-}
-
 void Transform::OnLocalChange()
 {
 	Matrix localTranslation = Matrix::CreateTranslation(m_Position);
@@ -53,8 +42,6 @@ void Transform::OnLocalChange()
 	}
 
 	UpdateDirections();
-
-	m_HasChanged = true;
 }
 
 void Transform::OnWorldChange()
@@ -81,8 +68,6 @@ void Transform::OnWorldChange()
 		m_Scale = m_WorldScale;
 	}
 	UpdateDirections();
-
-	m_HasChanged = true;
 }
 
 void Transform::UpdateDirections()

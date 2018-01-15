@@ -2,28 +2,17 @@
 
 namespace GraphicsConstants
 {
-	static const int MAX_VERTEX_BUFFERS = 4;
-	static const int SHADER_TYPES = 4;
+	const int MAX_VERTEX_BUFFERS = 4;
 }
 
-enum class ShaderType{
+enum class ShaderType 
+{
 	VertexShader = 0,
 	PixelShader,
 	GeometryShader,
 	ComputeShader,
-	NONE,
+	MAX,
 };
-
-inline ShaderType operator|(const ShaderType a, const ShaderType b)
-{
-	return (ShaderType)((unsigned int)a | (unsigned int)b);
-}
-
-inline ShaderType& operator|=(ShaderType& a, const ShaderType b)
-{
-	a = (ShaderType)((unsigned int)a | (unsigned int)b);
-	return a;
-}
 
 //The primitive topology for rendering
 enum class PrimitiveType : unsigned char
@@ -81,6 +70,7 @@ enum class ColorWrite
 	ALPHA = 1 << 3,
 	ALL = RED | GREEN | BLUE | ALPHA,
 };
+DEFINE_ENUM_FLAG_OPERATORS(ColorWrite);
 
 //Compare mode for rendering state
 enum class CompareMode
@@ -181,14 +171,4 @@ enum class ClearFlags
 	RenderTarget = 1 << 2,
 	All = Depth | Stencil | RenderTarget,
 };
-
-inline ClearFlags operator|(const ClearFlags a, const ClearFlags b)
-{
-	return (ClearFlags)((unsigned int)a | (unsigned int)b);
-}
-
-inline ClearFlags& operator|=(ClearFlags& a, const ClearFlags b)
-{
-	a = (ClearFlags)((unsigned int)a | (unsigned int)b);
-	return a;
-}
+DEFINE_ENUM_FLAG_OPERATORS(ClearFlags);
