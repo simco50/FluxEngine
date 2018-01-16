@@ -22,7 +22,7 @@ void PhysicsScene::OnSceneSet(Scene* pScene)
 	PxTolerancesScale scale = PxTolerancesScale();
 	PxSceneDesc desc(scale);
 	desc.gravity.y = 9.81f;
-	m_pScene = m_pSystem->GetPhysics()->createScene(desc);
+	//m_pScene = m_pSystem->GetPhysics()->createScene(desc);
 }
 
 void PhysicsScene::OnSceneRemoved()

@@ -11,11 +11,11 @@ Rigidbody::Rigidbody(PhysicsSystem* pSystem) :
 
 Rigidbody::~Rigidbody()
 {
-	if (m_pBody)
+	/*if (m_pBody)
 	{
 		m_pBody->release();
 		m_pBody = nullptr;
-	}
+	}*/
 }
 
 void Rigidbody::OnSceneSet(Scene* pScene)
