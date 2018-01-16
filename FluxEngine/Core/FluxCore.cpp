@@ -22,6 +22,9 @@
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Physics/PhysX/PhysicsSystem.h"
+#include "Physics/PhysX/PhysicsScene.h"
+#include "Physics/PhysX/Rigidbody.h"
 
 using namespace std;
 
@@ -133,6 +136,20 @@ void FluxCore::InitGame()
 
 	m_pModelNode->AddComponent(pModel);
 	m_pScene->AddChild(m_pModelNode);
+
+	m_pPhysics = make_unique<PhysicsSystem>();
+	m_pPhysics->Initialize();
+	PhysicsScene* pScene = new PhysicsScene(m_pPhysics.get());
+	pScene->OnSceneSet(m_pScene.get());
+
+	Rigidbody* pRigidbody = new Rigidbody(m_pPhysics.get());
+	m_pNode->AddComponent(pRigidbody);
+	
+	pScene->OnSceneRemoved();
+	delete pScene;
+	m_pPhysics->Shutdown();
+	m_pPhysics.reset();
+
 }
 
 void FluxCore::GameLoop()

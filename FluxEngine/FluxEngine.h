@@ -13,6 +13,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#define PHYSX
+
 #pragma region
 
 //Standard Library
@@ -34,12 +36,12 @@ using namespace std;
 
 #include <PxPhysicsAPI.h>
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "PhysX3DEBUG_x86.lib")
+#pragma comment(lib, "PhysX3DEBUG_x64.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
-#pragma comment(lib, "PxFoundationDEBUG_x86.lib")
-#pragma comment(lib, "PxTaskDEBUG_x86.lib")
-#pragma comment(lib, "PxPvdSDKDEBUG_x86.lib")
+#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
+#pragma comment(lib, "PxFoundationDEBUG_x64.lib")
+#pragma comment(lib, "PxTaskDEBUG_x64.lib")
+#pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
 #else
 #pragma comment(lib, "PhysX3_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")

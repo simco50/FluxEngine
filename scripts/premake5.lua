@@ -42,6 +42,8 @@ workspace "FluxEngine"
 			"../Libraries/ImgUI/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
+			"../Libraries/PhysX 3.4/PhysX_3.4/include",
+			"../Libraries/PhysX 3.4/PxShared/include",
 		}
 
 		libdirs
@@ -49,6 +51,8 @@ workspace "FluxEngine"
 			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win64",
+			"../Libraries/PhysX 3.4/PxShared/lib/vc14win64",
 		}
 
 		filter { "configurations:Debug" }
@@ -96,6 +100,8 @@ workspace "FluxEngine"
 			"../Libraries/ImgUI/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
+			"../Libraries/PhysX 3.4/PhysX_3.4/include",
+			"../Libraries/PhysX 3.4/PxShared/include",
 		}
 
 		libdirs
@@ -103,6 +109,8 @@ workspace "FluxEngine"
 			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win64",
+			"../Libraries/PhysX 3.4/PxShared/lib/vc14win64",
 		}
 
 		filter { "configurations:Debug" }
@@ -133,6 +141,11 @@ workspace "FluxEngine"
 			postbuildcommands
 			{ 
 				"xcopy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3CommonDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3DEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\nvToolsExt64_1.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxFoundationDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "platforms:x86" }
