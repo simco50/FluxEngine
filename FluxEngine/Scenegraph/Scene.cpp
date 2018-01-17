@@ -4,7 +4,7 @@
 #include "Rendering\Renderer.h"
 #include "Component.h"
 
-Scene::Scene(Graphics* pGraphics)
+Scene::Scene(Graphics* pGraphics) : SceneNode(this)
 {
 	m_pRenderer = make_unique<Renderer>(pGraphics);
 }
@@ -24,8 +24,7 @@ void Scene::Initialize()
 
 void Scene::Update()
 {
-	for (Component* pComponent : m_Components)
-		pComponent->Update();
+	SceneNode::Update();
 
 	for (SceneNode* pNode : m_pNodes)
 		pNode->Update();
@@ -54,19 +53,8 @@ SceneNode* Scene::FindNode(const std::string& name)
 	return nullptr;
 }
 
-void Scene::AddComponent(Component* pComponent)
+void Scene::OnSceneSet(Scene* pScene)
 {
-	pComponent->OnSceneSet(this);
-	pComponent->OnNodeSet(nullptr);
-	m_Components.push_back(pComponent);
-}
-
-Component* Scene::GetComponent(StringHash type)
-{
-	for (Component* pComponent : m_Components)
-	{
-		if (type == pComponent->GetType())
-			return pComponent;
-	}
-	return nullptr;
+	UNREFERENCED_PARAMETER(pScene);
+	SceneNode::OnSceneSet(this);
 }

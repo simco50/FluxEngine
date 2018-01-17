@@ -1,5 +1,5 @@
 #pragma once
-#include "Core\Object.h"
+#include "SceneGraph\SceneNode.h"
 
 class SceneNode;
 class Drawable;
@@ -7,9 +7,9 @@ class Graphics;
 class Renderer;
 class Component;
 
-class Scene : public Object
+class Scene : public SceneNode
 {
-	FLUX_OBJECT(Scene, Object);
+	FLUX_OBJECT(Scene, SceneNode);
 
 public:
 	Scene(Graphics* pGraphics);
@@ -24,26 +24,7 @@ public:
 
 	SceneNode* FindNode(const std::string& name);
 
-	void AddComponent(Component* pComponent);
-
-	Component* GetComponent(StringHash hash);
-
-	template<typename T>
-	T* GetComponent()
-	{
-		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
-	}
-
-	template<typename T, typename ...Args>
-	T* GetOrCreateComponent(Args ...args)
-	{
-		T* pComponent = GetComponent<T>();
-		if (pComponent)
-			return pComponent;
-		pComponent = new T(args...);
-		AddComponent(pComponent);
-		return pComponent;
-	}
+	virtual void OnSceneSet(Scene* pScene) override;
 
 private:
 	unique_ptr<Renderer> m_pRenderer;
