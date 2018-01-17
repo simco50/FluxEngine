@@ -20,8 +20,6 @@ public:
 
 	virtual BoundingBox GetWorldBoundingBox() const override;
 
-	virtual void Update() override;
-
 private:
 	Mesh* m_pMesh = nullptr;
 };

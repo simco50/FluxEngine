@@ -2,6 +2,9 @@
 #include "Rigidbody.h"
 #include "Scenegraph\Transform.h"
 #include "PhysicsSystem.h"
+#include "PhysicsScene.h"
+#include "Scenegraph\SceneNode.h"
+#include "Scenegraph\Scene.h"
 
 Rigidbody::Rigidbody(PhysicsSystem* pSystem) : 
 	m_pSystem(pSystem)
@@ -11,16 +14,30 @@ Rigidbody::Rigidbody(PhysicsSystem* pSystem) :
 
 Rigidbody::~Rigidbody()
 {
-	/*if (m_pBody)
-	{
-		m_pBody->release();
-		m_pBody = nullptr;
-	}*/
 }
 
 void Rigidbody::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
+
+	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>(m_pSystem);
+	m_pPhysicsScene->GetScene()->addActor(*m_pBody);
+}
+
+void Rigidbody::OnSceneRemoved()
+{
+	Component::OnSceneRemoved();
+
+	if (m_pPhysicsScene && m_pBody)
+	{
+		m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
+		m_pBody = nullptr;
+	}
+}
+
+void Rigidbody::OnNodeSet(SceneNode* pNode)
+{
+	Component::OnNodeSet(pNode);
 
 	Transform* pTransform = GetTransform();
 	PxTransform transform = *reinterpret_cast<const PxTransform*>(&pTransform->GetWorldMatrix());
@@ -31,13 +48,13 @@ void Rigidbody::OnSceneSet(Scene* pScene)
 	m_pBody->userData = this;
 }
 
-void Rigidbody::OnSceneRemoved()
+void Rigidbody::OnNodeRemoved()
 {
-	Component::OnSceneRemoved();
+	Component::OnNodeRemoved();
 
-	if (m_pBody)
+	if (m_pPhysicsScene && m_pBody)
 	{
-		m_pBody->release();
+		m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
 		m_pBody = nullptr;
 	}
 }

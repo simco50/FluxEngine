@@ -25,6 +25,7 @@
 #include "Physics/PhysX/PhysicsSystem.h"
 #include "Physics/PhysX/PhysicsScene.h"
 #include "Physics/PhysX/Rigidbody.h"
+#include "Physics/PhysX/Collider.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	SafeDelete(m_pGraphics);
+	m_pPhysics->Shutdown();
 
 	Console::Release();
 	Config::Flush();
@@ -113,7 +115,7 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
 
-	m_pNode = new SceneNode("Particles");
+	/*m_pNode = new SceneNode("Particles");
 
 	m_pParticleSystem = ResourceManager::Instance().Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
 	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem);
@@ -135,21 +137,26 @@ void FluxCore::InitGame()
 	pModel->SetMaterial(pMaterial);
 
 	m_pModelNode->AddComponent(pModel);
-	m_pScene->AddChild(m_pModelNode);
+	m_pScene->AddChild(m_pModelNode);*/
 
+	m_pNode = new SceneNode("Particles");
 	m_pPhysics = make_unique<PhysicsSystem>();
 	m_pPhysics->Initialize();
-	PhysicsScene* pScene = new PhysicsScene(m_pPhysics.get());
-	pScene->OnSceneSet(m_pScene.get());
 
-	Rigidbody* pRigidbody = new Rigidbody(m_pPhysics.get());
-	m_pNode->AddComponent(pRigidbody);
-	
-	pScene->OnSceneRemoved();
-	delete pScene;
-	m_pPhysics->Shutdown();
-	m_pPhysics.reset();
+	m_pPhysicsScene = make_unique<PhysicsScene>(m_pPhysics.get());
+	m_pPhysicsScene->OnSceneSet(m_pScene.get());	
 
+	Collider* pCollider = new Collider(m_pPhysics.get());
+	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());
+	m_pNode->AddComponent(pRigidBody);
+	m_pNode->AddComponent(pCollider);
+	pCollider->SetShape(PxBoxGeometry(1, 1, 1));
+
+	pCollider = new Collider(m_pPhysics.get());
+	m_pNode->AddComponent(pCollider);
+	pCollider->SetShape(PxSphereGeometry(1.2f));
+
+	m_pScene->AddChild(m_pNode);
 }
 
 void FluxCore::GameLoop()
@@ -162,6 +169,8 @@ void FluxCore::GameLoop()
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
+
+	m_pPhysicsScene->Update();
 
 	RenderUI();
 

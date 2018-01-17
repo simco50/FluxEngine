@@ -27,6 +27,13 @@ void PhysicsSystem::Initialize()
 	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pPvd);
 	if (m_pPhysics == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPhysics");
+
+	if (!PxInitExtensions(*m_pPhysics, m_pPvd))
+		FLUX_LOG(ERROR, "PxInitExtensions failed!");
+
+	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(3);
+
+	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 }
 
 void PhysicsSystem::SetupPvdConnection()
@@ -36,6 +43,9 @@ void PhysicsSystem::SetupPvdConnection()
 
 void PhysicsSystem::Shutdown()
 {
+	PxCloseExtensions();
+	((PxDefaultCpuDispatcher*)(m_pCpuDispatcher))->release();
+	m_pCpuDispatcher = nullptr;
 	m_pPhysics->release();
 	m_pPhysics = nullptr;
 	m_pPvd->release();
@@ -44,4 +54,26 @@ void PhysicsSystem::Shutdown()
 	m_pPvdTransport = nullptr;
 	m_pFoundation->release();
 	m_pFoundation = nullptr;
+}
+
+physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttributes attribute0, PxFilterData filterData0, PxFilterObjectAttributes attribute1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
+{
+	UNREFERENCED_PARAMETER(constantBlock);
+	UNREFERENCED_PARAMETER(constantBlockSize);
+
+	// let triggers through
+	if (PxFilterObjectIsTrigger(attribute0) || PxFilterObjectIsTrigger(attribute1))
+	{
+		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+		return PxFilterFlag::eDEFAULT;
+	}
+	// generate contacts for all that were not filtered above
+	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+
+	// trigger the contact callback for pairs (A,B) where
+	// the filtermask of A contains the ID of B and vice versa.
+	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	return PxFilterFlag::eDEFAULT;
 }

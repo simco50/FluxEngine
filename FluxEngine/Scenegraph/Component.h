@@ -34,7 +34,7 @@ public:
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
 
-	virtual void Update() = 0;
+	virtual void Update() {}
 
 protected:
 	Scene* m_pScene = nullptr;

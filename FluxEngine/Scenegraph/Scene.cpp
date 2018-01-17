@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "SceneNode.h"
 #include "Rendering\Renderer.h"
+#include "Component.h"
 
 Scene::Scene(Graphics* pGraphics)
 {
@@ -12,6 +13,8 @@ Scene::~Scene()
 {
 	for (SceneNode*& pNode : m_pNodes)
 		SafeDelete(pNode);
+	for (Component*& pComponent : m_Components)
+		SafeDelete(pComponent);
 }
 
 void Scene::Initialize()
@@ -21,6 +24,9 @@ void Scene::Initialize()
 
 void Scene::Update()
 {
+	for (Component* pComponent : m_Components)
+		pComponent->Update();
+
 	for (SceneNode* pNode : m_pNodes)
 		pNode->Update();
 
@@ -44,6 +50,23 @@ SceneNode* Scene::FindNode(const std::string& name)
 	{
 		if (pNode->GetName() == name)
 			return pNode;
+	}
+	return nullptr;
+}
+
+void Scene::AddComponent(Component* pComponent)
+{
+	pComponent->OnSceneSet(this);
+	pComponent->OnNodeSet(nullptr);
+	m_Components.push_back(pComponent);
+}
+
+Component* Scene::GetComponent(StringHash type)
+{
+	for (Component* pComponent : m_Components)
+	{
+		if (type == pComponent->GetType())
+			return pComponent;
 	}
 	return nullptr;
 }

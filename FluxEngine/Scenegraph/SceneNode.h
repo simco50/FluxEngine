@@ -20,7 +20,6 @@ public:
 	void AddComponent(Component* pComponent);
 
 	Transform* GetTransform() const { return m_pTransform.get();}
-
 	SceneNode* GetParent() const { return m_pParent; }
 
 	void SetName(const std::string& name) { m_Name = name; }
@@ -33,6 +32,17 @@ public:
 	}
 
 	Component* GetComponent(StringHash type);
+
+	template<typename T, typename ...Args>
+	T* GetOrCreateComponent(Args ...args)
+	{
+		T* pComponent = GetComponent<T>();
+		if (pComponent)
+			return pComponent;
+		pComponent = new T(args...);
+		AddComponent(pComponent);
+		return pComponent;
+	}
 
 protected:
 	unique_ptr<Transform> m_pTransform;

@@ -13,6 +13,8 @@ public:
 	virtual void OnSceneRemoved() override;
 	virtual void Update() override;
 
+	physx::PxScene* GetScene() const { return m_pScene; }
+
 private:
 	physx::PxScene* m_pScene = nullptr;
 	PhysicsSystem* m_pSystem = nullptr;

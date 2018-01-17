@@ -15,7 +15,10 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnSceneRemoved() override;
-	virtual void Update() override {}
+	virtual void OnNodeSet(SceneNode* pNode) override;
+	virtual void OnNodeRemoved() override;
+
+	physx::PxRigidBody* GetBody() const { return reinterpret_cast<physx::PxRigidBody*>(m_pBody); }
 
 private:
 	PhysicsScene* m_pPhysicsScene = nullptr;

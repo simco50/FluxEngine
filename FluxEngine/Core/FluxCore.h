@@ -13,6 +13,7 @@ class SceneNode;
 class Material;
 class ParticleSystem;
 class PhysicsSystem;
+class PhysicsScene;
 
 class FluxCore
 {
@@ -50,4 +51,5 @@ private:
 	SceneNode* m_pModelNode = nullptr;
 
 	unique_ptr<PhysicsSystem> m_pPhysics;
+	unique_ptr<PhysicsScene> m_pPhysicsScene;
 };
