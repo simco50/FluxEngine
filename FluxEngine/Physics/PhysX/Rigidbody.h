@@ -25,12 +25,13 @@ public:
 		Static,
 		Dynamic,
 	};
-
 	void SetType(const Rigidbody::Type type);
 
 	physx::PxRigidBody* GetBody() const { return reinterpret_cast<physx::PxRigidBody*>(m_pBody); }
 
 private:
+	void CreateBody(const Rigidbody::Type type);
+
 	PhysicsScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pSystem = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
