@@ -128,18 +128,19 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(m_pModelNode);*/
 
 	m_pNode = new SceneNode("Particles");
-	m_pNode->GetTransform()->Translate(0, 5, 0);
+	m_pNode->GetTransform()->Translate(0, 8, 0);
 	m_pPhysics = make_unique<PhysicsSystem>();
 	m_pPhysics->Initialize();
 
 	Collider* pCollider = new Collider(m_pPhysics.get());
 	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());
+	pRigidBody->SetType(Rigidbody::Type::Dynamic);
 	m_pNode->AddComponent(pRigidBody);
 	m_pNode->AddComponent(pCollider);
-	pCollider->SetShape(PxBoxGeometry(1, 1, 1));
+	pCollider->SetShape(PxSphereGeometry(1));
 
 	Model* pModel = new Model();
-	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Cube.flux");
+	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),

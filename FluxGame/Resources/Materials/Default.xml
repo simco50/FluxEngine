@@ -7,4 +7,8 @@
 	<Properties>
 		<CullMode value="Back"/>
 	</Properties>
+
+	<Parameters>
+		<Texture slot="Diffuse" value="Resources/Textures/spot.png"/>
+	</Parameters>
 </Material>

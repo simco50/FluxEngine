@@ -83,8 +83,8 @@ void Transform::UpdateDirections()
 void Transform::MarkDirty(const Vector3& position, const Vector3& scale, const Quaternion& rotation)
 {
 	m_WorldPosition = position;
-	m_Scale = scale;
-	m_Rotation = rotation;
+	m_WorldScale = scale;
+	m_WorldRotation = rotation;
 	OnWorldChange();
 }
 

@@ -1,13 +1,6 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 
-#ifdef COMPILE_PS
-cbuffer cShaderConstantsPS : register(b3)
-{
-	float4 cColorPS;
-}
-#endif
-
 struct VS_INPUT
 {
 	float3 position : POSITION;
@@ -49,6 +42,6 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 	float3 normal = normalize(input.normal);
 	float diffuseStrength = saturate(dot(normal, -cLightDirection));
 	float4 sample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
-	return float4((sample.rgb * cColorPS.rgb) * diffuseStrength, 1.0f);
+	return float4(sample.rgb * diffuseStrength, 1.0f);
 }
 #endif
