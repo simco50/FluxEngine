@@ -15,6 +15,7 @@ public:
 	physx::PxPhysics* GetPhysics() const { return m_pPhysics; }
 	physx::PxFoundation* GetFoundation() const { return m_pFoundation; }
 	physx::PxCpuDispatcher* GetCpuDispatcher() const { return m_pCpuDispatcher; }
+	physx::PxPvd* GetPvd() const { return m_pPvd; }
 
 	static PxFilterFlags SimulationFilterShader(
 		PxFilterObjectAttributes attribute0, PxFilterData filterData0,

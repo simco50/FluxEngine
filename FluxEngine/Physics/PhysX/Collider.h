@@ -26,6 +26,8 @@ public:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnNodeRemoved() override;
 
+	virtual bool CanHaveMultiple() const override { return true; }
+
 private:
 	void RemoveShape();
 

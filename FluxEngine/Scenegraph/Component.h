@@ -27,6 +27,8 @@ public:
 	virtual void OnMarkedDirty(const Matrix& worldMatrix) { UNREFERENCED_PARAMETER(worldMatrix); }
 	virtual void Update() {}
 
+	virtual bool CanHaveMultiple() const { return false; }
+
 	Transform* GetTransform();
 
 	Component* GetComponent(StringHash type);

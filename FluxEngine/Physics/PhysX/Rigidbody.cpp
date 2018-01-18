@@ -70,11 +70,48 @@ void Rigidbody::Update()
 	}
 }
 
+void Rigidbody::SetKinematic(const bool isKinematic)
+{
+	if (m_pBody && m_Type == Type::Dynamic)
+		reinterpret_cast<PxRigidDynamic*>(m_pBody)->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, isKinematic);
+}
+
 void Rigidbody::SetType(const Type type)
 {
 	if (m_Type == type)
 		return;
 	CreateBody(type);
+}
+
+void Rigidbody::SetConstraints(const Constraint constraints)
+{
+	if (constraints == m_Constraints)
+		return;
+	m_Constraints = constraints;
+
+	if(m_pConstraintJoint == nullptr && m_pBody)
+		m_pConstraintJoint = PxD6JointCreate(*m_pSystem->GetPhysics(), nullptr, m_pBody->getGlobalPose(), m_pBody, PxTransform(PxIdentity));
+
+	if (m_pConstraintJoint)
+	{
+		if (constraints == Constraint::None)
+		{
+			m_pConstraintJoint->release();
+			m_pConstraintJoint = nullptr;
+		}
+		else
+		{
+			m_pConstraintJoint->setMotion(PxD6Axis::eX, constraints & Constraint::XPosition ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			m_pConstraintJoint->setMotion(PxD6Axis::eY, constraints & Constraint::YPosition ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			m_pConstraintJoint->setMotion(PxD6Axis::eZ, constraints & Constraint::ZPosition ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			
+			m_pConstraintJoint->setMotion(PxD6Axis::eTWIST, constraints & Constraint::XRotation ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			m_pConstraintJoint->setMotion(PxD6Axis::eSWING1, constraints & Constraint::YRotation ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			m_pConstraintJoint->setMotion(PxD6Axis::eSWING2, constraints & Constraint::ZPosition ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
+			
+			m_pConstraintJoint->setLocalPose(PxJointActorIndex::eACTOR0, m_pBody->getGlobalPose());
+		}
+	}
 }
 
 void Rigidbody::CreateBody(const Type type)

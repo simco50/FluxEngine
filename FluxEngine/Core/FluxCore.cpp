@@ -52,7 +52,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 		{
-			FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+			FLUX_LOG(WARNING, "Failed to mount './Resources.pak'");
 		}
 		if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
 		{
@@ -115,18 +115,6 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
 
-	/*m_pNode = new SceneNode("Particles");
-
-	m_pParticleSystem = ResourceManager::Instance().Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem);
-	m_pNode->AddComponent(pEmitter);
-	m_pScene->AddChild(m_pNode);
-
-	
-
-	m_pModelNode->AddComponent(pModel);
-	m_pScene->AddChild(m_pModelNode);*/
-
 	m_pNode = new SceneNode("Particles");
 	m_pNode->GetTransform()->Translate(0, 8, 0);
 	m_pPhysics = make_unique<PhysicsSystem>();
@@ -155,8 +143,10 @@ void FluxCore::InitGame()
 
 	m_pScene->AddChild(m_pNode);
 
+	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0, 0, 1);
+
 	PxRigidStatic* pFloor = m_pPhysics->GetPhysics()->createRigidStatic(PxTransform(PxVec3(0, 0, 0), PxQuat(PxPiDivTwo, PxVec3(0, 0, 1))));
-	pFloor->createShape(PxPlaneGeometry(), *m_pPhysics->GetDefaultMaterial());
+	pFloor->createShape(PxPlaneGeometry(), *pPhysMaterial);
 	m_pScene->GetComponent<PhysicsScene>()->GetScene()->addActor(*pFloor);
 }
 
@@ -171,10 +161,9 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
 
-	m_pNode->GetTransform()->Translate(GameTimer::DeltaTime(), 0, 0);
+	m_pNode->GetComponent<Rigidbody>()->GetBody()->addTorque(PxVec3(GameTimer::DeltaTime() * 10, GameTimer::DeltaTime() * 10, 0));
 
 	RenderUI();
-
 	m_pGraphics->EndFrame();
 }
 

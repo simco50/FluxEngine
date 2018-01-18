@@ -13,9 +13,9 @@ public:
 	virtual void OnSceneRemoved() override;
 	virtual void Update() override;
 
-	physx::PxScene* GetScene() const { return m_pScene; }
+	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
 
 private:
-	physx::PxScene* m_pScene = nullptr;
+	physx::PxScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pSystem = nullptr;
 };
