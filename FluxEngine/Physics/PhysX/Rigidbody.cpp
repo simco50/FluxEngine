@@ -40,11 +40,16 @@ void Rigidbody::OnNodeSet(SceneNode* pNode)
 	Component::OnNodeSet(pNode);
 
 	Transform* pTransform = GetTransform();
-	PxTransform transform = *reinterpret_cast<const PxTransform*>(&pTransform->GetWorldMatrix());
-	if (m_Dynamic)
-		m_pBody = m_pSystem->GetPhysics()->createRigidDynamic(transform);
-	else
+	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+	switch (m_Type)
+	{
+	case Rigidbody::Type::Static:
 		m_pBody = m_pSystem->GetPhysics()->createRigidStatic(transform);
+		break;
+	case Rigidbody::Type::Dynamic:
+		m_pBody = m_pSystem->GetPhysics()->createRigidDynamic(transform);
+		break;
+	}
 	m_pBody->userData = this;
 }
 
@@ -57,4 +62,31 @@ void Rigidbody::OnNodeRemoved()
 		m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
 		m_pBody = nullptr;
 	}
+}
+
+void Rigidbody::OnMarkedDirty(const Matrix& worldMatrix)
+{
+	if (m_pBody)
+	{
+		m_pBody->setGlobalPose(*reinterpret_cast<const PxTransform*>(&worldMatrix), true);
+	}
+}
+
+void Rigidbody::Update()
+{
+	if (m_pBody)
+	{
+		PxTransform transform = m_pBody->getGlobalPose();
+		GetTransform()->MarkDirty(*reinterpret_cast<Vector3*>(&transform.p), Vector3(1, 1, 1), *reinterpret_cast<Quaternion*>(&transform.q));
+	}
+}
+
+void Rigidbody::SetType(const Type type)
+{
+	if (m_pBody)
+	{
+		FLUX_LOG(WARNING, "[Rigidbody::SetType] > Rigidbody already attached to the scene! Set type before adding it to the node.");
+		return;
+	}
+	m_Type = type;
 }

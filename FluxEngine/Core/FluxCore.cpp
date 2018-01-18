@@ -122,7 +122,22 @@ void FluxCore::InitGame()
 	m_pNode->AddComponent(pEmitter);
 	m_pScene->AddChild(m_pNode);
 
-	m_pModelNode = new SceneNode();
+	
+
+	m_pModelNode->AddComponent(pModel);
+	m_pScene->AddChild(m_pModelNode);*/
+
+	m_pNode = new SceneNode("Particles");
+	m_pNode->GetTransform()->Translate(0, 5, 0);
+	m_pPhysics = make_unique<PhysicsSystem>();
+	m_pPhysics->Initialize();
+
+	Collider* pCollider = new Collider(m_pPhysics.get());
+	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());
+	m_pNode->AddComponent(pRigidBody);
+	m_pNode->AddComponent(pCollider);
+	pCollider->SetShape(PxBoxGeometry(1, 1, 1));
+
 	Model* pModel = new Model();
 	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> desc =
@@ -135,28 +150,13 @@ void FluxCore::InitGame()
 	pModel->SetMesh(pMesh);
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 	pModel->SetMaterial(pMaterial);
-
-	m_pModelNode->AddComponent(pModel);
-	m_pScene->AddChild(m_pModelNode);*/
-
-	m_pNode = new SceneNode("Particles");
-	m_pPhysics = make_unique<PhysicsSystem>();
-	m_pPhysics->Initialize();
-
-	m_pPhysicsScene = make_unique<PhysicsScene>(m_pPhysics.get());
-	m_pPhysicsScene->OnSceneSet(m_pScene.get());	
-
-	Collider* pCollider = new Collider(m_pPhysics.get());
-	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());
-	m_pNode->AddComponent(pRigidBody);
-	m_pNode->AddComponent(pCollider);
-	pCollider->SetShape(PxBoxGeometry(1, 1, 1));
-
-	pCollider = new Collider(m_pPhysics.get());
-	m_pNode->AddComponent(pCollider);
-	pCollider->SetShape(PxSphereGeometry(1.2f));
+	m_pNode->AddComponent(pModel);
 
 	m_pScene->AddChild(m_pNode);
+
+	PxRigidStatic* pFloor = m_pPhysics->GetPhysics()->createRigidStatic(PxTransform(PxVec3(0, 0, 0), PxQuat(PxPiDivTwo, PxVec3(0, 0, 1))));
+	pFloor->createShape(PxPlaneGeometry(), *m_pPhysics->GetDefaultMaterial());
+	m_pScene->GetComponent<PhysicsScene>()->GetScene()->addActor(*pFloor);
 }
 
 void FluxCore::GameLoop()
@@ -170,7 +170,7 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
 
-	m_pPhysicsScene->Update();
+	m_pNode->GetTransform()->Translate(GameTimer::DeltaTime(), 0, 0);
 
 	RenderUI();
 

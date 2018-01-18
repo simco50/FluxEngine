@@ -42,6 +42,8 @@ public:
 		return pComponent;
 	}
 
+	void OnTransformDirty(const Matrix& worldMatrix);
+
 protected:
 	//Constructor used for Scene to be able to initialize with "this"
 	SceneNode(Scene* pScene);

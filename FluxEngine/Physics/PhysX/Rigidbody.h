@@ -17,6 +17,16 @@ public:
 	virtual void OnSceneRemoved() override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnNodeRemoved() override;
+	virtual void OnMarkedDirty(const Matrix& worldMatrix) override;
+	virtual void Update() override;
+
+	enum class Type
+	{
+		Static,
+		Dynamic,
+	};
+
+	void SetType(const Rigidbody::Type type);
 
 	physx::PxRigidBody* GetBody() const { return reinterpret_cast<physx::PxRigidBody*>(m_pBody); }
 
@@ -24,6 +34,7 @@ private:
 	PhysicsScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pSystem = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
+	Rigidbody::Type m_Type = Type::Static;
 
 	bool m_Dynamic = false;
 };
