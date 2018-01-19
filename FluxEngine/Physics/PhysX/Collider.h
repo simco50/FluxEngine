@@ -31,7 +31,7 @@ public:
 private:
 	void RemoveShape();
 
-	PhysicsSystem* m_pSystem;
+	PhysicsSystem* m_pPhysicsSystem;
 	PhysicsScene* m_pScene = nullptr;
 	Rigidbody* m_pRigidbody = nullptr;
 

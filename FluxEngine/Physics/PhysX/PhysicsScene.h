@@ -17,5 +17,5 @@ public:
 
 private:
 	physx::PxScene* m_pPhysicsScene = nullptr;
-	PhysicsSystem* m_pSystem = nullptr;
+	PhysicsSystem* m_pPhysicsSystem = nullptr;
 };

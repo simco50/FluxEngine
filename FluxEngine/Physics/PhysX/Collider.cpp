@@ -2,9 +2,10 @@
 #include "Collider.h"
 #include "Rigidbody.h"
 #include "PhysicsSystem.h"
+#include "Scenegraph\SceneNode.h"
 
-Collider::Collider(PhysicsSystem* pSystem) :
-	m_pSystem(pSystem)
+Collider::Collider(PhysicsSystem* pPhysicsSystem) :
+	m_pPhysicsSystem(pPhysicsSystem)
 {
 
 }
@@ -21,13 +22,9 @@ physx::PxShape* Collider::SetShape(const physx::PxGeometry& pGeometry, physx::Px
 		return nullptr;
 	}
 
-	if (pMaterial == nullptr)
-		m_pMaterial = m_pSystem->GetDefaultMaterial();
-	else
-		m_pMaterial = pMaterial;
-
-	AUTOPROFILE(Collider_CreateShape);
-	PxShape* pShape = m_pSystem->GetPhysics()->createShape(pGeometry, &m_pMaterial, 1, false, shapeFlags);
+	AUTOPROFILE(Collider_SetShape);
+	m_pMaterial = pMaterial ? pMaterial : m_pPhysicsSystem->GetDefaultMaterial();
+	PxShape* pShape = m_pPhysicsSystem->GetPhysics()->createShape(pGeometry, &m_pMaterial, 1, true, shapeFlags);
 	m_pRigidbody->GetBody()->attachShape(*pShape);
 	m_pShape = pShape;
 	return pShape;
@@ -45,7 +42,7 @@ void Collider::SetTrigger(bool isTrigger)
 {
 	if (m_pShape == nullptr)
 	{
-		FLUX_LOG(WARNING, "[Collider::SetTrigger] Collider does not have a shape set");
+		FLUX_LOG(WARNING, "[Collider::SetTrigger] Collider does not have a shape");
 		return;
 	}
 	m_pShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
@@ -58,7 +55,8 @@ void Collider::OnNodeSet(SceneNode* pNode)
 	m_pRigidbody = GetComponent<Rigidbody>();
 	if (m_pRigidbody == nullptr)
 	{
-		FLUX_LOG(ERROR, "[Collider::OnSceneSet] > Object does not have a Rigidbody");
+		m_pRigidbody = new Rigidbody(m_pPhysicsSystem);
+		pNode->AddComponent(m_pRigidbody);
 		return;
 	}
 }

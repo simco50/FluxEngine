@@ -6,8 +6,8 @@
 #include "Scenegraph\SceneNode.h"
 #include "Scenegraph\Scene.h"
 
-Rigidbody::Rigidbody(PhysicsSystem* pSystem) : 
-	m_pSystem(pSystem)
+Rigidbody::Rigidbody(PhysicsSystem* pPhysicsSystem) : 
+	m_pPhysicsSystem(pPhysicsSystem)
 {
 
 }
@@ -20,7 +20,7 @@ void Rigidbody::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 
-	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>(m_pSystem);
+	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>(m_pPhysicsSystem);
 	m_pPhysicsScene->GetScene()->addActor(*m_pBody);
 }
 
@@ -76,7 +76,7 @@ void Rigidbody::SetKinematic(const bool isKinematic)
 		reinterpret_cast<PxRigidDynamic*>(m_pBody)->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, isKinematic);
 }
 
-void Rigidbody::SetType(const Type type)
+void Rigidbody::SetBodyType(const Type type)
 {
 	if (m_Type == type)
 		return;
@@ -90,7 +90,7 @@ void Rigidbody::SetConstraints(const Constraint constraints)
 	m_Constraints = constraints;
 
 	if(m_pConstraintJoint == nullptr && m_pBody)
-		m_pConstraintJoint = PxD6JointCreate(*m_pSystem->GetPhysics(), nullptr, m_pBody->getGlobalPose(), m_pBody, PxTransform(PxIdentity));
+		m_pConstraintJoint = PxD6JointCreate(*m_pPhysicsSystem->GetPhysics(), nullptr, m_pBody->getGlobalPose(), m_pBody, PxTransform(PxIdentity));
 
 	if (m_pConstraintJoint)
 	{
@@ -129,11 +129,11 @@ void Rigidbody::CreateBody(const Type type)
 	switch (m_Type)
 	{
 	case Rigidbody::Type::Dynamic:
-		pNewBody = m_pSystem->GetPhysics()->createRigidDynamic(transform);
+		pNewBody = m_pPhysicsSystem->GetPhysics()->createRigidDynamic(transform);
 		break;
 	case Rigidbody::Type::Static:
 	default:
-		pNewBody = m_pSystem->GetPhysics()->createRigidStatic(transform);
+		pNewBody = m_pPhysicsSystem->GetPhysics()->createRigidStatic(transform);
 		break;
 	}
 
@@ -141,13 +141,14 @@ void Rigidbody::CreateBody(const Type type)
 	{
 		FLUX_LOG(WARNING, "[Rigidbody::SetType] > Rigidbody already attached to the scene! Recreating body and transferring colliders. Set type before adding it to the node.");
 
+		//Remove all the shapes from the old body and attach to the new one
 		vector<PxShape*> shapes(m_pBody->getNbShapes());
 		m_pBody->getShapes(shapes.data(), (PxU32)shapes.size(), 0);
 
 		for (PxShape* pShape : shapes)
 		{
-			pNewBody->attachShape(*pShape);
 			m_pBody->detachShape(*pShape);
+			pNewBody->attachShape(*pShape);
 		}
 		if (m_pScene)
 			m_pPhysicsScene->GetScene()->removeActor(*m_pBody);

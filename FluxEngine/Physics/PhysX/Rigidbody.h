@@ -22,12 +22,15 @@ public:
 
 	void SetKinematic(const bool isKinematic);
 
+	void SetMass();
+
 	enum Type
 	{
 		Static,
 		Dynamic,
 	};
-	void SetType(const Rigidbody::Type type);
+	void SetBodyType(const Rigidbody::Type type);
+	Rigidbody::Type GetBodyType() const { return m_Type; }
 
 	enum Constraint
 	{
@@ -40,14 +43,29 @@ public:
 		ZPosition = 1 << 5
 	};
 	void SetConstraints(const Constraint constraints);
+	Rigidbody::Constraint GetConstraints() const { return m_Constraints; }
 
-	physx::PxRigidBody* GetBody() const { return reinterpret_cast<physx::PxRigidBody*>(m_pBody); }
+	physx::PxRigidActor* GetBody() const { return m_pBody; }
+	template<typename T>
+	T* GetBody() const;
+	template<>
+	physx::PxRigidDynamic* GetBody() const 
+	{ 
+		checkf(m_Type == Type::Dynamic, "[Rigidbody::GetBody()] Rigidbody is not Dynamic");
+		return reinterpret_cast<physx::PxRigidDynamic*>(m_pBody); 
+	}
+	template<>
+	physx::PxRigidStatic* GetBody() const 
+	{
+		checkf(m_Type == Type::Static, "[Rigidbody::GetBody()] Rigidbody is not Static");
+		return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
+	}
 
 private:
 	void CreateBody(const Rigidbody::Type type);
 
 	PhysicsScene* m_pPhysicsScene = nullptr;
-	PhysicsSystem* m_pSystem = nullptr;
+	PhysicsSystem* m_pPhysicsSystem = nullptr;
 
 	bool m_Dynamic = false;
 	Constraint m_Constraints = Constraint::None;

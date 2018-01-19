@@ -119,12 +119,9 @@ void FluxCore::InitGame()
 	m_pNode->GetTransform()->Translate(0, 8, 0);
 
 	Collider* pCollider = new Collider(m_pPhysics.get());
-	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());
-	pRigidBody->SetType(Rigidbody::Type::Dynamic);
-	m_pNode->AddComponent(pRigidBody);
 	m_pNode->AddComponent(pCollider);
 	pCollider->SetShape(PxSphereGeometry(1));
-
+	m_pNode->GetComponent<Rigidbody>()->SetBodyType(Rigidbody::Type::Dynamic);
 	Model* pModel = new Model();
 	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
@@ -159,7 +156,7 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
 
-	m_pNode->GetComponent<Rigidbody>()->GetBody()->addTorque(PxVec3(GameTimer::DeltaTime() * 10, GameTimer::DeltaTime() * 10, 0));
+	//m_pNode->GetComponent<Rigidbody>()->GetBody<PxRigidDynamic>()->addTorque(PxVec3(GameTimer::DeltaTime() * 10, GameTimer::DeltaTime() * 10, 0));
 
 	RenderUI();
 	m_pGraphics->EndFrame();

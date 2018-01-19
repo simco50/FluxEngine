@@ -7,10 +7,10 @@
 
 using namespace physx;
 
-PhysicsScene::PhysicsScene(PhysicsSystem* pSystem) :
-	m_pSystem(pSystem)
+PhysicsScene::PhysicsScene(PhysicsSystem* pPhysicsSystem) :
+	m_pPhysicsSystem(pPhysicsSystem)
 {
-
+	checkf(m_pPhysicsSystem, "[PhysicsScene::PhysicsScene] > Provided PhysicsSystem is null!");
 }
 
 PhysicsScene::~PhysicsScene()
@@ -22,13 +22,13 @@ void PhysicsScene::OnSceneSet(Scene* pScene)
 	Component::OnSceneSet(pScene);
 
 	AUTOPROFILE(PhysicsScene_CreateScene);
-	PxSceneDesc desc(m_pSystem->GetPhysics()->getTolerancesScale());
+	PxSceneDesc desc(m_pPhysicsSystem->GetPhysics()->getTolerancesScale());
 	desc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
-	desc.cpuDispatcher = m_pSystem->GetCpuDispatcher();
+	desc.cpuDispatcher = m_pPhysicsSystem->GetCpuDispatcher();
 	desc.gpuDispatcher = nullptr;//m_pCudaContextManager ? m_pCudaContextManager->getGpuDispatcher() : nullptr;
 	desc.filterShader = PhysicsSystem::SimulationFilterShader;
 	desc.userData = this;
-	m_pPhysicsScene = m_pSystem->GetPhysics()->createScene(desc);
+	m_pPhysicsScene = m_pPhysicsSystem->GetPhysics()->createScene(desc);
 }
 
 void PhysicsScene::OnSceneRemoved()
