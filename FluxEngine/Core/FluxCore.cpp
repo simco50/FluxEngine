@@ -36,7 +36,6 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	SafeDelete(m_pGraphics);
-	m_pPhysics->Shutdown();
 
 	Console::Release();
 	Config::Flush();
@@ -77,6 +76,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
 		m_pInput = make_unique<InputEngine>(m_pGraphics);
 		m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
+		m_pPhysics = make_unique<PhysicsSystem>();
 
 		GameTimer::Reset();
 
@@ -117,8 +117,6 @@ void FluxCore::InitGame()
 
 	m_pNode = new SceneNode("Particles");
 	m_pNode->GetTransform()->Translate(0, 8, 0);
-	m_pPhysics = make_unique<PhysicsSystem>();
-	m_pPhysics->Initialize();
 
 	Collider* pCollider = new Collider(m_pPhysics.get());
 	Rigidbody* pRigidBody = new Rigidbody(m_pPhysics.get());

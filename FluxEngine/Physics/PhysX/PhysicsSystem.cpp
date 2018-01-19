@@ -3,24 +3,14 @@
 
 PhysicsSystem::PhysicsSystem()
 {
-
-}
-
-PhysicsSystem::~PhysicsSystem()
-{
-
-}
-
-void PhysicsSystem::Initialize()
-{
 	AUTOPROFILE(PhysicsSystem_CreatePhysics);
 
 	m_pFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, m_AllocatorCallback, m_ErrorCallback);
-	if(m_pFoundation == nullptr)
+	if (m_pFoundation == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");
 
 	m_pPvd = PxCreatePvd(*m_pFoundation);
-	if(m_pPvd == nullptr)
+	if (m_pPvd == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPvd");
 	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 	m_pPvd->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eALL);
@@ -38,12 +28,7 @@ void PhysicsSystem::Initialize()
 	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 }
 
-void PhysicsSystem::SetupPvdConnection()
-{
-
-}
-
-void PhysicsSystem::Shutdown()
+PhysicsSystem::~PhysicsSystem()
 {
 	PxCloseExtensions();
 	((PxDefaultCpuDispatcher*)(m_pCpuDispatcher))->release();

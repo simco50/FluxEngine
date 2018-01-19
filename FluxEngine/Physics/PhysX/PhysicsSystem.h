@@ -8,10 +8,6 @@ public:
 	PhysicsSystem();
 	~PhysicsSystem();
 
-	void Initialize();
-	void SetupPvdConnection();
-	void Shutdown();
-
 	physx::PxPhysics* GetPhysics() const { return m_pPhysics; }
 	physx::PxFoundation* GetFoundation() const { return m_pFoundation; }
 	physx::PxCpuDispatcher* GetCpuDispatcher() const { return m_pCpuDispatcher; }
