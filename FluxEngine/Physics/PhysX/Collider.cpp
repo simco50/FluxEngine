@@ -26,6 +26,7 @@ physx::PxShape* Collider::SetShape(const physx::PxGeometry& pGeometry, physx::Px
 	else
 		m_pMaterial = pMaterial;
 
+	AUTOPROFILE(Collider_CreateShape);
 	PxShape* pShape = m_pSystem->GetPhysics()->createShape(pGeometry, &m_pMaterial, 1, false, shapeFlags);
 	m_pRigidbody->GetBody()->attachShape(*pShape);
 	m_pShape = pShape;

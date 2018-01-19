@@ -120,6 +120,8 @@ void Rigidbody::CreateBody(const Type type)
 	if (m_pNode == nullptr)
 		return;
 
+	AUTOPROFILE(Rigidbody_CreateBody);
+
 	Transform* pTransform = GetTransform();
 	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
 

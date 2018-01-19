@@ -21,6 +21,7 @@ void PhysicsScene::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 
+	AUTOPROFILE(PhysicsScene_CreateScene);
 	PxSceneDesc desc(m_pSystem->GetPhysics()->getTolerancesScale());
 	desc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 	desc.cpuDispatcher = m_pSystem->GetCpuDispatcher();

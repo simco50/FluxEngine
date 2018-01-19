@@ -13,6 +13,8 @@ PhysicsSystem::~PhysicsSystem()
 
 void PhysicsSystem::Initialize()
 {
+	AUTOPROFILE(PhysicsSystem_CreatePhysics);
+
 	m_pFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, m_AllocatorCallback, m_ErrorCallback);
 	if(m_pFoundation == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");
