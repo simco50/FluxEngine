@@ -7,7 +7,7 @@ workspace "FluxEngine"
     rtti "Off"
 	characterset ("MBCS")
 	defines { "_CONSOLE", "D3D11" }
-	--flags {"FatalWarnings"}
+	flags {"FatalWarnings"}
 	language "C++"
 
     filter { "platforms:x64" }
