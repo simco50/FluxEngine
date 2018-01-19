@@ -18,18 +18,18 @@ private:
 	static int GetNewID();
 };
 
-template<typename ...Args>
+template<typename RetVal, typename ...Args>
 class ICallable
 {
 public:
-	virtual void Execute(Args ...args) = 0;
+	virtual RetVal Execute(Args ...args) = 0;
 };
 
-template<typename T, typename ...Args>
-class BaseDelegate : public ICallable<Args...>
+template<typename RetVal, typename T, typename ...Args>
+class BaseDelegate : public ICallable<RetVal, Args...>
 {
 public:
-	using DelegateFunction = void(T::*)(Args...);
+	using DelegateFunction = RetVal(T::*)(Args...);
 
 	void Bind(T* pObject, DelegateFunction pFunction)
 	{
@@ -40,13 +40,51 @@ public:
 	T* m_pObject;
 	DelegateFunction m_pFunction;
 
-	virtual void Execute(Args ...args) override
+	virtual RetVal Execute(Args ...args) override
 	{
-		(m_pObject->*m_pFunction)(args...);
+		return (m_pObject->*m_pFunction)(args...);
 	}
 };
 
-template<typename ...Args>
+template<typename RetVal, typename ...Args>
+class Delegate
+{
+public:
+	Delegate() {}
+	~Delegate()
+	{
+		if (m_pEvent)
+		{
+			delete m_pEvent;
+			m_pEvent = nullptr;
+		}
+	}
+
+	template<typename RetVal, typename T>
+	void Bind(T* pObject, RetVal(T::*pFunction)(Args...))
+	{
+		BaseDelegate<RetVal, T, Args...>* pDelegate = new BaseDelegate<RetVal, T, Args...>();
+		pDelegate->Bind(pObject, pFunction);
+		m_pEvent = pDelegate;
+	}
+
+	RetVal ExecuteIfBound(Args ...args)
+	{
+		if (m_pEvent)
+			return m_pEvent->Execute(args...);
+		return (RetVal)0;
+	}
+
+	RetVal Execute(Args ...args)
+	{
+		return m_pEvent->Execute(args...);
+	}
+
+private:
+	ICallable<RetVal, Args...>* m_pEvent;
+};
+
+template<typename ...Args >
 class MulticastDelegate
 {
 public:
@@ -61,17 +99,11 @@ public:
 	template<typename T>
 	DelegateHandle Add(T* pObject, void(T::*pFunction)(Args...))
 	{
-		BaseDelegate<T, Args...>* pDelegate = new BaseDelegate<T, Args...>();
+		BaseDelegate<void, T, Args...>* pDelegate = new BaseDelegate<void, T, Args...>();
 		pDelegate->Bind(pObject, pFunction);
 		DelegateHandle handle(true);
 		m_Events.push_back(EventPair(handle, pDelegate));
 		return handle;
-	}
-
-	template<typename T>
-	void Add(T&& lambda)
-	{
-		void(*name)(void) = lambda;
 	}
 
 	bool Remove(const DelegateHandle& handle)
@@ -94,43 +126,6 @@ public:
 	}
 
 private:
-	using EventPair = std::pair<DelegateHandle, ICallable<Args...>*>;
+	using EventPair = std::pair<DelegateHandle, ICallable<void, Args...>*>;
 	std::vector<EventPair> m_Events;
-};
-
-template<typename ...Args>
-class Delegate
-{
-public:
-	Delegate() {}
-	~Delegate() 
-	{
-		if (m_pEvent)
-		{
-			delete m_pEvent;
-			m_pEvent = nullptr;
-		}
-	}
-
-	template<typename T>
-	void Bind(T* pObject, void(T::*pFunction)(Args...))
-	{
-		BaseDelegate<T, Args...>* pDelegate = new BaseDelegate<T, Args...>();
-		pDelegate->Bind(pObject, pFunction);
-		m_pEvent = pDelegate;
-	}
-
-	void ExecuteIfBound(Args ...args)
-	{
-		if (m_pEvent)
-			m_pEvent->Execute(args...);
-	}
-
-	void Execute(Args ...args)
-	{
-		m_pEvent->Execute(args...);
-	}
-
-private:
-	ICallable<Args...>* m_pEvent;
 };
