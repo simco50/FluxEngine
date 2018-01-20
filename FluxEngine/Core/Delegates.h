@@ -14,17 +14,17 @@ class RawDelegate : public IDelegate<RetVal, Args...>
 public:
 	using DelegateFunction = RetVal(T::*)(Args...);
 
-	void Bind(T* pObject, DelegateFunction pFunction)
-	{
-		m_pObject = pObject;
-		m_pFunction = pFunction;
-	}
+	RawDelegate(T* pObject, DelegateFunction pFunction) :
+		m_pObject(pObject),
+		m_pFunction(pFunction)
+	{}
 
 	virtual RetVal Execute(Args ...args) override
 	{
 		return (m_pObject->*m_pFunction)(args...);
 	}
 
+private:
 	T* m_pObject;
 	DelegateFunction m_pFunction;
 };
@@ -35,16 +35,16 @@ class StaticDelegate : public IDelegate<RetVal, Args...>
 public:
 	using DelegateFunction = RetVal(*)(Args...);
 
-	void Bind(DelegateFunction pFunction)
-	{
-		m_pFunction = pFunction;
-	}
+	StaticDelegate(DelegateFunction pFunction) :
+		m_pFunction(pFunction)
+	{}
 
 	virtual RetVal Execute(Args ...args) override
 	{
 		return (*m_pFunction)(args...);
 	}
 
+private:
 	DelegateFunction m_pFunction;
 };
 
@@ -69,6 +69,26 @@ private:
 	TLambda* m_Lambda;
 };
 
+template<typename RetVal, typename T, typename ...Args>
+class SPDelegate : public IDelegate<RetVal, Args...>
+{
+public:
+	using DelegateFunction = RetVal(T::*)(Args...);
+
+	SPDelegate(shared_ptr<T> pObject, DelegateFunction pFunction) :
+		m_pObject(pObject),
+		m_pFunction(pFunction)
+	{}
+	virtual RetVal Execute(Args ...args) override
+	{
+		return (m_pObject.get()->*m_pFunction)(args...);
+	}
+
+private:
+	std::shared_ptr<T> m_pObject;
+	DelegateFunction m_pFunction;
+};
+
 template<typename RetVal, typename ...Args>
 class SinglecastDelegate
 {
@@ -82,16 +102,14 @@ public:
 	template<typename T>
 	void BindRaw(T* pObject, RetVal(T::*pFunction)(Args...))
 	{
-		RawDelegate<RetVal, T, Args...>* pDelegate = new RawDelegate<RetVal, T, Args...>();
-		pDelegate->Bind(pObject, pFunction);
+		RawDelegate<RetVal, T, Args...>* pDelegate = new RawDelegate<RetVal, T, Args...>(pObject, pFunction);
 		SafeDelete(m_pEvent);
 		m_pEvent = pDelegate;
 	}
 
 	void BindStatic(RetVal(*pFunction)(Args...))
 	{
-		StaticDelegate<RetVal, Args...>* pDelegate = new StaticDelegate<RetVal, Args...>();
-		pDelegate->Bind(pFunction);
+		StaticDelegate<RetVal, Args...>* pDelegate = new StaticDelegate<RetVal, Args...>(pFunction);
 		SafeDelete(m_pEvent);
 		m_pEvent = pDelegate;
 	}
@@ -100,6 +118,14 @@ public:
 	void BindLamda(LambdaType&& lambda)
 	{
 		LambdaDelegate<LambdaType, RetVal, Args...>* pDelegate = new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda));
+		SafeDelete(m_pEvent);
+		m_pEvent = pDelegate;
+	}
+
+	template<typename T>
+	void BindSP(shared_ptr<T> pObject, RetVal(T::*pFunction)(Args...))
+	{
+		SPDelegate<RetVal, T, Args...>* pDelegate = new SPDelegate<RetVal, T, Args...>(pObject, pFunction);
 		SafeDelete(m_pEvent);
 		m_pEvent = pDelegate;
 	}
@@ -158,8 +184,7 @@ public:
 	template<typename T>
 	DelegateHandle AddRaw(T* pObject, void(T::*pFunction)(Args...))
 	{
-		RawDelegate<void, T, Args...>* pDelegate = new RawDelegate<void, T, Args...>();
-		pDelegate->Bind(pObject, pFunction);
+		RawDelegate<void, T, Args...>* pDelegate = new RawDelegate<void, T, Args...>(pObject, pFunction);
 		DelegateHandle handle(true);
 		m_Events.push_back(EventPair(handle, pDelegate));
 		return handle;
@@ -167,8 +192,7 @@ public:
 
 	DelegateHandle AddStatic(void(*pFunction)(Args...))
 	{
-		StaticDelegate<void, Args...>* pDelegate = new StaticDelegate<void, Args...>();
-		pDelegate->Bind(pFunction);
+		StaticDelegate<void, Args...>* pDelegate = new StaticDelegate<void, Args...>(pFunction);
 		DelegateHandle handle(true);
 		m_Events.push_back(EventPair(handle, pDelegate));
 		return handle;
@@ -179,6 +203,16 @@ public:
 	{
 		LambdaDelegate<LambdaType, void, Args...>* pDelegate = new LambdaDelegate<LambdaType, void, Args...>(std::forward<LambdaType>(lambda));
 		DelegateHandle handle(true);
+		m_Events.push_back(EventPair(handle, pDelegate));
+		return handle;
+	}
+
+	template<typename T>
+	void AddSP(shared_ptr<T> pObject, void(T::*pFunction)(Args...))
+	{
+		SPDelegate<void, T, Args...>* pDelegate = new SPDelegate<void, T, Args...>(pObject, pFunction);
+		DelegateHandle handle(true);
+		SafeDelete(m_pEvent);
 		m_Events.push_back(EventPair(handle, pDelegate));
 		return handle;
 	}

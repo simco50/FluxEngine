@@ -22,8 +22,6 @@ public:
 
 	void SetKinematic(const bool isKinematic);
 
-	void SetMass();
-
 	enum Type
 	{
 		Static,
