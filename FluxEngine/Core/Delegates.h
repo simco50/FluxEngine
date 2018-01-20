@@ -4,6 +4,7 @@ template<typename RetVal, typename ...Args>
 class IDelegate
 {
 public:
+	virtual ~IDelegate() {}
 	virtual RetVal Execute(Args ...args) = 0;
 };
 
@@ -54,7 +55,7 @@ public:
 	LambdaDelegate(TLambda&& lambda) : 
 		m_Lambda(new TLambda(lambda)) 
 	{}
-	~LambdaDelegate()
+	virtual ~LambdaDelegate()
 	{
 		delete m_Lambda;
 	}
@@ -67,7 +68,6 @@ public:
 private:
 	TLambda* m_Lambda;
 };
-
 
 template<typename RetVal, typename ...Args>
 class SinglecastDelegate

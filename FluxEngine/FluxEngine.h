@@ -183,6 +183,7 @@ using namespace DirectX::SimpleMath;
 
 #include "Core/TypeInfo.h"
 #include "Core/Object.h"
+#include "Core/Delegates.h"
 #include "Content/ResourceManager.h"
 
 using namespace Smart_COM;
