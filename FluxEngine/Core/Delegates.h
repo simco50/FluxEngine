@@ -1,5 +1,130 @@
 #pragma once
 
+template<typename RetVal, typename ...Args>
+class IDelegate
+{
+public:
+	virtual RetVal Execute(Args ...args) = 0;
+};
+
+template<typename RetVal, typename T, typename ...Args>
+class RawDelegate : public IDelegate<RetVal, Args...>
+{
+public:
+	using DelegateFunction = RetVal(T::*)(Args...);
+
+	void Bind(T* pObject, DelegateFunction pFunction)
+	{
+		m_pObject = pObject;
+		m_pFunction = pFunction;
+	}
+
+	virtual RetVal Execute(Args ...args) override
+	{
+		return (m_pObject->*m_pFunction)(args...);
+	}
+
+	T* m_pObject;
+	DelegateFunction m_pFunction;
+};
+
+template<typename RetVal, typename...Args>
+class StaticDelegate : public IDelegate<RetVal, Args...>
+{
+public:
+	using DelegateFunction = RetVal(*)(Args...);
+
+	void Bind(DelegateFunction pFunction)
+	{
+		m_pFunction = pFunction;
+	}
+
+	virtual RetVal Execute(Args ...args) override
+	{
+		return (*m_pFunction)(args...);
+	}
+
+	DelegateFunction m_pFunction;
+};
+
+template< typename TLambda, typename RetVal, typename... Args>
+class LambdaDelegate : public IDelegate<RetVal, Args...>
+{
+public:
+	LambdaDelegate(TLambda&& lambda) : 
+		m_Lambda(new TLambda(lambda)) 
+	{}
+	~LambdaDelegate()
+	{
+		delete m_Lambda;
+	}
+
+	RetVal Execute(Args... args) override
+	{
+		return (*m_Lambda)(args...);
+	}
+
+private:
+	TLambda* m_Lambda;
+};
+
+
+template<typename RetVal, typename ...Args>
+class SinglecastDelegate
+{
+public:
+	SinglecastDelegate() {}
+	~SinglecastDelegate()
+	{
+		SafeDelete(m_pEvent);
+	}
+
+	template<typename T>
+	void BindRaw(T* pObject, RetVal(T::*pFunction)(Args...))
+	{
+		RawDelegate<RetVal, T, Args...>* pDelegate = new RawDelegate<RetVal, T, Args...>();
+		pDelegate->Bind(pObject, pFunction);
+		SafeDelete(m_pEvent);
+		m_pEvent = pDelegate;
+	}
+
+	void BindStatic(RetVal(*pFunction)(Args...))
+	{
+		StaticDelegate<RetVal, Args...>* pDelegate = new StaticDelegate<RetVal, Args...>();
+		pDelegate->Bind(pFunction);
+		SafeDelete(m_pEvent);
+		m_pEvent = pDelegate;
+	}
+
+	template<typename LambdaType>
+	void BindLamda(LambdaType&& lambda)
+	{
+		LambdaDelegate<LambdaType, RetVal, Args...>* pDelegate = new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda));
+		SafeDelete(m_pEvent);
+		m_pEvent = pDelegate;
+	}
+
+	RetVal ExecuteIfBound(Args ...args)
+	{
+		if (IsBound())
+			return m_pEvent->Execute(args...);
+		return RetVal();
+	}
+
+	RetVal Execute(Args ...args)
+	{
+		return m_pEvent->Execute(args...);
+	}
+
+	bool IsBound()
+	{
+		return m_pEvent != nullptr;
+	}
+
+private:
+	IDelegate<RetVal, Args...>* m_pEvent = nullptr;
+};
+
 class DelegateHandle
 {
 public:
@@ -18,72 +143,6 @@ private:
 	static int GetNewID();
 };
 
-template<typename RetVal, typename ...Args>
-class ICallable
-{
-public:
-	virtual RetVal Execute(Args ...args) = 0;
-};
-
-template<typename RetVal, typename T, typename ...Args>
-class BaseDelegate : public ICallable<RetVal, Args...>
-{
-public:
-	using DelegateFunction = RetVal(T::*)(Args...);
-
-	void Bind(T* pObject, DelegateFunction pFunction)
-	{
-		m_pObject = pObject;
-		m_pFunction = pFunction;
-	}
-
-	T* m_pObject;
-	DelegateFunction m_pFunction;
-
-	virtual RetVal Execute(Args ...args) override
-	{
-		return (m_pObject->*m_pFunction)(args...);
-	}
-};
-
-template<typename RetVal, typename ...Args>
-class Delegate
-{
-public:
-	Delegate() {}
-	~Delegate()
-	{
-		if (m_pEvent)
-		{
-			delete m_pEvent;
-			m_pEvent = nullptr;
-		}
-	}
-
-	template<typename RetVal, typename T>
-	void Bind(T* pObject, RetVal(T::*pFunction)(Args...))
-	{
-		BaseDelegate<RetVal, T, Args...>* pDelegate = new BaseDelegate<RetVal, T, Args...>();
-		pDelegate->Bind(pObject, pFunction);
-		m_pEvent = pDelegate;
-	}
-
-	RetVal ExecuteIfBound(Args ...args)
-	{
-		if (m_pEvent)
-			return m_pEvent->Execute(args...);
-		return (RetVal)0;
-	}
-
-	RetVal Execute(Args ...args)
-	{
-		return m_pEvent->Execute(args...);
-	}
-
-private:
-	ICallable<RetVal, Args...>* m_pEvent;
-};
-
 template<typename ...Args >
 class MulticastDelegate
 {
@@ -97,10 +156,28 @@ public:
 	}
 
 	template<typename T>
-	DelegateHandle Add(T* pObject, void(T::*pFunction)(Args...))
+	DelegateHandle AddRaw(T* pObject, void(T::*pFunction)(Args...))
 	{
-		BaseDelegate<void, T, Args...>* pDelegate = new BaseDelegate<void, T, Args...>();
+		RawDelegate<void, T, Args...>* pDelegate = new RawDelegate<void, T, Args...>();
 		pDelegate->Bind(pObject, pFunction);
+		DelegateHandle handle(true);
+		m_Events.push_back(EventPair(handle, pDelegate));
+		return handle;
+	}
+
+	DelegateHandle AddStatic(void(*pFunction)(Args...))
+	{
+		StaticDelegate<void, Args...>* pDelegate = new StaticDelegate<void, Args...>();
+		pDelegate->Bind(pFunction);
+		DelegateHandle handle(true);
+		m_Events.push_back(EventPair(handle, pDelegate));
+		return handle;
+	}
+
+	template<typename LambdaType>
+	DelegateHandle AddLamda(LambdaType&& lambda)
+	{
+		LambdaDelegate<LambdaType, void, Args...>* pDelegate = new LambdaDelegate<LambdaType, void, Args...>(std::forward<LambdaType>(lambda));
 		DelegateHandle handle(true);
 		m_Events.push_back(EventPair(handle, pDelegate));
 		return handle;
@@ -112,6 +189,7 @@ public:
 		{
 			if (m_Events[i].first == handle)
 			{
+				SafeDelete(m_Events[i].second);
 				m_Events.erase(m_Events.begin() + i);
 				return true;
 			}
@@ -126,6 +204,6 @@ public:
 	}
 
 private:
-	using EventPair = std::pair<DelegateHandle, ICallable<void, Args...>*>;
+	using EventPair = std::pair<DelegateHandle, IDelegate<void, Args...>*>;
 	std::vector<EventPair> m_Events;
 };
