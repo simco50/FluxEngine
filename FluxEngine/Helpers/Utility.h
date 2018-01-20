@@ -38,6 +38,16 @@ inline void SafeRelease(T*& object)
 	}
 }
 
+template<typename T>
+inline void PhysXSafeRelease(T*& object)
+{
+	if (object)
+	{
+		object->release();
+		object = nullptr;
+	}
+}
+
 inline string GetTimeStamp()
 {
 	time_t timer;

@@ -9,22 +9,26 @@ struct VertexElement;
 class ConstantBuffer;
 class Texture;
 class InputEngine;
+class Window;
 
 class ImmediateUI
 {
 public:
-	ImmediateUI(Graphics* pGraphics, InputEngine* pInput);
+	ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInput);
 	~ImmediateUI();
 
 	DELETE_COPY(ImmediateUI)
 
 	void NewFrame();
 	void Render();
-	static int WndProc(UINT message, WPARAM wParam, LPARAM lParam);
+	void WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
 	Graphics* m_pGraphics;
+	Window* m_pWindow;
 	InputEngine* m_pInput;
+
+	DelegateHandle m_WndProcHandle;
 
 	vector<VertexElement> m_VertexElements;
 

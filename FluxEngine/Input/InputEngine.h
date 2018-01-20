@@ -1,7 +1,5 @@
 #pragma once
-#include <map>
-
-class Graphics;
+class Window;
 
 enum GamepadIndex: DWORD
 {
@@ -53,7 +51,7 @@ class InputEngine
 {
 public:
 
-	InputEngine(Graphics* pGraphics);
+	InputEngine(Window* pWindow);
 	~InputEngine();
 
 	InputEngine(const InputEngine& t) = delete;
@@ -84,7 +82,7 @@ public:
 	const BYTE* GetKeyboardFlags() const { return m_pCurrKeyboardState; }
 
 private:
-	Graphics* m_pGraphics = nullptr;
+	Window* m_pWindow = nullptr;
 
 	map<int, vector<InputAction>> m_InputActions;
 	BYTE *m_pCurrKeyboardState = nullptr;

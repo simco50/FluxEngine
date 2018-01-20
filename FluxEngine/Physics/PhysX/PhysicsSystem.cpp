@@ -1,7 +1,9 @@
 #include "FluxEngine.h"
 #include "PhysicsSystem.h"
+#include "Rendering\Core\Graphics.h"
+#include "Rendering\Core\D3D11\D3D11GraphicsImpl.h"
 
-PhysicsSystem::PhysicsSystem()
+PhysicsSystem::PhysicsSystem(Graphics* pGraphics)
 {
 	AUTOPROFILE(PhysicsSystem_CreatePhysics);
 
@@ -9,11 +11,14 @@ PhysicsSystem::PhysicsSystem()
 	if (m_pFoundation == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");
 
+#ifdef _DEBUG
 	m_pPvd = PxCreatePvd(*m_pFoundation);
 	if (m_pPvd == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPvd");
-	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
-	m_pPvd->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eALL);
+	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 25565, 10);
+	if (!m_pPvd->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eDEBUG))
+		FLUX_LOG(WARNING, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
+#endif
 
 	bool recordMemoryAllocations = true;
 	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pPvd);
@@ -23,6 +28,28 @@ PhysicsSystem::PhysicsSystem()
 	if (!PxInitExtensions(*m_pPhysics, m_pPvd))
 		FLUX_LOG(ERROR, "PxInitExtensions failed!");
 
+	if (pGraphics)
+	{
+		PxCudaContextManagerDesc desc = {};
+		desc.ctx = nullptr;
+		desc.appGUID = "";
+		desc.graphicsDevice = pGraphics->GetImpl()->GetDevice();
+		desc.interopMode = PxCudaInteropMode::D3D11_INTEROP;
+		for (PxU32 i = 0; i < PxCudaBufferMemorySpace::COUNT; i++)
+		{
+			desc.memoryBaseSize[i] = 0;
+			desc.memoryPageSize[i] = 2 * 1024 * 1024;
+			desc.maxMemorySize[i] = PX_MAX_U32;
+		}
+		m_pCudaContextManager = PxCreateCudaContextManager(*m_pFoundation, desc);
+
+		if (m_pCudaContextManager && !m_pCudaContextManager->contextIsValid())
+		{
+			m_pCudaContextManager->release();
+			m_pCudaContextManager = nullptr;
+		}
+	}
+
 	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(3);
 
 	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
@@ -31,16 +58,14 @@ PhysicsSystem::PhysicsSystem()
 PhysicsSystem::~PhysicsSystem()
 {
 	PxCloseExtensions();
-	((PxDefaultCpuDispatcher*)(m_pCpuDispatcher))->release();
-	m_pCpuDispatcher = nullptr;
-	m_pPhysics->release();
-	m_pPhysics = nullptr;
-	m_pPvd->release();
-	m_pPvd = nullptr;
-	m_pPvdTransport->release();
-	m_pPvdTransport = nullptr;
-	m_pFoundation->release();
-	m_pFoundation = nullptr;
+	PxDefaultCpuDispatcher* pCpuDispatcher = (PxDefaultCpuDispatcher*)m_pCpuDispatcher;
+	PhysXSafeRelease(pCpuDispatcher);
+	PhysXSafeRelease(m_pPhysics);
+	PhysXSafeRelease(m_pCudaContextManager);
+	PhysXSafeRelease(m_pPhysics);
+	PhysXSafeRelease(m_pPvd);
+	PhysXSafeRelease(m_pPvdTransport);
+	PhysXSafeRelease(m_pFoundation);
 }
 
 physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttributes attribute0, PxFilterData filterData0, PxFilterObjectAttributes attribute1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)

@@ -14,12 +14,18 @@ public:
 
 	~Window();
 
+	bool Open();
+
 	void SetIcon(const std::string& iconPath);
 	void SetTitle(const string& title);
 	void SetPosition(const int x, const int y);
 
+	//WindowSizeChanged(int windowWidth, int windowHeight)
 	MulticastDelegate<int, int>& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
+	//WindowStateChanged(bool windowActive)
 	MulticastDelegate<bool>& OnWindowStateChanged() { return m_OnWindowStateChangedEvent; }
+	//WndProc(HWND hwnd, UINT message, WPARAN wParam, LPARAM lParam)
+	MulticastDelegate<HWND, UINT, WPARAM, LPARAM>& OnWndProc() { return m_OnWndProcEvent; }
 
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
@@ -28,6 +34,7 @@ public:
 	bool IsMinimized() const { return m_Minimized; }
 	bool IsMaximized() const { return m_Maximized; }
 	bool IsActive() const { return m_Active; }
+	HWND GetHandle() const { return m_Hwnd; }
 
 private:
 	bool CreateClass(const std::string& className);
@@ -55,4 +62,5 @@ private:
 
 	MulticastDelegate<int, int> m_OnWindowSizeChangedEvent;
 	MulticastDelegate<bool> m_OnWindowStateChangedEvent;
+	MulticastDelegate<HWND, UINT, WPARAM, LPARAM> m_OnWndProcEvent;
 };

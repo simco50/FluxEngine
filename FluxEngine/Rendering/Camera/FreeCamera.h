@@ -1,6 +1,8 @@
 #pragma once
 #include "Scenegraph\SceneNode.h"
 
+class Graphics;
+
 class FreeCamera : public SceneNode
 {
 	FLUX_OBJECT(FreeCamera, SceneNode)

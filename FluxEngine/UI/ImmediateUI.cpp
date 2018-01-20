@@ -10,12 +10,16 @@
 #include "Rendering\Core\DepthStencilState.h"
 #include "Rendering\Core\BlendState.h"
 #include "Rendering\Core\RasterizerState.h"
+#include "Core\Window.h"
 
-ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
+ImmediateUI::ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInput) :
 	m_pGraphics(pGraphics),
+	m_pWindow(pWindow),
 	m_pInput(pInput)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
+
+	m_WndProcHandle = pWindow->OnWndProc().AddRaw(this, &ImmediateUI::WndProc);
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
@@ -72,6 +76,8 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, InputEngine* pInput) :
 
 ImmediateUI::~ImmediateUI()
 {
+	m_pWindow->OnWndProc().Remove(m_WndProcHandle);
+
 	ImGui::Shutdown();
 }
 
@@ -87,7 +93,7 @@ void ImmediateUI::NewFrame()
 	io.KeySuper = false;
 
 	io.MouseDrawCursor = true;
-	m_pInput->CursorVisible(!io.MouseDrawCursor);
+	//m_pInput->CursorVisible(!io.MouseDrawCursor);
 
 	ImGui::NewFrame();
 }
@@ -168,51 +174,52 @@ void ImmediateUI::Render()
 	}
 }
 
-int ImmediateUI::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
+void ImmediateUI::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+
 	ImGuiIO& io = ImGui::GetIO();
 	switch (message)
 	{
 	case WM_LBUTTONDOWN:
 		io.MouseDown[0] = true;
-		return 1;
+		return;
 	case WM_LBUTTONUP:
 		io.MouseDown[0] = false;
-		return 1;
+		return;
 	case WM_RBUTTONDOWN:
 		io.MouseDown[1] = true;
-		return 1;
+		return;
 	case WM_RBUTTONUP:
 		io.MouseDown[1] = false;
-		return 1;
+		return;
 	case WM_MBUTTONDOWN:
 		io.MouseDown[2] = true;
-		return 1;
+		return;
 	case WM_MBUTTONUP:
 		io.MouseDown[2] = false;
-		return 1;
+		return;
 	case WM_MOUSEWHEEL:
 		io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-		return 1;
+		return;
 	case WM_MOUSEMOVE:
 		io.MousePos.x = (signed short)(lParam);
 		io.MousePos.y = (signed short)(lParam >> 16);
-		return 1;
+		return;
 	case WM_KEYUP:
 		if (wParam < 256)
 			io.KeysDown[wParam] = false;
-		return 1;
+		return;
 	case WM_CHAR:
 		// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
 		if (wParam > 0 && wParam < 0x10000)
 			io.AddInputCharacter((unsigned short)wParam);
-		return 1;
+		return;
 	case WM_KEYDOWN:
 		if (wParam < 256)
 			io.KeysDown[wParam] = true;
+		return;
 	default:
 		break;
 	}
-
-	return 0;
 }

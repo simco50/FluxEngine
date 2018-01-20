@@ -5,6 +5,8 @@ Graphics::~Graphics()
 	if (m_pImpl->m_pSwapChain.IsValid())
 		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, NULL);
 
+	m_pWindow->OnWindowSizeChanged().Remove(m_WindowSizeChangedHandle);
+
 	/*
 	#ifdef _DEBUG
 	ComPtr<ID3D11Debug> pDebug;
@@ -14,37 +16,32 @@ Graphics::~Graphics()
 	*/
 }
 
-bool Graphics::SetMode(const int width,
-	const int height,
-	const WindowType windowType,
-	const bool resizable,
+bool Graphics::SetMode(
 	const bool vsync,
 	const int multiSample,
 	const int refreshRate)
 {
 	AUTOPROFILE(Graphics_SetMode);
 
-	m_WindowType = windowType;
-	m_Resizable = resizable;
+	if (m_pWindow == nullptr)
+	{
+		FLUX_LOG(ERROR, "[Graphics::Graphics] > Window is null");
+		return false;
+	}
+	m_WindowSizeChangedHandle = m_pWindow->OnWindowSizeChanged().AddRaw(this, &Graphics::UpdateSwapchain);
+	m_Width = m_pWindow->GetWidth();
+	m_Height = m_pWindow->GetHeight();
+
 	m_Vsync = vsync;
 	m_RefreshRate = refreshRate;
 	m_Multisample = multiSample;
 
-	m_WindowWidth = width;
-	m_WindowHeight = height;
-
-	if (!RegisterWindowClass())
-		return false;
-	if (!MakeWindow(width, height))
-		return false;
-
 	if (!m_pImpl->m_pDevice.IsValid() || m_Multisample != multiSample)
 	{
-		if (!CreateDevice(width, height))
+		if (!CreateDevice(m_Width, m_Height))
 			return false;
 	}
-	if (!UpdateSwapchain())
-		return false;
+	UpdateSwapchain(m_Width, m_Height);
 
 	m_pBlendState = make_unique<BlendState>();
 	m_pRasterizerState = make_unique<RasterizerState>();
@@ -209,14 +206,14 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 	{
 		m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
 
-		viewport.Height *= m_WindowHeight;
-		viewport.Width *= m_WindowWidth;
-		viewport.TopLeftX *= m_WindowWidth;
-		viewport.TopLeftY *= m_WindowHeight;
+		viewport.Height *= m_Height;
+		viewport.Width *= m_Width;
+		viewport.TopLeftX *= m_Width;
+		viewport.TopLeftY *= m_Height;
 	}
 	else
 	{
-		m_CurrentViewport = { viewport.TopLeftX / m_WindowWidth, viewport.TopLeftY / m_WindowHeight, viewport.Width / m_WindowWidth, viewport.Height / m_WindowHeight };
+		m_CurrentViewport = { viewport.TopLeftX / m_Width, viewport.TopLeftY / m_Height, viewport.Width / m_Width, viewport.Height / m_Height };
 	}
 
 	m_pImpl->m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -506,9 +503,9 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapDesc.SampleDesc.Count = m_Multisample;
 	swapDesc.SampleDesc.Quality = m_pImpl->GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
-	swapDesc.OutputWindow = m_Hwnd;
+	swapDesc.OutputWindow = m_pWindow->GetHandle();
 	swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapDesc.Windowed = m_WindowType != WindowType::FULLSCREEN;
+	swapDesc.Windowed = m_pWindow->GetType() != WindowType::FULLSCREEN;
 
 	//Create the swap chain
 	HR(m_pImpl->m_pFactory->CreateSwapChain(m_pImpl->m_pDevice.Get(), &swapDesc, m_pImpl->m_pSwapChain.GetAddressOf()));
@@ -516,12 +513,15 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	return true;
 }
 
-bool Graphics::UpdateSwapchain()
+void Graphics::UpdateSwapchain(int width, int height)
 {
 	AUTOPROFILE(Graphics_UpdateSwapchain);
 
+	m_Width = width;
+	m_Height = height;
+
 	if (!m_pImpl->m_pSwapChain.IsValid())
-		return false;
+		return;
 
 	m_pImpl->m_pBackbufferResolveTexture.Reset();
 
@@ -531,14 +531,14 @@ bool Graphics::UpdateSwapchain()
 	m_pImpl->m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
 
-	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_WindowWidth, m_WindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pImpl->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
 	RenderTargetDesc desc = {};
-	desc.Width = m_WindowWidth;
-	desc.Height = m_WindowHeight;
+	desc.Width = m_Width;
+	desc.Height = m_Height;
 	desc.pColorResource = pBackbuffer;
 	desc.pDepthResource = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -548,8 +548,6 @@ bool Graphics::UpdateSwapchain()
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);
-
-	return true;
 }
 
 void Graphics::TakeScreenshot()

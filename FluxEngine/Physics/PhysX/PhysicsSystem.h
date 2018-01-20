@@ -2,16 +2,19 @@
 #include "PhysxAllocator.h"
 #include "PhysxErrorCallback.h"
 
+class Graphics;
+
 class PhysicsSystem
 {
 public:
-	PhysicsSystem();
+	PhysicsSystem(Graphics* pGraphics = nullptr);
 	~PhysicsSystem();
 
 	physx::PxPhysics* GetPhysics() const { return m_pPhysics; }
 	physx::PxFoundation* GetFoundation() const { return m_pFoundation; }
 	physx::PxCpuDispatcher* GetCpuDispatcher() const { return m_pCpuDispatcher; }
 	physx::PxPvd* GetPvd() const { return m_pPvd; }
+	physx::PxCudaContextManager* GetCudaContextManager() const { return m_pCudaContextManager; }
 
 	static PxFilterFlags SimulationFilterShader(
 		PxFilterObjectAttributes attribute0, PxFilterData filterData0,
@@ -21,6 +24,7 @@ public:
 	physx::PxMaterial* GetDefaultMaterial() const { return m_pDefaultMaterial; }
 
 private:
+
 	PhysxAllocator m_AllocatorCallback;
 	PhysxErrorCallback m_ErrorCallback;
 
@@ -30,6 +34,7 @@ private:
 	physx::PxPhysics* m_pPhysics = nullptr;
 	physx::PxPvd* m_pPvd = nullptr;
 	physx::PxPvdTransport* m_pPvdTransport = nullptr;
+	physx::PxCudaContextManager* m_pCudaContextManager = nullptr;
 
 	physx::PxMaterial* m_pDefaultMaterial = nullptr;
 };

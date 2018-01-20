@@ -4,6 +4,7 @@
 class VertexBuffer;
 class IndexBuffer;
 class Geometry;
+class Graphics;
 struct VertexElement;
 
 class Mesh : public Resource

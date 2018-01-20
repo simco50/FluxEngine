@@ -15,16 +15,21 @@ Window::Window(
 	m_Resizable(resizable),
 	m_ClassName(className)
 {
-	if (!CreateClass(m_ClassName))
-		return;
-	if (!CreateInstanceOfClass(m_ClassName, m_Width, m_Height))
-		return;
 }
 
 Window::~Window()
 {
 	if (m_Hwnd)
 		DestroyWindow(m_Hwnd);
+}
+
+bool Window::Open()
+{
+	if (!CreateClass(m_ClassName))
+		return false;
+	if (!CreateInstanceOfClass(m_ClassName, m_Width, m_Height))
+		return false;
+	return true;
 }
 
 void Window::SetIcon(const std::string& iconPath)
@@ -159,14 +164,15 @@ LRESULT CALLBACK Window::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, L
 
 LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	//m_OnWndProcEvent.Broadcast(hWnd, message, wParam, lParam);
+		
 	switch (message)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
 		// We pause the game when the window is deactivated and unpause it 
 		// when it becomes active.  
 	case WM_ACTIVATE:
-		if (LOWORD(wParam) == WA_INACTIVE)
-			m_Active = true;;
+		m_Active = !(LOWORD(wParam) == WA_INACTIVE || m_Minimized);
 		m_OnWindowStateChangedEvent.Broadcast(m_Active);
 		return 0;
 
@@ -180,14 +186,14 @@ LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			m_Minimized = true;
 			m_Maximized = false;
-			m_Active = false;
+			m_Active = true;
 			m_OnWindowStateChangedEvent.Broadcast(m_Active);
 		}
 		else if (wParam == SIZE_MAXIMIZED)
 		{
 			m_Minimized = false;
 			m_Maximized = true;
-			m_Active = false;
+			m_Active = true;
 			m_OnWindowStateChangedEvent.Broadcast(m_Active);
 			m_OnWindowSizeChangedEvent.Broadcast(m_Width, m_Height);
 		}

@@ -1,10 +1,10 @@
 #include "FluxEngine.h"
 
 #include "InputEngine.h"
-#include "Rendering/Core/Graphics.h"
+#include "Core/Window.h"
 
-InputEngine::InputEngine(Graphics* pGraphics):
-	m_pGraphics(pGraphics),
+InputEngine::InputEngine(Window* pWindow) :
+	m_pWindow(pWindow),
 	m_Enabled(false), 
 	m_ForceToCenter(false)
 {
@@ -131,7 +131,7 @@ void InputEngine::Update()
 	m_OldMousePosition = m_CurrMousePosition;
 	if(GetCursorPos(&m_CurrMousePosition))
 	{
-		ScreenToClient(m_pGraphics->GetWindow(), &m_CurrMousePosition);
+		ScreenToClient(m_pWindow->GetHandle(), &m_CurrMousePosition);
 	}
 
 	m_MouseMovement.x = (float)m_CurrMousePosition.x - (float)m_OldMousePosition.x;
@@ -140,11 +140,11 @@ void InputEngine::Update()
 	if (m_ForceToCenter)
 	{
 		POINT mouseCenter;
-		m_CurrMousePosition.x = m_pGraphics->GetWindowWidth() / 2;
-		m_CurrMousePosition.y = m_pGraphics->GetWindowHeight() / 2;
+		m_CurrMousePosition.x = m_pWindow->GetWidth() / 2;
+		m_CurrMousePosition.y = m_pWindow->GetHeight() / 2;
 		mouseCenter.x = m_CurrMousePosition.x;
 		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(m_pGraphics->GetWindow(), &mouseCenter);
+		ClientToScreen(m_pWindow->GetHandle(), &mouseCenter);
 
 		SetCursorPos(mouseCenter.x, mouseCenter.y);
 	}
@@ -308,11 +308,11 @@ void InputEngine::ForceMouseToCenter(bool force)
 	if (force)
 	{
 		POINT mouseCenter;
-		m_CurrMousePosition.x = m_pGraphics->GetWindowWidth() / 2;
-		m_CurrMousePosition.y = m_pGraphics->GetWindowHeight() / 2;
+		m_CurrMousePosition.x = m_pWindow->GetWidth() / 2;
+		m_CurrMousePosition.y = m_pWindow->GetHeight() / 2;
 		mouseCenter.x = m_CurrMousePosition.x;
 		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(m_pGraphics->GetWindow(), &mouseCenter);
+		ClientToScreen(m_pWindow->GetHandle(), &mouseCenter);
 
 		SetCursorPos(mouseCenter.x, mouseCenter.y);
 	}

@@ -13,6 +13,7 @@ class SceneNode;
 class Material;
 class ParticleSystem;
 class PhysicsSystem;
+class Window;
 
 class FluxCore
 {
@@ -28,6 +29,8 @@ public:
 	void InitGame();
 
 private:
+	void OnPause(bool isActive);
+
 	Mesh* m_pMeshFilter = nullptr;
 	ParticleSystem* m_pParticleSystem = nullptr;
 
@@ -36,6 +39,7 @@ private:
 
 	unique_ptr<Material> m_pMaterial;
 
+	Window* m_pWindow = nullptr;
 	Graphics* m_pGraphics = nullptr;
 	std::unique_ptr<Scene> m_pScene;
 	std::unique_ptr<ImmediateUI> m_pImmediateUI;

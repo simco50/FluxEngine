@@ -61,6 +61,8 @@ public:
 		return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
 	}
 
+	MulticastDelegate<Rigidbody*, bool>& OnTrigger() { return m_OnTriggerEvent; }
+
 private:
 	void CreateBody(const Rigidbody::Type type);
 
@@ -73,4 +75,6 @@ private:
 
 	PxD6Joint* m_pConstraintJoint = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
+
+	MulticastDelegate<Rigidbody*, bool> m_OnTriggerEvent;
 };

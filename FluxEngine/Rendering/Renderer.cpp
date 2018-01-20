@@ -153,8 +153,8 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 		//Set the default material
 	}
 
-	/*if (pMaterial == m_pCurrentMaterial)
-		return;*/
+	if (pMaterial == m_pCurrentMaterial)
+		return;
 
 	m_pCurrentMaterial = pMaterial;
 

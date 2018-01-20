@@ -13,29 +13,22 @@ class DepthStencilState;
 class ConstantBuffer;
 class Shader;
 class ShaderProgram;
+class Window;
 
 class GraphicsImpl;
 
 class Graphics
 {
 public:
-	Graphics(HINSTANCE hInstance);
+	Graphics(Window* pWindow);
 	~Graphics();
 
 	DELETE_COPY(Graphics)
 
 	bool SetMode(
-		const int width, 
-		const int height, 
-		const WindowType windowType,
-		const bool resizable, 
 		const bool vsync,
 		const int multiSample,
 		const int refreshRate);
-
-	//Window
-	void SetWindowTitle(const string& title);
-	void SetWindowPosition(const Vector2& position);
 
 	//Graphics
 	void SetRenderTarget(RenderTarget* pRenderTarget);
@@ -67,12 +60,11 @@ public:
 	void EndFrame();
 
 	void TakeScreenshot();
-	void OnPause(const bool paused);
 
 	//Getters
-	const HWND& GetWindow() const { return m_Hwnd; }
-	int GetWindowWidth() const { return m_WindowWidth; }
-	int GetWindowHeight() const { return m_WindowHeight; }
+	Window* GetWindow() const { return m_pWindow; }
+	int GetWindowWidth() const { return m_Width; }
+	int GetWindowHeight() const { return m_Height; }
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
@@ -85,31 +77,17 @@ public:
 private:
 	void PrepareDraw();
 
-	bool RegisterWindowClass();
-	bool MakeWindow(int windowWidth, int windowHeight);
 	bool EnumerateAdapters();
 	bool CreateDevice(const int windowWidth, const int windowHeight);
-	bool UpdateSwapchain();
+	void UpdateSwapchain(int windowWidth, int windowHeight);
 
-	static LRESULT CALLBACK WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-	int m_WindowWidth = 1240;
-	int m_WindowHeight = 720;
-	HWND m_Hwnd = nullptr;
-	HINSTANCE m_hInstance;
-	WindowType m_WindowType = WindowType::WINDOWED;
-	bool m_Resizable = true;
+	Window* m_pWindow;
+	DelegateHandle m_WindowSizeChangedHandle;
+	int m_Width = 0;
+	int m_Height = 0;
 	bool m_Vsync = true;
 	int m_Multisample = 1;
 	int m_RefreshRate = 60;
-	string m_WindowTitle;
-	string m_WindowClassName = "wndClass";
-
-	bool m_Paused = false;
-	bool m_Maximized = false;
-	bool m_Minimized = false;
-	bool m_Resizing = false;
 
 	unique_ptr<GraphicsImpl> m_pImpl;
 
