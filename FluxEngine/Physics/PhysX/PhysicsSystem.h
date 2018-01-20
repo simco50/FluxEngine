@@ -1,11 +1,14 @@
 #pragma once
 #include "PhysxAllocator.h"
 #include "PhysxErrorCallback.h"
+#include "Core\Subsystem.h"
 
 class Graphics;
 
-class PhysicsSystem
+class PhysicsSystem : public Subsystem
 {
+	FLUX_OBJECT(PhysicsSystem, Subsystem)
+
 public:
 	PhysicsSystem(Graphics* pGraphics = nullptr);
 	~PhysicsSystem();

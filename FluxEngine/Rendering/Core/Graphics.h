@@ -1,5 +1,6 @@
 #pragma once
 #include "GraphicsDefines.h"
+#include "Core\Subsystem.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -17,8 +18,10 @@ class Window;
 
 class GraphicsImpl;
 
-class Graphics
+class Graphics : public Subsystem
 {
+	FLUX_OBJECT(Graphics, Subsystem)
+
 public:
 	Graphics(Window* pWindow);
 	~Graphics();

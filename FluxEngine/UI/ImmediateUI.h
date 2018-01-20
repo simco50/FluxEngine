@@ -1,4 +1,5 @@
 #pragma once
+#include "Core\Subsystem.h"
 
 class Graphics;
 class VertexBuffer;
@@ -11,8 +12,10 @@ class Texture;
 class InputEngine;
 class Window;
 
-class ImmediateUI
+class ImmediateUI : public Subsystem
 {
+	FLUX_OBJECT(ImmediateUI, Subsystem)
+
 public:
 	ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInput);
 	~ImmediateUI();

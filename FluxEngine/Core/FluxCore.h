@@ -31,27 +31,35 @@ public:
 private:
 	void OnPause(bool isActive);
 
-	Mesh* m_pMeshFilter = nullptr;
-	ParticleSystem* m_pParticleSystem = nullptr;
-
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	unique_ptr<Material> m_pMaterial;
-
-	Window* m_pWindow = nullptr;
-	Graphics* m_pGraphics = nullptr;
 	std::unique_ptr<Scene> m_pScene;
-	std::unique_ptr<ImmediateUI> m_pImmediateUI;
-	std::unique_ptr<InputEngine> m_pInput;
-
-	float m_DeltaTime = 0;
-	Color m_Color = Color(1, 1, 1, 1);
-
-	int m_IndexCount = -1;
 	FreeCamera* m_pCamera = nullptr;
 	SceneNode* m_pNode = nullptr;
-	SceneNode* m_pModelNode = nullptr;
 
-	unique_ptr<PhysicsSystem> m_pPhysics;
+	//Systems
+	Window* m_pWindow = nullptr;
+	Graphics* m_pGraphics = nullptr;
+	ImmediateUI* m_pImmediateUI = nullptr;
+	InputEngine* m_pInput = nullptr;
+	PhysicsSystem* m_pPhysics = nullptr;
+
+	map<StringHash, unique_ptr<Subsystem>> m_Systems;
+	template<typename T>
+	T* GetSubsystem()
+	{
+		auto pIt = m_Systems.find(T::GetTypeStatic());
+		if (pIt == m_Systems.end())
+			return nullptr;
+		return (T*)pIt->second.get();
+	}
+
+	template<typename T>
+	T* RegisterSubsystem(unique_ptr<T> pSystem)
+	{
+		StringHash type = pSystem->GetType();
+		m_Systems[type] = std::move(pSystem);
+		return (T*)m_Systems[type].get();
+	}
 };

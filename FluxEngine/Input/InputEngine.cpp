@@ -1,5 +1,4 @@
 #include "FluxEngine.h"
-
 #include "InputEngine.h"
 #include "Core/Window.h"
 

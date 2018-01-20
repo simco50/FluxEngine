@@ -1,8 +1,11 @@
 #pragma once
-#include "../Helpers/Singleton.h"
+#include "Helpers/Singleton.h"
+#include "Core/Subsystem.h"
 
-class AudioEngine : public Singleton<AudioEngine>
+class AudioEngine : public Singleton<AudioEngine>, public Subsystem
 {
+	FLUX_OBJECT(AudioEngine, Subsystem)
+
 public:
 	AudioEngine();
 	~AudioEngine();

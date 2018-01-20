@@ -1,4 +1,6 @@
 #pragma once
+#include "Core\Subsystem.h"
+
 class Window;
 
 enum GamepadIndex: DWORD
@@ -47,15 +49,15 @@ struct InputAction
 	bool Down = false;
 };
 
-class InputEngine
+class InputEngine : public Subsystem
 {
-public:
+	FLUX_OBJECT(InputEngine, Subsystem)
 
+public:
 	InputEngine(Window* pWindow);
 	~InputEngine();
 
-	InputEngine(const InputEngine& t) = delete;
-	InputEngine& operator=(const InputEngine& t) = delete;
+	DELETE_COPY(InputEngine)
 
 	void Update();
 	bool AddInputAction(InputAction action);

@@ -36,7 +36,6 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
-	SafeDelete(m_pGraphics);
 	SafeDelete(m_pWindow);
 	Console::Release();
 	Config::Flush();
@@ -74,10 +73,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 		if (!m_pWindow->Open())
 			return 1;
 		m_pWindow->SetIcon("Logo.ico");
-
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
-		m_pGraphics = new Graphics(m_pWindow);
+		m_pGraphics = RegisterSubsystem(make_unique<Graphics>(m_pWindow));
 		if (!m_pGraphics->SetMode(
 			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
@@ -86,10 +84,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 		}
 
-		m_pInput = make_unique<InputEngine>(m_pWindow);
-		m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput.get());
-		
-		m_pPhysics = make_unique<PhysicsSystem>(nullptr);
+		m_pInput = RegisterSubsystem(make_unique<InputEngine>(m_pWindow));
+		m_pImmediateUI = RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput));
+		m_pPhysics = RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
 
 		InitGame();
 		GameTimer::Reset();
@@ -124,7 +121,7 @@ void FluxCore::InitGame()
 
 	m_pScene = make_unique<Scene>(m_pGraphics);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-	m_pCamera = new FreeCamera(m_pInput.get(), m_pGraphics);
+	m_pCamera = new FreeCamera(m_pInput, m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
 
 	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.2f, 0.2f, 0.8f);
@@ -138,24 +135,25 @@ void FluxCore::InitGame()
 	};
 	pMesh->CreateBuffers(m_pGraphics, desc);
 
-	for (int x = 0; x < 5; ++x)
+	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
+
+	for (int x = 0; x < 1; ++x)
 	{
-		for (int y = 0; y < 5; ++y)
+		for (int y = 0; y < 1; ++y)
 		{
-			for (int z = 0; z < 5; ++z)
+			for (int z = 0; z < 1; ++z)
 			{
-				m_pNode = new SceneNode("Particles");
+				m_pNode = new SceneNode(Printf("Cow %i - %i - %i", x, y, z));
 				m_pNode->GetTransform()->Translate(x * 3.0f + RandF(-0.1f, 0.1f), y * 4.0f + 8 + RandF(-0.1f, 0.1f), z * 3.0f + RandF(-0.1f, 0.1f));
 
-				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics.get());
+				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
 				pRigidbody->SetBodyType(Rigidbody::Dynamic);
 				m_pNode->AddComponent(pRigidbody);
-				Collider* pCollider = new Collider(m_pPhysics.get());
+				Collider* pCollider = new Collider(m_pPhysics);
 				m_pNode->AddComponent(pCollider);
 				pCollider->SetShape(PxBoxGeometry(0.6f, 0.6f, 0.6f), pPhysMaterial);
 				Model* pModel = new Model();
 				pModel->SetMesh(pMesh);
-				Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 				pModel->SetMaterial(pMaterial);
 				m_pNode->AddComponent(pModel);
 
@@ -166,7 +164,7 @@ void FluxCore::InitGame()
 	
 	SceneNode* pFloor = new SceneNode("Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pCollider = new Collider(m_pPhysics.get());
+	Collider* pCollider = new Collider(m_pPhysics);
 	pFloor->AddComponent(pCollider);
 	pCollider->SetShape(PxPlaneGeometry(), pPhysMaterial);
 	m_pScene->AddChild(pFloor);

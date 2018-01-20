@@ -167,6 +167,9 @@ using namespace DirectX::SimpleMath;
 #include "Diagnostics/PerfTimer.h"
 #include "Diagnostics/Profiler.h"
 
+#include "Core/TypeInfo.h"
+#include "Core/Object.h"
+#include "Core/Delegates.h"
 #include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
 #include "Input/InputEngine.h"
@@ -179,9 +182,6 @@ using namespace DirectX::SimpleMath;
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File/File.h"
 
-#include "Core/TypeInfo.h"
-#include "Core/Object.h"
-#include "Core/Delegates.h"
 #include "Content/ResourceManager.h"
 
 using namespace Smart_COM;

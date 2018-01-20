@@ -115,7 +115,7 @@ public:
 	}
 
 	template<typename LambdaType>
-	void BindLamda(LambdaType&& lambda)
+	void BindLambda(LambdaType&& lambda)
 	{
 		LambdaDelegate<LambdaType, RetVal, Args...>* pDelegate = new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda));
 		SafeDelete(m_pEvent);
@@ -199,7 +199,7 @@ public:
 	}
 
 	template<typename LambdaType>
-	DelegateHandle AddLamda(LambdaType&& lambda)
+	DelegateHandle AddLambda(LambdaType&& lambda)
 	{
 		LambdaDelegate<LambdaType, void, Args...>* pDelegate = new LambdaDelegate<LambdaType, void, Args...>(std::forward<LambdaType>(lambda));
 		DelegateHandle handle(true);

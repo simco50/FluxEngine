@@ -1,12 +1,15 @@
 #pragma once
+#include "Core\Subsystem.h"
 
 class Graphics;
 class Drawable;
 class Material;
 struct Batch;
 
-class Renderer
+class Renderer : public Subsystem
 {
+	FLUX_OBJECT(Renderer, Subsystem)
+
 public:
 
 	Renderer(Graphics* pGraphics);
