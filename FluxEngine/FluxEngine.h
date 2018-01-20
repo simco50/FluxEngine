@@ -5,15 +5,13 @@
 #error RTTI is enabled. Disable using "/GR-"
 #endif
 
-#ifdef _DEBUG
-#define PROFILING
+#if !defined(_MBCS)
+#error Character set must be MBCS
 #endif
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
-#define PHYSX
 
 #pragma region
 
@@ -44,14 +42,14 @@ using namespace std;
 #pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
 #elif defined(x64) && defined(NDEBUG)
 #pragma comment(lib, "PhysX3_x64.lib")
-#pragma comment(lib, "PhysX3Extensions_x64.lib")
+#pragma comment(lib, "PhysX3Extensions.lib")
 #pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PxFoundation_x64.lib")
 #pragma comment(lib, "PxTask_x64.lib")
 #pragma comment(lib, "PxPvdSDK_x64.lib")
 #elif defined(x86) && defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")
-#pragma comment(lib, "PhysX3ExtensionsDEBUG_x86.lib")
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
 #pragma comment(lib, "PxFoundationDEBUG_x86.lib")
 #pragma comment(lib, "PxTaskDEBUG_x86.lib")

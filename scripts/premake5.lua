@@ -6,7 +6,7 @@ workspace "FluxEngine"
     warnings "Extra"
     rtti "Off"
 	characterset ("MBCS")
-	defines { "_CONSOLE", "D3D11" }
+	defines { "_CONSOLE", "D3D11", "PHYSX", "PROFILING" }
 	flags {"FatalWarnings"}
 	language "C++"
 
@@ -65,21 +65,9 @@ workspace "FluxEngine"
 			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 		}
-
-		filter { "platforms:x64" }
-			libdirs
-			{
-				"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win64",
-				"../Libraries/PhysX 3.4/PxShared/lib/vc14win64",
-			}
-
-		filter { "platforms:x86" }
-			libdirs
-			{
-				"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win32",
-				"../Libraries/PhysX 3.4/PxShared/lib/vc14win32",
-			}
 
 	project "FluxGame"
 		filename "FluxGame_%{_ACTION}"
@@ -117,6 +105,8 @@ workspace "FluxEngine"
 			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
+			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 		}
 
 		filter { "configurations:Debug" }
@@ -134,63 +124,53 @@ workspace "FluxEngine"
 			}
 
 		filter { "platforms:x64" }
-			libdirs
-			{
-				"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win64",
-				"../Libraries/PhysX 3.4/PxShared/lib/vc14win64",
-			}
 			postbuildcommands
 			{ 
 				"xcopy \"..\\Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\nvToolsExt64_1.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\nvToolsExt64_1.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "platforms:x86" }
-			libdirs
-			{
-				"../Libraries/PhysX 3.4/PhysX_3.4/lib/vc14win32",
-				"../Libraries/PhysX 3.4/PxShared/lib/vc14win32",
-			}
 			postbuildcommands
 			{ 
 				"xcopy \"..\\Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win32\\nvToolsExt86_1.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\nvToolsExt32_1.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "configurations:Debug", "platforms:x86" }
 			postbuildcommands
 			{ 
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win32\\PhysX3CommonDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win32\\PhysX3DEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win32\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win32\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3CommonDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3DEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "configurations:Release", "platforms:x86" }
 			postbuildcommands
 			{ 
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win32\\PhysX3Common_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win32\\PhysX3_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win32\\PxFoundation_x86.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win32\\PxPvdSDK_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3Common_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundation_x86.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDK_x86.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "configurations:Debug", "platforms:x64" }
 			postbuildcommands
 			{ 
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3CommonDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3DEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxFoundationDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3CommonDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3DEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundationDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 		filter { "configurations:Release", "platforms:x64" }
 			postbuildcommands
 			{ 
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3Common_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\vc14win64\\PhysX3_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxFoundation_x64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\vc14win64\\PxPvdSDK_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3Common_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundation_x64.dll\" \"$(OutDir)\" /F /Y /D",
+				"xcopy \"..\\Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDK_x64.dll\" \"$(OutDir)\" /F /Y /D",
 			}
 
 newaction {
