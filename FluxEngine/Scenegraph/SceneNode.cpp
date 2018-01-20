@@ -4,16 +4,16 @@
 #include "Component.h"
 #include "Transform.h"
 
-SceneNode::SceneNode() : SceneNode("")
-{
-	
-}
-
 SceneNode::SceneNode(const std::string& name) : 
 	m_Name(name)
 {
 	m_pTransform = make_unique<Transform>(this);
 	m_pTransform->Initialize();
+}
+
+SceneNode::SceneNode(Scene* pScene) : 
+	m_pScene(pScene)
+{
 }
 
 SceneNode::~SceneNode()
@@ -45,6 +45,12 @@ void SceneNode::AddChild(SceneNode* pNode)
 
 void SceneNode::AddComponent(Component* pComponent)
 {
+	if (GetComponent(pComponent->GetType()) != nullptr && !pComponent->CanHaveMultiple())
+	{
+		FLUX_LOG(ERROR, "[SceneNode::AddComponent] > SceneNode already has a %s", pComponent->GetTypeName().c_str());
+		return;
+	}
+
 	m_Components.push_back(pComponent);
 
 	//If the node is already added to the scene
@@ -61,4 +67,10 @@ Component* SceneNode::GetComponent(StringHash type)
 			return pComponent;
 	}
 	return nullptr;
+}
+
+void SceneNode::OnTransformDirty(const Matrix& worldMatrix)
+{
+	for (Component* pComponent : m_Components)
+		pComponent->OnMarkedDirty(worldMatrix);
 }

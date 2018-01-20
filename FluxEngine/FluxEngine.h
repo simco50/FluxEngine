@@ -5,8 +5,8 @@
 #error RTTI is enabled. Disable using "/GR-"
 #endif
 
-#ifdef _DEBUG
-#define PROFILING
+#if !defined(_MBCS)
+#error Character set must be MBCS
 #endif
 
 #define NOMINMAX
@@ -33,14 +33,28 @@ using namespace std;
 #ifdef PHYSX
 
 #include <PxPhysicsAPI.h>
-#if defined(DEBUG) || defined(_DEBUG)
+#if defined(x64) && defined(_DEBUG)
+#pragma comment(lib, "PhysX3DEBUG_x64.lib")
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
+#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
+#pragma comment(lib, "PxFoundationDEBUG_x64.lib")
+#pragma comment(lib, "PxTaskDEBUG_x64.lib")
+#pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
+#elif defined(x64) && defined(NDEBUG)
+#pragma comment(lib, "PhysX3_x64.lib")
+#pragma comment(lib, "PhysX3Extensions.lib")
+#pragma comment(lib, "PhysX3Common_x64.lib")
+#pragma comment(lib, "PxFoundation_x64.lib")
+#pragma comment(lib, "PxTask_x64.lib")
+#pragma comment(lib, "PxPvdSDK_x64.lib")
+#elif defined(x86) && defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
 #pragma comment(lib, "PxFoundationDEBUG_x86.lib")
 #pragma comment(lib, "PxTaskDEBUG_x86.lib")
 #pragma comment(lib, "PxPvdSDKDEBUG_x86.lib")
-#else
+#elif defined(x86) && defined(NDEBUG)
 #pragma comment(lib, "PhysX3_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 #pragma comment(lib, "PhysX3Common_x86.lib")
@@ -167,6 +181,7 @@ using namespace DirectX::SimpleMath;
 
 #include "Core/TypeInfo.h"
 #include "Core/Object.h"
+#include "Core/Delegates.h"
 #include "Content/ResourceManager.h"
 
 using namespace Smart_COM;

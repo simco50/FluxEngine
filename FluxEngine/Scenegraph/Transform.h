@@ -66,6 +66,8 @@ public:
 	void OnWorldChange();
 	void UpdateDirections();
 
+	void MarkDirty(const Vector3& position, const Vector3& scale, const Quaternion& rotation);
+
 private:
 	SceneNode* m_pNode;
 

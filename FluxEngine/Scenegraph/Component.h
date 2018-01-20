@@ -24,6 +24,10 @@ public:
 
 	virtual void OnNodeRemoved();
 	virtual void OnSceneRemoved();
+	virtual void OnMarkedDirty(const Matrix& worldMatrix) { UNREFERENCED_PARAMETER(worldMatrix); }
+	virtual void Update() {}
+
+	virtual bool CanHaveMultiple() const { return false; }
 
 	Transform* GetTransform();
 
@@ -33,8 +37,6 @@ public:
 	{
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
-
-	virtual void Update() = 0;
 
 protected:
 	Scene* m_pScene = nullptr;

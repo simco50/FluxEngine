@@ -12,6 +12,7 @@ class Scene;
 class SceneNode;
 class Material;
 class ParticleSystem;
+class PhysicsSystem;
 
 class FluxCore
 {
@@ -47,4 +48,6 @@ private:
 	FreeCamera* m_pCamera = nullptr;
 	SceneNode* m_pNode = nullptr;
 	SceneNode* m_pModelNode = nullptr;
+
+	unique_ptr<PhysicsSystem> m_pPhysics;
 };

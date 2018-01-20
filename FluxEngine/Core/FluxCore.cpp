@@ -22,6 +22,10 @@
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Physics/PhysX/PhysicsSystem.h"
+#include "Physics/PhysX/PhysicsScene.h"
+#include "Physics/PhysX/Rigidbody.h"
+#include "Physics/PhysX/Collider.h"
 
 using namespace std;
 
@@ -47,7 +51,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
 		{
-			FLUX_LOG(WARNING, "Failed to mount './Resources.paK'");
+			FLUX_LOG(WARNING, "Failed to mount './Resources.pak'");
 		}
 		if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
 		{
@@ -72,6 +76,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pGraphics->SetWindowTitle(Config::GetString("Name", "Game", "FluxEngine"));
 		m_pInput = make_unique<InputEngine>(m_pGraphics);
 		m_pImmediateUI = make_unique<ImmediateUI>(m_pGraphics, m_pInput.get());
+		m_pPhysics = make_unique<PhysicsSystem>();
 
 		GameTimer::Reset();
 
@@ -111,15 +116,14 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(m_pCamera);
 
 	m_pNode = new SceneNode("Particles");
+	m_pNode->GetTransform()->Translate(0, 8, 0);
 
-	m_pParticleSystem = ResourceManager::Instance().Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pGraphics, m_pParticleSystem);
-	m_pNode->AddComponent(pEmitter);
-	m_pScene->AddChild(m_pNode);
-
-	m_pModelNode = new SceneNode();
+	Collider* pCollider = new Collider(m_pPhysics.get());
+	m_pNode->AddComponent(pCollider);
+	pCollider->SetShape(PxSphereGeometry(1));
+	m_pNode->GetComponent<Rigidbody>()->SetBodyType(Rigidbody::Type::Dynamic);
 	Model* pModel = new Model();
-	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Cube.flux");
+	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -130,9 +134,15 @@ void FluxCore::InitGame()
 	pModel->SetMesh(pMesh);
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 	pModel->SetMaterial(pMaterial);
+	m_pNode->AddComponent(pModel);
 
-	m_pModelNode->AddComponent(pModel);
-	m_pScene->AddChild(m_pModelNode);
+	m_pScene->AddChild(m_pNode);
+
+	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0, 0, 1);
+
+	PxRigidStatic* pFloor = m_pPhysics->GetPhysics()->createRigidStatic(PxTransform(PxVec3(0, 0, 0), PxQuat(PxPiDivTwo, PxVec3(0, 0, 1))));
+	pFloor->createShape(PxPlaneGeometry(), *pPhysMaterial);
+	m_pScene->GetComponent<PhysicsScene>()->GetScene()->addActor(*pFloor);
 }
 
 void FluxCore::GameLoop()
@@ -146,8 +156,9 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
 
-	RenderUI();
+	//m_pNode->GetComponent<Rigidbody>()->GetBody<PxRigidDynamic>()->addTorque(PxVec3(GameTimer::DeltaTime() * 10, GameTimer::DeltaTime() * 10, 0));
 
+	RenderUI();
 	m_pGraphics->EndFrame();
 }
 

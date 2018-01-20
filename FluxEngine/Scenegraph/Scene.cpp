@@ -2,8 +2,9 @@
 #include "Scene.h"
 #include "SceneNode.h"
 #include "Rendering\Renderer.h"
+#include "Component.h"
 
-Scene::Scene(Graphics* pGraphics)
+Scene::Scene(Graphics* pGraphics) : SceneNode(this)
 {
 	m_pRenderer = make_unique<Renderer>(pGraphics);
 }
@@ -12,6 +13,8 @@ Scene::~Scene()
 {
 	for (SceneNode*& pNode : m_pNodes)
 		SafeDelete(pNode);
+	for (Component*& pComponent : m_Components)
+		SafeDelete(pComponent);
 }
 
 void Scene::Initialize()
@@ -21,6 +24,8 @@ void Scene::Initialize()
 
 void Scene::Update()
 {
+	SceneNode::Update();
+
 	for (SceneNode* pNode : m_pNodes)
 		pNode->Update();
 
@@ -46,4 +51,10 @@ SceneNode* Scene::FindNode(const std::string& name)
 			return pNode;
 	}
 	return nullptr;
+}
+
+void Scene::OnSceneSet(Scene* pScene)
+{
+	UNREFERENCED_PARAMETER(pScene);
+	SceneNode::OnSceneSet(this);
 }

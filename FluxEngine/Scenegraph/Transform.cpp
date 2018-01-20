@@ -42,6 +42,7 @@ void Transform::OnLocalChange()
 	}
 
 	UpdateDirections();
+	//m_pNode->OnTransformDirty(m_WorldMatrix);
 }
 
 void Transform::OnWorldChange()
@@ -68,6 +69,7 @@ void Transform::OnWorldChange()
 		m_Scale = m_WorldScale;
 	}
 	UpdateDirections();
+	//m_pNode->OnTransformDirty(m_WorldMatrix);
 }
 
 void Transform::UpdateDirections()
@@ -76,6 +78,14 @@ void Transform::UpdateDirections()
 	m_Forward = Vector3::Transform(Vector3(0, 0, 1), rotMatrix);
 	m_Right = Vector3::Transform(Vector3(1, 0, 0), rotMatrix);
 	m_Up = m_Forward.Cross(m_Right);
+}
+
+void Transform::MarkDirty(const Vector3& position, const Vector3& scale, const Quaternion& rotation)
+{
+	m_WorldPosition = position;
+	m_WorldScale = scale;
+	m_WorldRotation = rotation;
+	OnWorldChange();
 }
 
 void Transform::Translate(const Vector3& translation, const Space space)

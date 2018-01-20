@@ -1,11 +1,16 @@
 #pragma once
+#include "SceneGraph\SceneNode.h"
+
 class SceneNode;
 class Drawable;
 class Graphics;
 class Renderer;
+class Component;
 
-class Scene
+class Scene : public SceneNode
 {
+	FLUX_OBJECT(Scene, SceneNode);
+
 public:
 	Scene(Graphics* pGraphics);
 	virtual ~Scene();
@@ -19,7 +24,11 @@ public:
 
 	SceneNode* FindNode(const std::string& name);
 
+	virtual void OnSceneSet(Scene* pScene) override;
+
 private:
 	unique_ptr<Renderer> m_pRenderer;
 	std::vector<SceneNode*> m_pNodes;
+
+	std::vector<Component*> m_Components;
 };

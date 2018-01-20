@@ -70,7 +70,3 @@ DirectX::BoundingBox Model::GetWorldBoundingBox() const
 	m_BoundingBox.Transform(worldBoundingBox, m_pNode->GetTransform()->GetWorldMatrix());
 	return worldBoundingBox;
 }
-
-void Model::Update()
-{
-}
