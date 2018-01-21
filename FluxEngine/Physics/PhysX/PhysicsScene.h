@@ -2,6 +2,16 @@
 #include "SceneGraph/Component.h"
 
 class PhysicsSystem;
+class Rigidbody;
+
+struct RaycastResult
+{
+	bool Hit = false;
+	Rigidbody* pRigidbody = nullptr;
+	float Distance = -1.0f;
+	Vector3 Normal = Vector3();
+	Vector3 Position = Vector3();
+};
 
 class PhysicsScene : public Component, public PxSimulationEventCallback
 {
@@ -16,6 +26,12 @@ public:
 	virtual void Update() override;
 
 	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
+
+	RaycastResult Raycast(
+		const Vector3& origin,
+		const Vector3& direction,
+		const float length = numeric_limits<float>::max()
+	) const;
 
 private:
 	static const float PHYSICS_TIME_STEP;

@@ -9,6 +9,7 @@
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Renderer.h"
 #include "Audio/AudioListener.h"
+#include "Physics/PhysX/PhysicsScene.h"
 
 Camera::Camera(InputEngine* pInput, Graphics* pGraphics):
 	m_pInput(pInput), m_pGraphics(pGraphics)
@@ -69,9 +70,9 @@ void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 	m_FarPlane = farPlane;
 }
 
-void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
+void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 {
-	POINT mousePos =  m_pInput->GetMousePosition();
+	POINT mousePos = m_pInput->GetMousePosition();
 	Vector2 ndc;
 	float hw = m_Viewport.GetWidth() / 2.0f;
 	float hh = m_Viewport.GetHeight() / 2.0f;
@@ -85,4 +86,21 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction)
 
 	direction = farPoint - nearPoint;
 	direction.Normalize();
+}
+
+RaycastResult Camera::Raycast() const
+{
+	if (m_pScene == nullptr)
+		return RaycastResult();
+	PhysicsScene* pPhysicsScene = m_pScene->GetComponent<PhysicsScene>();
+	if (pPhysicsScene == nullptr)
+		return RaycastResult();
+
+	Vector3 rayStart, rayDir;
+	GetMouseRay(rayStart, rayDir);
+
+	return pPhysicsScene->Raycast(
+		rayStart,
+		rayDir
+	);
 }

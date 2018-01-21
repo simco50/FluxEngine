@@ -68,6 +68,31 @@ void PhysicsScene::Update()
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetForward()));*/
 }
 
+RaycastResult PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, const float length) const
+{
+	if (m_pPhysicsScene == nullptr)
+		return RaycastResult();
+
+	PxRaycastBuffer buffer;
+	bool hit = m_pPhysicsScene->raycast(
+		*reinterpret_cast<const PxVec3*>(&origin),
+		*reinterpret_cast<const PxVec3*>(&direction),
+		length,
+		buffer,
+		PxHitFlag::eDEFAULT,
+		PxQueryFilterData()
+	);
+	if (!hit)
+		return RaycastResult();
+
+	RaycastResult result;
+	result.pRigidbody = static_cast<Rigidbody*>(buffer.block.actor->userData);
+	result.Hit = buffer.hasBlock;
+	result.Normal = *reinterpret_cast<Vector3*>(&buffer.block.normal);
+	result.Position = *reinterpret_cast<Vector3*>(&buffer.block.position);
+	return result;
+}
+
 void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 {
 	for (PxU32 i = 0; i < count; i++)

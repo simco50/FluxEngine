@@ -4,6 +4,7 @@
 
 class InputEngine;
 class Graphics;
+struct RaycastResult;
 
 class Camera : public Component
 {
@@ -23,7 +24,7 @@ public:
 	const FloatRect& GetViewport() const { return m_Viewport; }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
-	void GetMouseRay(Vector3& startPoint, Vector3& direction);
+	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
 
 	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
 	void SetOrthographicSize(float size) { m_Size = size; }
@@ -32,6 +33,8 @@ public:
 	float GetFarPlane() const { return m_FarPlane; }
 
 	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
+
+	RaycastResult Raycast() const;
 
 protected:
 	void OnSceneSet(Scene* pScene) override;
