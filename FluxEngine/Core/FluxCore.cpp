@@ -28,6 +28,7 @@
 #include "Physics/PhysX/Collider.h"
 #include "Window.h"
 #include "Rendering/DebugRenderer.h"
+#include "Context.h"
 
 using namespace std;
 
@@ -76,7 +77,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pWindow->SetIcon("Logo.ico");
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
-		m_pGraphics = RegisterSubsystem(make_unique<Graphics>(m_pWindow));
+		m_pContext = make_unique<Context>();
+
+		m_pGraphics = m_pContext->RegisterSubsystem(make_unique<Graphics>(m_pWindow));
 		if (!m_pGraphics->SetMode(
 			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
@@ -85,11 +88,11 @@ int FluxCore::Run(HINSTANCE hInstance)
 			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 		}
 
-		m_pInput = RegisterSubsystem(make_unique<InputEngine>(m_pWindow));
-		m_pImmediateUI = RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput));
-		m_pPhysics = RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
+		m_pInput = m_pContext->RegisterSubsystem(make_unique<InputEngine>(m_pWindow));
+		m_pImmediateUI = m_pContext->RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput));
+		m_pPhysics = m_pContext->RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
 
-		m_pDebugRenderer = RegisterSubsystem(make_unique<DebugRenderer>(m_pGraphics));
+		m_pDebugRenderer = m_pContext->RegisterSubsystem(make_unique<DebugRenderer>(m_pGraphics));
 
 		InitGame();
 		GameTimer::Reset();
