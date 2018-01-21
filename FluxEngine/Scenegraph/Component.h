@@ -17,7 +17,7 @@ public:
 	virtual void OnNodeRemoved();
 	virtual void OnSceneRemoved();
 	//Broadcast transform change to all components
-	virtual void OnMarkedDirty(const Matrix& worldMatrix) { UNREFERENCED_PARAMETER(worldMatrix); }
+	virtual void OnMarkedDirty(const Transform* transform) { UNREFERENCED_PARAMETER(transform); }
 	virtual void Update() {}
 
 	virtual bool CanHaveMultiple() const { return false; }

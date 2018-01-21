@@ -13,7 +13,7 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
-	virtual void OnMarkedDirty(const Matrix& transform) override;
+	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
 	virtual BoundingBox GetWorldBoundingBox() const override;
 

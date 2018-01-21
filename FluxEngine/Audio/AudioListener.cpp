@@ -17,42 +17,20 @@ void AudioListener::OnNodeSet(SceneNode* pNode)
 	Component::OnNodeSet(pNode);
 
 	m_pFmodSystem = AudioEngine::Instance().GetSystem();
-
-	Vector3 pos = m_pNode->GetTransform()->GetWorldPosition();
-	FMOD_VECTOR listenerPosition;
-	listenerPosition.x = pos.x;
-	listenerPosition.y = pos.y;
-	listenerPosition.z = pos.z;
-	m_LastPosition = listenerPosition;
+	m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
 }
 
-void AudioListener::Update()
+void AudioListener::OnMarkedDirty(const Transform* transform)
 {
-	Vector3 pos = m_pNode->GetTransform()->GetWorldPosition();
-	FMOD_VECTOR listenerPosition;
-	listenerPosition.x = pos.x;
-	listenerPosition.y = pos.y;
-	listenerPosition.z = pos.z;
+	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
-	float dt = GameTimer::DeltaTime();
-	FMOD_VECTOR velocity;
-	velocity.x = (listenerPosition.x - m_LastPosition.x) / dt;
-	velocity.y = (listenerPosition.y - m_LastPosition.y) / dt;
-	velocity.z = (listenerPosition.z - m_LastPosition.z) / dt;
+	m_pFmodSystem->set3DListenerAttributes(
+		0, 
+		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetWorldPosition()),
+		reinterpret_cast<const FMOD_VECTOR*>(&velocity),
+		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetForward()),
+		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetUp())
+	);
 
-	Vector3 fwd = m_pNode->GetTransform()->GetForward();
-	FMOD_VECTOR fwdDir;
-	fwdDir.x = fwd.x;
-	fwdDir.y = fwd.y;
-	fwdDir.z = fwd.z;
-
-	Vector3 up = m_pNode->GetTransform()->GetUp();
-	FMOD_VECTOR upDir;
-	upDir.x = up.x;
-	upDir.y = up.y;
-	upDir.z = up.z;
-
-	m_pFmodSystem->set3DListenerAttributes(0, &listenerPosition, &velocity, &fwdDir, &upDir);
-
-	m_LastPosition = listenerPosition;
+	m_LastPosition = transform->GetWorldPosition();
 }

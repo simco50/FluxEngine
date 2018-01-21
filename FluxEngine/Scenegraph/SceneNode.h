@@ -42,7 +42,7 @@ public:
 		return pComponent;
 	}
 
-	void OnTransformDirty(const Matrix& worldMatrix);
+	void OnTransformDirty(const Transform* pTransform);
 
 protected:
 	//Constructor used for Scene to be able to initialize with "this"

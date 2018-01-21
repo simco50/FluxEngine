@@ -30,9 +30,9 @@ void Camera::OnSceneSet(Scene* pScene)
 	pScene->GetRenderer()->AddCamera(this);
 }
 
-void Camera::Update()
+void Camera::OnMarkedDirty(const Transform* transform)
 {
-	if(m_Perspective)
+	if (m_Perspective)
 		m_Projection = XMMatrixPerspectiveFovLH(m_FoV * (XM_PI / 180.0f), m_Viewport.GetWidth() / m_Viewport.GetHeight(), m_NearPlane, m_FarPlane);
 	else
 	{
@@ -40,11 +40,14 @@ void Camera::Update()
 		float viewHeight = m_Size;
 		m_Projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
-	
-	Vector3 worldPos = m_pNode->GetTransform()->GetWorldPosition();
-	m_View = XMMatrixLookAtLH(worldPos, worldPos + m_pNode->GetTransform()->GetForward(), XMLoadFloat3(&m_pNode->GetTransform()->GetUp()));
+
+	m_View = XMMatrixLookAtLH(
+		transform->GetWorldPosition(), 
+		transform->GetWorldPosition() + transform->GetForward(), 
+		XMLoadFloat3(&transform->GetUp()));
+
 	m_View.Invert(m_ViewInverse);
-	
+
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
 

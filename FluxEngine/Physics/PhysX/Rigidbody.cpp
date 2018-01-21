@@ -53,12 +53,10 @@ void Rigidbody::OnNodeRemoved()
 	}
 }
 
-void Rigidbody::OnMarkedDirty(const Matrix& worldMatrix)
+void Rigidbody::OnMarkedDirty(const Transform* pTransform)
 {
 	if (m_pBody)
-	{
-		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&worldMatrix)), true);
-	}
+		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&pTransform->GetWorldMatrix())), true);
 }
 
 void Rigidbody::Update()

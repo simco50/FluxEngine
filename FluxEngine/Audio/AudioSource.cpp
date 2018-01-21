@@ -19,25 +19,6 @@ AudioSource::~AudioSource()
 {
 }
 
-void AudioSource::Update()
-{
-	Vector3 pos = m_pNode->GetTransform()->GetWorldPosition();
-	FMOD_VECTOR listenerPosition;
-	listenerPosition.x = pos.x;
-	listenerPosition.y = pos.y;
-	listenerPosition.z = pos.z;
-
-	float dt = GameTimer::DeltaTime();
-	FMOD_VECTOR velocity;
-	velocity.x = (listenerPosition.x - m_LastPosition.x) / dt;
-	velocity.y = (listenerPosition.y - m_LastPosition.y) / dt;
-	velocity.z = (listenerPosition.z - m_LastPosition.z) / dt;
-
-	m_pChannel->set3DAttributes(&listenerPosition, &velocity);
-
-	m_LastPosition = listenerPosition;
-}
-
 void AudioSource::Play()
 {
 	if (m_pSound == nullptr)
@@ -91,4 +72,22 @@ void AudioSource::SetLoop(const bool loop)
 	}
 
 	m_pChannel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+}
+
+void AudioSource::OnNodeSet(SceneNode* pNode)
+{
+	Component::OnNodeSet(pNode);
+	m_LastPosition = pNode->GetTransform()->GetWorldPosition();
+}
+
+void AudioSource::OnMarkedDirty(const Transform* transform)
+{
+	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+
+	m_pChannel->set3DAttributes(
+		reinterpret_cast<const FMOD_VECTOR*>(&m_pNode->GetTransform()->GetWorldPosition()),
+		reinterpret_cast<const FMOD_VECTOR*>(&velocity)
+	);
+
+	m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
 }

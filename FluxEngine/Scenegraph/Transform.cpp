@@ -97,7 +97,7 @@ void Transform::Translate(const Vector3& translation, const Space space)
 		m_WorldPosition += translation;
 	}
 	OnWorldChange();
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }
 
 void Transform::Translate(const float x, const float y, const float z, const Space space)
@@ -127,7 +127,7 @@ void Transform::Rotate(const Quaternion& quaternion, const Space space)
 		m_Rotation = quaternion * m_Rotation;
 		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }
 
 Vector3 Transform::TransformVector(const Vector3& input, const TransformElement elements) const
@@ -156,7 +156,7 @@ void Transform::SetPosition(const Vector3& newPosition, const Space space)
 		m_Position = newPosition;
 		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }
 
 void Transform::SetPosition(const float x, const float y, const float z, const Space space)
@@ -168,7 +168,7 @@ void Transform::SetScale(const Vector3& scale)
 {
 	m_WorldScale = scale;
 	OnWorldChange();
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }
 
 void Transform::SetScale(const float x, const float y, const float z)
@@ -200,7 +200,7 @@ void Transform::SetRotation(const float x, const float y, const float z, const S
 		m_Rotation = Quaternion::CreateFromYawPitchRoll(DegToRad(y), DegToRad(x), DegToRad(z));
 		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }
 
 void Transform::SetRotation(const Quaternion& quaternion, const Space space)
@@ -215,5 +215,5 @@ void Transform::SetRotation(const Quaternion& quaternion, const Space space)
 		m_Rotation = quaternion;
 		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(m_WorldMatrix);
+	m_pNode->OnTransformDirty(this);
 }

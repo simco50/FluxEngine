@@ -29,10 +29,10 @@ void Model::OnNodeSet(SceneNode* pNode)
 	}
 }
 
-void Model::OnMarkedDirty(const Matrix& transform)
+void Model::OnMarkedDirty(const Transform* pTransform)
 {
 	for (Batch& batch : m_Batches)
-		batch.pModelMatrix = &transform;
+		batch.pModelMatrix = &pTransform->GetWorldMatrix();
 }
 
 void Model::SetMesh(Mesh* pMesh)

@@ -35,7 +35,7 @@ public:
 
 protected:
 	void OnSceneSet(Scene* pScene) override;
-	void Update() override;
+	virtual void OnMarkedDirty(const Transform* transform) override;
 private:
 	InputEngine* m_pInput = nullptr;
 	Graphics* m_pGraphics = nullptr;

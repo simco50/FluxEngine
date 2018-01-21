@@ -52,14 +52,18 @@ void FreeCamera::KeyboardMouse()
 		moveSpeed *= m_ShiftMultiplier;
 	moveDirection *= dt * moveSpeed;
 
-	GetTransform()->Translate(moveDirection, Space::SELF);
+	if(moveDirection != Vector3())
+		GetTransform()->Translate(moveDirection, Space::SELF);
 
 	//Rotation
 	if ( m_pInput->IsMouseButtonDown(VK_RBUTTON))
 	{
 		Vector2 mouseMove =  m_pInput->GetMouseMovement();
-		GetTransform()->Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
-		GetTransform()->Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+		if (mouseMove != Vector2())
+		{
+			GetTransform()->Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
+			GetTransform()->Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+		}
 	}
 }
 

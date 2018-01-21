@@ -69,8 +69,8 @@ Component* SceneNode::GetComponent(StringHash type)
 	return nullptr;
 }
 
-void SceneNode::OnTransformDirty(const Matrix& worldMatrix)
+void SceneNode::OnTransformDirty(const Transform* pTransform)
 {
 	for (Component* pComponent : m_Components)
-		pComponent->OnMarkedDirty(worldMatrix);
+		pComponent->OnMarkedDirty(pTransform);
 }

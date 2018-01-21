@@ -14,13 +14,13 @@ public:
 	void PlayOneShot(FMOD::Sound* pSound);
 	void Stop();
 	void Pause(const bool paused);
-
 	void SetLoop(const bool loop);
 
 	FMOD::Channel* GetChannel() const { return m_pChannel; }
 
 private:
-	virtual void Update() override;
+	virtual void OnNodeSet(SceneNode* pNode) override;
+	virtual void OnMarkedDirty(const Transform* transform) override;
 
 	FMOD_MODE m_Mode;
 	string m_FilePath;
@@ -28,6 +28,6 @@ private:
 	FMOD::Channel* m_pChannel = nullptr;
 
 	FMOD::System* m_pFmodSystem = nullptr;
-	FMOD_VECTOR m_LastPosition;
+	Vector3 m_LastPosition;
 };
 
