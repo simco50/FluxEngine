@@ -57,7 +57,7 @@ void Rigidbody::OnMarkedDirty(const Matrix& worldMatrix)
 {
 	if (m_pBody)
 	{
-		m_pBody->setGlobalPose(*reinterpret_cast<const PxTransform*>(&worldMatrix), true);
+		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&worldMatrix)), true);
 	}
 }
 

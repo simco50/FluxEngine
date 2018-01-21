@@ -66,6 +66,7 @@ public:
 	void OnWorldChange();
 	void UpdateDirections();
 
+	//Mark the transform as dirty so it will recalculate the transforms
 	void MarkDirty(const Vector3& position, const Vector3& scale, const Quaternion& rotation);
 
 private:

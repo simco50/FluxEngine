@@ -29,6 +29,12 @@ void Model::OnNodeSet(SceneNode* pNode)
 	}
 }
 
+void Model::OnMarkedDirty(const Matrix& transform)
+{
+	for (Batch& batch : m_Batches)
+		batch.pModelMatrix = &transform;
+}
+
 void Model::SetMesh(Mesh* pMesh)
 {
 	if (pMesh)

@@ -3,14 +3,6 @@ class Scene;
 class SceneNode;
 class Transform;
 
-#ifdef _DEBUG
-#define REQUIRE_COMPONENT(T) \
-std::string err = Printf("[RequireComponent] > '%s' requires a component of type '%s'", GetTypeName().c_str(), T::GetTypeNameStatic().c_str()); \
-checkf(GetComponent<T>() != nullptr, err.c_str())
-#else
-#define REQUIRE_COMPONENT(T)
-#endif
-
 class Component : public Object
 {
 	FLUX_OBJECT(Component, Object)
@@ -24,6 +16,7 @@ public:
 
 	virtual void OnNodeRemoved();
 	virtual void OnSceneRemoved();
+	//Broadcast transform change to all components
 	virtual void OnMarkedDirty(const Matrix& worldMatrix) { UNREFERENCED_PARAMETER(worldMatrix); }
 	virtual void Update() {}
 

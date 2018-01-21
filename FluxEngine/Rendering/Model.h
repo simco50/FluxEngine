@@ -13,13 +13,13 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
+	virtual void OnMarkedDirty(const Matrix& transform) override;
+
+	virtual BoundingBox GetWorldBoundingBox() const override;
 
 	void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
-
-	virtual BoundingBox GetWorldBoundingBox() const override;
-
 private:
 	Mesh* m_pMesh = nullptr;
 };
