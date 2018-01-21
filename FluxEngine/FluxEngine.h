@@ -150,7 +150,7 @@ using namespace DirectX;
 #endif
 #pragma endregion XINPUT
 
-#include "Math/SimpleMath.h"
+#include "External/SimpleMath/SimpleMath.h"
 using namespace DirectX::SimpleMath;
 
 #pragma region
