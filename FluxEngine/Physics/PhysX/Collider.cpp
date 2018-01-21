@@ -4,6 +4,7 @@
 #include "PhysicsSystem.h"
 #include "Scenegraph\SceneNode.h"
 #include "Rendering\Model.h"
+#include "PhysicsMesh.h"
 
 Collider::Collider(PhysicsSystem* pPhysicsSystem, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
 	m_pPhysicsSystem(pPhysicsSystem),
@@ -14,10 +15,12 @@ Collider::Collider(PhysicsSystem* pPhysicsSystem, PxMaterial* pMaterial, physx::
 
 Collider::~Collider()
 {
+	SafeDelete(m_pGeometry);
 }
 
 void Collider::CreateShape()
 {
+	CreateGeometry();
 	m_pShape = m_pPhysicsSystem->GetPhysics()->createShape(*m_pGeometry, *m_pMaterial, true, m_ShapeFlags);
 }
 
@@ -72,51 +75,88 @@ SphereCollider::SphereCollider(PhysicsSystem* pSystem,
 	float radius,
 	PxMaterial* pMaterial /*= nullptr*/,
 	physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pSystem, pMaterial, shapeFlags)
-{
-	m_pGeometry = new PxSphereGeometry(radius);
-}
+	Collider(pSystem, pMaterial, shapeFlags),
+	m_Radius(radius)
+{}
 
 SphereCollider::~SphereCollider()
 {
 	SafeDelete(m_pGeometry);
 }
 
-BoxCollider::BoxCollider(PhysicsSystem* pSystem, const Vector3& extents, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pSystem, pMaterial, shapeFlags)
+void SphereCollider::CreateGeometry()
 {
-	m_pGeometry = new PxBoxGeometry(extents.x, extents.y, extents.z);
+	m_pGeometry = new PxSphereGeometry(m_Radius);
 }
+
+//BOX
+BoxCollider::BoxCollider(PhysicsSystem* pSystem, const Vector3& extents, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags),
+	m_Extents(extents)
+{}
 
 BoxCollider::BoxCollider(PhysicsSystem* pSystem, const BoundingBox& boundingBox, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/):
-	Collider(pSystem, pMaterial, shapeFlags)
+	Collider(pSystem, pMaterial, shapeFlags),
+	m_Extents(boundingBox.Extents.x, boundingBox.Extents.y, boundingBox.Extents.z)
+{}
+
+void BoxCollider::CreateGeometry()
 {
-	m_pGeometry = new PxBoxGeometry(boundingBox.Extents.x, boundingBox.Extents.y, boundingBox.Extents.z);
+	m_pGeometry = new PxBoxGeometry(m_Extents.x, m_Extents.y, m_Extents.z);
 }
 
-BoxCollider::~BoxCollider()
-{
-	SafeDelete(m_pGeometry);
-}
-
+//PLANE
 PlaneCollider::PlaneCollider(PhysicsSystem* pSystem, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pSystem, pMaterial, shapeFlags)
+{}
+
+void PlaneCollider::CreateGeometry()
 {
 	m_pGeometry = new PxPlaneGeometry();
 }
 
-PlaneCollider::~PlaneCollider()
+//CAPSULE
+CapsuleCollider::CapsuleCollider(PhysicsSystem* pSystem, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags),
+	m_Height(height / 2), m_Radius(radius)
+{}
+
+void CapsuleCollider::CreateGeometry()
 {
-	SafeDelete(m_pGeometry);
+	m_pGeometry = new PxCapsuleGeometry(m_Radius, m_Height);
 }
 
-CapsuleCollider::CapsuleCollider(PhysicsSystem* pSystem, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+//MESH
+MeshCollider::MeshCollider(PhysicsSystem* pSystem, PhysicsMesh* pMesh, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags), 
+	m_pMesh(pMesh)
+{}
+
+MeshCollider::MeshCollider(PhysicsSystem* pSystem, const std::string& filePath, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pSystem, pMaterial, shapeFlags)
 {
-	m_pGeometry = new PxCapsuleGeometry(radius, height / 2.0f);
+	m_pMesh = ResourceManager::Instance().Load<PhysicsMesh>(filePath, pSystem);
 }
 
-CapsuleCollider::~CapsuleCollider()
+void MeshCollider::CreateGeometry()
 {
-	SafeDelete(m_pGeometry);
+	if (m_pMesh == nullptr)
+	{
+		FLUX_LOG(ERROR, "[MeshCollider::MeshCollider] > Given PhysicsMesh is null");
+		return;
+	}
+	switch (m_pMesh->GetMeshType())
+	{
+	case PhysicsMesh::Type::ConvexMesh:
+		m_pGeometry = new PxConvexMeshGeometry((PxConvexMesh*)m_pMesh->GetMesh());
+		break;
+	case PhysicsMesh::Type::TriangleMesh:
+		m_pGeometry = new PxTriangleMeshGeometry((PxTriangleMesh*)m_pMesh->GetMesh());
+		break;
+	case PhysicsMesh::Type::None:
+	default:
+		FLUX_LOG(ERROR, "[MeshCollider::MeshCollider] > Given PhysicsMesh has an invalid type");
+		return;
+	}
+	return;
 }

@@ -155,7 +155,7 @@ void FluxCore::InitGame()
 				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
 				pRigidbody->SetBodyType(Rigidbody::Dynamic);
 				m_pNode->AddComponent(pRigidbody);
-				Collider* pCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
+				Collider* pCollider = new MeshCollider(m_pPhysics, "Resources/Meshes/Spot.collision", pPhysMaterial);
 				m_pNode->AddComponent(pCollider);
 				m_pScene->AddChild(m_pNode);
 			}
