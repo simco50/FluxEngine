@@ -20,6 +20,7 @@ enum class PrimitiveType : unsigned char
 	TRIANGLELIST = 0,
 	POINTLIST,
 	TRIANGLESTRIP,
+	LINELIST,
 };
 
 //The windwo type

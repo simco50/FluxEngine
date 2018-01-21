@@ -1,19 +1,14 @@
 #pragma once
 
 class Graphics;
-class Shader;
-class ShaderVariation;
 class ImmediateUI;
 class InputEngine;
 class FreeCamera;
-class Mesh;
-class Texture;
 class Scene;
 class SceneNode;
-class Material;
-class ParticleSystem;
 class PhysicsSystem;
 class Window;
+class DebugRenderer;
 
 class FluxCore
 {
@@ -44,6 +39,7 @@ private:
 	ImmediateUI* m_pImmediateUI = nullptr;
 	InputEngine* m_pInput = nullptr;
 	PhysicsSystem* m_pPhysics = nullptr;
+	DebugRenderer* m_pDebugRenderer = nullptr;
 
 	map<StringHash, unique_ptr<Subsystem>> m_Systems;
 	template<typename T>

@@ -27,6 +27,7 @@
 #include "Physics/PhysX/Rigidbody.h"
 #include "Physics/PhysX/Collider.h"
 #include "Window.h"
+#include "Rendering/DebugRenderer.h"
 
 using namespace std;
 
@@ -87,6 +88,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pInput = RegisterSubsystem(make_unique<InputEngine>(m_pWindow));
 		m_pImmediateUI = RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput));
 		m_pPhysics = RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
+
+		m_pDebugRenderer = RegisterSubsystem(make_unique<DebugRenderer>(m_pGraphics));
 
 		InitGame();
 		GameTimer::Reset();
@@ -168,6 +171,8 @@ void FluxCore::InitGame()
 	pFloor->AddComponent(pCollider);
 	pCollider->SetShape(PxPlaneGeometry(), pPhysMaterial);
 	m_pScene->AddChild(pFloor);
+
+	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 }
 
 void FluxCore::OnPause(bool isActive)
@@ -188,6 +193,9 @@ void FluxCore::GameLoop()
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	m_pScene->Update();
+
+	m_pDebugRenderer->Render();
+	m_pDebugRenderer->EndFrame();
 
 	RenderUI();
 	m_pGraphics->EndFrame();

@@ -45,7 +45,7 @@ void* VertexBuffer::Map(bool discard)
 		return nullptr;
 	}
 
-	D3D11_MAPPED_SUBRESOURCE mappedData;
+	D3D11_MAPPED_SUBRESOURCE mappedData = {};
 	mappedData.pData = nullptr;
 
 	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))

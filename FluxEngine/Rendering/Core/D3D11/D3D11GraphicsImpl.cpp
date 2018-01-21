@@ -17,6 +17,10 @@ bool GraphicsImpl::GetPrimitiveType(const PrimitiveType primitiveType, const uns
 		type = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 		primitiveCount = elementCount - 2;
 		return true;
+	case PrimitiveType::LINELIST:
+		type = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		primitiveCount = elementCount / 2;
+		return true;
 	default:
 		FLUX_LOG(ERROR, "[Graphics::SetPrimitiveType()] > Invalid primitive type");
 		return false;
