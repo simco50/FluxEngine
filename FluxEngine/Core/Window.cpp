@@ -164,7 +164,7 @@ LRESULT CALLBACK Window::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, L
 
 LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	//m_OnWndProcEvent.Broadcast(hWnd, message, wParam, lParam);
+	m_OnWndProcEvent.Broadcast(hWnd, message, wParam, lParam);
 		
 	switch (message)
 	{

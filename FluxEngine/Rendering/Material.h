@@ -48,7 +48,6 @@ private:
 
 	string m_Name;
 	array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
-	map<string, Shader*> m_Shaders;
 	
 	//Properties
 	CullMode m_CullMode = CullMode::BACK;

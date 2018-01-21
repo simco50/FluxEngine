@@ -38,7 +38,13 @@ void PhysicsScene::OnSceneSet(Scene* pScene)
 		desc.broadPhaseType = PxBroadPhaseType::eGPU;
 		desc.gpuDispatcher = pCudaContextManager->getGpuDispatcher();
 	}
+
 	m_pPhysicsScene = m_pPhysicsSystem->GetPhysics()->createScene(desc);
+	m_pPhysicsScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0f);
+	m_pPhysicsScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
+	m_pPhysicsScene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LIMITS, 1.0f);
+	m_pPhysicsScene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LOCAL_FRAMES, 1.0f);
+	m_pPhysicsScene->setVisualizationParameter(PxVisualizationParameter::eACTOR_AXES, 1.0f);
 }
 
 void PhysicsScene::OnSceneRemoved()

@@ -33,6 +33,8 @@ private:
 	FreeCamera* m_pCamera = nullptr;
 	SceneNode* m_pNode = nullptr;
 
+	bool m_DebugPhysics = false;
+
 	//Systems
 	Window* m_pWindow = nullptr;
 	Graphics* m_pGraphics = nullptr;

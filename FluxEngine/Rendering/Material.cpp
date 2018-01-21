@@ -66,13 +66,12 @@ bool Material::Load(const std::string& filePath)
 
 		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] >Shader for slot already defined");
 
-		string source = pShader->Attribute("source");
-		m_Shaders[source] = m_pGraphics->GetShader(source);
 		const char* pAttribute = pShader->Attribute("defines");
 		string defines = "";
 		if (pAttribute)
 			defines = pAttribute;
-		m_ShaderVariations[(unsigned int)type] = m_Shaders[source]->GetVariation(type, defines);
+		string source = pShader->Attribute("source");
+		m_ShaderVariations[(unsigned int)type] = m_pGraphics->GetShader(source, type, defines);
 		pShader = pShader->NextSiblingElement();
 	}
 

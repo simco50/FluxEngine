@@ -7,6 +7,9 @@
 #include "Core\BlendState.h"
 #include "Core\RasterizerState.h"
 #include "Camera\Camera.h"
+#include "Physics\PhysX\PhysicsScene.h"
+#include "Mesh.h"
+#include "Geometry.h"
 
 DebugRenderer::DebugRenderer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
@@ -16,9 +19,8 @@ DebugRenderer::DebugRenderer(Graphics* pGraphics) :
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 	};
-	Shader* pShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl");
-	m_pVertexShader = pShader->GetVariation(ShaderType::VertexShader);
-	m_pPixelShader = pShader->GetVariation(ShaderType::PixelShader);
+	m_pVertexShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
+	m_pPixelShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
 	m_pVertexBuffer = make_unique<VertexBuffer>(pGraphics);
 }
 
@@ -50,26 +52,26 @@ void DebugRenderer::Render()
 	{
 		memcpy(pDestination, &line.Start, sizeof(Vector3));
 		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.Color, sizeof(Color));
+		memcpy(pDestination, &line.ColorStart, sizeof(Color));
 		pDestination += sizeof(Color);
 		memcpy(pDestination, &line.End, sizeof(Vector3));
 		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.Color, sizeof(Color));
+		memcpy(pDestination, &line.ColorEnd, sizeof(Color));
 		pDestination += sizeof(Color);
 	}
 	for (const DebugTriangle& triangle : m_Triangles)
 	{
 		memcpy(pDestination, &triangle.A, sizeof(Vector3));
 		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.Color, sizeof(Color));
+		memcpy(pDestination, &triangle.ColorA, sizeof(Color));
 		pDestination += sizeof(Color);
 		memcpy(pDestination, &triangle.B, sizeof(Vector3));
 		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.Color, sizeof(Color));
+		memcpy(pDestination, &triangle.ColorB, sizeof(Color));
 		pDestination += sizeof(Color);
 		memcpy(pDestination, &triangle.C, sizeof(Vector3));
 		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.Color, sizeof(Color));
+		memcpy(pDestination, &triangle.ColorC, sizeof(Color));
 		pDestination += sizeof(Color);
 	}
 
@@ -84,7 +86,7 @@ void DebugRenderer::Render()
 	m_pGraphics->GetBlendState()->SetColorWrite(ColorWrite::ALL);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
 
-	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::NONE);
+	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = m_pCamera->GetViewProjection();
 	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
@@ -107,14 +109,33 @@ void DebugRenderer::EndFrame()
 
 void DebugRenderer::AddLine(const Vector3& start, const Vector3& end, const Color& color)
 {
-	m_Lines.push_back(DebugLine(start, end, color));
+	AddLine(start, end, color, color);
+}
+
+void DebugRenderer::AddLine(const Vector3& start, const Vector3& end, const Color& colorStart, const Color& colorEnd)
+{
+	m_Lines.push_back(DebugLine(start, end, colorStart, colorEnd));
 	m_LinePrimitives += 2;
 }
 
-void DebugRenderer::AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& color)
+void DebugRenderer::AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& color, bool solid)
 {
-	m_Triangles.push_back(DebugTriangle(a, b, c , color));
-	m_TrianglePrimitives += 3;
+	AddTriangle(a, b, c, color, color, color, solid);
+}
+
+void DebugRenderer::AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& colorA, const Color& colorB, const Color& colorC, bool solid)
+{
+	if (solid)
+	{
+		m_Triangles.push_back(DebugTriangle(a, b, c, colorA, colorB, colorC));
+		m_TrianglePrimitives += 3;
+	}
+	else
+	{
+		AddLine(a, b, colorA);
+		AddLine(b, c, colorB);
+		AddLine(c, b, colorC);
+	}
 }
 
 void DebugRenderer::AddPolygon(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d, const Color& color)
@@ -201,6 +222,48 @@ void DebugRenderer::AddBoundingBox(const BoundingBox& boundingBox, const Matrix&
     }
 }
 
+void DebugRenderer::AddSphere(const Vector3& position, const float radius, const int slices, const int stacks, const Color& color, const bool solid)
+{
+	DebugSphere sphere(position, radius);
+
+	float jStep = XM_PI / slices;
+	float iStep = XM_PI / stacks;
+
+	if (!solid)
+	{
+		for (float j = 0; j < XM_PI; j += jStep)
+		{
+			for (float i = 0; i < XM_2PI; i += iStep)
+			{
+				Vector3 p1 = sphere.GetPoint(i, j);
+				Vector3 p2 = sphere.GetPoint(i + iStep, j);
+				Vector3 p3 = sphere.GetPoint(i, j + jStep);
+				Vector3 p4 = sphere.GetPoint(i + iStep, j + jStep);
+
+				AddLine(p1, p2, color);
+				AddLine(p3, p4, color);
+				AddLine(p1, p3, color);
+				AddLine(p2, p4, color);
+			}
+		}
+	}
+	else
+	{
+		for (float j = 0; j < XM_PI; j += jStep)
+		{
+			for (float i = 0; i < XM_2PI; i += iStep)
+			{
+				Vector3 p1 = sphere.GetPoint(i, j);
+				Vector3 p2 = sphere.GetPoint(i + iStep, j);
+				Vector3 p3 = sphere.GetPoint(i, j + jStep);
+				Vector3 p4 = sphere.GetPoint(i + iStep, j + jStep);
+
+				AddPolygon(p2, p1, p3, p4, (Color)Colors::Blue);
+			}
+		}
+	}
+}
+
 void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& color)
 {
 	vector<XMFLOAT3> corners(frustrum.CORNER_COUNT);
@@ -220,7 +283,7 @@ void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& co
 	AddLine(corners[3], corners[7], color);
 }
 
-void DebugRenderer::DrawAxisSystem(const Matrix& transform, const float lineLength)
+void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLength)
 {
 	Vector3 origin(Vector3::Transform(Vector3(), transform));
 	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), transform));
@@ -230,4 +293,88 @@ void DebugRenderer::DrawAxisSystem(const Matrix& transform, const float lineLeng
 	AddLine(origin, x, Color(1, 0, 0, 1));
 	AddLine(origin, y, Color(0, 1, 0, 1));
 	AddLine(origin, z, Color(0, 0, 1, 1));
+}
+
+void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
+{
+	if (pScene == nullptr)
+		return;
+
+	struct HexConverter
+	{
+		Color operator()(unsigned int color)
+		{
+			Color output;
+			output.x = (float)((color >> 16) & 0xFF);
+			output.y = (float)((color >> 8) & 0xFF);
+			output.z = (float)(color & 0xFF);
+			output.w = 1.0f;
+			return output;
+		}
+	} converter;
+
+	const PxRenderBuffer& pBuffer = pScene->GetScene()->getRenderBuffer();
+	const PxDebugLine* pLines = pBuffer.getLines();
+	for (unsigned int i = 0; i < pBuffer.getNbLines(); ++i)
+	{
+		AddLine(
+			*reinterpret_cast<const Vector3*>(&pLines[i].pos0),
+			*reinterpret_cast<const Vector3*>(&pLines[i].pos1),
+			converter(pLines[i].color0),
+			converter(pLines[i].color1)
+		);
+	}
+
+	const PxDebugTriangle* pTriangles = pBuffer.getTriangles();
+	for (unsigned int i = 0; i < pBuffer.getNbTriangles(); ++i)
+	{
+		AddTriangle(
+			*reinterpret_cast<const Vector3*>(&pTriangles[i].pos0),
+			*reinterpret_cast<const Vector3*>(&pTriangles[i].pos1),
+			*reinterpret_cast<const Vector3*>(&pTriangles[i].pos2),
+			converter(pTriangles[i].color0),
+			converter(pTriangles[i].color1),
+			converter(pTriangles[i].color2)
+		);
+	}
+}
+
+void DebugRenderer::AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid)
+{
+	if (pMesh == nullptr)
+		return;
+	for (int i = 0; i < pMesh->GetGeometryCount(); ++i)
+	{
+		Geometry* pGeometry = pMesh->GetGeometry(i);
+		if (pGeometry == nullptr)
+			continue;
+		const Geometry::VertexData& vertexData = pGeometry->GetVertexData("POSITION");
+		if (pGeometry->HasData("INDEX"))
+		{
+			const Geometry::VertexData& indexData = pGeometry->GetVertexData("INDEX");
+			for (int index = 0; index < indexData.Count; index += 3)
+			{
+				const unsigned int indexA = static_cast<unsigned int*>(indexData.pData)[index];
+				const unsigned int indexB = static_cast<unsigned int*>(indexData.pData)[index + 1];
+				const unsigned int indexC = static_cast<unsigned int*>(indexData.pData)[index + 2];
+
+				Vector3 vertexA = static_cast<Vector3*>(vertexData.pData)[indexA] + position;
+				Vector3 vertexB = static_cast<Vector3*>(vertexData.pData)[indexB] + position;
+				Vector3 vertexC = static_cast<Vector3*>(vertexData.pData)[indexC] + position;
+
+				AddTriangle(vertexA, vertexB, vertexC, color, solid);
+			}
+		}
+		else
+		{
+			for (int index = 0; index < vertexData.Count; index += 3)
+			{
+				Vector3 vertexA = static_cast<Vector3*>(vertexData.pData)[index] + position;
+				Vector3 vertexB = static_cast<Vector3*>(vertexData.pData)[index + 1] + position;
+				Vector3 vertexC = static_cast<Vector3*>(vertexData.pData)[index + 2] + position;
+
+				AddTriangle(vertexA, vertexB, vertexC, color, solid);
+			}
+		}
+	}
 }

@@ -3,31 +3,22 @@
 #include "Rigidbody.h"
 #include "PhysicsSystem.h"
 #include "Scenegraph\SceneNode.h"
+#include "Rendering\Model.h"
 
-Collider::Collider(PhysicsSystem* pPhysicsSystem) :
-	m_pPhysicsSystem(pPhysicsSystem)
+Collider::Collider(PhysicsSystem* pPhysicsSystem, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
+	m_pPhysicsSystem(pPhysicsSystem),
+	m_ShapeFlags(shapeFlags)
 {
-
+	m_pMaterial = pMaterial ? pMaterial : m_pPhysicsSystem->GetDefaultMaterial();
 }
 
 Collider::~Collider()
 {
 }
 
-physx::PxShape* Collider::SetShape(const physx::PxGeometry& pGeometry, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/)
+void Collider::CreateShape()
 {
-	if (m_pRigidbody == nullptr)
-	{
-		FLUX_LOG(WARNING, "[Collider::AddShape] Node does not have a Rigidbody");
-		return nullptr;
-	}
-
-	AUTOPROFILE(Collider_SetShape);
-	m_pMaterial = pMaterial ? pMaterial : m_pPhysicsSystem->GetDefaultMaterial();
-	PxShape* pShape = m_pPhysicsSystem->GetPhysics()->createShape(pGeometry, &m_pMaterial, 1, true, shapeFlags);
-	m_pRigidbody->GetBody()->attachShape(*pShape);
-	m_pShape = pShape;
-	return pShape;
+	m_pShape = m_pPhysicsSystem->GetPhysics()->createShape(*m_pGeometry, *m_pMaterial, true, m_ShapeFlags);
 }
 
 void Collider::RemoveShape()
@@ -48,6 +39,15 @@ void Collider::SetTrigger(bool isTrigger)
 	m_pShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
 }
 
+void Collider::SetMaterial(PxMaterial* pMaterial)
+{
+	if (m_pShape)
+	{
+		m_pMaterial = pMaterial;
+		m_pShape->setMaterials(&pMaterial, 1);
+	}
+}
+
 void Collider::OnNodeSet(SceneNode* pNode)
 {
 	Component::OnNodeSet(pNode);
@@ -57,12 +57,66 @@ void Collider::OnNodeSet(SceneNode* pNode)
 	{
 		m_pRigidbody = new Rigidbody(m_pPhysicsSystem);
 		pNode->AddComponent(m_pRigidbody);
-		return;
 	}
+	CreateShape();
+	if (m_pShape)
+		m_pRigidbody->GetBody()->attachShape(*m_pShape);
 }
 
 void Collider::OnNodeRemoved()
 {
-	if (m_pRigidbody && m_pShape)
-		m_pRigidbody->GetBody()->detachShape(*m_pShape);
+	RemoveShape();
+}
+
+SphereCollider::SphereCollider(PhysicsSystem* pSystem,
+	float radius,
+	PxMaterial* pMaterial /*= nullptr*/,
+	physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags)
+{
+	m_pGeometry = new PxSphereGeometry(radius);
+}
+
+SphereCollider::~SphereCollider()
+{
+	SafeDelete(m_pGeometry);
+}
+
+BoxCollider::BoxCollider(PhysicsSystem* pSystem, const Vector3& extents, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags)
+{
+	m_pGeometry = new PxBoxGeometry(extents.x, extents.y, extents.z);
+}
+
+BoxCollider::BoxCollider(PhysicsSystem* pSystem, const BoundingBox& boundingBox, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/):
+	Collider(pSystem, pMaterial, shapeFlags)
+{
+	m_pGeometry = new PxBoxGeometry(boundingBox.Extents.x, boundingBox.Extents.y, boundingBox.Extents.z);
+}
+
+BoxCollider::~BoxCollider()
+{
+	SafeDelete(m_pGeometry);
+}
+
+PlaneCollider::PlaneCollider(PhysicsSystem* pSystem, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags)
+{
+	m_pGeometry = new PxPlaneGeometry();
+}
+
+PlaneCollider::~PlaneCollider()
+{
+	SafeDelete(m_pGeometry);
+}
+
+CapsuleCollider::CapsuleCollider(PhysicsSystem* pSystem, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pSystem, pMaterial, shapeFlags)
+{
+	m_pGeometry = new PxCapsuleGeometry(radius, height / 2.0f);
+}
+
+CapsuleCollider::~CapsuleCollider()
+{
+	SafeDelete(m_pGeometry);
 }

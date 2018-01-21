@@ -148,18 +148,15 @@ void FluxCore::InitGame()
 			{
 				m_pNode = new SceneNode(Printf("Cow %i - %i - %i", x, y, z));
 				m_pNode->GetTransform()->Translate(x * 3.0f + RandF(-0.1f, 0.1f), y * 4.0f + 8 + RandF(-0.1f, 0.1f), z * 3.0f + RandF(-0.1f, 0.1f));
-
-				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
-				pRigidbody->SetBodyType(Rigidbody::Dynamic);
-				m_pNode->AddComponent(pRigidbody);
-				Collider* pCollider = new Collider(m_pPhysics);
-				m_pNode->AddComponent(pCollider);
-				pCollider->SetShape(PxBoxGeometry(0.6f, 0.6f, 0.6f), pPhysMaterial);
 				Model* pModel = new Model();
 				pModel->SetMesh(pMesh);
 				pModel->SetMaterial(pMaterial);
 				m_pNode->AddComponent(pModel);
-
+				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
+				pRigidbody->SetBodyType(Rigidbody::Dynamic);
+				m_pNode->AddComponent(pRigidbody);
+				Collider* pCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
+				m_pNode->AddComponent(pCollider);
 				m_pScene->AddChild(m_pNode);
 			}
 		}
@@ -167,9 +164,8 @@ void FluxCore::InitGame()
 	
 	SceneNode* pFloor = new SceneNode("Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pCollider = new Collider(m_pPhysics);
+	Collider* pCollider = new PlaneCollider(m_pPhysics, pPhysMaterial);
 	pFloor->AddComponent(pCollider);
-	pCollider->SetShape(PxPlaneGeometry(), pPhysMaterial);
 	m_pScene->AddChild(pFloor);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
@@ -192,7 +188,11 @@ void FluxCore::GameLoop()
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
+	
 	m_pScene->Update();
+
+	if(m_DebugPhysics)
+		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
@@ -217,6 +217,10 @@ void FluxCore::RenderUI()
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::Text("Batches: %i", batchCount);
+	ImGui::End();
+
+	ImGui::Begin("Debug");
+	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
 	ImGui::End();
 
 	m_pImmediateUI->Render();

@@ -57,6 +57,7 @@ public:
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
 	Shader* GetShader(const string filePath);
+	ShaderVariation* GetShader(const string filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
 	void BeginFrame();

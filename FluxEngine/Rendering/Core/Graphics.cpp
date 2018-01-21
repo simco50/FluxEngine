@@ -52,6 +52,14 @@ Shader* Graphics::GetShader(const string filePath)
 	return m_Shaders[shaderName].get();
 }
 
+ShaderVariation* Graphics::GetShader(const string filePath, const ShaderType type, const std::string& defines)
+{
+	Shader* pShader = GetShader(filePath);
+	if (pShader)
+		return pShader->GetVariation(type, defines);
+	return nullptr;
+}
+
 void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount)
 {
 	batchCount = m_BatchCount;
