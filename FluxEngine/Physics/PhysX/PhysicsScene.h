@@ -2,15 +2,22 @@
 #include "SceneGraph/Component.h"
 
 class PhysicsSystem;
-class Rigidbody;
+class Collider;
 
 struct RaycastResult
 {
 	bool Hit = false;
-	Rigidbody* pRigidbody = nullptr;
+	Collider* pCollider = nullptr;
 	float Distance = -1.0f;
 	Vector3 Normal = Vector3();
 	Vector3 Position = Vector3();
+};
+
+struct CollisionResult
+{
+	Vector3 Position = Vector3();
+	Vector3 Normal = Vector3();
+	Collider* pCollider = nullptr;
 };
 
 class PhysicsScene : public Component, public PxSimulationEventCallback
@@ -40,7 +47,7 @@ private:
 	virtual void onConstraintBreak(PxConstraintInfo* /*constraints*/, PxU32 /*count*/) override {}
 	virtual void onWake(PxActor** /*actors*/, PxU32 /*count*/) override {}
 	virtual void onSleep(PxActor** /*actors*/, PxU32 /*count*/) override {}
-	virtual void onContact(const PxContactPairHeader& /*pairHeader*/, const PxContactPair* /*pairs*/, PxU32 /*nbPairs*/) override {}
+	virtual void onContact(const PxContactPairHeader& /*pairHeader*/, const PxContactPair* /*pairs*/, PxU32 /*nbPairs*/) override;
 	virtual void onAdvance(const PxRigidBody*const* /*bodyBuffer*/, const PxTransform* /*poseBuffer*/, const PxU32 /*count*/) override {}
 
 	physx::PxScene* m_pPhysicsScene = nullptr;

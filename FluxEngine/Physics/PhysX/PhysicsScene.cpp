@@ -5,6 +5,7 @@
 #include "Rendering\Camera\Camera.h"
 #include "Scenegraph\Transform.h"
 #include "Rigidbody.h"
+#include "Collider.h"
 
 using namespace physx;
 
@@ -86,7 +87,7 @@ RaycastResult PhysicsScene::Raycast(const Vector3& origin, const Vector3& direct
 		return RaycastResult();
 
 	RaycastResult result;
-	result.pRigidbody = static_cast<Rigidbody*>(buffer.block.actor->userData);
+	result.pCollider = static_cast<Collider*>(buffer.block.shape->userData);
 	result.Hit = buffer.hasBlock;
 	result.Normal = *reinterpret_cast<Vector3*>(&buffer.block.normal);
 	result.Position = *reinterpret_cast<Vector3*>(&buffer.block.position);
@@ -101,14 +102,52 @@ void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER))
 			continue;
 
-		Rigidbody* pBodyA = reinterpret_cast<Rigidbody*>(pairs[i].triggerActor->userData);
-		Rigidbody* pBodyB = reinterpret_cast<Rigidbody*>(pairs[i].otherActor->userData);
-		if (pBodyA)
+		Collider* pShapeA = reinterpret_cast<Collider*>(pairs[i].triggerShape->userData);
+		Collider* pShapeB = reinterpret_cast<Collider*>(pairs[i].otherShape->userData);
+		if (pShapeA)
 		{
-			if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
-				pBodyA->OnTrigger().Broadcast(pBodyB, true);
-			else if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_LOST)
-				pBodyA->OnTrigger().Broadcast(pBodyB, false);
+			Rigidbody* pBody = reinterpret_cast<Rigidbody*>(pairs[i].triggerActor->userData);
+			if (pBody)
+			{
+				if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+					pBody->OnTriggerEnter().Broadcast(pShapeB);
+				else if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_LOST)
+					pBody->OnTriggerExit().Broadcast(pShapeB);
+			}
+		}
+	}
+}
+
+void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs)
+{
+	for (PxU32 i = 0; i < nbPairs; ++i)
+	{
+		Collider* pShapeA = reinterpret_cast<Collider*>(pairs[i].shapes[0]->userData);
+		Collider* pShapeB = reinterpret_cast<Collider*>(pairs[i].shapes[1]->userData);
+		if (pShapeA)
+		{
+			Rigidbody* pBody = reinterpret_cast<Rigidbody*>(pairHeader.actors[0]->userData);
+			if (pBody)
+			{
+				CollisionResult result;
+				vector<PxContactPairPoint> contactPoints(pairs[i].contactCount);
+				pairs[i].extractContacts(contactPoints.data(), pairs[i].contactStreamSize);
+				for (const PxContactPairPoint& contact : contactPoints)
+				{
+					result.Position = *reinterpret_cast<const Vector3*>(&contact.position);
+					result.Normal = *reinterpret_cast<const Vector3*>(&contact.normal);
+				}
+				result.pCollider = pShapeB;
+
+				if (pairs[i].events.isSet(PxPairFlag::eNOTIFY_TOUCH_FOUND))
+				{
+					pBody->OnCollisionEnter().Broadcast(result);
+				}
+				else if (pairs[i].events.isSet(PxPairFlag::eNOTIFY_TOUCH_LOST))
+				{
+					pBody->OnCollisionExit().Broadcast(result);
+				}
+			}
 		}
 	}
 }

@@ -4,6 +4,9 @@
 
 class PhysicsScene;
 class PhysicsSystem;
+class Collider;
+
+struct CollisionResult;
 
 class Rigidbody : public Component
 {
@@ -59,7 +62,10 @@ public:
 		return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
 	}
 
-	MulticastDelegate<Rigidbody*, bool>& OnTrigger() { return m_OnTriggerEvent; }
+	MulticastDelegate<Collider*>& OnTriggerEnter() { return m_OnTriggerEnterEvent; }
+	MulticastDelegate<Collider*>& OnTriggerExit() { return m_OnTriggerExitEvent; }
+	MulticastDelegate<const CollisionResult&> OnCollisionEnter() { return m_OnCollisionEnterEvent; }
+	MulticastDelegate<const CollisionResult&> OnCollisionExit() { return m_OnCollisionExitEvent; }
 
 private:
 	void CreateBody(const Rigidbody::Type type);
@@ -74,5 +80,8 @@ private:
 	PxD6Joint* m_pConstraintJoint = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
 
-	MulticastDelegate<Rigidbody*, bool> m_OnTriggerEvent;
+	MulticastDelegate<Collider*> m_OnTriggerEnterEvent;
+	MulticastDelegate<Collider*> m_OnTriggerExitEvent;
+	MulticastDelegate<const CollisionResult&> m_OnCollisionEnterEvent;
+	MulticastDelegate<const CollisionResult&> m_OnCollisionExitEvent;
 };
