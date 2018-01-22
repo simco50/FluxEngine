@@ -15,8 +15,13 @@ struct RaycastResult
 
 struct CollisionResult
 {
-	Vector3 Position = Vector3();
-	Vector3 Normal = Vector3();
+	bool HasContacts() const { return Contacts.size() > 0; }
+	struct Contact
+	{
+		Vector3 Position = Vector3();
+		Vector3 Normal = Vector3();
+	};
+	vector<Contact> Contacts;	
 	Collider* pCollider = nullptr;
 };
 

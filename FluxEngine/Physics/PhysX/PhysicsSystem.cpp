@@ -86,7 +86,11 @@ physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttribu
 	// the filtermask of A contains the ID of B and vice versa.
 	//#Todo: Fix filters
 	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+	{
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_LOST;
+		pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
+	}
 
 	return PxFilterFlag::eDEFAULT;
 }

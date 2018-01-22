@@ -23,6 +23,7 @@ void Collider::CreateShape()
 	CreateGeometry();
 	m_pShape = m_pPhysicsSystem->GetPhysics()->createShape(*m_pGeometry, *m_pMaterial, true, m_ShapeFlags);
 	m_pShape->userData = this;
+	SetCollisionGroup(m_CollisionGroup, m_ListenForCollisionGroups);
 }
 
 void Collider::RemoveShape()
@@ -50,6 +51,25 @@ void Collider::SetMaterial(PxMaterial* pMaterial)
 		m_pMaterial = pMaterial;
 		m_pShape->setMaterials(&pMaterial, 1);
 	}
+}
+
+void Collider::SetCollisionGroup(const CollisionGroup group, const CollisionGroup listenerForGroup)
+{
+	m_CollisionGroup = group;
+	m_ListenForCollisionGroups = listenerForGroup;
+	if (m_pShape)
+	{
+		PxFilterData filter;
+		filter.setToDefault();
+		filter.word0 = (unsigned int)group;
+		filter.word1 = (unsigned int)(listenerForGroup | group);
+		m_pShape->setSimulationFilterData(filter);
+	}
+}
+
+void Collider::SetCollisionGroup(const CollisionGroup group)
+{
+	SetCollisionGroup(group, group);
 }
 
 void Collider::OnNodeSet(SceneNode* pNode)

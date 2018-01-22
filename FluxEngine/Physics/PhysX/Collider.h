@@ -7,6 +7,18 @@ class PhysicsScene;
 class Rigidbody;
 class PhysicsMesh;
 
+enum class CollisionGroup : unsigned int
+{
+	None = 0,
+	Group0 = 1 << 0,
+	Group1 = 1 << 1,
+	Group2 = 1 << 2,
+	Group3 = 1 << 3,
+	Group4 = 1 << 4,
+};
+inline CollisionGroup operator|(const CollisionGroup a, const CollisionGroup b) { return static_cast<CollisionGroup>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b)); }
+inline CollisionGroup& operator|=(CollisionGroup& a, const CollisionGroup b) { a = static_cast<CollisionGroup>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b)); return a; }
+
 class Collider : public Component
 {
 	FLUX_OBJECT(Collider, Component)
@@ -17,6 +29,8 @@ public:
 
 	void SetTrigger(bool isTrigger);
 	void SetMaterial(PxMaterial* pMaterial);
+	void SetCollisionGroup(const CollisionGroup group, const CollisionGroup listenerForGroup);
+	void SetCollisionGroup(const CollisionGroup group);
 
 	physx::PxShape* GetShape() const { return m_pShape; }
 
@@ -35,6 +49,8 @@ protected:
 	PhysicsScene* m_pScene = nullptr;
 	Rigidbody* m_pRigidbody = nullptr;
 	PxGeometry* m_pGeometry;
+	CollisionGroup m_CollisionGroup = CollisionGroup::Group0;
+	CollisionGroup m_ListenForCollisionGroups = CollisionGroup::Group0;
 	physx::PxMaterial* m_pMaterial = nullptr;
 	physx::PxShape* m_pShape = nullptr;
 	physx::PxShapeFlags m_ShapeFlags;
