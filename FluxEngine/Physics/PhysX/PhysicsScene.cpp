@@ -132,6 +132,7 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 				CollisionResult result;
 				vector<PxContactPairPoint> contactPoints(pairs[i].contactCount);
 				pairs[i].extractContacts(contactPoints.data(), pairs[i].contactStreamSize);
+				//#Todo: There are multiple contacts 
 				for (const PxContactPairPoint& contact : contactPoints)
 				{
 					result.Position = *reinterpret_cast<const Vector3*>(&contact.position);

@@ -80,10 +80,11 @@ physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttribu
 		return PxFilterFlag::eDEFAULT;
 	}
 	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+	pairFlags |= PxPairFlag::eCONTACT_DEFAULT;
 
 	// trigger the contact callback for pairs (A,B) where
 	// the filtermask of A contains the ID of B and vice versa.
+	//#Todo: Fix filters
 	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 

@@ -22,6 +22,7 @@ void Collider::CreateShape()
 {
 	CreateGeometry();
 	m_pShape = m_pPhysicsSystem->GetPhysics()->createShape(*m_pGeometry, *m_pMaterial, true, m_ShapeFlags);
+	m_pShape->userData = this;
 }
 
 void Collider::RemoveShape()
