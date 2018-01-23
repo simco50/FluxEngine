@@ -22,9 +22,14 @@ bool Shader::Load(const string& filePath)
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 
 	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
+	if (pPtr == nullptr)
+	{
+		FLUX_LOG(WARNING, "Failed to get file: '%s'", filePath.c_str());
+		return false;
+	}
 	if (!pPtr->Open(FileMode::Read, ContentType::Text))
 	{
-		FLUX_LOG(WARNING, "Failed to load file: '%s'", filePath.c_str());
+		FLUX_LOG(WARNING, "Failed to open file: '%s'", filePath.c_str());
 		return false;
 	}
 

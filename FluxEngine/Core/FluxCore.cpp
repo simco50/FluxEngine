@@ -29,6 +29,7 @@
 #include "Window.h"
 #include "Rendering/DebugRenderer.h"
 #include "Context.h"
+#include "Physics/PhysX/Cloth.h"
 
 using namespace std;
 
@@ -53,15 +54,11 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		Console::Initialize();
 
-		if (!FileSystem::Mount("./Resources.pak", "Resources", ArchiveType::Pak))
-		{
-			FLUX_LOG(WARNING, "Failed to mount './Resources.pak'");
-		}
+		FileSystem::AddPakLocation(".", "Resources");
 		if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
 		{
 			FLUX_LOG(WARNING, "Failed to mount './Resources'");
 		}
-
 		Config::Initialize();
 
 		m_pWindow = new Window(

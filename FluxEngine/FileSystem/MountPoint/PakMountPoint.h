@@ -8,6 +8,7 @@ struct PakFileHeader
 {
 	char ID[4] = { "PAK" };
 	char Version = 0;
+	int ContentVersion = 0;
 	char FolderPath[100];
 	char PakName[50];
 	unsigned char NumEntries = 0;
@@ -36,7 +37,7 @@ public:
 	PhysicalFile* GetPakFile() const { return m_pPakFile.get(); }
 
 private:
-	static const int PAK_VERSION = 1;
+	static const int PAK_VERSION = 2;
 
 	std::unique_ptr<PhysicalFile> m_pPakFile;
 	PakFileHeader m_Header = PakFileHeader();

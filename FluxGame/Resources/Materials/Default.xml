@@ -9,6 +9,6 @@
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/spot.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Spot.png"/>
 	</Parameters>
 </Material>

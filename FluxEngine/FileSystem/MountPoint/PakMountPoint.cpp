@@ -21,10 +21,13 @@ bool PakMountPoint::OnMount()
 	if (!m_pPakFile->Read(0, sizeof(PakFileHeader), reinterpret_cast<char*>(&m_Header)))
 		return false;
 
+	if (std::string(m_Header.ID) != "PAK")
+		return false;
+
 	if (m_Header.Version != PAK_VERSION)
 		return false;
 
-	//#todo: Set the order of the mount point depending on the pak header data
+	m_Order = m_Header.ContentVersion;
 
 	//Read in all the table entries
 	m_FileEntries.resize(m_Header.NumEntries);

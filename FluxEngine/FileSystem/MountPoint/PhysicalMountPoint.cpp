@@ -4,7 +4,7 @@
 #include "FileSystem/FileSystemHelpers.h"
 
 PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath) : 
-	IMountPoint(physicalPath, numeric_limits<int>::max())
+	IMountPoint(physicalPath, 0)
 {
 
 }

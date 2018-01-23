@@ -7,6 +7,8 @@
 
 std::vector<MountPointPair> FileSystem::m_MountPoints;
 
+std::vector<std::string> FileSystem::m_PakLocations;
+
 FileSystem::FileSystem()
 {}
 
@@ -33,6 +35,7 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 		return a.second->GetOrder() > b.second->GetOrder();
 	}
 	);
+	FLUX_LOG(INFO, "[FileSystem::Mount] > Mounted '%s' on '%s'", path.c_str(), virtualPath.c_str());
 
 	return true;
 }
@@ -40,6 +43,19 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 bool FileSystem::Mount(const std::string& path, const ArchiveType type /*= ArchiveType::Physical*/)
 {
 	return Mount(path, "", type);
+}
+
+void FileSystem::AddPakLocation(const std::string& path, const std::string& virtualPath)
+{
+	if (find(m_PakLocations.begin(), m_PakLocations.end(), path) != m_PakLocations.end())
+		return;
+	m_PakLocations.push_back(path);
+	for (const std::string& location : m_PakLocations)
+	{
+		const std::vector<std::string>& pakFiles = GetPakFilesInDirectory(location);
+		for (const std::string& pakFile : pakFiles)
+			Mount(pakFile, virtualPath, ArchiveType::Pak);
+	}
 }
 
 std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
@@ -62,6 +78,27 @@ std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
 		}
 	}
 	return nullptr;
+}
+
+//#todo: Make abstraction for directory
+std::vector<std::string> FileSystem::GetPakFilesInDirectory(const std::string& directory)
+{
+	std::vector<std::string> results;
+	WIN32_FIND_DATAA find_data;
+	auto handle = FindFirstFileA((directory + "\\*").c_str(), &find_data);
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		return results;
+	}
+	do
+	{
+		if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (Paths::GetFileExtenstion(find_data.cFileName) == "pak")
+				results.push_back(find_data.cFileName);
+		}
+	} while (FindNextFileA(handle, &find_data) != 0);
+	return results;
 }
 
 std::string FileSystem::FixPath(const std::string& path)

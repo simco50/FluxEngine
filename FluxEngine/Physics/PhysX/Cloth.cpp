@@ -100,14 +100,14 @@ void Cloth::CreateCloth()
 	m_pCloth = m_pPhysicsSystem->GetPhysics()->createCloth(pose, *pFabric, particles.data(), PxClothFlags());
 	
 	PxClothStretchConfig stretchConfig;
-	stretchConfig.stiffness = 0.8f;
-	stretchConfig.stiffnessMultiplier = 0.5f;
-	stretchConfig.compressionLimit = 1.0f;
+	stretchConfig.stiffness = 0.2f;
+	stretchConfig.stiffnessMultiplier = 0.0f;
+	stretchConfig.compressionLimit = 0.0f;
 	stretchConfig.stretchLimit = 1.0f;
 	m_pCloth->setStretchConfig(PxClothFabricPhaseType::eHORIZONTAL, stretchConfig);
 	m_pCloth->setStretchConfig(PxClothFabricPhaseType::eVERTICAL, stretchConfig);
 	m_pCloth->setDragCoefficient(1.0f);
-	m_pCloth->setSelfCollisionDistance(0.1f);
+	m_pCloth->setSelfCollisionDistance(0.0f);
 	m_pCloth->setSolverFrequency(120);
 
 	m_pPhysicsScene->GetScene()->addActor(*m_pCloth);

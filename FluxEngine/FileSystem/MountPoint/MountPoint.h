@@ -8,7 +8,7 @@ class IMountPoint
 {
 public:
 
-	IMountPoint(const std::string& physicalPath, const int order = -1);
+	IMountPoint(const std::string& physicalPath, const int order = std::numeric_limits<int>::max());
 
 	virtual ~IMountPoint() {}
 
@@ -21,5 +21,5 @@ public:
 
 protected:
 	std::string m_PhysicalPath;
-	int m_Order = -1;
+	int m_Order;
 };
