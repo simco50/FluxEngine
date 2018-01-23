@@ -23,6 +23,7 @@ public:
 	virtual bool CanHaveMultiple() const { return false; }
 
 	Transform* GetTransform();
+	SceneNode* GetNode() { return m_pNode; }
 
 	Component* GetComponent(StringHash type);
 	template<typename T>

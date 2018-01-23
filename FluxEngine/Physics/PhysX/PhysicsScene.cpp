@@ -94,6 +94,12 @@ RaycastResult PhysicsScene::Raycast(const Vector3& origin, const Vector3& direct
 	return result;
 }
 
+void PhysicsScene::SetGravity(const float x, const float y, const float z)
+{
+	if(m_pPhysicsScene)
+		m_pPhysicsScene->setGravity(PxVec3(x, y, z));
+}
+
 void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 {
 	for (PxU32 i = 0; i < count; i++)
@@ -140,6 +146,9 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 					result.Contacts.push_back(contact);
 				}
 				result.pCollider = pShapeB;
+				result.pRigidbody = reinterpret_cast<Rigidbody*>(pairHeader.actors[1]->userData);
+				result.pNode = pShapeB->GetNode();
+				result.pTransform = pShapeB->GetTransform();
 
 				if (pairs[i].events.isSet(PxPairFlag::eNOTIFY_TOUCH_FOUND))
 				{

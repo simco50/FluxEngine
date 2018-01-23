@@ -3,6 +3,9 @@
 
 class PhysicsSystem;
 class Collider;
+class Rigidbody;
+class SceneNode;
+class Transform;
 
 struct RaycastResult
 {
@@ -21,8 +24,11 @@ struct CollisionResult
 		Vector3 Position = Vector3();
 		Vector3 Normal = Vector3();
 	};
-	vector<Contact> Contacts;	
+	vector<Contact> Contacts;
 	Collider* pCollider = nullptr;
+	Rigidbody* pRigidbody = nullptr;
+	SceneNode* pNode = nullptr;
+	Transform* pTransform = nullptr;
 };
 
 class PhysicsScene : public Component, public PxSimulationEventCallback
@@ -44,6 +50,8 @@ public:
 		const Vector3& direction,
 		const float length = numeric_limits<float>::max()
 	) const;
+
+	void SetGravity(const float x, const float y, const float z);
 
 private:
 	static const float PHYSICS_TIME_STEP;
