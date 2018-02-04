@@ -1,5 +1,6 @@
 #pragma once
 
+//Base type for delegates
 template<typename RetVal, typename ...Args>
 class IDelegate
 {
@@ -8,6 +9,7 @@ public:
 	virtual RetVal Execute(Args ...args) = 0;
 };
 
+//Delegate for member functions
 template<typename RetVal, typename T, typename ...Args>
 class RawDelegate : public IDelegate<RetVal, Args...>
 {
@@ -29,6 +31,7 @@ private:
 	DelegateFunction m_pFunction;
 };
 
+//Delegate for global/static functions
 template<typename RetVal, typename...Args>
 class StaticDelegate : public IDelegate<RetVal, Args...>
 {
@@ -48,6 +51,7 @@ private:
 	DelegateFunction m_pFunction;
 };
 
+//Delegate for lambdas
 template< typename TLambda, typename RetVal, typename... Args>
 class LambdaDelegate : public IDelegate<RetVal, Args...>
 {
@@ -69,6 +73,7 @@ private:
 	TLambda* m_Lambda;
 };
 
+//Delegate for shared pointers
 template<typename RetVal, typename T, typename ...Args>
 class SPDelegate : public IDelegate<RetVal, Args...>
 {
@@ -89,6 +94,7 @@ private:
 	DelegateFunction m_pFunction;
 };
 
+//Delegate that can be bound to by just ONE object
 template<typename RetVal, typename ...Args>
 class SinglecastDelegate
 {
@@ -100,6 +106,15 @@ public:
 	}
 
 	template<typename T>
+	static SinglecastDelegate CreateRaw(T* pObject, RetVal(T::*pFunction)(Args...))
+	{
+		SinglecastDelegate<RetVal, Args...> NewDelegate;
+		NewDelegate.BindRaw(pObject, pFunction);
+		return NewDelegate;
+	}
+
+	//Bind a member function
+	template<typename T>
 	void BindRaw(T* pObject, RetVal(T::*pFunction)(Args...))
 	{
 		RawDelegate<RetVal, T, Args...>* pDelegate = new RawDelegate<RetVal, T, Args...>(pObject, pFunction);
@@ -107,6 +122,7 @@ public:
 		m_pEvent = pDelegate;
 	}
 
+	//Bind a static/global function
 	void BindStatic(RetVal(*pFunction)(Args...))
 	{
 		StaticDelegate<RetVal, Args...>* pDelegate = new StaticDelegate<RetVal, Args...>(pFunction);
@@ -114,6 +130,7 @@ public:
 		m_pEvent = pDelegate;
 	}
 
+	//Bind a lambda
 	template<typename LambdaType>
 	void BindLambda(LambdaType&& lambda)
 	{
@@ -122,6 +139,7 @@ public:
 		m_pEvent = pDelegate;
 	}
 
+	//Bind a member function with a shared_ptr object
 	template<typename T>
 	void BindSP(shared_ptr<T> pObject, RetVal(T::*pFunction)(Args...))
 	{
@@ -130,6 +148,7 @@ public:
 		m_pEvent = pDelegate;
 	}
 
+	//Execute the function if the delegate is bound
 	RetVal ExecuteIfBound(Args ...args)
 	{
 		if (IsBound())
@@ -137,11 +156,14 @@ public:
 		return RetVal();
 	}
 
+	//Execute the function
 	RetVal Execute(Args ...args)
 	{
+		checkf(IsBound(), "[SinglecastDelegate::Execute] > Delegate is not bound");
 		return m_pEvent->Execute(args...);
 	}
 
+	//Check if there is a function bound
 	bool IsBound()
 	{
 		return m_pEvent != nullptr;
@@ -151,6 +173,8 @@ private:
 	IDelegate<RetVal, Args...>* m_pEvent = nullptr;
 };
 
+//A handle to a delegate used for a multicast delegate
+//Static ID so that every handle is unique
 class DelegateHandle
 {
 public:
@@ -169,6 +193,7 @@ private:
 	static int GetNewID();
 };
 
+//Delegate that can be bound to by MULTIPLE objects
 template<typename ...Args >
 class MulticastDelegate
 {
@@ -181,6 +206,7 @@ public:
 		m_Events.clear();
 	}
 
+	//Bind a member function
 	template<typename T>
 	DelegateHandle AddRaw(T* pObject, void(T::*pFunction)(Args...))
 	{
@@ -190,6 +216,7 @@ public:
 		return handle;
 	}
 
+	//Bind a static/global function
 	DelegateHandle AddStatic(void(*pFunction)(Args...))
 	{
 		StaticDelegate<void, Args...>* pDelegate = new StaticDelegate<void, Args...>(pFunction);
@@ -198,6 +225,7 @@ public:
 		return handle;
 	}
 
+	//Bind a lambda
 	template<typename LambdaType>
 	DelegateHandle AddLambda(LambdaType&& lambda)
 	{
@@ -207,6 +235,7 @@ public:
 		return handle;
 	}
 
+	//Bind a member function with a shared_ptr object
 	template<typename T>
 	void AddSP(shared_ptr<T> pObject, void(T::*pFunction)(Args...))
 	{
@@ -217,6 +246,7 @@ public:
 		return handle;
 	}
 
+	//Remove a function from the event list by the handle
 	bool Remove(const DelegateHandle& handle)
 	{
 		for (size_t i = 0; i < m_Events.size(); ++i)
@@ -231,6 +261,17 @@ public:
 		return false;
 	}
 
+	//Remove all the functions bound to the delegate
+	void RemoveAll()
+	{
+		for (EventPair delegatePair : m_Events)
+		{
+			SafeDelete(delegatePair.second);
+		}
+		m_Events.clear();
+	}
+
+	//Execute all functions that are bound
 	void Broadcast(Args ...args)
 	{
 		for (EventPair& e : m_Events)

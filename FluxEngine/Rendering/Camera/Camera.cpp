@@ -88,19 +88,22 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 	direction.Normalize();
 }
 
-RaycastResult Camera::Raycast() const
+bool Camera::Raycast(RaycastResult& result) const
 {
+	result = RaycastResult();
+
 	if (m_pScene == nullptr)
-		return RaycastResult();
+		return false;
 	PhysicsScene* pPhysicsScene = m_pScene->GetComponent<PhysicsScene>();
 	if (pPhysicsScene == nullptr)
-		return RaycastResult();
+		return false;
 
 	Vector3 rayStart, rayDir;
 	GetMouseRay(rayStart, rayDir);
 
 	return pPhysicsScene->Raycast(
 		rayStart,
-		rayDir
+		rayDir,
+		result
 	);
 }

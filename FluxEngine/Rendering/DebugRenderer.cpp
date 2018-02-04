@@ -118,6 +118,11 @@ void DebugRenderer::AddLine(const Vector3& start, const Vector3& end, const Colo
 	m_LinePrimitives += 2;
 }
 
+void DebugRenderer::AddRay(const Vector3& start, const Vector3& direction, const Color& color)
+{
+	AddLine(start, start + direction, color);
+}
+
 void DebugRenderer::AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& color, bool solid)
 {
 	AddTriangle(a, b, c, color, color, color, solid);

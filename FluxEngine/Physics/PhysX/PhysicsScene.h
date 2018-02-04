@@ -11,6 +11,7 @@ struct RaycastResult
 {
 	bool Hit = false;
 	Collider* pCollider = nullptr;
+	Rigidbody* pRigidbody = nullptr;
 	float Distance = -1.0f;
 	Vector3 Normal = Vector3();
 	Vector3 Position = Vector3();
@@ -45,9 +46,10 @@ public:
 
 	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
 
-	RaycastResult Raycast(
+	bool Raycast(
 		const Vector3& origin,
 		const Vector3& direction,
+		RaycastResult& outResult,
 		const float length = numeric_limits<float>::max()
 	) const;
 

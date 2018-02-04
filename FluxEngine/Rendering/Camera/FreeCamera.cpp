@@ -71,11 +71,11 @@ void FreeCamera::Controller()
 {
 	float dt = GameTimer::DeltaTime();
 
-	Vector2 leftStick =  m_pInput->GetThumbstickPosition();
-	Vector2 rightStick =  m_pInput->GetThumbstickPosition(false);
-	bool lb =  m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
-	bool rb =  m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-	bool leftStickPress =  m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
+	Vector2 leftStick = m_pInput->GetThumbstickPosition();
+	Vector2 rightStick = m_pInput->GetThumbstickPosition(false);
+	bool lb = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
+	bool rb = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	bool leftStickPress = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
 
 	//Moving
 	Vector3 moveDirection(0, 0, 0);

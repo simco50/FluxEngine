@@ -20,7 +20,16 @@ PhysicsSystem::PhysicsSystem(Graphics* pGraphics)
 		FLUX_LOG(WARNING, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
 #endif
 
+#ifdef _DEBUG
 	bool recordMemoryAllocations = true;
+#else
+	bool recordMemoryAllocations = false;
+#endif
+
+	PxTolerancesScale scale;
+	scale.length = 100;
+	scale.mass = 1000;
+	scale.speed = 981;
 	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pPvd);
 	if (m_pPhysics == nullptr)
 		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPhysics");
@@ -84,7 +93,6 @@ physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttribu
 
 	// trigger the contact callback for pairs (A,B) where
 	// the filtermask of A contains the ID of B and vice versa.
-	//#Todo: Fix filters
 	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
 	{
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;

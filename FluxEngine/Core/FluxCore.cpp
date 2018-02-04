@@ -7,21 +7,13 @@
 #include "Scenegraph/Transform.h"
 
 #include "Rendering/Core/Graphics.h"
-#include "Rendering/Core/ShaderVariation.h"
-#include "Rendering/Core/Shader.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "Rendering/Core/RasterizerState.h"
-#include "Rendering/Core/BlendState.h"
-#include "Rendering/Core/DepthStencilState.h"
 #include "Rendering/Core/Texture.h"
-#include "Rendering/Core/ConstantBuffer.h"
 #include "Rendering/Mesh.h"
 #include "Rendering/Model.h"
 #include "Rendering/Material.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
-#include "Rendering/ParticleSystem/ParticleSystem.h"
-#include "Rendering/ParticleSystem/ParticleEmitter.h"
 #include "Physics/PhysX/PhysicsSystem.h"
 #include "Physics/PhysX/PhysicsScene.h"
 #include "Physics/PhysX/Rigidbody.h"
@@ -29,7 +21,6 @@
 #include "Window.h"
 #include "Rendering/DebugRenderer.h"
 #include "Context.h"
-#include "Physics/PhysX/Cloth.h"
 
 using namespace std;
 
@@ -127,9 +118,9 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pInput, m_pGraphics);
 	m_pScene->AddChild(m_pCamera);
 
-	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.2f, 0.2f, 0.8f);
+	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Spot.flux");
+	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -140,14 +131,14 @@ void FluxCore::InitGame()
 
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 
-	for (int x = 0; x < 1; ++x)
+	for (int x = 0; x < 10; ++x)
 	{
-		for (int y = 0; y < 1; ++y)
+		for (int y = 0; y < 10; ++y)
 		{
-			for (int z = 0; z < 1; ++z)
+			for (int z = 0; z < 10; ++z)
 			{
-				m_pNode = new SceneNode(Printf("Cow %i - %i - %i", x, y, z));
-				m_pNode->GetTransform()->Translate(x * 3.0f + RandF(-0.1f, 0.1f), y * 4.0f + 8 + RandF(-0.1f, 0.1f), z * 3.0f + RandF(-0.1f, 0.1f));
+				m_pNode = new SceneNode(Printf("Cube %i - %i - %i", x, y, z));
+				m_pNode->GetTransform()->Translate((float)x, (float)y + 1.0f, (float)z);
 				Model* pModel = new Model();
 				pModel->SetMesh(pMesh);
 				pModel->SetMaterial(pMaterial);
@@ -155,7 +146,7 @@ void FluxCore::InitGame()
 				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
 				pRigidbody->SetBodyType(Rigidbody::Dynamic);
 				m_pNode->AddComponent(pRigidbody);
-				Collider* pCollider = new MeshCollider(m_pPhysics, "Resources/Meshes/Spot.collision", pPhysMaterial);
+				Collider* pCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
 				m_pNode->AddComponent(pCollider);
 				m_pScene->AddChild(m_pNode);
 			}
@@ -169,6 +160,8 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(pFloor);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
+
+	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
 void FluxCore::OnPause(bool isActive)
@@ -190,6 +183,38 @@ void FluxCore::GameLoop()
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	
 	m_pScene->Update();
+
+	if (m_pInput->IsActionTriggered(0))
+	{
+		SceneNode* pNode = new SceneNode();
+		pNode->GetTransform()->Translate(m_pCamera->GetTransform()->GetWorldPosition());
+		Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Sphere.flux");
+		std::vector<VertexElement> desc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
+		};
+
+		Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
+		pMesh->CreateBuffers(m_pGraphics, desc);
+		Model* pModel = new Model();
+		pModel->SetMesh(pMesh);
+		pModel->SetMaterial(pMaterial);
+		pNode->AddComponent(pModel);
+		Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
+		pRigidbody->SetBodyType(Rigidbody::Dynamic);
+		pNode->AddComponent(pRigidbody);
+		Collider* pCollider = new SphereCollider(m_pPhysics, 1.0f, m_pPhysics->GetDefaultMaterial());
+		pNode->AddComponent(pCollider);
+		m_pScene->AddChild(pNode);
+
+		Vector3 start, direction;
+		m_pCamera->GetCamera()->GetMouseRay(start, direction);
+		pRigidbody->GetBody<PxRigidDynamic>()->setMass(100);
+		pRigidbody->GetBody<PxRigidDynamic>()->addForce(*reinterpret_cast<const PxVec3*>(&direction) * 5000.0f, PxForceMode::eIMPULSE);
+
+	}
 
 	if(m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());

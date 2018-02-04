@@ -52,7 +52,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	string entry = Shader::GetEntryPoint(m_ShaderType);
 	const char* entryPoint = entry.c_str();
 	const char* profile = 0;
-	unsigned flags = D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
+	unsigned flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 
 #ifdef _DEBUG
 	flags |= D3DCOMPILE_DEBUG;

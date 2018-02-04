@@ -34,7 +34,7 @@ public:
 
 	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
 
-	RaycastResult Raycast() const;
+	bool Raycast(RaycastResult& result) const;
 
 protected:
 	void OnSceneSet(Scene* pScene) override;

@@ -52,14 +52,16 @@ public:
 	template<>
 	physx::PxRigidDynamic* GetBody() const 
 	{ 
-		checkf(m_Type == Type::Dynamic, "[Rigidbody::GetBody()] Rigidbody is not Dynamic");
-		return reinterpret_cast<physx::PxRigidDynamic*>(m_pBody); 
+		if(m_Type == Type::Dynamic)
+			return reinterpret_cast<physx::PxRigidDynamic*>(m_pBody); 
+		return nullptr;
 	}
 	template<>
 	physx::PxRigidStatic* GetBody() const 
 	{
-		checkf(m_Type == Type::Static, "[Rigidbody::GetBody()] Rigidbody is not Static");
-		return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
+		if(m_Type == Type::Static)
+			return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
+		return nullptr;
 	}
 
 	MulticastDelegate<Collider*>& OnTriggerEnter() { return m_OnTriggerEnterEvent; }

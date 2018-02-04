@@ -22,6 +22,18 @@ struct DebugLine
 	Color ColorEnd;
 };
 
+struct DebugRay
+{
+	DebugRay(const Vector3& start, const Vector3& direction, const Color& color):
+		Start(start), Direction(direction), Color(color)
+	{}
+
+	Vector3 Start;
+	Vector3 Direction;
+	Color Color;
+
+};
+
 struct DebugTriangle
 {
 	DebugTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& colorA, const Color& colorB, const Color& colorC) :
@@ -75,6 +87,7 @@ public:
 
 	void AddLine(const Vector3& start, const Vector3& end, const Color& color);
 	void AddLine(const Vector3& start, const Vector3& end, const Color& colorStart, const Color& colorEnd);
+	void AddRay(const Vector3& start, const Vector3& direction, const Color& color);
 	void AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& color, const bool solid = true);
 	void AddTriangle(const Vector3& a, const Vector3& b, const Vector3& c, const Color& colorA, const Color& colorB, const Color& colorC, const bool solid = true);
 	void AddPolygon(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d, const Color& color);

@@ -69,10 +69,12 @@ void PhysicsScene::Update()
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetForward()));*/
 }
 
-RaycastResult PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, const float length) const
+bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, RaycastResult& outResult, const float length) const
 {
+	outResult = RaycastResult();
+
 	if (m_pPhysicsScene == nullptr)
-		return RaycastResult();
+		return false;
 
 	PxRaycastBuffer buffer;
 	bool hit = m_pPhysicsScene->raycast(
@@ -84,14 +86,14 @@ RaycastResult PhysicsScene::Raycast(const Vector3& origin, const Vector3& direct
 		PxQueryFilterData()
 	);
 	if (!hit)
-		return RaycastResult();
+		return false;
 
-	RaycastResult result;
-	result.pCollider = static_cast<Collider*>(buffer.block.shape->userData);
-	result.Hit = buffer.hasBlock;
-	result.Normal = *reinterpret_cast<Vector3*>(&buffer.block.normal);
-	result.Position = *reinterpret_cast<Vector3*>(&buffer.block.position);
-	return result;
+	outResult.pCollider = static_cast<Collider*>(buffer.block.shape->userData);
+	outResult.pRigidbody = static_cast<Rigidbody*>(buffer.block.actor->userData);
+	outResult.Hit = buffer.hasBlock;
+	outResult.Normal = *reinterpret_cast<Vector3*>(&buffer.block.normal);
+	outResult.Position = *reinterpret_cast<Vector3*>(&buffer.block.position);
+	return true;
 }
 
 void PhysicsScene::SetGravity(const float x, const float y, const float z)
