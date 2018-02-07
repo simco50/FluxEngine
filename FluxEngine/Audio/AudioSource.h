@@ -30,4 +30,3 @@ private:
 	FMOD::System* m_pFmodSystem = nullptr;
 	Vector3 m_LastPosition;
 };
-

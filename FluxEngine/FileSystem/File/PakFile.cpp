@@ -32,9 +32,9 @@ unsigned int PakFile::Read(const unsigned int size, char* pBuffer)
 {
 	if (m_pMountPoint == nullptr)
 		return 0;
-	const PakMountPoint* pMountPoint = ((PakMountPoint*)m_pMountPoint);
+	const PakMountPoint* pMountPoint = static_cast<const PakMountPoint*>(m_pMountPoint);
 
-	unsigned int sizeToRead = m_FilePointer + size > m_pTableEntry->UncompressedSize ? m_pTableEntry->UncompressedSize - m_FilePointer : size;
+	int sizeToRead = m_FilePointer + size > m_pTableEntry->UncompressedSize ? m_pTableEntry->UncompressedSize - m_FilePointer : size;
 
 	//We're at the 'virtual' EOF
 	if (sizeToRead <= 0)
@@ -110,7 +110,7 @@ bool PakFile::CacheUncompressedData()
 	{
 		if (m_pMountPoint == nullptr)
 			return false;
-		const PakMountPoint* pMountPoint = ((PakMountPoint*)m_pMountPoint);
+		const PakMountPoint* pMountPoint = static_cast<const PakMountPoint*>(m_pMountPoint);
 
 		AUTOPROFILE_DESC(PakFile_CacheUncompressedData, m_pMountPoint->GetPhysicalPath());
 

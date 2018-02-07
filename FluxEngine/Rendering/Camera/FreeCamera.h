@@ -2,6 +2,7 @@
 #include "Scenegraph\SceneNode.h"
 
 class Graphics;
+class Camera;
 
 class FreeCamera : public SceneNode
 {

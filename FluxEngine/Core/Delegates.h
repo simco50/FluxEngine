@@ -38,7 +38,7 @@ class StaticDelegate : public IDelegate<RetVal, Args...>
 public:
 	using DelegateFunction = RetVal(*)(Args...);
 
-	StaticDelegate(DelegateFunction pFunction) :
+	explicit StaticDelegate(DelegateFunction pFunction) :
 		m_pFunction(pFunction)
 	{}
 
@@ -56,7 +56,7 @@ template< typename TLambda, typename RetVal, typename... Args>
 class LambdaDelegate : public IDelegate<RetVal, Args...>
 {
 public:
-	LambdaDelegate(TLambda&& lambda) : 
+	explicit LambdaDelegate(TLambda&& lambda) : 
 		m_Lambda(new TLambda(lambda)) 
 	{}
 	virtual ~LambdaDelegate()
@@ -94,6 +94,49 @@ private:
 	DelegateFunction m_pFunction;
 };
 
+template<typename RetVal, typename ...Args>
+class DelegateWrapper
+{
+public:
+	template<typename T>
+	DelegateWrapper(T* pObj, RetVal(T::*pFunction)(Args...)) :
+		m_pDelegate(new RawDelegate<RetVal, T, Args...>(pObj, pFunction))
+	{}
+
+	DelegateWrapper(RetVal(*pFunction)(Args...)) :
+		m_pDelegate(new StaticDelegate<RetVal, Args...>(pFunction))
+	{}
+
+	template<typename T>
+	DelegateWrapper(std::shared_ptr<T> pObj, RetVal(T::*pFunction)(Args...)) :
+		m_pDelegate(new SPDelegate<RetVal, T, Args...>(pObj, pFunction))
+	{}
+
+	template<typename LambdaType>
+	DelegateWrapper(LambdaType&& lambda) :
+		m_pDelegate(new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda)))
+	{}
+
+	~DelegateWrapper()
+	{
+		if (m_pDelegate)
+		{
+			delete m_pDelegate;
+			m_pDelegate = nullptr;
+		}
+	}
+
+	RetVal Execute(Args... args)
+	{
+		if (m_pDelegate)
+			return m_pDelegate->Execute(args...);
+		return RetVal();
+	}
+
+private:
+	IDelegate<RetVal, Args...>* m_pDelegate = nullptr;
+};
+
 //Delegate that can be bound to by just ONE object
 template<typename RetVal, typename ...Args>
 class SinglecastDelegate
@@ -105,6 +148,10 @@ public:
 		SafeDelete(m_pEvent);
 	}
 
+	SinglecastDelegate(const SinglecastDelegate& other) = delete;
+	SinglecastDelegate& operator=(const SinglecastDelegate& other) = delete;
+
+	//Create a SinglecastDelegate instance bound with member function
 	template<typename T>
 	static SinglecastDelegate CreateRaw(T* pObject, RetVal(T::*pFunction)(Args...))
 	{
@@ -117,35 +164,57 @@ public:
 	template<typename T>
 	void BindRaw(T* pObject, RetVal(T::*pFunction)(Args...))
 	{
-		RawDelegate<RetVal, T, Args...>* pDelegate = new RawDelegate<RetVal, T, Args...>(pObject, pFunction);
-		SafeDelete(m_pEvent);
-		m_pEvent = pDelegate;
+		Release();
+		m_pEvent = new DelegateWrapper<RetVal, Args...>(pObject, pFunction);
+	}
+
+	//Create a SinglecastDelegate instance bound with a static/global function
+	static SinglecastDelegate CreateStatic(RetVal(*pFunction)(Args...))
+	{
+		SinglecastDelegate<RetVal, Args...> NewDelegate;
+		NewDelegate.BindStatic(pFunction);
+		return NewDelegate;
 	}
 
 	//Bind a static/global function
 	void BindStatic(RetVal(*pFunction)(Args...))
 	{
-		StaticDelegate<RetVal, Args...>* pDelegate = new StaticDelegate<RetVal, Args...>(pFunction);
-		SafeDelete(m_pEvent);
-		m_pEvent = pDelegate;
+		Release();
+		m_pEvent = new DelegateWrapper<RetVal, Args...>(pFunction);
+	}
+
+	//Create a SinglecastDelegate instance bound with a lambda
+	template<typename LambdaType>
+	static SinglecastDelegate CreateLambda(LambdaType&& lambda)
+	{
+		SinglecastDelegate<RetVal, Args...> NewDelegate;
+		NewDelegate.BindLambda(lambda);
+		return NewDelegate;
 	}
 
 	//Bind a lambda
 	template<typename LambdaType>
 	void BindLambda(LambdaType&& lambda)
 	{
-		LambdaDelegate<LambdaType, RetVal, Args...>* pDelegate = new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda));
-		SafeDelete(m_pEvent);
-		m_pEvent = pDelegate;
+		Release();
+		m_pEvent = new DelegateWrapper<RetVal, Args...>(lambda);
+	}
+
+	//Create a SinglecastDelegate instance bound with member function using a shared_ptr
+	template<typename T>
+	static SinglecastDelegate CreateSP(shared_ptr<T> pObject, RetVal(T::*pFunction)(Args...))
+	{
+		SinglecastDelegate<RetVal, Args...> NewDelegate;
+		NewDelegate.BindStatic(pObject, pFunction);
+		return NewDelegate;
 	}
 
 	//Bind a member function with a shared_ptr object
 	template<typename T>
 	void BindSP(shared_ptr<T> pObject, RetVal(T::*pFunction)(Args...))
 	{
-		SPDelegate<RetVal, T, Args...>* pDelegate = new SPDelegate<RetVal, T, Args...>(pObject, pFunction);
-		SafeDelete(m_pEvent);
-		m_pEvent = pDelegate;
+		Release();
+		m_pEvent = new DelegateWrapper<RetVal, Args...>(pObject, pFunction);
 	}
 
 	//Execute the function if the delegate is bound
@@ -170,7 +239,16 @@ public:
 	}
 
 private:
-	IDelegate<RetVal, Args...>* m_pEvent = nullptr;
+	void Release()
+	{
+		if (m_pEvent)
+		{
+			delete m_pEvent;
+			m_pEvent = nullptr;
+		}
+	}
+
+	DelegateWrapper<RetVal, Args...>* m_pEvent = nullptr;
 };
 
 //A handle to a delegate used for a multicast delegate
@@ -178,14 +256,17 @@ private:
 class DelegateHandle
 {
 public:
-	DelegateHandle() : m_Id(0) {}
-	DelegateHandle(bool generateId) : m_Id(GetNewID()) { UNREFERENCED_PARAMETER(generateId); }
+	DelegateHandle() : m_Id(-1) {}
+	explicit DelegateHandle(bool generateId) : m_Id(GetNewID()) { UNREFERENCED_PARAMETER(generateId); }
 	~DelegateHandle() {}
 
 	bool operator==(const DelegateHandle& other)
 	{
 		return m_Id == other.m_Id;
 	}
+
+	bool IsValid() const { return m_Id != -1; }
+	void Invalidate() { m_Id = -1; }
 
 private:
 	int m_Id;
@@ -206,55 +287,61 @@ public:
 		m_Events.clear();
 	}
 
+	MulticastDelegate(const MulticastDelegate& other) = delete;
+	MulticastDelegate& operator=(const MulticastDelegate& other) = delete;
+
+	DelegateHandle operator+=(DelegateWrapper<void, Args...>* pDelegate)
+	{
+		return AddDelegate(pDelegate);
+	}
+
+	bool operator-=(DelegateHandle& handle)
+	{
+		return Remove(handle);
+	}
+
 	//Bind a member function
 	template<typename T>
 	DelegateHandle AddRaw(T* pObject, void(T::*pFunction)(Args...))
 	{
-		RawDelegate<void, T, Args...>* pDelegate = new RawDelegate<void, T, Args...>(pObject, pFunction);
-		DelegateHandle handle(true);
-		m_Events.push_back(EventPair(handle, pDelegate));
-		return handle;
+		DelegateWrapper<void, Args...>* pDelegate = new DelegateWrapper<void, Args...>(pObject, pFunction);
+		return AddDelegate(pDelegate);
 	}
 
 	//Bind a static/global function
 	DelegateHandle AddStatic(void(*pFunction)(Args...))
 	{
-		StaticDelegate<void, Args...>* pDelegate = new StaticDelegate<void, Args...>(pFunction);
-		DelegateHandle handle(true);
-		m_Events.push_back(EventPair(handle, pDelegate));
-		return handle;
+		DelegateWrapper<void, Args...>* pDelegate = new DelegateWrapper<void, Args...>(pFunction);
+		return AddDelegate(pDelegate);
 	}
 
 	//Bind a lambda
 	template<typename LambdaType>
 	DelegateHandle AddLambda(LambdaType&& lambda)
 	{
-		LambdaDelegate<LambdaType, void, Args...>* pDelegate = new LambdaDelegate<LambdaType, void, Args...>(std::forward<LambdaType>(lambda));
-		DelegateHandle handle(true);
-		m_Events.push_back(EventPair(handle, pDelegate));
-		return handle;
+		DelegateWrapper<void, Args...>* pDelegate = new DelegateWrapper<void, Args...>(std::forward<LambdaType>(lambda));
+		return AddDelegate(pDelegate);
 	}
 
 	//Bind a member function with a shared_ptr object
 	template<typename T>
-	void AddSP(shared_ptr<T> pObject, void(T::*pFunction)(Args...))
+	DelegateHandle AddSP(shared_ptr<T> pObject, void(T::*pFunction)(Args...))
 	{
-		SPDelegate<void, T, Args...>* pDelegate = new SPDelegate<void, T, Args...>(pObject, pFunction);
-		DelegateHandle handle(true);
-		SafeDelete(m_pEvent);
-		m_Events.push_back(EventPair(handle, pDelegate));
-		return handle;
+		DelegateWrapper<void, Args...>* pDelegate = new DelegateWrapper<void, Args...>(pObject, pFunction);
+		return AddDelegate(pDelegate);
 	}
 
 	//Remove a function from the event list by the handle
-	bool Remove(const DelegateHandle& handle)
+	bool Remove(DelegateHandle& handle)
 	{
 		for (size_t i = 0; i < m_Events.size(); ++i)
 		{
 			if (m_Events[i].first == handle)
 			{
-				SafeDelete(m_Events[i].second);
+				if (m_Events[i].second)
+					delete m_Events[i].second;
 				m_Events.erase(m_Events.begin() + i);
+				handle.Invalidate();
 				return true;
 			}
 		}
@@ -266,7 +353,8 @@ public:
 	{
 		for (EventPair delegatePair : m_Events)
 		{
-			SafeDelete(delegatePair.second);
+			if (delegatePair.second)
+				delete delegatePair.second;
 		}
 		m_Events.clear();
 	}
@@ -279,6 +367,13 @@ public:
 	}
 
 private:
-	using EventPair = std::pair<DelegateHandle, IDelegate<void, Args...>*>;
+	DelegateHandle AddDelegate(DelegateWrapper<void, Args...>* pDelegate)
+	{
+		DelegateHandle handle(true);
+		m_Events.push_back(EventPair(handle, pDelegate));
+		return handle;
+	}
+
+	using EventPair = std::pair<DelegateHandle, DelegateWrapper<void, Args...>*>;
 	std::vector<EventPair> m_Events;
 };

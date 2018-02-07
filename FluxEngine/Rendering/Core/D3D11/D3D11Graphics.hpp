@@ -51,6 +51,8 @@ bool Graphics::SetMode(
 	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
 
+	FLUX_LOG(INFO, "[Graphics::SetMode] Graphics initialized");
+
 	return true;
 }
 

@@ -2,9 +2,9 @@
 #include "Profiler.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-Profiler::Profiler()
+Profiler::Profiler() :
+	m_pRootBlock(std::make_unique<AutoProfilerBlock>("Root", "", nullptr))
 {
-	m_pRootBlock = std::make_unique<AutoProfilerBlock>("Root", "", nullptr);
 	m_pCurrentBlock = m_pRootBlock.get();
 
 	QueryPerformanceFrequency((LARGE_INTEGER*)&m_Frequency);

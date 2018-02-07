@@ -25,10 +25,12 @@ Window::~Window()
 
 bool Window::Open()
 {
+	AUTOPROFILE(Window_Open);
 	if (!CreateClass(m_ClassName))
 		return false;
 	if (!CreateInstanceOfClass(m_ClassName, m_Width, m_Height))
 		return false;
+	FLUX_LOG(INFO, "[Window::Open] > Window created");
 	return true;
 }
 

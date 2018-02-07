@@ -99,7 +99,7 @@ bool ParticleSystem::Load(const std::string& filePath)
 		BlendingMode = blendMode == 0 ? BlendMode::ALPHA : BlendMode::ADD;
 		ImagePath = data["ImagePath"].get<string>();
 	}
-	catch (exception exception)
+	catch (exception& exception)
 	{
 		string error = exception.what();
 		FLUX_LOG(ERROR, "Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());

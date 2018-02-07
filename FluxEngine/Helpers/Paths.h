@@ -13,5 +13,7 @@ struct Paths
 	static const std::string ScreenshotFolder;
 	static const std::string GameIniFile;
 	static const std::string EngineIniFile;
+	static const std::string ResourcesFolder;
+	static const std::string PakFilesFolder;
 };
 

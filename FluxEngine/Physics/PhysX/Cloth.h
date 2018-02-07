@@ -20,7 +20,7 @@ public:
 private:
 	void CreateCloth();
 
-	physx::PxCloth* m_pCloth;
+	physx::PxCloth* m_pCloth = nullptr;
 	PhysicsSystem* m_pPhysicsSystem;
 	PhysicsScene* m_pPhysicsScene = nullptr;
 	Geometry* m_pGeometry = nullptr;

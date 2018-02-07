@@ -109,6 +109,11 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 		}
 
+		postbuildcommands
+		{ 
+			"xcopy \"$(ProjectDir)\\Logo.ico\" \"$(OutDir)\" /Y /F /D",
+		}
+
 		filter { "configurations:Debug" }
 		 	postbuildcommands
 			{ 

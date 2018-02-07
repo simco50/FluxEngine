@@ -6,6 +6,8 @@ const std::string Paths::LogsFolder =			"Saved\\Logs";
 const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
 const std::string Paths::GameIniFile =			"Config\\Game.ini";
 const std::string Paths::EngineIniFile =		"Config\\Engine.ini";
+const std::string Paths::ResourcesFolder =		".\\Resources";
+const std::string Paths::PakFilesFolder =		".";
 
 bool Paths::IsSlash(const char c)
 {
@@ -50,7 +52,11 @@ std::string Paths::GetDirectoryPath(const std::string& filePath)
 		return IsSlash(c);
 	});
 	if (it == filePath.rend())
+	{
+		if (filePath.rfind('.'))
+			return "/";
 		return filePath;
+	}
 
 	return filePath.substr(0, it.base() - filePath.begin());
 }

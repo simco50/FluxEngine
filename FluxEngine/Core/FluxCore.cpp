@@ -43,15 +43,20 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		AUTOPROFILE(FluxCore_Initialize);
 
+		m_pContext = make_unique<Context>();
+
 		Console::Initialize();
 
-		FileSystem::AddPakLocation(".", "Resources");
-		if (!FileSystem::Mount("./Resources", "Resources", ArchiveType::Physical))
+		//Register resource locations
+		FileSystem::AddPakLocation(Paths::PakFilesFolder, "Resources");
+		if (!FileSystem::Mount(Paths::ResourcesFolder, "Resources", ArchiveType::Physical))
 		{
-			FLUX_LOG(WARNING, "Failed to mount './Resources'");
+			FLUX_LOG(WARNING, "Failed to mount '%s'", Paths::ResourcesFolder.c_str());
 		}
+
 		Config::Initialize();
 
+		//Window
 		m_pWindow = new Window(
 			Config::GetInt("Width", "Window", 1240),
 			Config::GetInt("Height", "Window", 720),
@@ -65,8 +70,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pWindow->SetIcon("Logo.ico");
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
-		m_pContext = make_unique<Context>();
-
+		//Graphics
 		m_pGraphics = m_pContext->RegisterSubsystem(make_unique<Graphics>(m_pWindow));
 		if (!m_pGraphics->SetMode(
 			Config::GetBool("VSync", "Window", true),
@@ -86,7 +90,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		GameTimer::Reset();
 	}
 
-	//Game loop
+	//Message loop
 	MSG msg = {};
 	while (msg.message != WM_QUIT)
 	{
@@ -131,32 +135,23 @@ void FluxCore::InitGame()
 
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 
-	for (int x = 0; x < 10; ++x)
-	{
-		for (int y = 0; y < 10; ++y)
-		{
-			for (int z = 0; z < 10; ++z)
-			{
-				m_pNode = new SceneNode(Printf("Cube %i - %i - %i", x, y, z));
-				m_pNode->GetTransform()->Translate((float)x, (float)y + 1.0f, (float)z);
-				Model* pModel = new Model();
-				pModel->SetMesh(pMesh);
-				pModel->SetMaterial(pMaterial);
-				m_pNode->AddComponent(pModel);
-				Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
-				pRigidbody->SetBodyType(Rigidbody::Dynamic);
-				m_pNode->AddComponent(pRigidbody);
-				Collider* pCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
-				m_pNode->AddComponent(pCollider);
-				m_pScene->AddChild(m_pNode);
-			}
-		}
-	}
+	m_pNode = new SceneNode("Cube");
+	m_pNode->GetTransform()->Translate(0, 0.5f, 0);
+	Model* pModel = new Model();
+	pModel->SetMesh(pMesh);
+	pModel->SetMaterial(pMaterial);
+	m_pNode->AddComponent(pModel);
+	Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
+	pRigidbody->SetBodyType(Rigidbody::Dynamic);
+	m_pNode->AddComponent(pRigidbody);
+	Collider* pBoxCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
+	m_pNode->AddComponent(pBoxCollider);
+	m_pScene->AddChild(m_pNode);
 	
 	SceneNode* pFloor = new SceneNode("Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pCollider = new PlaneCollider(m_pPhysics, pPhysMaterial);
-	pFloor->AddComponent(pCollider);
+	Collider* pPlaneCollider = new PlaneCollider(m_pPhysics, pPhysMaterial);
+	pFloor->AddComponent(pPlaneCollider);
 	m_pScene->AddChild(pFloor);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
@@ -175,46 +170,12 @@ void FluxCore::OnPause(bool isActive)
 void FluxCore::GameLoop()
 {
 	m_pInput->Update();
-	m_pCamera->Update();
+	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
-
-	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	
 	m_pScene->Update();
-
-	if (m_pInput->IsActionTriggered(0))
-	{
-		SceneNode* pNode = new SceneNode();
-		pNode->GetTransform()->Translate(m_pCamera->GetTransform()->GetWorldPosition());
-		Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Sphere.flux");
-		std::vector<VertexElement> desc =
-		{
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
-		};
-
-		Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
-		pMesh->CreateBuffers(m_pGraphics, desc);
-		Model* pModel = new Model();
-		pModel->SetMesh(pMesh);
-		pModel->SetMaterial(pMaterial);
-		pNode->AddComponent(pModel);
-		Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
-		pRigidbody->SetBodyType(Rigidbody::Dynamic);
-		pNode->AddComponent(pRigidbody);
-		Collider* pCollider = new SphereCollider(m_pPhysics, 1.0f, m_pPhysics->GetDefaultMaterial());
-		pNode->AddComponent(pCollider);
-		m_pScene->AddChild(pNode);
-
-		Vector3 start, direction;
-		m_pCamera->GetCamera()->GetMouseRay(start, direction);
-		pRigidbody->GetBody<PxRigidDynamic>()->setMass(100);
-		pRigidbody->GetBody<PxRigidDynamic>()->addForce(*reinterpret_cast<const PxVec3*>(&direction) * 5000.0f, PxForceMode::eIMPULSE);
-
-	}
 
 	if(m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());

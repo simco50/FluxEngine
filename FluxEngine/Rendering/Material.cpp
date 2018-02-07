@@ -179,7 +179,7 @@ void Material::SetTexture(const TextureSlot slot, Texture* pTexture)
 }
 
 //#todo: This is really hacky and unsafe, should find a better way to store arbitrary shader values
-void Material::ParseValue(const std::string name, const std::string valueString)
+void Material::ParseValue(const std::string& name, const std::string& valueString)
 {
 	AUTOPROFILE_DESC(Material_ParseValue, name);
 

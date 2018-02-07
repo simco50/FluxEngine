@@ -170,7 +170,6 @@ using namespace DirectX::SimpleMath;
 #include "Core/TypeInfo.h"
 #include "Core/Object.h"
 #include "Core/Delegates.h"
-#include "Core/GeneralStructs.h"
 #include "Core/GameTimer.h"
 #include "Input/InputEngine.h"
 

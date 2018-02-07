@@ -1,4 +1,5 @@
 #pragma once
+#include "Content\Resource.h"
 
 enum class ShaderType;
 
@@ -6,15 +7,17 @@ class Graphics;
 class ShaderVariation;
 class IFile;
 
-class Shader
+class Shader : public Resource
 {
+	FLUX_OBJECT(Shader, Resource)
+
 public:
 	Shader(Graphics* pGraphics);
 	~Shader();
 
 	DELETE_COPY(Shader)
 
-	bool Load(const string& filePath);
+	virtual bool Load(const string& filePath) override;
 	ShaderVariation* GetVariation(const ShaderType type, const string& defines = string(""));
 	const string& GetSource() { return m_ShaderSource; }
 

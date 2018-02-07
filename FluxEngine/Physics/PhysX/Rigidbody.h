@@ -66,8 +66,8 @@ public:
 
 	MulticastDelegate<Collider*>& OnTriggerEnter() { return m_OnTriggerEnterEvent; }
 	MulticastDelegate<Collider*>& OnTriggerExit() { return m_OnTriggerExitEvent; }
-	MulticastDelegate<const CollisionResult&> OnCollisionEnter() { return m_OnCollisionEnterEvent; }
-	MulticastDelegate<const CollisionResult&> OnCollisionExit() { return m_OnCollisionExitEvent; }
+	MulticastDelegate<const CollisionResult&>& OnCollisionEnter() { return m_OnCollisionEnterEvent; }
+	MulticastDelegate<const CollisionResult&>& OnCollisionExit() { return m_OnCollisionExitEvent; }
 
 private:
 	void CreateBody(const Rigidbody::Type type);

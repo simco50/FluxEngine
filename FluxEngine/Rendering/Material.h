@@ -44,7 +44,7 @@ public:
 private:
 	Graphics* m_pGraphics;
 
-	void ParseValue(const std::string name, const std::string valueString);
+	void ParseValue(const std::string& name, const std::string& valueString);
 
 	string m_Name;
 	array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};

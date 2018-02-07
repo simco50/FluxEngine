@@ -199,7 +199,7 @@ void ParticleEmitter::Update()
 
 	m_ParticleCount = 0;
 
-	ParticleVertex* pBuffer = (ParticleVertex*)m_pVertexBuffer->Map(true);
+	ParticleVertex* pBuffer = static_cast<ParticleVertex*>(m_pVertexBuffer->Map(true));
 
 	if(m_pParticleSystem->MaxParticles > (int)m_Particles.size())
 	{

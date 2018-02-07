@@ -48,7 +48,7 @@ protected:
 	PhysicsSystem* m_pPhysicsSystem;
 	PhysicsScene* m_pScene = nullptr;
 	Rigidbody* m_pRigidbody = nullptr;
-	PxGeometry* m_pGeometry;
+	PxGeometry* m_pGeometry = nullptr;
 	CollisionGroup m_CollisionGroup = CollisionGroup::Group0;
 	CollisionGroup m_ListenForCollisionGroups = CollisionGroup::Group0;
 	physx::PxMaterial* m_pMaterial = nullptr;

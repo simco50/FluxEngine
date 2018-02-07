@@ -6,6 +6,7 @@ class Drawable;
 class Graphics;
 class Renderer;
 class Component;
+class Camera;
 
 class Scene : public SceneNode
 {
@@ -29,6 +30,4 @@ public:
 private:
 	unique_ptr<Renderer> m_pRenderer;
 	std::vector<SceneNode*> m_pNodes;
-
-	std::vector<Component*> m_Components;
 };

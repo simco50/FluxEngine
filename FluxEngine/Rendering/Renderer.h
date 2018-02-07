@@ -4,6 +4,7 @@
 class Graphics;
 class Drawable;
 class Material;
+class Camera;
 struct Batch;
 
 class Renderer : public Subsystem
