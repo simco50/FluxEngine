@@ -56,8 +56,6 @@ public:
 	void SetGravity(const float x, const float y, const float z);
 
 private:
-	static const float PHYSICS_TIME_STEP;
-
 	virtual void onTrigger(PxTriggerPair* pairs, PxU32 count) override;
 	virtual void onConstraintBreak(PxConstraintInfo* /*constraints*/, PxU32 /*count*/) override {}
 	virtual void onWake(PxActor** /*actors*/, PxU32 /*count*/) override {}

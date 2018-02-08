@@ -9,8 +9,6 @@
 
 using namespace physx;
 
-const float PhysicsScene::PHYSICS_TIME_STEP = 1.0f / 60.0f;
-
 PhysicsScene::PhysicsScene(PhysicsSystem* pPhysicsSystem) :
 	m_pPhysicsSystem(pPhysicsSystem)
 {
@@ -57,7 +55,7 @@ void PhysicsScene::OnSceneRemoved()
 
 void PhysicsScene::Update()
 {
-	m_pPhysicsScene->simulate(PHYSICS_TIME_STEP);
+	m_pPhysicsScene->simulate(GameTimer::DeltaTime());
 	m_pPhysicsScene->fetchResults(true);
 
 	//Send camera location to Pvd

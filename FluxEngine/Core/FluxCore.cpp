@@ -30,7 +30,6 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
-	SafeDelete(m_pWindow);
 	Console::Release();
 	Config::Flush();
 }
@@ -43,7 +42,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		AUTOPROFILE(FluxCore_Initialize);
 
-		m_pContext = make_unique<Context>();
 
 		Console::Initialize();
 
@@ -57,7 +55,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		Config::Initialize();
 
 		//Window
-		m_pWindow = new Window(
+		m_pWindow = make_unique<Window>(
 			Config::GetInt("Width", "Window", 1240),
 			Config::GetInt("Height", "Window", 720),
 			Config::GetString("Title", "Window", "FluxEngine"),
@@ -70,8 +68,9 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pWindow->SetIcon("Logo.ico");
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
+		m_pContext = make_unique<Context>();
 		//Graphics
-		m_pGraphics = m_pContext->RegisterSubsystem(make_unique<Graphics>(m_pWindow));
+		m_pGraphics = m_pContext->RegisterSubsystem(make_unique<Graphics>(m_pWindow.get()));
 		if (!m_pGraphics->SetMode(
 			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
@@ -80,8 +79,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 		}
 
-		m_pInput = m_pContext->RegisterSubsystem(make_unique<InputEngine>(m_pWindow));
-		m_pImmediateUI = m_pContext->RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow, m_pInput));
+		m_pInput = m_pContext->RegisterSubsystem(make_unique<InputEngine>(m_pWindow.get()));
+		m_pImmediateUI = m_pContext->RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow.get(), m_pInput));
 		m_pPhysics = m_pContext->RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
 
 		m_pDebugRenderer = m_pContext->RegisterSubsystem(make_unique<DebugRenderer>(m_pGraphics));
@@ -135,19 +134,21 @@ void FluxCore::InitGame()
 
 	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
 
-	m_pNode = new SceneNode("Cube");
-	m_pNode->GetTransform()->Translate(0, 0.5f, 0);
-	Model* pModel = new Model();
-	pModel->SetMesh(pMesh);
-	pModel->SetMaterial(pMaterial);
-	m_pNode->AddComponent(pModel);
-	Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
-	pRigidbody->SetBodyType(Rigidbody::Dynamic);
-	m_pNode->AddComponent(pRigidbody);
-	Collider* pBoxCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
-	m_pNode->AddComponent(pBoxCollider);
-	m_pScene->AddChild(m_pNode);
-	
+	for (int i = 0; i < 10; ++i)
+	{
+		m_pNode = new SceneNode("Cube");
+		m_pNode->GetTransform()->Translate(0, i + 0.5f, 0);
+		Model* pModel = new Model();
+		pModel->SetMesh(pMesh);
+		pModel->SetMaterial(pMaterial);
+		m_pNode->AddComponent(pModel);
+		Rigidbody* pRigidbody = new Rigidbody(m_pPhysics);
+		pRigidbody->SetBodyType(Rigidbody::Dynamic);
+		m_pNode->AddComponent(pRigidbody);
+		Collider* pBoxCollider = new BoxCollider(m_pPhysics, pMesh->GetBoundingBox(), pPhysMaterial);
+		m_pNode->AddComponent(pBoxCollider);
+		m_pScene->AddChild(m_pNode);
+	}
 	SceneNode* pFloor = new SceneNode("Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
 	Collider* pPlaneCollider = new PlaneCollider(m_pPhysics, pPhysMaterial);
