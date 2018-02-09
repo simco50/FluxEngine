@@ -134,7 +134,7 @@ void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry
 			vertexCount += remaining;
 		int startVertex = i * vertexCountPerThread;
 
-		AsyncTask* pTask = new AsyncTask();
+		AsyncTask* pTask = pQueue->GetFreeTask();
 		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
 		{
 			UNREFERENCED_PARAMETER(pTask);
@@ -157,7 +157,7 @@ void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry
 	}
 	if (pGeometry->HasData("INDEX"))
 	{
-		AsyncTask* pTask = new AsyncTask();
+		AsyncTask* pTask = pQueue->GetFreeTask();
 		pTask->Action.BindLambda([&, this, pGeometry](AsyncTask* pTask, unsigned index)
 		{
 			UNREFERENCED_PARAMETER(pTask);

@@ -1,9 +1,7 @@
 #include "FluxEngine.h"
 #include "Thread.h"
 
-#define USE_STD 0
-
-#if USE_STD
+#ifndef WIN32
 #include <thread>
 #endif
 
@@ -18,9 +16,7 @@ Thread::~Thread()
 
 bool Thread::Run()
 {
-#if USE_STD
-	m_pHandle = new std::thread(ThreadFunctionStatic, this);
-#else
+#ifdef WIN32
 	if (m_pHandle)
 		return false;
 	m_pHandle = CreateThread(nullptr, 0, ThreadFunctionStatic, this, 0, &m_ThreadId);
@@ -30,19 +26,18 @@ bool Thread::Run()
 		FLUX_LOG_HR("[Thread::Run()]", HRESULT_FROM_WIN32(error));
 		return false;
 	}
-#endif
 	return true;
+#else
+	m_pHandle = new std::thread(ThreadFunctionStatic, this);
+	return true;
+#endif
 }
 
 void Thread::Stop()
 {
 	if (!m_pHandle)
 		return;
-#if USE_STD
-	((std::thread*)m_pHandle)->join();
-	delete (std::thread*)m_pHandle;
-	m_pHandle = nullptr;
-#else
+#ifdef WIN32
 	WaitForSingleObject((HANDLE)m_pHandle, INFINITE);
 	if (CloseHandle((HANDLE)m_pHandle) == 0)
 	{
@@ -50,15 +45,16 @@ void Thread::Stop()
 		FLUX_LOG_HR("[Thread::Stop()]", HRESULT_FROM_WIN32(error));
 	}
 	m_pHandle = nullptr;
+#else
+	((std::thread*)m_pHandle)->join();
+	delete (std::thread*)m_pHandle;
+	m_pHandle = nullptr;
 #endif
 }
 
 bool Thread::SetPriority(const int priority)
 {
-#if USE_STD
-	UNREFERENCED_PARAMETER(priority);
-	return false;
-#else
+#ifdef WIN32
 	if (m_pHandle)
 	{
 		if (SetThreadPriority((HANDLE)m_pHandle, priority) == 0)
@@ -70,15 +66,18 @@ bool Thread::SetPriority(const int priority)
 		return true;
 	}
 	return false;
+#else
+	UNREFERENCED_PARAMETER(priority);
+	return false;
 #endif
 }
 
 unsigned int Thread::GetCurrentId()
 {
-#if USE_STD
-	return (unsigned int)std::hash<std::thread::id>{}(std::this_thread::get_id());
-#else
+#ifdef WIN32
 	return ::GetCurrentThreadId();
+#else
+	return (unsigned int)std::hash<std::thread::id>{}(std::this_thread::get_id());
 #endif
 }
 

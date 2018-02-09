@@ -16,11 +16,7 @@ AsyncTaskQueue::~AsyncTaskQueue()
 {
 	m_Shutdown = true;
 
-	for (AsyncTask*& pItem : m_Items)
-	{
-		delete pItem;
-		pItem = nullptr;
-	}
+	m_Tasks.clear();
 
 	for (WorkerThread*& pThread : m_pThreads)
 	{
@@ -56,6 +52,15 @@ void AsyncTaskQueue::JoinAll()
 		pTask->Action.ExecuteIfBound(pTask, 0);
 	m_Queue.clear();
 #endif
+
+	for (auto& pTask : m_Tasks)
+	{
+		pTask->Action.Clear();
+		pTask->IsCompleted = false;
+		pTask->Priority = 0;
+		m_TaskPool.push_back(std::move(pTask));
+	}
+	m_Tasks.clear();
 }
 
 void AsyncTaskQueue::ProcessItems(int index)
@@ -91,12 +96,35 @@ void AsyncTaskQueue::ProcessItems(int index)
 	}
 }
 
+AsyncTask* AsyncTaskQueue::GetFreeTask()
+{
+	if (m_TaskPool.size() > 0)
+	{
+		AsyncTask* pTask = m_TaskPool.back().get();
+		m_TaskPool.pop_back();
+		return pTask;
+	}
+	else
+	{
+		std::unique_ptr<AsyncTask> pTask = make_unique<AsyncTask>();
+		m_TaskPool.push_back(std::move(pTask));
+		return m_TaskPool[m_TaskPool.size() - 1].get();
+	}
+}
+
 void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 {
 	if (pItem == nullptr)
 		return;
 
-	m_Items.push_back(pItem);
+	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](std::unique_ptr<AsyncTask>& pOther) {return pOther.get() == pItem; });
+	if (pIt == m_TaskPool.end())
+	{
+		FLUX_LOG(WARNING, "[AsyncTaskQueue::AddWorkItem] > Task is not in the pool");
+		return;
+	}
+	m_Tasks.push_back(std::move(*pIt));
+	m_TaskPool.erase(pIt);
 
 	m_QueueMutex.Lock();
 	if (m_Queue.empty())
@@ -128,7 +156,7 @@ void AsyncTaskQueue::Stop()
 
 bool AsyncTaskQueue::IsCompleted() const
 {
-	for (AsyncTask* pItem : m_Items)
+	for (auto& pItem : m_Tasks)
 	{
 		if (pItem->IsCompleted == false)
 			return false;

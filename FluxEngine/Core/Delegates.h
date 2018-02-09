@@ -242,6 +242,11 @@ public:
 		return m_pEvent != nullptr;
 	}
 
+	void Clear()
+	{
+		Release();
+	}
+
 private:
 	void Release()
 	{

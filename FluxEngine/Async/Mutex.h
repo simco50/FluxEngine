@@ -11,7 +11,7 @@ public:
 	void Unlock();
 
 private:
-	void* m_pHandle;
+	void* m_pHandle = nullptr;
 };
 
 class ScopeLock

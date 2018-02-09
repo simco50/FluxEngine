@@ -1,5 +1,4 @@
 #pragma once
-#include "Helpers/Singleton.h"
 #include "Core/Subsystem.h"
 
 class AudioEngine : public Subsystem
@@ -19,4 +18,3 @@ private:
 	std::map<std::string, FMOD::Sound*> m_Sounds;
 	FMOD::System* m_pSystem = nullptr;
 };
-
