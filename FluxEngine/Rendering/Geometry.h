@@ -35,6 +35,8 @@ public:
 	int GetVertexCount() const { return m_VertexCount; }
 	int GetIndexCount() const { return m_IndexCount; }
 
+	const std::map<std::string, VertexData>& GetRawData() { return m_VertexData; }
+
 private:
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;

@@ -7,6 +7,8 @@
 #include <thread>
 #include "Geometry.h"
 
+#include "Async/AsyncTaskQueue.h"
+
 Mesh::Mesh()
 {
 }
@@ -132,91 +134,43 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 		for (VertexElement& element : elementDesc)
 			elementInfo.push_back(element);
 
-#if THREADING // Threading test
-		class MeshThread
-		{
-		public:
-			MeshThread(const vector<ElementInfo>& info, map<string, VertexData>& pData, void* pStart, int startVertex, int vertexStride, int count) :
-				Info(info), pDataStart(pStart), VertexCount(count), pVertexData(pData), t{}, StartVertex(startVertex)
-			{
-				pDataStart = (char*)pDataStart + startVertex * vertexStride;
-			}
-
-			void Start()
-			{
-				t = thread{ [this]()
-				{
-					for (int i = 0; i < VertexCount; i++)
-					{
-						int currentVertex = StartVertex + i;
-						for (size_t e = 0; e < Info.size(); e++)
-						{
-							const ElementInfo& element = Info[e];
-
-							const void* pData = (const char*)pVertexData[element.semanticName].pData + element.elementSize * currentVertex;
-							memcpy(pDataStart, pData, element.elementSize);
-							pDataStart = (char*)pDataStart + element.elementSize;
-						}
-					}
-				} };
-			}
-
-			void Wait()
-			{
-				if (t.joinable())
-					t.join();
-			}
-		private:
-			const vector<ElementInfo>& Info;
-			int StartVertex;
-			void* pDataStart;
-			int VertexCount;
-			std::thread t;
-			map<string, VertexData>& pVertexData;
-		};
-
 		const int threadCount = 4;
-		int vertexCountPerThread = m_VertexCount / threadCount;
-		int remaining = m_VertexCount % threadCount;
-		vector<MeshThread> meshThreads;
+		AsyncTaskQueue taskQueue(threadCount);
+		int vertexCountPerThread = pGeometry->GetVertexCount() / threadCount;
+		int remaining = pGeometry->GetVertexCount() % threadCount;
+
+		const std::map <std::string, Geometry::VertexData>& rawData = pGeometry->GetRawData();
 		for (int i = 0; i < threadCount; ++i)
 		{
 			int vertexCount = vertexCountPerThread;
 			if (i >= threadCount - 1)
 				vertexCount += remaining;
 			int startVertex = i * vertexCountPerThread;
-			meshThreads.push_back(MeshThread(elementInfo, m_VertexData, (char*)pVertexDataStart, startVertex, vertexStride, vertexCount));
-		}
-		for (int i = 0; i < threadCount; ++i)
-			meshThreads[i].Start();
-		for (int i = 0; i < threadCount; ++i)
-			meshThreads[i].Wait();
 
-#else
-
-		for (int i = 0; i < pGeometry->GetVertexCount(); i++)
-		{
-			for (size_t e = 0; e < elementDesc.size(); e++)
+			AsyncTask* pTask = new AsyncTask();
+			pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
 			{
-				const ElementInfo& element = elementInfo[e];
-				if (!pGeometry->HasData(element.semanticName))
+				UNREFERENCED_PARAMETER(pTask);
+				UNREFERENCED_PARAMETER(index);
+				char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
+				for (int i = 0; i < vertexCount; i++)
 				{
-					//Only report a warning for the first element to prevent spam
-					if (i == 0)
-						FLUX_LOG(WARNING, "MeshFilter::CreateBuffers() > Material expects '%s' but mesh has no such data. Using dummy data", element.semanticName.c_str());
-					//Get the stride of the required dummy data
-					ZeroMemory(pDataLocation, element.elementSize);
-					pDataLocation = (char*)pDataLocation + element.elementSize;
+					int currentVertex = startVertex + i;
+					for (size_t e = 0; e < elementInfo.size(); e++)
+					{
+						const ElementInfo& element = elementInfo[e];
+
+						const void* pData = (const char*)rawData.at(element.semanticName).pData + element.elementSize * currentVertex;
+						memcpy(pDataStart, pData, element.elementSize);
+						pDataStart = (char*)pDataStart + element.elementSize;
+					}
 				}
-				else
-				{
-					const void* pData = (const char*)pGeometry->GetVertexDataUnsafe(element.semanticName).pData + element.elementSize * i;
-					memcpy(pDataLocation, pData, element.elementSize);
-					pDataLocation = (char*)pDataLocation + element.elementSize;
-				}
-			}
+			});
+			taskQueue.AddWorkItem(pTask);
 		}
-#endif
+
+		taskQueue.JoinAll();
+
 
 #ifdef CACHE_MESHES
 		std::unique_ptr<PhysicalFile> pCacheFile = std::make_unique<PhysicalFile>(str.str());

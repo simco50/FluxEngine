@@ -21,6 +21,7 @@
 #include "Window.h"
 #include "Rendering/DebugRenderer.h"
 #include "Context.h"
+#include "Async/AsyncTaskQueue.h"
 
 using namespace std;
 
@@ -82,6 +83,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pInput = m_pContext->RegisterSubsystem(make_unique<InputEngine>(m_pWindow.get()));
 		m_pImmediateUI = m_pContext->RegisterSubsystem(make_unique<ImmediateUI>(m_pGraphics, m_pWindow.get(), m_pInput));
 		m_pPhysics = m_pContext->RegisterSubsystem(make_unique<PhysicsSystem>(nullptr));
+		m_pContext->RegisterSubsystem(make_unique<AsyncTaskQueue>(4));
 
 		m_pDebugRenderer = m_pContext->RegisterSubsystem(make_unique<DebugRenderer>(m_pGraphics));
 

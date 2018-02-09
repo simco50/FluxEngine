@@ -6,7 +6,7 @@ workspace "FluxEngine"
     warnings "Extra"
     rtti "Off"
 	characterset ("MBCS")
-	defines { "_CONSOLE", "D3D11", "PHYSX", "PROFILING" }
+	defines { "_CONSOLE", "D3D11", "PHYSX", "PROFILING", "THREADING" }
 	flags {"FatalWarnings"}
 	language "C++"
 
