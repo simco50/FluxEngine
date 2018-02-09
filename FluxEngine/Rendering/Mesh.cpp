@@ -93,7 +93,7 @@ void Mesh::CreateBuffers(vector<VertexElement>& elementDesc)
 
 void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
-	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(m_pContext->GetSubsystem<Graphics>());
+	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(GetSubsystem<Graphics>());
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
 
 	int vertexStride = pVertexBuffer->GetVertexStride();
@@ -121,7 +121,7 @@ void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry
 	for (VertexElement& element : elementDesc)
 		elementInfo.push_back(element);
 
-	AsyncTaskQueue* pQueue = m_pContext->GetSubsystem<AsyncTaskQueue>();
+	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 	const int taskCount = 4;
 	int vertexCountPerThread = pGeometry->GetVertexCount() / taskCount;
 	int remaining = pGeometry->GetVertexCount() % taskCount;
@@ -163,7 +163,7 @@ void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry
 			UNREFERENCED_PARAMETER(pTask);
 			UNREFERENCED_PARAMETER(index);
 
-			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(m_pContext->GetSubsystem<Graphics>());
+			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(GetSubsystem<Graphics>());
 			pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
 			pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
 			pGeometry->SetIndexBuffer(pIndexBuffer.get());

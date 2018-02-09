@@ -1,6 +1,7 @@
 #pragma once
 
 class Context;
+class Subsystem;
 
 #define FLUX_OBJECT(typeName, baseTypeName) \
     public: \
@@ -26,19 +27,17 @@ public:
 	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
 	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; }
 
-	bool IsTypeOf(const TypeInfo* pTypeInfo) { return GetTypeInfo()->IsTypeOf(pTypeInfo); }
-	bool IsTypeOf(StringHash type) { return GetTypeInfo()->IsTypeOf(type); }
+	bool IsTypeOf(const TypeInfo* pTypeInfo);
+	bool IsTypeOf(StringHash type);
 	template<typename T>
 	bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
 
-	void SetContext(Context* pContext) { m_pContext = pContext; }
-	Context* GetContext() const { return m_pContext; }
+	Subsystem* GetSubsystem(StringHash type) const;
+	template<typename T>
+	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
 
 protected:
 	Context* m_pContext = nullptr;
-
-private:
-
 };
 
 template<typename T>

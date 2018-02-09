@@ -10,6 +10,7 @@ class PhysicsSystem;
 class Window;
 class DebugRenderer;
 class Context;
+class ResourceManager;
 
 class FluxCore
 {
@@ -42,6 +43,7 @@ private:
 	InputEngine* m_pInput = nullptr;
 	PhysicsSystem* m_pPhysics = nullptr;
 	DebugRenderer* m_pDebugRenderer = nullptr;
+	ResourceManager* m_pResourceManager = nullptr;
 
 	Window* m_pWindow;
 	Context* m_pContext;

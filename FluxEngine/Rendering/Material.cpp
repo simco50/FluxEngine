@@ -104,7 +104,7 @@ bool Material::Load(const std::string& filePath)
 					return false;
 				}
 
-				Texture* pTexture = ResourceManager::Instance()->Load<Texture>(pParameter->Attribute("value"));
+				Texture* pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pParameter->Attribute("value"));
 				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, pTexture));
 			}
 			else if (parameterType == "Value")

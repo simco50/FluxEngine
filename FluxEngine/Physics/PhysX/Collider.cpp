@@ -157,7 +157,7 @@ MeshCollider::MeshCollider(Context* pContext, PhysicsMesh* pMesh, PxMaterial* pM
 MeshCollider::MeshCollider(Context* pContext, const std::string& filePath, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pContext, pMaterial, shapeFlags)
 {
-	m_pMesh = ResourceManager::Instance()->Load<PhysicsMesh>(filePath);
+	m_pMesh = GetSubsystem<ResourceManager>()->Load<PhysicsMesh>(filePath);
 }
 
 void MeshCollider::CreateGeometry()

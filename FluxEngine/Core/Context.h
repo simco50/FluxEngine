@@ -7,11 +7,22 @@ public:
 	Context() {}
 	~Context() {}
 
-	template<typename T>
-	T* GetSubsystem(bool required = true)
+	Subsystem* GetSubsystem(StringHash type) const
 	{
-		auto pIt = m_Systems.find(T::GetTypeStatic());
+		auto pIt = m_Systems.find(type);
 		if (pIt == m_Systems.end())
+		{
+			return nullptr;
+		}
+		return pIt->second.get();
+	}
+
+	template<typename T>
+	T* GetSubsystem(bool required = true) const
+	{
+		T* pSystem = static_cast<T*>(GetSubsystem(T::GetTypeStatic()));
+
+		if (pSystem == nullptr)
 		{
 			if (required)
 			{
@@ -19,7 +30,7 @@ public:
 			}
 			return nullptr;
 		}
-		return (T*)pIt->second.get();
+		return pSystem;
 	}
 
 	template<typename T, typename ...Args>

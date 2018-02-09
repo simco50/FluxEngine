@@ -2,6 +2,12 @@
 #include "ResourceManager.h"
 #include "Resource.h"
 
+ResourceManager::ResourceManager(Context* pContext) :
+	Subsystem(pContext)
+{
+
+}
+
 ResourceManager::~ResourceManager()
 {
 	for (std::pair<std::string, Resource*> pResource : m_Resources)

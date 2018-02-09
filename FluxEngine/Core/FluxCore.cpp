@@ -36,7 +36,6 @@ FluxCore::~FluxCore()
 
 	Console::Release();
 	Config::Flush();
-	ResourceManager::DestroyInstance();
 	Profiler::DestroyInstance();
 }
 
@@ -48,8 +47,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	AUTOPROFILE(FluxCore_Run);
 	{
 		AUTOPROFILE(FluxCore_Initialize);
-		ResourceManager::CreateInstance();
-
+		m_pContext = new Context();
 		Console::Initialize();
 
 		//Register resource locations
@@ -75,9 +73,8 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pWindow->SetIcon("Logo.ico");
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
-		m_pContext = new Context();
-		ResourceManager::Instance()->Initialize(m_pContext);
-
+		//ResourceManager
+		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
 		//Audio
 		m_pContext->RegisterSubsystem<AudioEngine>();
 
@@ -136,7 +133,7 @@ void FluxCore::InitGame()
 
 	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = ResourceManager::Instance()->Load<Mesh>("Resources/Meshes/Spot.flux");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -145,7 +142,7 @@ void FluxCore::InitGame()
 	};
 	pMesh->CreateBuffers(desc);
 
-	Material* pMaterial = ResourceManager::Instance()->Load<Material>("Resources/Materials/Default.xml");
+	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 
 	for (int i = 0; i < 10; ++i)
 	{
