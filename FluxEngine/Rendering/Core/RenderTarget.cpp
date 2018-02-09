@@ -7,7 +7,8 @@
 #include "D3D11/D3D11RenderTarget.hpp"
 #endif
 
-RenderTarget::RenderTarget(Graphics* pGraphics) :
+RenderTarget::RenderTarget(Context* pContext, Graphics* pGraphics) :
+	Object(pContext),
 	m_pGraphics(pGraphics)
 {
 }
@@ -25,11 +26,11 @@ bool RenderTarget::Create(const RenderTargetDesc& RenderTargetDesc)
 
 	m_pRenderTexture.reset();
 	m_pDepthTexture.reset();
-	m_pRenderTexture = make_unique<Texture>(m_pGraphics);
+	m_pRenderTexture = make_unique<Texture>(m_pContext, m_pGraphics);
 	if (!m_pRenderTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.ColorFormat, TextureUsage::RENDERTARGET, RenderTargetDesc.MultiSample, RenderTargetDesc.pColorResource))
 		return false;
 
-	m_pDepthTexture = make_unique<Texture>(m_pGraphics);
+	m_pDepthTexture = make_unique<Texture>(m_pContext, m_pGraphics);
 	if (!m_pDepthTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.DepthFormat, TextureUsage::DEPTHSTENCILBUFFER, RenderTargetDesc.MultiSample, RenderTargetDesc.pDepthResource))
 		return false;
 

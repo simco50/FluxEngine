@@ -12,7 +12,7 @@ class Mesh : public Resource
 	FLUX_OBJECT(Mesh, Resource)
 
 public:
-	Mesh();
+	Mesh(Context* pContext);
 	virtual ~Mesh();
 
 	DELETE_COPY(Mesh)
@@ -36,7 +36,6 @@ private:
 	vector<unique_ptr<IndexBuffer>> m_IndexBuffers;
 
 	vector<unique_ptr<Geometry>> m_Geometries;
-
 	BoundingBox m_BoundingBox;
 
 	int m_GeometryCount = 0;

@@ -12,7 +12,8 @@ class Material : public Resource
 	FLUX_OBJECT(Material, Resource)
 
 public:
-	Material(Graphics* pGraphics) :
+	Material(Context* pContext, Graphics* pGraphics) :
+		Resource(pContext), 
 		m_pGraphics(pGraphics)
 	{
 	}

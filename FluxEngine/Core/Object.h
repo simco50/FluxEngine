@@ -1,5 +1,7 @@
 #pragma once
 
+class Context;
+
 #define FLUX_OBJECT(typeName, baseTypeName) \
     public: \
         using ClassName = typeName; \
@@ -14,7 +16,7 @@
 class Object
 {
 public:
-	Object() {}
+	Object(Context* pContext) : m_pContext(pContext) {}
 	virtual ~Object() {}
 
 	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
@@ -28,6 +30,12 @@ public:
 	bool IsTypeOf(StringHash type) { return GetTypeInfo()->IsTypeOf(type); }
 	template<typename T>
 	bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
+
+	void SetContext(Context* pContext) { m_pContext = pContext; }
+	Context* GetContext() const { return m_pContext; }
+
+protected:
+	Context* m_pContext = nullptr;
 
 private:
 

@@ -44,7 +44,7 @@ struct VertexElement
 	bool PerInstance;
 	unsigned int Offset;
 
-	unsigned long long GetHash()
+	unsigned long long GetHash() const
 	{
 		unsigned long long hash = 0;
 		hash |=
@@ -52,6 +52,11 @@ struct VertexElement
 			| (int)Semantic << 3
 			| Index << 7;
 		return hash;
+	}
+
+	bool operator==(const VertexElement& other)
+	{
+		return other.GetHash() == GetHash();
 	}
 
 	static char* GetSemanticOfType(VertexElementSemantic semantic)
@@ -125,10 +130,12 @@ struct VertexElement
 	}
 };
 
-class VertexBuffer
+class VertexBuffer : public Object
 {
+	FLUX_OBJECT(VertexBuffer, Object)
+
 public:
-	VertexBuffer(Graphics* pGraphics);
+	VertexBuffer(Context* pContext, Graphics* pGraphics);
 	~VertexBuffer();
 
 	DELETE_COPY(VertexBuffer)

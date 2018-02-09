@@ -16,8 +16,8 @@ class Texture : public Resource
 	FLUX_OBJECT(Texture, Resource)
 
 public:
-	Texture(Graphics* pGraphics);
-	Texture(Graphics* pGraphics, void* pTexture, void* pTextureSRV);
+	Texture(Context* pContext, Graphics* pGraphics);
+	Texture(Context* pContext, Graphics* pGraphics, void* pTexture, void* pTextureSRV);
 	~Texture();
 
 	DELETE_COPY(Texture)

@@ -13,7 +13,7 @@ class Renderer : public Subsystem
 
 public:
 
-	Renderer(Graphics* pGraphics);
+	Renderer(Context* pContext, Graphics* pGraphics);
 	~Renderer();
 
 	void Draw();

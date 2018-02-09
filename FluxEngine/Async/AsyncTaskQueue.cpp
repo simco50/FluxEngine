@@ -2,7 +2,8 @@
 #include "AsyncTaskQueue.h"
 #include "Thread.h"
 
-AsyncTaskQueue::AsyncTaskQueue(const size_t count)
+AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count):
+	Subsystem(pContext)
 {
 #ifdef THREADING
 	CreateThreads(count);

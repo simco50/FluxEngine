@@ -11,7 +11,7 @@ class Camera : public Component
 	FLUX_OBJECT(Camera, Component)
 
 public:
-	Camera(InputEngine* pInput, Graphics* pGraphics);
+	Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics);
 	virtual ~Camera();
 
 	const Matrix& GetView() const { return m_View; }

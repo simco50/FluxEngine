@@ -20,10 +20,12 @@ struct RenderTargetDesc
 	void* pDepthResource = nullptr;
 };
 
-class RenderTarget
+class RenderTarget : public Object
 {
+	FLUX_OBJECT(RenderTarget, Object)
+
 public:
-	RenderTarget(Graphics* pGraphics);
+	RenderTarget(Context* pContext, Graphics* pGraphics);
 	~RenderTarget();
 
 	DELETE_COPY(RenderTarget)

@@ -15,7 +15,7 @@ class ParticleEmitter : public Drawable
 	FLUX_OBJECT(ParticleEmitter, Drawable)
 
 public:
-	ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem);
+	ParticleEmitter(Context* pContext, Graphics* pGraphics, ParticleSystem* pSystem);
 	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;

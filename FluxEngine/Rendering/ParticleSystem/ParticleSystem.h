@@ -31,7 +31,9 @@ class ParticleSystem : public Resource
 
 public:
 
-	ParticleSystem() {}
+	ParticleSystem(Context* pContext):
+		Resource(pContext)
+	{}
 	virtual ~ParticleSystem() {}
 
 	virtual bool Load(const std::string& filePath) override;

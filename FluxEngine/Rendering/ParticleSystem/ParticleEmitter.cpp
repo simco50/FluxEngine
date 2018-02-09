@@ -16,7 +16,8 @@
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
 
-ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
+ParticleEmitter::ParticleEmitter(Context* pContext, Graphics* pGraphics, ParticleSystem* pSystem) :
+	Drawable(pContext),
 	m_pParticleSystem(pSystem),
 	m_pGraphics(pGraphics)
 {
@@ -112,7 +113,7 @@ void ParticleEmitter::CreateVertexBuffer(const int bufferSize)
 		/*Rotation*/	VertexElement(VertexElementType::FLOAT, VertexElementSemantic::TEXCOORD, 1, false),
 	};
 
-	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
+	m_pVertexBuffer = make_unique<VertexBuffer>(m_pContext, m_pGraphics);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 	m_pVertexBuffer->Create(bufferSize, elementDesc, true);
 }

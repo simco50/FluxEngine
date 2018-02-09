@@ -11,8 +11,8 @@
 #include "Audio/AudioListener.h"
 #include "Physics/PhysX/PhysicsScene.h"
 
-Camera::Camera(InputEngine* pInput, Graphics* pGraphics):
-	m_pInput(pInput), m_pGraphics(pGraphics)
+Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
+	Component(pContext), m_pInput(pInput), m_pGraphics(pGraphics)
 {
 	m_Projection = XMMatrixIdentity();
 	m_View = XMMatrixIdentity();

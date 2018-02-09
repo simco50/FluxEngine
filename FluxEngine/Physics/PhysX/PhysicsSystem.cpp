@@ -3,7 +3,8 @@
 #include "Rendering\Core\Graphics.h"
 #include "Rendering\Core\D3D11\D3D11GraphicsImpl.h"
 
-PhysicsSystem::PhysicsSystem(Graphics* pGraphics)
+PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
+	Subsystem(pContext)
 {
 	AUTOPROFILE(PhysicsSystem_CreatePhysics);
 

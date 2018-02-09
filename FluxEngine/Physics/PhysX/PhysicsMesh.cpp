@@ -3,7 +3,8 @@
 #include "FileSystem\File\File.h"
 #include "PhysicsSystem.h"
 
-PhysicsMesh::PhysicsMesh(PhysicsSystem* pPhysicsSystem):
+PhysicsMesh::PhysicsMesh(Context* pContext, PhysicsSystem* pPhysicsSystem):
+	Resource(pContext),
 	m_pPhysicsSystem(pPhysicsSystem)
 {
 

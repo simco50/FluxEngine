@@ -9,7 +9,8 @@
 
 using namespace physx;
 
-PhysicsScene::PhysicsScene(PhysicsSystem* pPhysicsSystem) :
+PhysicsScene::PhysicsScene(Context* pContext, PhysicsSystem* pPhysicsSystem) :
+	Component(pContext),
 	m_pPhysicsSystem(pPhysicsSystem)
 {
 }

@@ -54,7 +54,7 @@ class InputEngine : public Subsystem
 	FLUX_OBJECT(InputEngine, Subsystem)
 
 public:
-	InputEngine(Window* pWindow);
+	InputEngine(Context* pContext, Window* pWindow);
 	~InputEngine();
 
 	DELETE_COPY(InputEngine)

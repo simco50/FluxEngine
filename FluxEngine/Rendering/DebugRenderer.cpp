@@ -11,7 +11,8 @@
 #include "Mesh.h"
 #include "Geometry.h"
 
-DebugRenderer::DebugRenderer(Graphics* pGraphics) :
+DebugRenderer::DebugRenderer(Context* pContext, Graphics* pGraphics) :
+	Subsystem(pContext),
 	m_pGraphics(pGraphics)
 {
 	m_ElementDesc = 
@@ -21,7 +22,7 @@ DebugRenderer::DebugRenderer(Graphics* pGraphics) :
 	};
 	m_pVertexShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
 	m_pPixelShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
-	m_pVertexBuffer = make_unique<VertexBuffer>(pGraphics);
+	m_pVertexBuffer = make_unique<VertexBuffer>(pContext, pGraphics);
 }
 
 DebugRenderer::~DebugRenderer()

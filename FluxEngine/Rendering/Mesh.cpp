@@ -9,7 +9,8 @@
 
 #include "Async/AsyncTaskQueue.h"
 
-Mesh::Mesh()
+Mesh::Mesh(Context* pContext):
+	Resource(pContext)
 {
 }
 
@@ -92,7 +93,7 @@ void Mesh::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc
 
 void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
-	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(pGraphics);
+	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(m_pContext, pGraphics);
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
 
 	int vertexStride = pVertexBuffer->GetVertexStride();
@@ -105,98 +106,79 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
 	char* pVertexDataStart = pDataLocation;
 
-#ifdef CACHE_MESHES
-	unsigned long long hash = pVertexBuffer->GetBufferHash();
-	stringstream str;
-	str << "Resources\\Meshes\\Cache\\" << m_MeshName << "_" << hash;
-	unique_ptr<IFile> pFile = FileSystem::GetFile(str.str());
-	if (pFile)
+	//Instead of getting the info every vertex, cache it in a local struct
+	struct ElementInfo
 	{
-		pFile->Open(FileMode::Read, ContentType::Binary);
-		pFile->Read(m_VertexCount * vertexStride, (char*)pVertexDataStart);
-		pFile->Close();
-	}
-	else
+		ElementInfo(const VertexElement& element)
+		{
+			semanticName = VertexElement::GetSemanticOfType(element.Semantic);
+			elementSize = VertexElement::GetSizeOfType(element.Type);
+		}
+		string semanticName;
+		unsigned int elementSize;
+	};
+	std::vector<ElementInfo> elementInfo;
+	for (VertexElement& element : elementDesc)
+		elementInfo.push_back(element);
+
+	AsyncTaskQueue* pQueue = m_pContext->GetSubsystem<AsyncTaskQueue>();
+	const int taskCount = 4;
+	int vertexCountPerThread = pGeometry->GetVertexCount() / taskCount;
+	int remaining = pGeometry->GetVertexCount() % taskCount;
+
+	const std::map <std::string, Geometry::VertexData>& rawData = pGeometry->GetRawData();
+	for (int i = 0; i < taskCount; ++i)
 	{
-#endif
-		//Instead of getting the info every vertex, cache it in a local struct
-		struct ElementInfo
+		int vertexCount = vertexCountPerThread;
+		if (i >= taskCount - 1)
+			vertexCount += remaining;
+		int startVertex = i * vertexCountPerThread;
+
+		AsyncTask* pTask = new AsyncTask();
+		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
 		{
-			ElementInfo(const VertexElement& element)
+			UNREFERENCED_PARAMETER(pTask);
+			UNREFERENCED_PARAMETER(index);
+			char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
+			for (int i = 0; i < vertexCount; i++)
 			{
-				semanticName = VertexElement::GetSemanticOfType(element.Semantic);
-				elementSize = VertexElement::GetSizeOfType(element.Type);
-			}
-			string semanticName;
-			unsigned int elementSize;
-		};
-		std::vector<ElementInfo> elementInfo;
-		for (VertexElement& element : elementDesc)
-			elementInfo.push_back(element);
-
-		const int threadCount = 4;
-		AsyncTaskQueue taskQueue(threadCount);
-		int vertexCountPerThread = pGeometry->GetVertexCount() / threadCount;
-		int remaining = pGeometry->GetVertexCount() % threadCount;
-
-		const std::map <std::string, Geometry::VertexData>& rawData = pGeometry->GetRawData();
-		for (int i = 0; i < threadCount; ++i)
-		{
-			int vertexCount = vertexCountPerThread;
-			if (i >= threadCount - 1)
-				vertexCount += remaining;
-			int startVertex = i * vertexCountPerThread;
-
-			AsyncTask* pTask = new AsyncTask();
-			pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
-			{
-				UNREFERENCED_PARAMETER(pTask);
-				UNREFERENCED_PARAMETER(index);
-				char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
-				for (int i = 0; i < vertexCount; i++)
+				int currentVertex = startVertex + i;
+				for (size_t e = 0; e < elementInfo.size(); e++)
 				{
-					int currentVertex = startVertex + i;
-					for (size_t e = 0; e < elementInfo.size(); e++)
-					{
-						const ElementInfo& element = elementInfo[e];
+					const ElementInfo& element = elementInfo[e];
 
-						const void* pData = (const char*)rawData.at(element.semanticName).pData + element.elementSize * currentVertex;
-						memcpy(pDataStart, pData, element.elementSize);
-						pDataStart = (char*)pDataStart + element.elementSize;
-					}
+					const void* pData = (const char*)rawData.at(element.semanticName).pData + element.elementSize * currentVertex;
+					memcpy(pDataStart, pData, element.elementSize);
+					pDataStart = (char*)pDataStart + element.elementSize;
 				}
-			});
-			taskQueue.AddWorkItem(pTask);
-		}
-
-		taskQueue.JoinAll();
-
-
-#ifdef CACHE_MESHES
-		std::unique_ptr<PhysicalFile> pCacheFile = std::make_unique<PhysicalFile>(str.str());
-		if (pCacheFile->Open(FileMode::Write, ContentType::Binary))
+			}
+		});
+		pQueue->AddWorkItem(pTask);
+	}
+	if (pGeometry->HasData("INDEX"))
+	{
+		AsyncTask* pTask = new AsyncTask();
+		pTask->Action.BindLambda([&, this, pGraphics, pGeometry](AsyncTask* pTask, unsigned index)
 		{
-			pCacheFile->Write((char*)pVertexDataStart, vertexStride * m_VertexCount);
-			pCacheFile->Close();
-		}
-				}
-#endif
+			UNREFERENCED_PARAMETER(pTask);
+			UNREFERENCED_PARAMETER(index);
+
+			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(pGraphics);
+			pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
+			pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
+			pGeometry->SetIndexBuffer(pIndexBuffer.get());
+			m_IndexBuffers.push_back(std::move(pIndexBuffer));
+		});
+		pQueue->AddWorkItem(pTask);
+	}
+
+	pQueue->JoinAll();
 
 	pVertexBuffer->SetData(pVertexDataStart);
 	pGeometry->SetVertexBuffer(pVertexBuffer.get());
 	m_VertexBuffers.push_back(std::move(pVertexBuffer));
 
-	if (pGeometry->HasData("INDEX"))
-	{
-		std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(pGraphics);
-		pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
-		pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
-		pGeometry->SetIndexBuffer(pIndexBuffer.get());
-		m_IndexBuffers.push_back(std::move(pIndexBuffer));
-	}
-
 	m_BuffersInitialized = true;
-
 	delete[] pVertexDataStart;
 }
 

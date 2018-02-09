@@ -16,8 +16,8 @@ public:
 		return (T*)pIt->second.get();
 	}
 
-	template<typename T>
-	T* RegisterSubsystem(unique_ptr<T> pSystem)
+	template<typename T, typename ...Args>
+	T* RegisterSubsystem(Args... args)
 	{
 #ifdef _DEBUG
 		auto pIt = m_Systems.find(T::GetTypeStatic());
@@ -27,6 +27,7 @@ public:
 			return nullptr;
 		}
 #endif
+		std::unique_ptr<T> pSystem = make_unique<T>(this, args...);
 		StringHash type = pSystem->GetType();
 		m_Systems[type] = std::move(pSystem);
 		return (T*)m_Systems[type].get();

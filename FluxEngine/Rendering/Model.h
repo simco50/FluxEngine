@@ -8,7 +8,7 @@ class Model : public Drawable
 	FLUX_OBJECT(Model, Drawable)
 
 public:
-	Model();
+	Model(Context* pContext);
 	virtual ~Model();
 
 	virtual void OnSceneSet(Scene* pScene) override;

@@ -12,7 +12,7 @@ class Shader : public Resource
 	FLUX_OBJECT(Shader, Resource)
 
 public:
-	Shader(Graphics* pGraphics);
+	Shader(Context* pContext, Graphics* pGraphics);
 	~Shader();
 
 	DELETE_COPY(Shader)

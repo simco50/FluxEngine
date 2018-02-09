@@ -13,7 +13,7 @@ class Scene : public SceneNode
 	FLUX_OBJECT(Scene, SceneNode);
 
 public:
-	Scene(Graphics* pGraphics);
+	Scene(Context* pContext, Graphics* pGraphics);
 	virtual ~Scene();
 
 	virtual void Initialize();

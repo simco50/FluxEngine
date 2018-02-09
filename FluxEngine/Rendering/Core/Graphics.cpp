@@ -20,8 +20,8 @@
 #include "D3D11/D3D11GraphicsImpl.h"
 #endif
 
-Graphics::Graphics(Window* pWindow) :
-	m_pWindow(pWindow)
+Graphics::Graphics(Context* pContext, Window* pWindow) :
+	Subsystem(pContext), m_pWindow(pWindow)
 {
 	m_pImpl = make_unique<GraphicsImpl>();
 }

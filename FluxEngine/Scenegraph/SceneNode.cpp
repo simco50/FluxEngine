@@ -4,14 +4,16 @@
 #include "Component.h"
 #include "Transform.h"
 
-SceneNode::SceneNode(const std::string& name) : 
+SceneNode::SceneNode(Context* pContext, const std::string& name) :
+	Object(pContext),
 	m_Name(name)
 {
 	m_pTransform = make_unique<Transform>(this);
 	m_pTransform->Initialize();
 }
 
-SceneNode::SceneNode(Scene* pScene) : 
+SceneNode::SceneNode(Context* pContext, Scene* pScene) :
+	Object(pContext),
 	m_pScene(pScene)
 {
 }

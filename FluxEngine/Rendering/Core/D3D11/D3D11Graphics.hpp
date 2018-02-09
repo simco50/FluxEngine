@@ -546,7 +546,7 @@ void Graphics::UpdateSwapchain(int width, int height)
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	desc.MultiSample = m_Multisample;
-	m_pDefaultRenderTarget = make_unique<RenderTarget>(this);
+	m_pDefaultRenderTarget = make_unique<RenderTarget>(m_pContext, this);
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);

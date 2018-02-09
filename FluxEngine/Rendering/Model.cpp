@@ -5,7 +5,8 @@
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
 
-Model::Model()
+Model::Model(Context* pContext):
+	Drawable(pContext)
 {
 
 }

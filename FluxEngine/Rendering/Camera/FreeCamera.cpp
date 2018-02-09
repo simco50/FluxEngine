@@ -4,8 +4,8 @@
 #include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
 
-FreeCamera::FreeCamera(InputEngine* pInput, Graphics* pGraphics) : 
-	m_pInput(pInput), m_pGraphics(pGraphics)
+FreeCamera::FreeCamera(Context* pContext, InputEngine* pInput, Graphics* pGraphics) :
+	SceneNode(pContext), m_pInput(pInput), m_pGraphics(pGraphics)
 {
 }
 
@@ -18,9 +18,9 @@ void FreeCamera::OnSceneSet(Scene* pScene)
 {
 	SceneNode::OnSceneSet(pScene);
 
-	AudioListener* pAudioListener = new AudioListener();
+	AudioListener* pAudioListener = new AudioListener(m_pContext);
 	AddComponent(pAudioListener);
-	m_pCamera = new Camera(m_pInput, m_pGraphics);
+	m_pCamera = new Camera(m_pContext, m_pInput, m_pGraphics);
 	AddComponent(m_pCamera);
 }
 

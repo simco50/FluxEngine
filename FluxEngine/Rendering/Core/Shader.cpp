@@ -4,8 +4,8 @@
 #include "Graphics.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-Shader::Shader(Graphics* pGraphics) :
-	m_pGraphics(pGraphics)
+Shader::Shader(Context* pContext, Graphics* pGraphics) :
+	Resource(pContext), m_pGraphics(pGraphics)
 {
 
 }

@@ -12,7 +12,8 @@
 #include "Core/DepthStencilState.h"
 #include "ParticleSystem/ParticleEmitter.h"
 
-Renderer::Renderer(Graphics* pGraphics) :
+Renderer::Renderer(Context* pContext, Graphics* pGraphics) :
+	Subsystem(pContext), 
 	m_pGraphics(pGraphics)
 {
 }

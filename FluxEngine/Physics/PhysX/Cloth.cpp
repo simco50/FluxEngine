@@ -7,7 +7,8 @@
 #include "PhysicsScene.h"
 #include "..\..\Rendering\Geometry.h"
 
-Cloth::Cloth(PhysicsSystem* pPhysicsSystem) :
+Cloth::Cloth(Context* pContext, PhysicsSystem* pPhysicsSystem) :
+	Component(pContext),
 	m_pPhysicsSystem(pPhysicsSystem)
 {
 }

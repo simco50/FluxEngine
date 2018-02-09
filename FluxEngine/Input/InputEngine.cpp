@@ -2,7 +2,8 @@
 #include "InputEngine.h"
 #include "Core/Window.h"
 
-InputEngine::InputEngine(Window* pWindow) :
+InputEngine::InputEngine(Context* pContext, Window* pWindow) :
+	Subsystem(pContext),
 	m_pWindow(pWindow),
 	m_Enabled(false), 
 	m_ForceToCenter(false)

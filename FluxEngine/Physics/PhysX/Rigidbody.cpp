@@ -6,7 +6,8 @@
 #include "Scenegraph\SceneNode.h"
 #include "Scenegraph\Scene.h"
 
-Rigidbody::Rigidbody(PhysicsSystem* pPhysicsSystem) : 
+Rigidbody::Rigidbody(Context* pContext, PhysicsSystem* pPhysicsSystem) :
+	Component(pContext),
 	m_pPhysicsSystem(pPhysicsSystem)
 {
 

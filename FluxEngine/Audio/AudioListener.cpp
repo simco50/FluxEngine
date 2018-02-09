@@ -4,7 +4,8 @@
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
 
-AudioListener::AudioListener()
+AudioListener::AudioListener(Context* pContext) : 
+	Component(pContext)
 {
 }
 

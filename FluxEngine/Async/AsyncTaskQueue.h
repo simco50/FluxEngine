@@ -16,7 +16,7 @@ class AsyncTaskQueue : public Subsystem
 	FLUX_OBJECT(AsyncTaskQueue, Subsystem)
 
 public:
-	AsyncTaskQueue(const size_t count);
+	AsyncTaskQueue(Context* pContext, const size_t count);
 	~AsyncTaskQueue();
 
 	void JoinAll();
