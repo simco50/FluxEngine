@@ -6,11 +6,9 @@
 #include "D3D11/D3D11VertexBuffer.hpp"
 #endif
 
-VertexBuffer::VertexBuffer(Context* pContext, Graphics* pGraphics) :
-	Object(pContext),
+VertexBuffer::VertexBuffer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
 {
-
 }
 
 VertexBuffer::~VertexBuffer()

@@ -19,7 +19,7 @@ public:
 
 	virtual bool Load(const std::string& filePath) override;
 
-	void CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc);
+	void CreateBuffers(vector<VertexElement>& elementDesc);
 
 	int GetGeometryCount() const { return m_GeometryCount; }
 	Geometry* GetGeometry(int slot) const { return m_Geometries[slot].get(); }
@@ -28,7 +28,7 @@ public:
 private:
 	static const int MESH_VERSION = 7;
 
-	void CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& elementDesc, Geometry* pGeometry);
+	void CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry* pGeometry);
 
 	string m_MeshName;
 	bool m_BuffersInitialized = false;
@@ -40,4 +40,3 @@ private:
 
 	int m_GeometryCount = 0;
 };
-

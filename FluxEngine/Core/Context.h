@@ -8,11 +8,17 @@ public:
 	~Context() {}
 
 	template<typename T>
-	T* GetSubsystem()
+	T* GetSubsystem(bool required = true)
 	{
 		auto pIt = m_Systems.find(T::GetTypeStatic());
 		if (pIt == m_Systems.end())
+		{
+			if (required)
+			{
+				FLUX_LOG(ERROR, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic().c_str());
+			}
 			return nullptr;
+		}
 		return (T*)pIt->second.get();
 	}
 

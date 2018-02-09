@@ -39,7 +39,7 @@ void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 
 Shader* Graphics::GetShader(const string filePath)
 {
-	return ResourceManager::Instance().Load<Shader>(filePath, this);
+	return ResourceManager::Instance()->Load<Shader>(filePath);
 }
 
 ShaderVariation* Graphics::GetShader(const string filePath, const ShaderType type, const std::string& defines)

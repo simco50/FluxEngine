@@ -5,7 +5,6 @@ class Profiler : public Singleton<Profiler>
 {
 public:
 	Profiler();
-
 	~Profiler();
 
 	void OutputLog(IFile* pFile, int maxDepth = 20);
@@ -41,11 +40,11 @@ class AutoProfiler
 public:
 	AutoProfiler(const std::string& name, const std::string& description = "")
 	{
-		Profiler::Instance().BeginBlock(name, description);
+		Profiler::Instance()->BeginBlock(name, description);
 	}
 	~AutoProfiler()
 	{
-		Profiler::Instance().EndBlock();
+		Profiler::Instance()->EndBlock();
 	}
 };
 

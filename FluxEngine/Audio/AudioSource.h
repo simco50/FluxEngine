@@ -1,6 +1,8 @@
 #pragma once
 #include "Scenegraph/Component.h"
 
+class AudioEngine;
+
 class AudioSource : public Component
 {
 	FLUX_OBJECT(AudioSource, Component)

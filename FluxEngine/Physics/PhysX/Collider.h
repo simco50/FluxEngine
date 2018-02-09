@@ -24,7 +24,7 @@ class Collider : public Component
 	FLUX_OBJECT(Collider, Component)
 
 public:
-	Collider(Context* pContext, PhysicsSystem* pSystem, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags);
+	Collider(Context* pContext, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags);
 	virtual ~Collider();
 
 	void SetTrigger(bool isTrigger);
@@ -61,7 +61,7 @@ class SphereCollider : public Collider
 	FLUX_OBJECT(SphereCollider, Collider)
 
 public:
-	SphereCollider(Context* pContext, PhysicsSystem* pSystem, float radius, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	SphereCollider(Context* pContext, float radius, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~SphereCollider();
 protected:
 	virtual void CreateGeometry() override;
@@ -74,8 +74,8 @@ class BoxCollider : public Collider
 	FLUX_OBJECT(BoxCollider, Collider)
 
 public:
-	BoxCollider(Context* pContext, PhysicsSystem* pSystem, const Vector3& extents, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
-	BoxCollider(Context* pContext, PhysicsSystem* pSystem, const BoundingBox& boundingBox, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	BoxCollider(Context* pContext, const Vector3& extents, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	BoxCollider(Context* pContext, const BoundingBox& boundingBox, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	
 	virtual ~BoxCollider() {}
 protected:
@@ -89,7 +89,7 @@ class PlaneCollider : public Collider
 	FLUX_OBJECT(PlaneCollider, Collider)
 
 public:
-	PlaneCollider(Context* pContext, PhysicsSystem* pSystem, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	PlaneCollider(Context* pContext, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~PlaneCollider() {}
 protected:
 	virtual void CreateGeometry() override;
@@ -100,7 +100,7 @@ class CapsuleCollider : public Collider
 	FLUX_OBJECT(CapsuleCollider, Collider)
 
 public:
-	CapsuleCollider(Context* pContext, PhysicsSystem* pSystem, const float radius, const float height, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	CapsuleCollider(Context* pContext, const float radius, const float height, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~CapsuleCollider() {}
 protected:
 	virtual void CreateGeometry() override;
@@ -114,8 +114,8 @@ class MeshCollider : public Collider
 	FLUX_OBJECT(MeshCollider, Collider)
 
 public:
-	MeshCollider(Context* pContext, PhysicsSystem* pSystem, PhysicsMesh* pMesh, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
-	MeshCollider(Context* pContext, PhysicsSystem* pSystem, const std::string& filePath, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	MeshCollider(Context* pContext, PhysicsMesh* pMesh, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	MeshCollider(Context* pContext, const std::string& filePath, PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~MeshCollider() {}
 
 protected:

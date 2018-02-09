@@ -7,9 +7,8 @@
 AudioSource::AudioSource(Context* pContext, const string& filePath, const FMOD_MODE& mode): 
 	Component(pContext), m_Mode(mode), m_FilePath(filePath)
 {
-	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 	if (m_pSound == nullptr)
-		m_pSound = AudioEngine::Instance().LoadSound(m_FilePath, m_Mode, nullptr);
+		m_pSound = pContext->GetSubsystem<AudioEngine>()->LoadSound(m_FilePath, m_Mode, nullptr);
 }
 
 AudioSource::AudioSource(Context* pContext, FMOD::Sound* pSound): 

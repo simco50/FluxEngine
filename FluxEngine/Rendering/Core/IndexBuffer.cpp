@@ -9,7 +9,6 @@
 IndexBuffer::IndexBuffer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
 {
-
 }
 
 IndexBuffer::~IndexBuffer()

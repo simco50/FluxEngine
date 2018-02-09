@@ -4,10 +4,10 @@
 #include "Rendering/Core/IndexBuffer.h"
 #include "Rendering/Core/VertexBuffer.h"
 #include "FileSystem/File/PhysicalFile.h"
-#include <thread>
 #include "Geometry.h"
 
 #include "Async/AsyncTaskQueue.h"
+#include "Core/Graphics.h"
 
 Mesh::Mesh(Context* pContext):
 	Resource(pContext)
@@ -82,18 +82,18 @@ bool Mesh::Load(const std::string& filePath)
 	return true;
 }
 
-void Mesh::CreateBuffers(Graphics* pGraphics, vector<VertexElement>& elementDesc)
+void Mesh::CreateBuffers(vector<VertexElement>& elementDesc)
 {
 	AUTOPROFILE_DESC(Mesh_CreateBuffers, m_MeshName);
 	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
 	{
-		CreateBuffersForGeometry(pGraphics, elementDesc, pGeometry.get());
+		CreateBuffersForGeometry(elementDesc, pGeometry.get());
 	}
 }
 
-void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& elementDesc, Geometry* pGeometry)
+void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
-	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(m_pContext, pGraphics);
+	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(m_pContext->GetSubsystem<Graphics>());
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
 
 	int vertexStride = pVertexBuffer->GetVertexStride();
@@ -158,12 +158,12 @@ void Mesh::CreateBuffersForGeometry(Graphics* pGraphics, vector<VertexElement>& 
 	if (pGeometry->HasData("INDEX"))
 	{
 		AsyncTask* pTask = new AsyncTask();
-		pTask->Action.BindLambda([&, this, pGraphics, pGeometry](AsyncTask* pTask, unsigned index)
+		pTask->Action.BindLambda([&, this, pGeometry](AsyncTask* pTask, unsigned index)
 		{
 			UNREFERENCED_PARAMETER(pTask);
 			UNREFERENCED_PARAMETER(index);
 
-			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(pGraphics);
+			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(m_pContext->GetSubsystem<Graphics>());
 			pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
 			pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
 			pGeometry->SetIndexBuffer(pIndexBuffer.get());

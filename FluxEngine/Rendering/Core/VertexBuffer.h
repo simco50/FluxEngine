@@ -130,12 +130,10 @@ struct VertexElement
 	}
 };
 
-class VertexBuffer : public Object
+class VertexBuffer
 {
-	FLUX_OBJECT(VertexBuffer, Object)
-
 public:
-	VertexBuffer(Context* pContext, Graphics* pGraphics);
+	VertexBuffer(Graphics* pGraphics);
 	~VertexBuffer();
 
 	DELETE_COPY(VertexBuffer)

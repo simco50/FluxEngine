@@ -9,10 +9,10 @@
 
 using namespace physx;
 
-PhysicsScene::PhysicsScene(Context* pContext, PhysicsSystem* pPhysicsSystem) :
-	Component(pContext),
-	m_pPhysicsSystem(pPhysicsSystem)
+PhysicsScene::PhysicsScene(Context* pContext) :
+	Component(pContext)
 {
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 }
 
 PhysicsScene::~PhysicsScene()

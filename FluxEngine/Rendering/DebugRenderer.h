@@ -77,7 +77,7 @@ class DebugRenderer : public Subsystem
 	FLUX_OBJECT(DebugRenderer, Subsystem)
 
 public:
-	DebugRenderer(Context* pContext, Graphics* pGraphics);
+	DebugRenderer(Context* pContext);
 	virtual ~DebugRenderer();
 
 	void Render();

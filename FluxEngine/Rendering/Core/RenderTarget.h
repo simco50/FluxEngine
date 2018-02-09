@@ -25,7 +25,7 @@ class RenderTarget : public Object
 	FLUX_OBJECT(RenderTarget, Object)
 
 public:
-	RenderTarget(Context* pContext, Graphics* pGraphics);
+	RenderTarget(Context* pContext);
 	~RenderTarget();
 
 	DELETE_COPY(RenderTarget)

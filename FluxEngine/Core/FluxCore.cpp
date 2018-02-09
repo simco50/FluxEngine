@@ -31,17 +31,24 @@ FluxCore::FluxCore()
 
 FluxCore::~FluxCore()
 {
+	SafeDelete(m_pContext);
+	SafeDelete(m_pWindow);
+
 	Console::Release();
 	Config::Flush();
+	ResourceManager::DestroyInstance();
+	Profiler::DestroyInstance();
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
 	UNREFERENCED_PARAMETER(hInstance);
+	Profiler::CreateInstance();
 
 	AUTOPROFILE(FluxCore_Run);
 	{
 		AUTOPROFILE(FluxCore_Initialize);
+		ResourceManager::CreateInstance();
 
 		Console::Initialize();
 
@@ -55,7 +62,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		Config::Initialize();
 
 		//Window
-		m_pWindow = make_unique<Window>(
+		m_pWindow = new Window(
 			Config::GetInt("Width", "Window", 1240),
 			Config::GetInt("Height", "Window", 720),
 			Config::GetString("Title", "Window", "FluxEngine"),
@@ -68,10 +75,14 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pWindow->SetIcon("Logo.ico");
 		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
 
-		m_pContext = make_unique<Context>();
-		ResourceManager::Instance().Initialize(m_pContext.get());
+		m_pContext = new Context();
+		ResourceManager::Instance()->Initialize(m_pContext);
+
+		//Audio
+		m_pContext->RegisterSubsystem<AudioEngine>();
+
 		//Graphics
-		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>(m_pWindow.get());
+		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>(m_pWindow);
 		if (!m_pGraphics->SetMode(
 			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
@@ -80,12 +91,12 @@ int FluxCore::Run(HINSTANCE hInstance)
 			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
 		}
 
-		m_pInput = m_pContext->RegisterSubsystem<InputEngine>(m_pWindow.get());
-		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>(m_pGraphics, m_pWindow.get(), m_pInput);
+		m_pInput = m_pContext->RegisterSubsystem<InputEngine>(m_pWindow);
+		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>(m_pWindow);
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
 
-		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>(m_pGraphics);
+		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 
 		InitGame();
 		GameTimer::Reset();
@@ -118,42 +129,42 @@ void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
 
-	m_pScene = make_unique<Scene>(m_pContext.get(), m_pGraphics);
+	m_pScene = make_unique<Scene>(m_pContext);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-	m_pCamera = new FreeCamera(m_pContext.get(), m_pInput, m_pGraphics);
+	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
 
 	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = ResourceManager::Instance().Load<Mesh>("Resources/Meshes/Spot.flux");
+	Mesh* pMesh = ResourceManager::Instance()->Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
 	};
-	pMesh->CreateBuffers(m_pGraphics, desc);
+	pMesh->CreateBuffers(desc);
 
-	Material* pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Default.xml", m_pGraphics);
+	Material* pMaterial = ResourceManager::Instance()->Load<Material>("Resources/Materials/Default.xml");
 
 	for (int i = 0; i < 10; ++i)
 	{
-		m_pNode = new SceneNode(m_pContext.get(), "Cube");
+		m_pNode = new SceneNode(m_pContext, "Cube");
 		m_pNode->GetTransform()->Translate(0, 2.0f * i + 2.0f, 0);
-		Model* pModel = new Model(m_pContext.get());
+		Model* pModel = new Model(m_pContext);
 		pModel->SetMesh(pMesh);
 		pModel->SetMaterial(pMaterial);
 		m_pNode->AddComponent(pModel);
-		Rigidbody* pRigidbody = new Rigidbody(m_pContext.get(), m_pPhysics);
+		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 		pRigidbody->SetBodyType(Rigidbody::Dynamic);
 		m_pNode->AddComponent(pRigidbody);
-		Collider* pBoxCollider = new MeshCollider(m_pContext.get(), m_pPhysics, "Resources/Meshes/Spot.collision");
+		Collider* pBoxCollider = new MeshCollider(m_pContext, "Resources/Meshes/Spot.collision");
 		m_pNode->AddComponent(pBoxCollider);
 		m_pScene->AddChild(m_pNode);
 	}
-	SceneNode* pFloor = new SceneNode(m_pContext.get(), "Floor");
+	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pPlaneCollider = new PlaneCollider(m_pContext.get(), m_pPhysics, pPhysMaterial);
+	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
 	pFloor->AddComponent(pPlaneCollider);
 	m_pScene->AddChild(pFloor);
 

@@ -6,11 +6,11 @@
 #include "Rendering\Model.h"
 #include "PhysicsMesh.h"
 
-Collider::Collider(Context* pContext, PhysicsSystem* pPhysicsSystem, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
+Collider::Collider(Context* pContext, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
 	Component(pContext),
-	m_pPhysicsSystem(pPhysicsSystem),
 	m_ShapeFlags(shapeFlags)
 {
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 	m_pMaterial = pMaterial ? pMaterial : m_pPhysicsSystem->GetDefaultMaterial();
 }
 
@@ -80,7 +80,7 @@ void Collider::OnNodeSet(SceneNode* pNode)
 	m_pRigidbody = GetComponent<Rigidbody>();
 	if (m_pRigidbody == nullptr)
 	{
-		m_pRigidbody = new Rigidbody(m_pContext, m_pPhysicsSystem);
+		m_pRigidbody = new Rigidbody(m_pContext);
 		pNode->AddComponent(m_pRigidbody);
 	}
 	CreateShape();
@@ -94,11 +94,10 @@ void Collider::OnNodeRemoved()
 }
 
 SphereCollider::SphereCollider(Context* pContext, 
-	PhysicsSystem* pSystem,
 	float radius,
 	PxMaterial* pMaterial /*= nullptr*/,
 	physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags),
+	Collider(pContext, pMaterial, shapeFlags),
 	m_Radius(radius)
 {}
 
@@ -113,13 +112,13 @@ void SphereCollider::CreateGeometry()
 }
 
 //BOX
-BoxCollider::BoxCollider(Context* pContext, PhysicsSystem* pSystem, const Vector3& extents, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags),
+BoxCollider::BoxCollider(Context* pContext, const Vector3& extents, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags),
 	m_Extents(extents)
 {}
 
-BoxCollider::BoxCollider(Context* pContext, PhysicsSystem* pSystem, const BoundingBox& boundingBox, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/):
-	Collider(pContext, pSystem, pMaterial, shapeFlags),
+BoxCollider::BoxCollider(Context* pContext, const BoundingBox& boundingBox, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/):
+	Collider(pContext, pMaterial, shapeFlags),
 	m_Extents(boundingBox.Extents.x, boundingBox.Extents.y, boundingBox.Extents.z)
 {}
 
@@ -129,8 +128,8 @@ void BoxCollider::CreateGeometry()
 }
 
 //PLANE
-PlaneCollider::PlaneCollider(Context* pContext, PhysicsSystem* pSystem, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags)
+PlaneCollider::PlaneCollider(Context* pContext, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags)
 {}
 
 void PlaneCollider::CreateGeometry()
@@ -139,8 +138,8 @@ void PlaneCollider::CreateGeometry()
 }
 
 //CAPSULE
-CapsuleCollider::CapsuleCollider(Context* pContext, PhysicsSystem* pSystem, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags),
+CapsuleCollider::CapsuleCollider(Context* pContext, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags),
 	m_Height(height / 2), m_Radius(radius)
 {}
 
@@ -150,15 +149,15 @@ void CapsuleCollider::CreateGeometry()
 }
 
 //MESH
-MeshCollider::MeshCollider(Context* pContext, PhysicsSystem* pSystem, PhysicsMesh* pMesh, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags),
+MeshCollider::MeshCollider(Context* pContext, PhysicsMesh* pMesh, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags),
 	m_pMesh(pMesh)
 {}
 
-MeshCollider::MeshCollider(Context* pContext, PhysicsSystem* pSystem, const std::string& filePath, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
-	Collider(pContext, pSystem, pMaterial, shapeFlags)
+MeshCollider::MeshCollider(Context* pContext, const std::string& filePath, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags)
 {
-	m_pMesh = ResourceManager::Instance().Load<PhysicsMesh>(filePath, pSystem);
+	m_pMesh = ResourceManager::Instance()->Load<PhysicsMesh>(filePath);
 }
 
 void MeshCollider::CreateGeometry()

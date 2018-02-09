@@ -5,12 +5,12 @@
 #include "Scenegraph\Transform.h"
 #include "Scenegraph\Scene.h"
 #include "PhysicsScene.h"
-#include "..\..\Rendering\Geometry.h"
+#include "Rendering\Geometry.h"
 
-Cloth::Cloth(Context* pContext, PhysicsSystem* pPhysicsSystem) :
-	Component(pContext),
-	m_pPhysicsSystem(pPhysicsSystem)
+Cloth::Cloth(Context* pContext) :
+	Component(pContext)
 {
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 }
 
 Cloth::~Cloth()
@@ -31,7 +31,7 @@ void Cloth::OnNodeRemoved()
 void Cloth::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
-	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>(m_pPhysicsSystem);
+	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>();
 	CreateCloth();
 }
 

@@ -3,8 +3,8 @@
 
 using namespace std;
 
-AudioEngine::AudioEngine():
-	Subsystem(nullptr)
+AudioEngine::AudioEngine(Context* pContext):
+	Subsystem(pContext)
 {
 	AUTOPROFILE(AudioEngine_Initialize);
 

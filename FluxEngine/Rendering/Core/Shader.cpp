@@ -4,10 +4,10 @@
 #include "Graphics.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-Shader::Shader(Context* pContext, Graphics* pGraphics) :
-	Resource(pContext), m_pGraphics(pGraphics)
+Shader::Shader(Context* pContext) :
+	Resource(pContext)
 {
-
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 Shader::~Shader()

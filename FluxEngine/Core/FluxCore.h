@@ -43,6 +43,6 @@ private:
 	PhysicsSystem* m_pPhysics = nullptr;
 	DebugRenderer* m_pDebugRenderer = nullptr;
 
-	unique_ptr<Window> m_pWindow;
-	unique_ptr<Context> m_pContext;
+	Window* m_pWindow;
+	Context* m_pContext;
 };

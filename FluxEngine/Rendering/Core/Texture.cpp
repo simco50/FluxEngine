@@ -9,21 +9,20 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 
-Texture::Texture(Context* pContext, Graphics* pGraphics, void* pTexture, void* pTextureSRV) :
+Texture::Texture(Context* pContext, void* pTexture, void* pTextureSRV) :
 	Resource(pContext),
 	m_pResource(pTexture),
 	m_pShaderResourceView(pTextureSRV),
-	m_Usage(TextureUsage::STATIC),
-	m_pGraphics(pGraphics)
+	m_Usage(TextureUsage::STATIC)
 {
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	UpdateProperties(pTexture);
 }
 
-Texture::Texture(Context* pContext, Graphics* pGraphics) :
-	Resource(pContext),
-	m_pGraphics(pGraphics)
+Texture::Texture(Context* pContext) :
+	Resource(pContext)
 {
-
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 Texture::~Texture()

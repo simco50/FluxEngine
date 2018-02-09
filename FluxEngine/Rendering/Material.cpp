@@ -10,6 +10,12 @@
 
 namespace XML = tinyxml2;
 
+Material::Material(Context* pContext) :
+	Resource(pContext)
+{
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
+}
+
 Material::~Material()
 {
 }
@@ -98,7 +104,7 @@ bool Material::Load(const std::string& filePath)
 					return false;
 				}
 
-				Texture* pTexture = ResourceManager::Instance().Load<Texture>(pParameter->Attribute("value"), m_pGraphics);
+				Texture* pTexture = ResourceManager::Instance()->Load<Texture>(pParameter->Attribute("value"));
 				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, pTexture));
 			}
 			else if (parameterType == "Value")

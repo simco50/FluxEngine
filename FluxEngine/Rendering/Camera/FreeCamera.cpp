@@ -3,12 +3,14 @@
 #include "Camera.h"
 #include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
+#include "Rendering/Core/Graphics.h"
 
-FreeCamera::FreeCamera(Context* pContext, InputEngine* pInput, Graphics* pGraphics) :
-	SceneNode(pContext), m_pInput(pInput), m_pGraphics(pGraphics)
+FreeCamera::FreeCamera(Context* pContext) :
+	SceneNode(pContext)
 {
+	m_pInput = pContext->GetSubsystem<InputEngine>();
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
-
 
 FreeCamera::~FreeCamera()
 {
