@@ -7,6 +7,7 @@
 #include "PhysicsScene.h"
 #include "Rendering\Geometry.h"
 
+
 Cloth::Cloth(Context* pContext) :
 	Component(pContext)
 {
@@ -48,6 +49,8 @@ void Cloth::SetGeometry(Geometry* pGeometry)
 
 void Cloth::CreateCloth()
 {
+	using namespace physx;
+
 	if (m_pGeometry == nullptr || m_pPhysicsScene == nullptr)
 		return;
 

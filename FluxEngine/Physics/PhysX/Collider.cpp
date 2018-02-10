@@ -6,6 +6,8 @@
 #include "Rendering\Model.h"
 #include "PhysicsMesh.h"
 
+using namespace physx;
+
 Collider::Collider(Context* pContext, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
 	Component(pContext),
 	m_ShapeFlags(shapeFlags)

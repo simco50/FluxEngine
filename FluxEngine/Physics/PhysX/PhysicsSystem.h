@@ -19,10 +19,10 @@ public:
 	physx::PxPvd* GetPvd() const { return m_pPvd; }
 	physx::PxCudaContextManager* GetCudaContextManager() const { return m_pCudaContextManager; }
 
-	static PxFilterFlags SimulationFilterShader(
-		PxFilterObjectAttributes attribute0, PxFilterData filterData0,
-		PxFilterObjectAttributes attribute1, PxFilterData filterData1,
-		PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
+	static physx::PxFilterFlags SimulationFilterShader(
+		physx::PxFilterObjectAttributes attribute0, physx::PxFilterData filterData0,
+		physx::PxFilterObjectAttributes attribute1, physx::PxFilterData filterData1,
+		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
 	physx::PxMaterial* GetDefaultMaterial() const { return m_pDefaultMaterial; }
 

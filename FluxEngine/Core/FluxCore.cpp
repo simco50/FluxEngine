@@ -131,7 +131,7 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
 
-	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
+	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
 	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> desc =

@@ -304,6 +304,8 @@ void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLengt
 
 void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
 {
+	using namespace physx;
+
 	if (pScene == nullptr)
 		return;
 

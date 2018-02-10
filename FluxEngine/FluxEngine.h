@@ -14,7 +14,6 @@
 #include <windows.h>
 
 #pragma region
-
 //Standard Library
 #include <iostream>
 #include <vector>
@@ -26,11 +25,9 @@
 #include <memory>
 #include <iomanip>
 #include <queue>
-
 #pragma endregion STL
 
 #ifdef PHYSX
-
 #include <PxPhysicsAPI.h>
 #if defined(x64) && defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x64.lib")
@@ -61,23 +58,18 @@
 #pragma comment(lib, "PxTask_x86.lib")
 #pragma comment(lib, "PxPvdSDK_x86.lib")
 #endif
-using namespace physx;
-
 #endif
 
 #pragma region
-
 #include <imgui.h>
 #ifdef _DEBUG
 #pragma comment(lib, "imgui_Debug.lib")
 #else
 #pragma comment(lib, "imgui_Release.lib")
 #endif
-
 #pragma endregion IMGUI
 
 #pragma region
-
 //DirectX
 #include <dxgi.h>
 #pragma comment(lib, "dxgi.lib")
@@ -94,6 +86,8 @@ using namespace physx;
 #include <DirectXCollision.h>
 using namespace DirectX;
 
+#include "External/SimpleMath/SimpleMath.h"
+using namespace DirectX::SimpleMath;
 #pragma endregion D3D
 
 #ifdef FLEX
@@ -149,9 +143,6 @@ using namespace DirectX;
 #endif
 #pragma endregion XINPUT
 
-#include "External/SimpleMath/SimpleMath.h"
-using namespace DirectX::SimpleMath;
-
 #pragma region
 #undef ERROR
 //Engine core include
@@ -182,10 +173,4 @@ using namespace DirectX::SimpleMath;
 #include "FileSystem/File/File.h"
 
 #include "Content/ResourceManager.h"
-
 #pragma endregion ENGINE INCLUDES
-
-#pragma region
-
-
-#pragma endregion HELPERS

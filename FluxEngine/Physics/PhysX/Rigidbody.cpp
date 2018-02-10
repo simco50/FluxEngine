@@ -6,6 +6,8 @@
 #include "Scenegraph\SceneNode.h"
 #include "Scenegraph\Scene.h"
 
+using namespace physx;
+
 Rigidbody::Rigidbody(Context* pContext) :
 	Component(pContext)
 {

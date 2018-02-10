@@ -79,7 +79,7 @@ private:
 	Constraint m_Constraints = Constraint::None;
 	Rigidbody::Type m_Type = Type::Static;
 
-	PxD6Joint* m_pConstraintJoint = nullptr;
+	physx::PxD6Joint* m_pConstraintJoint = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
 
 	MulticastDelegate<Collider*> m_OnTriggerEnterEvent;

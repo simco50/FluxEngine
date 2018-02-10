@@ -13,7 +13,7 @@ public:
 
 	virtual bool Load(const std::string& filePath) override;
 
-	PxBase* GetMesh() const { return m_pMesh; }
+	physx::PxBase* GetMesh() const { return m_pMesh; }
 
 	enum class Type
 	{
@@ -27,7 +27,7 @@ private:
 	PhysicsSystem * m_pPhysicsSystem;
 	Type m_Type = Type::None;
 
-	class InputStream : public PxInputStream
+	class InputStream : public physx::PxInputStream
 	{
 	public:
 		InputStream(IFile* pFile) : 
@@ -43,5 +43,5 @@ private:
 		IFile * m_pFile;
 	};
 
-	PxBase* m_pMesh = nullptr;
+	physx::PxBase* m_pMesh = nullptr;
 };
