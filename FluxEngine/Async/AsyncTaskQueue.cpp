@@ -23,6 +23,14 @@ AsyncTaskQueue::~AsyncTaskQueue()
 		delete pThread;
 		pThread = nullptr;
 	}
+	for (AsyncTask*& pTask : m_Tasks)
+	{
+		SafeDelete(pTask);
+	}
+	for (AsyncTask*& pTask : m_TaskPool)
+	{
+		SafeDelete(pTask);
+	}
 }
 
 void AsyncTaskQueue::CreateThreads(const size_t count)
@@ -100,15 +108,15 @@ AsyncTask* AsyncTaskQueue::GetFreeTask()
 {
 	if (m_TaskPool.size() > 0)
 	{
-		AsyncTask* pTask = m_TaskPool.back().get();
+		AsyncTask* pTask = m_TaskPool.back();
 		m_TaskPool.pop_back();
 		return pTask;
 	}
 	else
 	{
-		std::unique_ptr<AsyncTask> pTask = make_unique<AsyncTask>();
-		m_TaskPool.push_back(std::move(pTask));
-		return m_TaskPool[m_TaskPool.size() - 1].get();
+		AsyncTask* pTask = new AsyncTask();
+		m_TaskPool.push_back(pTask);
+		return m_TaskPool[m_TaskPool.size() - 1];
 	}
 }
 
@@ -117,7 +125,7 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 	if (pItem == nullptr)
 		return;
 
-	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](std::unique_ptr<AsyncTask>& pOther) {return pOther.get() == pItem; });
+	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](AsyncTask* pOther) {return pOther == pItem; });
 	if (pIt == m_TaskPool.end())
 	{
 		FLUX_LOG(WARNING, "[AsyncTaskQueue::AddWorkItem] > Task is not in the pool");

@@ -307,21 +307,10 @@ void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
 	if (pScene == nullptr)
 		return;
 
-	struct HexConverter
-	{
-		Color operator()(unsigned int color)
-		{
-			Color output;
-			output.x = (float)((color >> 16) & 0xFF);
-			output.y = (float)((color >> 8) & 0xFF);
-			output.z = (float)(color & 0xFF);
-			output.w = 1.0f;
-			return output;
-		}
-	} converter;
-
 	const PxRenderBuffer& pBuffer = pScene->GetScene()->getRenderBuffer();
 	const PxDebugLine* pLines = pBuffer.getLines();
+
+	HexColorConverter converter;
 	for (unsigned int i = 0; i < pBuffer.getNbLines(); ++i)
 	{
 		AddLine(

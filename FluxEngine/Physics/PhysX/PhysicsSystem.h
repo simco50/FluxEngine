@@ -27,7 +27,6 @@ public:
 	physx::PxMaterial* GetDefaultMaterial() const { return m_pDefaultMaterial; }
 
 private:
-
 	PhysxAllocator m_AllocatorCallback;
 	PhysxErrorCallback m_ErrorCallback;
 

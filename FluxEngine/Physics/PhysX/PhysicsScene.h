@@ -56,6 +56,8 @@ public:
 	void SetGravity(const float x, const float y, const float z);
 
 private:
+	static const float FIXED_TIME_STEP;
+
 	virtual void onTrigger(PxTriggerPair* pairs, PxU32 count) override;
 	virtual void onConstraintBreak(PxConstraintInfo* /*constraints*/, PxU32 /*count*/) override {}
 	virtual void onWake(PxActor** /*actors*/, PxU32 /*count*/) override {}
@@ -63,6 +65,7 @@ private:
 	virtual void onContact(const PxContactPairHeader& /*pairHeader*/, const PxContactPair* /*pairs*/, PxU32 /*nbPairs*/) override;
 	virtual void onAdvance(const PxRigidBody*const* /*bodyBuffer*/, const PxTransform* /*poseBuffer*/, const PxU32 /*count*/) override {}
 
+	float m_TimeAccumulator = 0.0;
 	physx::PxScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pPhysicsSystem = nullptr;
 };

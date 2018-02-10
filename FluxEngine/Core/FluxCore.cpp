@@ -133,7 +133,7 @@ void FluxCore::InitGame()
 
 	PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -144,10 +144,12 @@ void FluxCore::InitGame()
 
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 
-	for (int i = 0; i < 10; ++i)
+	for (int x = 0; x < 2; ++x)
+		for (int y = 0; y < 2; ++y)
+			for (int z = 0; z < 2; ++z)
 	{
 		m_pNode = new SceneNode(m_pContext, "Cube");
-		m_pNode->GetTransform()->Translate(0, 2.0f * i + 2.0f, 0);
+		m_pNode->GetTransform()->Translate((float)x, y + 0.5f, (float)z);
 		Model* pModel = new Model(m_pContext);
 		pModel->SetMesh(pMesh);
 		pModel->SetMaterial(pMaterial);
@@ -155,7 +157,7 @@ void FluxCore::InitGame()
 		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 		pRigidbody->SetBodyType(Rigidbody::Dynamic);
 		m_pNode->AddComponent(pRigidbody);
-		Collider* pBoxCollider = new MeshCollider(m_pContext, "Resources/Meshes/Spot.collision");
+		Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
 		m_pNode->AddComponent(pBoxCollider);
 		m_pScene->AddChild(m_pNode);
 	}
