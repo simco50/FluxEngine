@@ -6,7 +6,7 @@ class Subsystem : public Object
 	FLUX_OBJECT(Subsystem, Object)
 
 public:
-	Subsystem();
+	Subsystem(Context* pContext);
 	virtual ~Subsystem();
 
 private:

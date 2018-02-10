@@ -12,12 +12,14 @@
 #include "Rendering\Core\RasterizerState.h"
 #include "Core\Window.h"
 
-ImmediateUI::ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInput) :
-	m_pGraphics(pGraphics),
-	m_pWindow(pWindow),
-	m_pInput(pInput)
+ImmediateUI::ImmediateUI(Context* pContext, Window* pWindow) :
+	Subsystem(pContext),
+	m_pWindow(pWindow)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
+
+	m_pInput = pContext->GetSubsystem<InputEngine>();
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
 	m_WndProcHandle = pWindow->OnWndProc().AddRaw(this, &ImmediateUI::WndProc);
 
@@ -46,7 +48,7 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInp
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
 	//Load shader
-	m_pShader = make_unique< Shader>(m_pGraphics);
+	m_pShader = make_unique<Shader>(m_pContext);
 	m_pShader->Load("Resources/Shaders/Imgui.hlsl");
 	m_pVertexShader = m_pShader->GetVariation(ShaderType::VertexShader, {});
 	m_pPixelShader = m_pShader->GetVariation(ShaderType::PixelShader, {});
@@ -68,7 +70,7 @@ ImmediateUI::ImmediateUI(Graphics* pGraphics, Window* pWindow, InputEngine* pInp
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-	m_pFontTexture = make_unique<Texture>(m_pGraphics);
+	m_pFontTexture = make_unique<Texture>(m_pContext);
 	m_pFontTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
 	m_pFontTexture->SetData(pixels);
 	io.Fonts->TexID = m_pFontTexture.get();

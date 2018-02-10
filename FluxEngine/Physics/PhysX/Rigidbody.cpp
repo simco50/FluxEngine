@@ -6,10 +6,10 @@
 #include "Scenegraph\SceneNode.h"
 #include "Scenegraph\Scene.h"
 
-Rigidbody::Rigidbody(PhysicsSystem* pPhysicsSystem) : 
-	m_pPhysicsSystem(pPhysicsSystem)
+Rigidbody::Rigidbody(Context* pContext) :
+	Component(pContext)
 {
-
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 }
 
 Rigidbody::~Rigidbody()
@@ -20,7 +20,7 @@ void Rigidbody::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 
-	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>(m_pPhysicsSystem);
+	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>();
 	m_pPhysicsScene->GetScene()->addActor(*m_pBody);
 }
 

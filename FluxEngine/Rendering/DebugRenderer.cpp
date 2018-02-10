@@ -11,17 +11,19 @@
 #include "Mesh.h"
 #include "Geometry.h"
 
-DebugRenderer::DebugRenderer(Graphics* pGraphics) :
-	m_pGraphics(pGraphics)
+DebugRenderer::DebugRenderer(Context* pContext) :
+	Subsystem(pContext)
 {
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
+
 	m_ElementDesc = 
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 	};
-	m_pVertexShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
-	m_pPixelShader = pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
-	m_pVertexBuffer = make_unique<VertexBuffer>(pGraphics);
+	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
+	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
 }
 
 DebugRenderer::~DebugRenderer()
@@ -305,21 +307,10 @@ void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
 	if (pScene == nullptr)
 		return;
 
-	struct HexConverter
-	{
-		Color operator()(unsigned int color)
-		{
-			Color output;
-			output.x = (float)((color >> 16) & 0xFF);
-			output.y = (float)((color >> 8) & 0xFF);
-			output.z = (float)(color & 0xFF);
-			output.w = 1.0f;
-			return output;
-		}
-	} converter;
-
 	const PxRenderBuffer& pBuffer = pScene->GetScene()->getRenderBuffer();
 	const PxDebugLine* pLines = pBuffer.getLines();
+
+	HexColorConverter converter;
 	for (unsigned int i = 0; i < pBuffer.getNbLines(); ++i)
 	{
 		AddLine(

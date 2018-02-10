@@ -3,10 +3,10 @@
 #include "FileSystem\File\File.h"
 #include "PhysicsSystem.h"
 
-PhysicsMesh::PhysicsMesh(PhysicsSystem* pPhysicsSystem):
-	m_pPhysicsSystem(pPhysicsSystem)
+PhysicsMesh::PhysicsMesh(Context* pContext):
+	Resource(pContext)
 {
-
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 }
 
 PhysicsMesh::~PhysicsMesh()

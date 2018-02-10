@@ -8,7 +8,7 @@ class Geometry;
 class Cloth : public Component
 {
 public:
-	Cloth(PhysicsSystem* pPhysicsSystem);
+	Cloth(Context* pContext);
 	virtual ~Cloth();
 
 	virtual void OnNodeSet(SceneNode* pNode) override;

@@ -8,7 +8,7 @@ class PhysicsMesh : public Resource
 	FLUX_OBJECT(PhysicsMesh, Resource)
 
 public:
-	PhysicsMesh(PhysicsSystem* pPhysicsSystem);
+	PhysicsMesh(Context* pContext);
 	virtual ~PhysicsMesh();
 
 	virtual bool Load(const std::string& filePath) override;

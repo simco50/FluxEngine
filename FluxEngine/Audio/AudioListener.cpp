@@ -4,8 +4,10 @@
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
 
-AudioListener::AudioListener()
+AudioListener::AudioListener(Context* pContext) : 
+	Component(pContext)
 {
+	m_pFmodSystem = pContext->GetSubsystem<AudioEngine>()->GetSystem();
 }
 
 AudioListener::~AudioListener()
@@ -16,7 +18,6 @@ void AudioListener::OnNodeSet(SceneNode* pNode)
 {
 	Component::OnNodeSet(pNode);
 
-	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 	m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
 }
 

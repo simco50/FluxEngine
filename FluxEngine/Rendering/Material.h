@@ -12,10 +12,7 @@ class Material : public Resource
 	FLUX_OBJECT(Material, Resource)
 
 public:
-	Material(Graphics* pGraphics) :
-		m_pGraphics(pGraphics)
-	{
-	}
+	Material(Context* pContext);
 	~Material();
 
 	virtual bool Load(const std::string& filePath) override;

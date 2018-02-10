@@ -1,7 +1,8 @@
 #include "FluxEngine.h"
 #include "Resource.h"
 
-Resource::Resource()
+Resource::Resource(Context* pContext) :
+	Object(pContext)
 {
 
 }

@@ -9,9 +9,12 @@
 
 using namespace physx;
 
-PhysicsScene::PhysicsScene(PhysicsSystem* pPhysicsSystem) :
-	m_pPhysicsSystem(pPhysicsSystem)
+const float PhysicsScene::FIXED_TIME_STEP = 0.02f;
+
+PhysicsScene::PhysicsScene(Context* pContext) :
+	Component(pContext)
 {
+	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 }
 
 PhysicsScene::~PhysicsScene()
@@ -55,16 +58,26 @@ void PhysicsScene::OnSceneRemoved()
 
 void PhysicsScene::Update()
 {
-	m_pPhysicsScene->simulate(GameTimer::DeltaTime());
-	m_pPhysicsScene->fetchResults(true);
+	float frameTime = GameTimer::DeltaTime();
+	if (frameTime > 0.25f)
+		frameTime = 0.25f;
+	m_TimeAccumulator += frameTime;
+	while (m_TimeAccumulator >= FIXED_TIME_STEP)
+	{
+		m_pPhysicsScene->simulate(FIXED_TIME_STEP);
+		m_pPhysicsScene->fetchResults(true);
+		m_TimeAccumulator -= FIXED_TIME_STEP;
+	}
 
 	//Send camera location to Pvd
+#ifdef NDEBUG
 	/*Transform* pTransform = m_pScene->GetCamera()->GetTransform();
 	m_pPhysicsScene->getScenePvdClient()->updateCamera(
 		"Main Camera",
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()),
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetUp()),
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetForward()));*/
+#endif
 }
 
 bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, RaycastResult& outResult, const float length) const
@@ -99,6 +112,7 @@ void PhysicsScene::SetGravity(const float x, const float y, const float z)
 	if(m_pPhysicsScene)
 		m_pPhysicsScene->setGravity(PxVec3(x, y, z));
 }
+
 
 void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 {

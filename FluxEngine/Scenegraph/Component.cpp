@@ -2,7 +2,8 @@
 #include "Component.h"
 #include "SceneNode.h"
 
-Component::Component()
+Component::Component(Context* pContext) :
+	Object(pContext)
 {
 
 }

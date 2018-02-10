@@ -18,7 +18,7 @@ class Drawable : public Component
 	FLUX_OBJECT(Drawable, Component)
 
 public:
-	Drawable() {}
+	Drawable(Context* pContext) : Component(pContext) {}
 	virtual ~Drawable() {}
 
 	virtual void OnSceneSet(Scene* pScene) override;

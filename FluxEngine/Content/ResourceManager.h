@@ -1,14 +1,16 @@
 #pragma once
 #include "Resource.h"
+#include "Core\Subsystem.h"
 
 class Resource;
 
-class ResourceManager : public Singleton<ResourceManager>
+class ResourceManager : public Subsystem
 {
+	FLUX_OBJECT(ResourceManager, Subsystem)
 
 public:
-	ResourceManager() {}
-	~ResourceManager();;
+	ResourceManager(Context* pContext);
+	~ResourceManager();
 
 	template <typename T, typename ...Args>
 	T* Load(const std::string& filePath, Args... args)
@@ -17,7 +19,7 @@ public:
 		if (pIt != m_Resources.end())
 			return (T*)(pIt->second);
 
-		Resource* pResource = new T(args...);
+		Resource* pResource = new T(m_pContext, args...);
 		if (!LoadResourcePrivate(pResource, filePath))
 		{
 			delete pResource;
@@ -29,6 +31,5 @@ public:
 
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
-
 	std::map<std::string, Resource*> m_Resources;
 };

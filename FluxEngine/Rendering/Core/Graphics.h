@@ -23,7 +23,7 @@ class Graphics : public Subsystem
 	FLUX_OBJECT(Graphics, Subsystem)
 
 public:
-	Graphics(Window* pWindow);
+	Graphics(Context* pContext, Window* pWindow);
 	~Graphics();
 
 	DELETE_COPY(Graphics)

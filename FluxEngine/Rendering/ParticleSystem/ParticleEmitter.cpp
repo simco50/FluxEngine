@@ -16,14 +16,16 @@
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
 
-ParticleEmitter::ParticleEmitter(Graphics* pGraphics, ParticleSystem* pSystem) : 
-	m_pParticleSystem(pSystem),
-	m_pGraphics(pGraphics)
+ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
+	Drawable(pContext),
+	m_pParticleSystem(pSystem)
 {
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
+
 	m_pGeometry = make_unique<Geometry>();
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
-	m_pMaterial = ResourceManager::Instance().Load<Material>("Resources/Materials/Particles.xml", m_pGraphics);
+	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");
 	m_pMaterial->SetDepthTestMode(CompareMode::ALWAYS);
 	m_Batches[0].pMaterial = m_pMaterial;
 
@@ -52,7 +54,7 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	CreateVertexBuffer(m_BufferSize);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 
-	m_pTexture = ResourceManager::Instance().Load<Texture>(pSettings->ImagePath, m_pGraphics);
+	m_pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pSettings->ImagePath);
 	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture);
 	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
 	m_pMaterial->SetDepthEnabled(false);

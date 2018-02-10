@@ -1,7 +1,8 @@
 #include "FluxEngine.h"
 #include "Subsystem.h"
 
-Subsystem::Subsystem()
+Subsystem::Subsystem(Context* pContext):
+	Object(pContext)
 {
 
 }

@@ -9,7 +9,6 @@
 VertexBuffer::VertexBuffer(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
 {
-
 }
 
 VertexBuffer::~VertexBuffer()

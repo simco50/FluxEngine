@@ -10,7 +10,7 @@ class PhysicsSystem : public Subsystem
 	FLUX_OBJECT(PhysicsSystem, Subsystem)
 
 public:
-	PhysicsSystem(Graphics* pGraphics = nullptr);
+	PhysicsSystem(Context* pContext, Graphics* pGraphics = nullptr);
 	~PhysicsSystem();
 
 	physx::PxPhysics* GetPhysics() const { return m_pPhysics; }
@@ -27,7 +27,6 @@ public:
 	physx::PxMaterial* GetDefaultMaterial() const { return m_pDefaultMaterial; }
 
 private:
-
 	PhysxAllocator m_AllocatorCallback;
 	PhysxErrorCallback m_ErrorCallback;
 

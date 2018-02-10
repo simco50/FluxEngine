@@ -8,7 +8,7 @@ class SceneNode : public Object
 	FLUX_OBJECT(SceneNode, Object)
 
 public:
-	SceneNode(const std::string& name = "");
+	SceneNode(Context* pContext, const std::string& name = "");
 	virtual ~SceneNode();
 
 	virtual void OnSceneSet(Scene* pScene);
@@ -37,7 +37,7 @@ public:
 		T* pComponent = GetComponent<T>();
 		if (pComponent)
 			return pComponent;
-		pComponent = new T(args...);
+		pComponent = new T(m_pContext, args...);
 		AddComponent(pComponent);
 		return pComponent;
 	}
@@ -46,7 +46,7 @@ public:
 
 protected:
 	//Constructor used for Scene to be able to initialize with "this"
-	SceneNode(Scene* pScene);
+	SceneNode(Context* pContext, Scene* pScene);
 
 	unique_ptr<Transform> m_pTransform;
 	std::vector<Component*> m_Components;

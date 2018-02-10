@@ -92,3 +92,30 @@ inline std::string ToHex(unsigned int number)
 	reverse(out.begin(), out.end());
 	return out;
 }
+
+using HexColor = unsigned int;
+//Helper class to easily convert between 4 float colors and unsigned int hex colors
+struct HexColorConverter
+{
+	Color operator()(HexColor color)
+	{
+		Color output;
+		//unsigned int layout: AAAA RRRR GGGG BBBB
+		output.x = (float)((color >> 16) & 0xFF) / 255.0f;
+		output.y = (float)((color >> 8) & 0xFF) / 255.0f;
+		output.z = (float)(color & 0xFF) / 255.0f;
+		output.w = (float)((color >> 24) & 0xFF) / 255.0f;
+		return output;
+	}
+
+	HexColor operator()(const Color& color)
+	{
+		HexColor output = 0;
+		//unsigned int layout: AAAA RRRR GGGG BBBB
+		output |= (unsigned char)(color.x * 255.0f) << 16;
+		output |= (unsigned char)(color.y * 255.0f) << 8;
+		output |= (unsigned char)(color.z * 255.0f);
+		output |= (unsigned char)(color.w * 255.0f) << 24;
+		return output;
+	}
+};

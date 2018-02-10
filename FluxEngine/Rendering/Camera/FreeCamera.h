@@ -9,7 +9,7 @@ class FreeCamera : public SceneNode
 	FLUX_OBJECT(FreeCamera, SceneNode)
 
 public:
-	FreeCamera(InputEngine* pInput, Graphics* pGraphics);
+	FreeCamera(Context* pContext);
 	virtual ~FreeCamera();
 
 	virtual void OnSceneSet(Scene* pScene) override;

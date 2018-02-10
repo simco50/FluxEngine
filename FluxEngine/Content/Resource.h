@@ -5,7 +5,7 @@ class Resource : public Object
 	FLUX_OBJECT(Resource, Object)
 
 public:
-	Resource();
+	Resource(Context* pContext);
 	virtual ~Resource();
 
 	DELETE_COPY(Resource)

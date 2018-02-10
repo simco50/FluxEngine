@@ -4,14 +4,15 @@
 #include "SceneGraph/Transform.h"
 #include "AudioEngine.h"
 
-AudioSource::AudioSource(const string& filePath, const FMOD_MODE& mode): m_Mode(mode), m_FilePath(filePath)
+AudioSource::AudioSource(Context* pContext, const string& filePath, const FMOD_MODE& mode): 
+	Component(pContext), m_Mode(mode), m_FilePath(filePath)
 {
-	m_pFmodSystem = AudioEngine::Instance().GetSystem();
 	if (m_pSound == nullptr)
-		m_pSound = AudioEngine::Instance().LoadSound(m_FilePath, m_Mode, nullptr);
+		m_pSound = pContext->GetSubsystem<AudioEngine>()->LoadSound(m_FilePath, m_Mode, nullptr);
 }
 
-AudioSource::AudioSource(FMOD::Sound* pSound): m_Mode(0), m_pSound(pSound)
+AudioSource::AudioSource(Context* pContext, FMOD::Sound* pSound): 
+	Component(pContext), m_Mode(0), m_pSound(pSound)
 {
 }
 

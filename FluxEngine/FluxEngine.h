@@ -168,6 +168,7 @@ using namespace DirectX::SimpleMath;
 #include "Diagnostics/Profiler.h"
 
 #include "Core/TypeInfo.h"
+#include "Core/Context.h"
 #include "Core/Object.h"
 #include "Core/Delegates.h"
 #include "Core/GameTimer.h"

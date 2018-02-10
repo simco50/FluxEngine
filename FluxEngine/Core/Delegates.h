@@ -201,7 +201,7 @@ public:
 	void BindLambda(LambdaType&& lambda)
 	{
 		Release();
-		m_pEvent = new DelegateWrapper<RetVal, Args...>(lambda);
+		m_pEvent = new DelegateWrapper<RetVal, Args...>(std::forward<LambdaType>(lambda));
 	}
 
 	//Create a SinglecastDelegate instance bound with member function using a shared_ptr
@@ -240,6 +240,11 @@ public:
 	bool IsBound()
 	{
 		return m_pEvent != nullptr;
+	}
+
+	void Clear()
+	{
+		Release();
 	}
 
 private:

@@ -20,8 +20,8 @@
 #include "D3D11/D3D11GraphicsImpl.h"
 #endif
 
-Graphics::Graphics(Window* pWindow) :
-	m_pWindow(pWindow)
+Graphics::Graphics(Context* pContext, Window* pWindow) :
+	Subsystem(pContext), m_pWindow(pWindow)
 {
 	m_pImpl = make_unique<GraphicsImpl>();
 }
@@ -39,7 +39,7 @@ void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 
 Shader* Graphics::GetShader(const string filePath)
 {
-	return ResourceManager::Instance().Load<Shader>(filePath, this);
+	return GetSubsystem<ResourceManager>()->Load<Shader>(filePath);
 }
 
 ShaderVariation* Graphics::GetShader(const string filePath, const ShaderType type, const std::string& defines)

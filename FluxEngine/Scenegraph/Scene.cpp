@@ -4,9 +4,9 @@
 #include "Rendering\Renderer.h"
 #include "Component.h"
 
-Scene::Scene(Graphics* pGraphics) : SceneNode(this)
+Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 {
-	m_pRenderer = make_unique<Renderer>(pGraphics);
+	m_pRenderer = make_unique<Renderer>(pContext);
 }
 
 Scene::~Scene()
