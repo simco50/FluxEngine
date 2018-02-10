@@ -16,7 +16,7 @@ PhysicsMesh::~PhysicsMesh()
 
 bool PhysicsMesh::Load(const std::string& filePath)
 {
-	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Binary))

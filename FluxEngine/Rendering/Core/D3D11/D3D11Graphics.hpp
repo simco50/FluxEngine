@@ -43,10 +43,10 @@ bool Graphics::SetMode(
 	}
 	UpdateSwapchain(m_Width, m_Height);
 
-	m_pBlendState = make_unique<BlendState>();
-	m_pRasterizerState = make_unique<RasterizerState>();
+	m_pBlendState = std::make_unique<BlendState>();
+	m_pRasterizerState = std::make_unique<RasterizerState>();
 	m_pRasterizerState->SetMultisampleEnabled(m_Multisample > 1);
-	m_pDepthStencilState = make_unique<DepthStencilState>();
+	m_pDepthStencilState = std::make_unique<DepthStencilState>();
 
 	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
@@ -63,9 +63,9 @@ void Graphics::SetRenderTarget(RenderTarget* pRenderTarget)
 		m_pImpl->m_pDeviceContext->OMSetRenderTargets(1, &pRtv, (ID3D11DepthStencilView*)pRenderTarget->GetDepthTexture()->GetRenderTargetView());
 }
 
-void Graphics::SetRenderTargets(const vector<RenderTarget*>& pRenderTargets)
+void Graphics::SetRenderTargets(const std::vector<RenderTarget*>& pRenderTargets)
 {
-	vector<ID3D11RenderTargetView*> pRtvs;
+	std::vector<ID3D11RenderTargetView*> pRtvs;
 	pRtvs.reserve(pRenderTargets.size());
 	for (RenderTarget* pRt : pRenderTargets)
 	{
@@ -80,7 +80,7 @@ void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
 	SetVertexBuffers({ pBuffer });
 }
 
-void Graphics::SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset)
+void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset)
 {
 	if (pBuffers.size() > GraphicsConstants::MAX_VERTEX_BUFFERS)
 	{
@@ -325,7 +325,7 @@ void Graphics::PrepareDraw()
 	if (m_pBlendState->IsDirty())
 	{
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, numeric_limits<unsigned int>::max());
+		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
 	}
 
 	if (m_TexturesDirty)
@@ -336,7 +336,7 @@ void Graphics::PrepareDraw()
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_pImpl->m_CurrentShaderResourceViews.data() + m_FirstDirtyTexture);
 
 		m_TexturesDirty = false;
-		m_FirstDirtyTexture = m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
+		m_FirstDirtyTexture = m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
 		m_LastDirtyTexture = 0;
 	}
 
@@ -370,13 +370,13 @@ void Graphics::PrepareDraw()
 			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
 		else
 		{
-			unique_ptr<InputLayout> pNewInputLayout = make_unique<InputLayout>(this);
+			std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
 			pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
 			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
 			m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
 		}
 
-		m_FirstDirtyVertexBuffer = numeric_limits<unsigned int>::max();
+		m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
 		m_LastDirtyVertexBuffer = 0;
 		m_VertexBuffersDirty = false;
 	}
@@ -422,7 +422,7 @@ bool Graphics::EnumerateAdapters()
 
 	//Create the factor
 	HR(CreateDXGIFactory(IID_PPV_ARGS(m_pImpl->m_pFactory.GetAddressOf())));
-	vector<IDXGIAdapter*> pAdapters;
+	std::vector<IDXGIAdapter*> pAdapters;
 	UINT adapterCount = 0;
 
 	int bestAdapterIdx = 0;
@@ -441,8 +441,8 @@ bool Graphics::EnumerateAdapters()
 			bestAdapterIdx = adapterCount;
 		}
 
-		wstring gpuDesc(desc.Description);
-		FLUX_LOG(INFO, "\t[%i] %s", adapterCount, string(gpuDesc.begin(), gpuDesc.end()).c_str());
+		std::wstring gpuDesc(desc.Description);
+		FLUX_LOG(INFO, "\t[%i] %s", adapterCount, std::string(gpuDesc.begin(), gpuDesc.end()).c_str());
 
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
@@ -546,7 +546,7 @@ void Graphics::UpdateSwapchain(int width, int height)
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
 	desc.MultiSample = m_Multisample;
-	m_pDefaultRenderTarget = make_unique<RenderTarget>(m_pContext);
+	m_pDefaultRenderTarget = std::make_unique<RenderTarget>(m_pContext);
 	m_pDefaultRenderTarget->Create(desc);
 	SetRenderTarget(m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);
@@ -554,7 +554,7 @@ void Graphics::UpdateSwapchain(int width, int height)
 
 void Graphics::TakeScreenshot()
 {
-	stringstream str;
+	std::stringstream str;
 	str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
 	m_pDefaultRenderTarget->GetRenderTexture()->Save(str.str());
 }
@@ -571,7 +571,7 @@ ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, uns
 		}
 		return pIt->second.get();
 	}
-	unique_ptr<ConstantBuffer> pBuffer = make_unique<ConstantBuffer>(this);
+	std::unique_ptr<ConstantBuffer> pBuffer = std::make_unique<ConstantBuffer>(this);
 	pBuffer->SetSize(size);
 	m_ConstantBuffers[name] = std::move(pBuffer);
 	return m_ConstantBuffers[name].get();

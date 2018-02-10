@@ -65,12 +65,12 @@ bool PhysicalFile::IsOpen() const
 	return m_Handle != INVALID_HANDLE_VALUE;
 }
 
-void PhysicalFile::CreateDirectoryTree(const string& path)
+void PhysicalFile::CreateDirectoryTree(const std::string& path)
 {
 	size_t slash = path.find('\\', 0);
-	while (slash != string::npos)
+	while (slash != std::string::npos)
 	{
-		string dirToCreate = path.substr(0, slash);
+		std::string dirToCreate = path.substr(0, slash);
 		CreateDirectory(dirToCreate.c_str(), nullptr);
 		slash = path.find('\\', slash + 1);
 	}

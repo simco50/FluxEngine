@@ -4,7 +4,7 @@
 #include "SceneGraph/Transform.h"
 #include "AudioEngine.h"
 
-AudioSource::AudioSource(Context* pContext, const string& filePath, const FMOD_MODE& mode): 
+AudioSource::AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode):
 	Component(pContext), m_Mode(mode), m_FilePath(filePath)
 {
 	if (m_pSound == nullptr)

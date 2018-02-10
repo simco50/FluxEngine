@@ -43,13 +43,13 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
 	AUTOPROFILE_DESC(ShaderVariation_Compile, m_Name);
 
-	const string& source = m_pParentShader->GetSource();
+	const std::string& source = m_pParentShader->GetSource();
 
 	if (source.length() == 0)
 		return false;
 
 	// Set the entrypoint, profile and flags according to the shader being compiled
-	string entry = Shader::GetEntryPoint(m_ShaderType);
+	std::string entry = Shader::GetEntryPoint(m_ShaderType);
 	const char* entryPoint = entry.c_str();
 	const char* profile = 0;
 	unsigned flags = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
@@ -61,7 +61,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
 
-	vector<string> defines = m_Defines;
+	std::vector<std::string> defines = m_Defines;
 	defines.push_back("D3D11");
 
 	switch (m_ShaderType)
@@ -86,16 +86,16 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		break;
 	}
 
-	vector<D3D_SHADER_MACRO> macros;
-	for (const string& define : defines)
+	std::vector<D3D_SHADER_MACRO> macros;
+	for (const std::string& define : defines)
 	{
 		D3D_SHADER_MACRO macro;
 		//Check if the define has a value
 		size_t assignmentOp = define.find('=');
-		if (assignmentOp != string::npos)
+		if (assignmentOp != std::string::npos)
 		{
-			string name = define.substr(0, assignmentOp);
-			string definition = define.substr(assignmentOp + 1).c_str();
+			std::string name = define.substr(0, assignmentOp);
+			std::string definition = define.substr(assignmentOp + 1).c_str();
 			macro.Name = name.c_str();
 			macro.Definition = definition.c_str();
 		}
@@ -145,13 +145,13 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 	HR(D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)pShaderReflection.GetAddressOf()));
 	pShaderReflection->GetDesc(&shaderDesc);
 
-	map<string, UINT> cbRegisterMap;
+	std::map<std::string, UINT> cbRegisterMap;
 
 	for (unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 	{
 		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
 		pShaderReflection->GetResourceBindingDesc(i, &resourceDesc);
-		string resourceName(resourceDesc.Name);
+		std::string resourceName(resourceDesc.Name);
 		if (resourceDesc.Type == D3D_SIT_CBUFFER)
 			cbRegisterMap[resourceName] = resourceDesc.BindPoint;
 	}
@@ -161,7 +161,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 		ID3D11ShaderReflectionConstantBuffer* pConstantBuffer = pShaderReflection->GetConstantBufferByIndex(c);
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		pConstantBuffer->GetDesc(&bufferDesc);
-		unsigned cbRegister = cbRegisterMap[string(bufferDesc.Name)];
+		unsigned cbRegister = cbRegisterMap[std::string(bufferDesc.Name)];
 
 		if (cbRegister >= m_ConstantBuffers.size())
 		{

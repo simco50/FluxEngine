@@ -23,7 +23,7 @@ DebugRenderer::DebugRenderer(Context* pContext) :
 	};
 	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
 	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
-	m_pVertexBuffer = make_unique<VertexBuffer>(m_pGraphics);
+	m_pVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 }
 
 DebugRenderer::~DebugRenderer()
@@ -273,7 +273,7 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 
 void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& color)
 {
-	vector<XMFLOAT3> corners(frustrum.CORNER_COUNT);
+	std::vector<XMFLOAT3> corners(frustrum.CORNER_COUNT);
 	frustrum.GetCorners(corners.data());
 
 	AddLine(corners[0], corners[1], color);

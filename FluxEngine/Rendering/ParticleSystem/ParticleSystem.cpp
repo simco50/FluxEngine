@@ -31,7 +31,7 @@ bool ParticleSystem::Load(const std::string& filePath)
 {
 	AUTOPROFILE_DESC(ParticleSystem_Load, Paths::GetFileName(filePath));
 
-	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Text))
@@ -49,9 +49,9 @@ bool ParticleSystem::Load(const std::string& filePath)
 		int version = data["Version"];
 		if (version != VERSION)
 		{
-			stringstream error;
+			std::stringstream error;
 			error << "Particle version mismatch: Version is " << version << ". Expected " << VERSION << "!";
-			throw exception(error.str().c_str());
+			throw std::exception(error.str().c_str());
 		}
 		//General
 		Duration = data["Duration"];
@@ -97,12 +97,12 @@ bool ParticleSystem::Load(const std::string& filePath)
 		int blendMode = data["BlendMode"].get<int>();
 		//#todo Currently hacky way to convert own format blending mode to the one of the engine
 		BlendingMode = blendMode == 0 ? BlendMode::ALPHA : BlendMode::ADD;
-		ImagePath = data["ImagePath"].get<string>();
+		ImagePath = data["ImagePath"].get<std::string>();
 	}
-	catch (exception& exception)
+	catch (std::exception& exception)
 	{
-		string error = exception.what();
-		FLUX_LOG(ERROR, "Particle loading failed!\nJson Parser: %s", wstring(error.begin(), error.end()).c_str());
+		std::string error = exception.what();
+		FLUX_LOG(ERROR, "Particle loading failed!\nJson Parser: %s", std::wstring(error.begin(), error.end()).c_str());
 		return false;
 	}
 	return true;

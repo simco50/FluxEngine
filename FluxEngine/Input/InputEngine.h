@@ -86,7 +86,7 @@ public:
 private:
 	Window* m_pWindow = nullptr;
 
-	map<int, vector<InputAction>> m_InputActions;
+	std::map<int, std::vector<InputAction>> m_InputActions;
 	BYTE *m_pCurrKeyboardState = nullptr;
 	BYTE *m_pOldKeyboardState = nullptr;
 	BYTE *m_pKeyboardState0 = nullptr;

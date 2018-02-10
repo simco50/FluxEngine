@@ -108,7 +108,7 @@ private:
 	ShaderVariation* m_pPixelShader = nullptr;
 
 	int m_LinePrimitives = 0;
-	vector<DebugLine> m_Lines;
+	std::vector<DebugLine> m_Lines;
 	int m_TrianglePrimitives = 0;
-	vector<DebugTriangle> m_Triangles;
+	std::vector<DebugTriangle> m_Triangles;
 };

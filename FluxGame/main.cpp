@@ -15,7 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 	//_CrtSetBreakAlloc(4322);
 #endif
 
-	unique_ptr<FluxCore> pCore = make_unique<FluxCore>();
+	std::unique_ptr<FluxCore> pCore = std::make_unique<FluxCore>();
 	pCore->Run(hInstance);
 
 	return 0;

@@ -24,5 +24,5 @@ private:
 	bool m_AlphaToCoverage = false;
 	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
 
-	map<unsigned int, void*> m_BlendStates;
+	std::map<unsigned int, void*> m_BlendStates;
 };

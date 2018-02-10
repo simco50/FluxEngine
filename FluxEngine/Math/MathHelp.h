@@ -74,8 +74,8 @@ inline std::string ToBinary(unsigned int number)
 		number /= 2;
 	}
 	nr << "b0";
-	string out = nr.str();
-	reverse(out.begin(), out.end());
+	std::string out = nr.str();
+	std::reverse(out.begin(), out.end());
 	return out;
 }
 
@@ -88,8 +88,8 @@ inline std::string ToHex(unsigned int number)
 		number /= 16;
 	}
 	nr << "x0";
-	string out = nr.str();
-	reverse(out.begin(), out.end());
+	std::string out = nr.str();
+	std::reverse(out.begin(), out.end());
 	return out;
 }
 

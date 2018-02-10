@@ -46,22 +46,22 @@ private:
 	bool m_Playing = false;
 	float m_Timer = 0.0f;
 
-	map<float, int>::iterator m_BurstIterator;
+	std::map<float, int>::iterator m_BurstIterator;
 
-	vector<Particle*> m_Particles;
+	std::vector<Particle*> m_Particles;
 	ParticleSystem* m_pParticleSystem = nullptr;
 
 	int m_ParticleCount = 0;
 	int m_BufferSize = 0;
 	float m_ParticleSpawnTimer = 0.0f;
 
-	unique_ptr<Geometry> m_pGeometry;
-	unique_ptr<VertexBuffer> m_pVertexBuffer;
+	std::unique_ptr<Geometry> m_pGeometry;
+	std::unique_ptr<VertexBuffer> m_pVertexBuffer;
 
 	Material* m_pMaterial = nullptr;
 	Texture* m_pTexture = nullptr;
 
-	wstring m_AssetFile;
+	std::wstring m_AssetFile;
 
 	Graphics* m_pGraphics;
 };

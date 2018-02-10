@@ -33,12 +33,12 @@ private:
 
 	DelegateHandle m_WndProcHandle;
 
-	vector<VertexElement> m_VertexElements;
+	std::vector<VertexElement> m_VertexElements;
 
-	unique_ptr<Texture> m_pFontTexture;
-	unique_ptr<VertexBuffer> m_pVertexBuffer;
-	unique_ptr<IndexBuffer> m_pIndexBuffer;
-	unique_ptr<Shader> m_pShader;
+	std::unique_ptr<Texture> m_pFontTexture;
+	std::unique_ptr<VertexBuffer> m_pVertexBuffer;
+	std::unique_ptr<IndexBuffer> m_pIndexBuffer;
+	std::unique_ptr<Shader> m_pShader;
 	ShaderVariation* m_pPixelShader = nullptr;
 	ShaderVariation* m_pVertexShader = nullptr;
 

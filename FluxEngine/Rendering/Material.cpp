@@ -24,12 +24,12 @@ bool Material::Load(const std::string& filePath)
 {
 	AUTOPROFILE_DESC(Material_Load, Paths::GetFileName(filePath));
 
-	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Text))
 		return false;
-	vector<char> buffer;
+	std::vector<char> buffer;
 	if (!pFile->ReadAllBytes(buffer))
 		return false;
 
@@ -54,7 +54,7 @@ bool Material::Load(const std::string& filePath)
 	XML::XMLElement* pShader = pShaders->FirstChildElement();
 	while (pShader != nullptr)
 	{
-		string shaderType = pShader->Attribute("type");
+		std::string shaderType = pShader->Attribute("type");
 		ShaderType type;
 		if (shaderType == "Vertex")
 			type = ShaderType::VertexShader;
@@ -73,10 +73,10 @@ bool Material::Load(const std::string& filePath)
 		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] >Shader for slot already defined");
 
 		const char* pAttribute = pShader->Attribute("defines");
-		string defines = "";
+		std::string defines = "";
 		if (pAttribute)
 			defines = pAttribute;
-		string source = pShader->Attribute("source");
+		std::string source = pShader->Attribute("source");
 		m_ShaderVariations[(unsigned int)type] = m_pGraphics->GetShader(source, type, defines);
 		pShader = pShader->NextSiblingElement();
 	}
@@ -89,10 +89,10 @@ bool Material::Load(const std::string& filePath)
 		XML::XMLElement* pParameter = pParameters->FirstChildElement();
 		while (pParameter != nullptr)
 		{
-			string parameterType = pParameter->Value();
+			std::string parameterType = pParameter->Value();
 			if (parameterType == "Texture")
 			{
-				string slot = pParameter->Attribute("slot");
+				std::string slot = pParameter->Attribute("slot");
 				TextureSlot slotType = TextureSlot::MAX;
 				if (slot == "Diffuse")
 					slotType = TextureSlot::Diffuse;
@@ -105,12 +105,12 @@ bool Material::Load(const std::string& filePath)
 				}
 
 				Texture* pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pParameter->Attribute("value"));
-				m_Textures.push_back(pair<TextureSlot, Texture*>(slotType, pTexture));
+				m_Textures.push_back(std::pair<TextureSlot, Texture*>(slotType, pTexture));
 			}
 			else if (parameterType == "Value")
 			{
-				string name = pParameter->Attribute("name");
-				string value = pParameter->Attribute("value");
+				std::string name = pParameter->Attribute("name");
+				std::string value = pParameter->Attribute("value");
 				ParseValue(name, value);
 			}
 			else
@@ -129,10 +129,10 @@ bool Material::Load(const std::string& filePath)
 		XML::XMLElement* pProperty = pProperties->FirstChildElement();
 		while (pProperty != nullptr)
 		{
-			string propertyType = pProperty->Value();
+			std::string propertyType = pProperty->Value();
 			if (propertyType == "CullMode")
 			{
-				string value = pProperty->Attribute("value");
+				std::string value = pProperty->Attribute("value");
 				if (value == "Back")
 					m_CullMode = CullMode::BACK;
 				else if (value == "Front")
@@ -144,7 +144,7 @@ bool Material::Load(const std::string& filePath)
 			}
 			else if (propertyType == "BlendMode")
 			{
-				string value = pProperty->Attribute("value");
+				std::string value = pProperty->Attribute("value");
 				if (value == "Replace")
 					m_BlendMode = BlendMode::REPLACE;
 				else if (value == "Alpha")
@@ -189,14 +189,14 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 {
 	AUTOPROFILE_DESC(Material_ParseValue, name);
 
-	stringstream stream(valueString);
-	string stringValue;
-	vector<string> values;
-	while (getline(stream, stringValue, ' '))
+	std::stringstream stream(valueString);
+	std::string stringValue;
+	std::vector<std::string> values;
+	while (std::getline(stream, stringValue, ' '))
 	{
 		values.push_back(stringValue);
 	}
-	bool isInt = values[0].find('.') == string::npos;
+	bool isInt = values[0].find('.') == std::string::npos;
 	if (isInt)
 	{
 		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(int));
@@ -217,5 +217,5 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 			m_BufferOffset += sizeof(float);
 		}
 	}
-	m_Parameters.push_back(pair<string, unsigned int>(name, (unsigned int)(m_ParameterBuffer.size() - values.size() * sizeof(float))));
+	m_Parameters.push_back(std::pair<std::string, unsigned int>(name, (unsigned int)(m_ParameterBuffer.size() - values.size() * sizeof(float))));
 }

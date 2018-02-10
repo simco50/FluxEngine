@@ -16,7 +16,7 @@ VertexBuffer::~VertexBuffer()
 	Release();
 }
 
-void VertexBuffer::SetVertexSize(const vector<VertexElement>& elements)
+void VertexBuffer::SetVertexSize(const std::vector<VertexElement>& elements)
 {
 	m_VertexStride = 0;
 	for (const VertexElement& element : elements)
@@ -25,7 +25,7 @@ void VertexBuffer::SetVertexSize(const vector<VertexElement>& elements)
 	}
 }
 
-void VertexBuffer::UpdateOffsets(vector<VertexElement>& elements)
+void VertexBuffer::UpdateOffsets(std::vector<VertexElement>& elements)
 {
 	m_BufferHash = 0;
 

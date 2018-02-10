@@ -3,13 +3,13 @@
 #include "ShaderVariation.h"
 #include "ConstantBuffer.h"
 
-ShaderProgram::ShaderProgram(const array<ShaderVariation*, (size_t)ShaderType::MAX> shaders)
+ShaderProgram::ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX> shaders)
 {
 	for (ShaderVariation* pShader : shaders)
 	{
 		if (pShader == nullptr)
 			continue;
-		const map<std::string, ShaderParameter>& parameters = pShader->GetParameters();
+		const std::map<std::string, ShaderParameter>& parameters = pShader->GetParameters();
 		for (const auto& parameter : parameters)
 		{
 			m_ShaderParameters[parameter.first] = &parameter.second;

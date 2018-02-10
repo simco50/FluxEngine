@@ -7,7 +7,7 @@ PerfTimer::PerfTimer() :
 
 }
 
-PerfTimer::PerfTimer(const string& name, const string& description) :
+PerfTimer::PerfTimer(const std::string& name, const std::string& description) :
 	m_Name(name),
 	m_Description(description)
 {
@@ -33,7 +33,7 @@ float PerfTimer::Stop()
 	return (float)((m_StopTime - m_StartTime) * m_SecondsPerCount);
 }
 
-AutoPerfTimer::AutoPerfTimer(const string& name, const string& description) :
+AutoPerfTimer::AutoPerfTimer(const std::string& name, const std::string& description) :
 	PerfTimer(name, description)
 {
 	Start();
@@ -42,7 +42,7 @@ AutoPerfTimer::AutoPerfTimer(const string& name, const string& description) :
 AutoPerfTimer::~AutoPerfTimer()
 {
 	const float time = Stop();
-	stringstream str;
+	std::stringstream str;
 	str << "[" << m_Name << "] " << m_Description << " > " << time << " ms";
 	FLUX_LOG(INFO, str.str());
 }

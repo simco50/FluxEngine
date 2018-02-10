@@ -31,5 +31,5 @@ private:
 	unsigned char m_StencilCompareMask = 0;
 	unsigned char m_StencilWriteMask = 0;
 
-	map<unsigned int, void*> m_DepthStencilStates;
+	std::map<unsigned int, void*> m_DepthStencilStates;
 };

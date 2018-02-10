@@ -35,10 +35,10 @@ public:
 
 	//Graphics
 	void SetRenderTarget(RenderTarget* pRenderTarget);
-	void SetRenderTargets(const vector<RenderTarget*>& pRenderTargets);
+	void SetRenderTargets(const std::vector<RenderTarget*>& pRenderTargets);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
-	void SetVertexBuffers(const vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
+	void SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
 
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
@@ -56,8 +56,8 @@ public:
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
-	Shader* GetShader(const string filePath);
-	ShaderVariation* GetShader(const string filePath, const ShaderType type, const std::string& defines = "");
+	Shader* GetShader(const std::string filePath);
+	ShaderVariation* GetShader(const std::string filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
 	void BeginFrame();
@@ -93,25 +93,25 @@ private:
 	int m_Multisample = 1;
 	int m_RefreshRate = 60;
 
-	unique_ptr<GraphicsImpl> m_pImpl;
+	std::unique_ptr<GraphicsImpl> m_pImpl;
 
-	unique_ptr<RenderTarget> m_pDefaultRenderTarget;
-	unique_ptr<BlendState> m_pBlendState;
-	unique_ptr<RasterizerState> m_pRasterizerState;
-	unique_ptr<DepthStencilState> m_pDepthStencilState;
+	std::unique_ptr<RenderTarget> m_pDefaultRenderTarget;
+	std::unique_ptr<BlendState> m_pBlendState;
+	std::unique_ptr<RasterizerState> m_pRasterizerState;
+	std::unique_ptr<DepthStencilState> m_pDepthStencilState;
 
 	//All ConstantBuffers
-	map<std::string, unique_ptr<ConstantBuffer>> m_ConstantBuffers;
+	std::map<std::string, std::unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 	//Reference to all current ConstantBuffers
-	using ShaderConstantBuffers = array<void*, (size_t)ShaderParameterType::MAX>;
-	array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
+	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
+	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 	//References to all current shaders
-	array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
+	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
 	//All shaders
-	map<string, unique_ptr<Shader>> m_Shaders;
+	std::map<std::string, std::unique_ptr<Shader>> m_Shaders;
 
 	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	map<unsigned int, unique_ptr<ShaderProgram>> m_ShaderPrograms;
+	std::map<unsigned int, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
 	bool m_ShaderProgramDirty = false;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
@@ -120,14 +120,14 @@ private:
 	bool m_ScissorRectDirty = false;
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
-	array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
-	unsigned int m_FirstDirtyVertexBuffer = numeric_limits<unsigned int>::max();
+	std::array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
+	unsigned int m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
 
 	//Textures
 	bool m_TexturesDirty = false;
-	unsigned int m_FirstDirtyTexture = numeric_limits<unsigned int>::max();
+	unsigned int m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
 	unsigned int m_LastDirtyTexture = 0;
 
 	//Debug data

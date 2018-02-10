@@ -150,7 +150,7 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 			if (pBody)
 			{
 				CollisionResult result;
-				vector<PxContactPairPoint> contactPoints(pairs[i].contactCount);
+				std::vector<PxContactPairPoint> contactPoints(pairs[i].contactCount);
 				pairs[i].extractContacts(contactPoints.data(), pairs[i].contactStreamSize);
 				for (const PxContactPairPoint& contactPoint : contactPoints)
 				{

@@ -41,6 +41,6 @@ private:
 
 	Graphics* m_pGraphics;
 
-	unique_ptr<Texture> m_pRenderTexture;
-	unique_ptr<Texture> m_pDepthTexture;
+	std::unique_ptr<Texture> m_pRenderTexture;
+	std::unique_ptr<Texture> m_pDepthTexture;
 };

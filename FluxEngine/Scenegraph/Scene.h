@@ -28,6 +28,6 @@ public:
 	virtual void OnSceneSet(Scene* pScene) override;
 
 private:
-	unique_ptr<Renderer> m_pRenderer;
+	std::unique_ptr<Renderer> m_pRenderer;
 	std::vector<SceneNode*> m_pNodes;
 };

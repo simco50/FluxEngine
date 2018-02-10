@@ -8,7 +8,7 @@ SceneNode::SceneNode(Context* pContext, const std::string& name) :
 	Object(pContext),
 	m_Name(name)
 {
-	m_pTransform = make_unique<Transform>(this);
+	m_pTransform = std::make_unique<Transform>(this);
 	m_pTransform->Initialize();
 }
 

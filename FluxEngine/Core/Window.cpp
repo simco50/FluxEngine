@@ -40,7 +40,7 @@ void Window::SetIcon(const std::string& iconPath)
 	SendMessage(m_Hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
 }
 
-void Window::SetTitle(const string& title)
+void Window::SetTitle(const std::string& title)
 {
 	SetWindowText(m_Hwnd, title.c_str());
 }

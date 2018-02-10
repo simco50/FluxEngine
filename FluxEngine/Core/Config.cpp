@@ -21,7 +21,7 @@ void Config::Initialize()
 	}
 }
 
-int Config::GetInt(const string& name, const string& section, const int defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
+int Config::GetInt(const std::string& name, const std::string& section, const int defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
@@ -29,7 +29,7 @@ int Config::GetInt(const string& name, const string& section, const int defaultV
 	return stoi(pValue->Value);
 }
 
-float Config::GetFloat(const string& name, const string& section, const float defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
+float Config::GetFloat(const std::string& name, const std::string& section, const float defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
@@ -37,7 +37,7 @@ float Config::GetFloat(const string& name, const string& section, const float de
 	return stof(pValue->Value);
 }
 
-const string& Config::GetString(const string& name, const string& section, const string& defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
+const std::string& Config::GetString(const std::string& name, const std::string& section, const std::string& defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
@@ -45,7 +45,7 @@ const string& Config::GetString(const string& name, const string& section, const
 	return pValue->Value;
 }
 
-bool Config::GetBool(const string& name, const string& section, const bool defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
+bool Config::GetBool(const std::string& name, const std::string& section, const bool defaultValue /*= 0*/, const Type type /*= Type::EngineIni*/)
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
@@ -68,7 +68,7 @@ bool Config::Flush(const Type t /*= Type::MAX_TYPES*/)
 	return true;
 }
 
-ConfigValue* Config::GetValue(const string& name, const string& section, const Type t)
+ConfigValue* Config::GetValue(const std::string& name, const std::string& section, const Type t)
 {
 	ConfigFile* pFile = GetConfigFile(t);
 	if (pFile == nullptr)
@@ -88,15 +88,15 @@ ConfigFile* Config::GetConfigFile(const Type t)
 
 bool Config::PopulateConfigValues(const Type t)
 {
-	unique_ptr<PhysicalFile> pFile;
+	std::unique_ptr<PhysicalFile> pFile;
 
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = make_unique<PhysicalFile>(Paths::EngineIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile);
 		break;
 	case Type::GameIni:
-		pFile = make_unique<PhysicalFile>(Paths::GameIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile);
 		break;
 	default:
 		return false;
@@ -104,8 +104,8 @@ bool Config::PopulateConfigValues(const Type t)
 
 	if (pFile->Open(FileMode::Read))
 	{
-		string line;
-		string currentSection = "";
+		std::string line;
+		std::string currentSection = "";
 		while (pFile->GetLine(line))
 		{
 			if (line.length() == 0)
@@ -117,7 +117,7 @@ bool Config::PopulateConfigValues(const Type t)
 				continue;
 			}
 			size_t equals = line.rfind('=');
-			if (equals == string::npos)
+			if (equals == std::string::npos)
 				continue;
 			m_Configs[t].Sections[currentSection].Values[line.substr(0, equals)].Value = line.substr(equals + 1);
 		}
@@ -130,14 +130,14 @@ bool Config::PopulateConfigValues(const Type t)
 
 bool Config::FlushConfigValues(const Type t)
 {
-	unique_ptr<PhysicalFile> pFile;
+	std::unique_ptr<PhysicalFile> pFile;
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = make_unique<PhysicalFile>(Paths::EngineIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile);
 		break;
 	case Type::GameIni:
-		pFile = make_unique<PhysicalFile>(Paths::GameIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile);
 		break;
 	case Type::MAX_TYPES:
 	default:

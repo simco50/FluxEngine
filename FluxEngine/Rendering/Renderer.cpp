@@ -46,7 +46,7 @@ void Renderer::Draw()
 
 			ParticleEmitter* emitter = DynamicCast<ParticleEmitter>(pDrawable);
 			emitter;
-			const vector<Batch>& batches = pDrawable->GetBatches();
+			const std::vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{
 				if (batch.pGeometry == nullptr || batch.pMaterial == nullptr)

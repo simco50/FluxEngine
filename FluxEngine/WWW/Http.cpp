@@ -6,7 +6,7 @@
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
 
-string Http::HttpGet(string host, string path)
+std::string Http::HttpGet(const std::string& host, const std::string& path)
 {
 	WSADATA wsaData;
 
@@ -32,7 +32,7 @@ string Http::HttpGet(string host, string path)
 	if (result != 0)
 		throw SocketError("Connect", WSAGetLastError());
 
-	const string request = "GET " + path + " HTTP/1.1\nHost: " + host + "\n\n";
+	const std::string request = "GET " + path + " HTTP/1.1\nHost: " + host + "\n\n";
 
 	// Send an initial buffer
 	result = send(sock, request.c_str(), (int)request.size(), 0);
@@ -45,7 +45,7 @@ string Http::HttpGet(string host, string path)
 		throw SocketError("Close send connection", WSAGetLastError());
 
 	// Receive until the peer closes the connection
-	string response;
+	std::string response;
 
 	char buffer[RECV_BUFFER_SIZE];
 	int bytesRecv = 0;
@@ -57,13 +57,13 @@ string Http::HttpGet(string host, string path)
 			throw SocketError("Recv", WSAGetLastError());
 		if (result == 0)
 			break;
-		response += string(buffer, result);
-		stringstream stream;
+		response += std::string(buffer, result);
+		std::stringstream stream;
 		stream << "HttpGet() > Bytes received: " << bytesRecv;
 		FLUX_LOG(INFO, stream.str());
 		bytesRecv += result;
 	}
-	stringstream stream;
+	std::stringstream stream;
 	stream << "HttpGet() > Bytes received: " << bytesRecv;
 	FLUX_LOG(INFO, stream.str());
 
@@ -83,13 +83,13 @@ string Http::HttpGet(string host, string path)
 	return response;
 }
 
-string SocketError::ErrorMessage(const string & context, const int errorCode) const
+std::string SocketError::ErrorMessage(const std::string & context, const int errorCode) const
 {
 	char buf[1024];
 	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, errorCode, 0, buf, sizeof(buf), nullptr);
 	char * newLine = strchr(buf, '\r');
 	if (newLine) *newLine = '\0';
-	stringstream stream;
+	std::stringstream stream;
 	stream << "Socket error in " << context << " (" << errorCode << "): " << buf;
 	return stream.str();
 }

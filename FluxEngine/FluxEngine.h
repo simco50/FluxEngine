@@ -26,7 +26,6 @@
 #include <memory>
 #include <iomanip>
 #include <queue>
-using namespace std;
 
 #pragma endregion STL
 
@@ -183,8 +182,6 @@ using namespace DirectX::SimpleMath;
 #include "FileSystem/File/File.h"
 
 #include "Content/ResourceManager.h"
-
-using namespace Smart_COM;
 
 #pragma endregion ENGINE INCLUDES
 

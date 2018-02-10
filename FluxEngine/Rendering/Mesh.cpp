@@ -39,7 +39,7 @@ bool Mesh::Load(const std::string& filePath)
 
 	m_MeshName = Paths::GetFileName(filePath);
 
-	string magic = pFile->ReadSizedString();
+	std::string magic = pFile->ReadSizedString();
 	char minVersion, maxVersion;
 	*pFile >> minVersion >> maxVersion;
 	UNREFERENCED_PARAMETER(maxVersion);
@@ -59,7 +59,7 @@ bool Mesh::Load(const std::string& filePath)
 		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
 		for (;;)
 		{
-			string block = pFile->ReadSizedString();
+			std::string block = pFile->ReadSizedString();
 			for (char& c : block)
 				c = (char)toupper(c);
 			if (block == "ENDMESH")
@@ -82,7 +82,7 @@ bool Mesh::Load(const std::string& filePath)
 	return true;
 }
 
-void Mesh::CreateBuffers(vector<VertexElement>& elementDesc)
+void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
 {
 	AUTOPROFILE_DESC(Mesh_CreateBuffers, m_MeshName);
 	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
@@ -91,7 +91,7 @@ void Mesh::CreateBuffers(vector<VertexElement>& elementDesc)
 	}
 }
 
-void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry* pGeometry)
+void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
 	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(GetSubsystem<Graphics>());
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
@@ -114,7 +114,7 @@ void Mesh::CreateBuffersForGeometry(vector<VertexElement>& elementDesc, Geometry
 			semanticName = VertexElement::GetSemanticOfType(element.Semantic);
 			elementSize = VertexElement::GetSizeOfType(element.Type);
 		}
-		string semanticName;
+		std::string semanticName;
 		unsigned int elementSize;
 	};
 	std::vector<ElementInfo> elementInfo;

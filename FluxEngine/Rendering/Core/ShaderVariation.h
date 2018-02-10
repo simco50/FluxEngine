@@ -9,7 +9,7 @@ enum class ShaderType;
 struct ShaderParameter
 {
 	ShaderType Type;
-	string Name;
+	std::string Name;
 	int Buffer;
 	int Size;
 	int Offset;
@@ -24,13 +24,13 @@ public:
 
 	bool Create(Graphics* pGraphics);
 	void Release();
-	void SetDefines(const string& defines);
+	void SetDefines(const std::string& defines);
 
-	const map<string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
-	const array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
+	const std::map<std::string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
+	const std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
 	const void* GetShaderObject() const { return m_pShaderObject; }
-	const vector<char>& GetByteCode() const { return m_ShaderByteCode; }
+	const std::vector<char>& GetByteCode() const { return m_ShaderByteCode; }
 
 	const std::string& GetName() const { return m_Name; }
 
@@ -44,10 +44,10 @@ private:
 
 	void* m_pShaderObject = nullptr;
 
-	string m_Name;
-	vector<string> m_Defines;
-	vector<char> m_ShaderByteCode;
+	std::string m_Name;
+	std::vector<std::string> m_Defines;
+	std::vector<char> m_ShaderByteCode;
 
-	map<string, ShaderParameter> m_ShaderParameters;
-	array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX> m_ConstantBuffers = {};
+	std::map<std::string, ShaderParameter> m_ShaderParameters;
+	std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX> m_ConstantBuffers = {};
 };

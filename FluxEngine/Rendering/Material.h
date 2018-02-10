@@ -18,9 +18,9 @@ public:
 	virtual bool Load(const std::string& filePath) override;
 
 	ShaderVariation* GetShader(const ShaderType type) const;
-	const vector<pair<TextureSlot, Texture*>> GetTextures() const { return m_Textures; }
-	const vector<pair<string, unsigned int>>& GetShaderParameters() const { return m_Parameters; }
-	const vector<char>& GetParameterBuffer() const { return m_ParameterBuffer; }
+	const std::vector<std::pair<TextureSlot, Texture*>> GetTextures() const { return m_Textures; }
+	const std::vector<std::pair<std::string, unsigned int>>& GetShaderParameters() const { return m_Parameters; }
+	const std::vector<char>& GetParameterBuffer() const { return m_ParameterBuffer; }
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);
 
@@ -43,8 +43,8 @@ private:
 
 	void ParseValue(const std::string& name, const std::string& valueString);
 
-	string m_Name;
-	array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
+	std::string m_Name;
+	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
 	
 	//Properties
 	CullMode m_CullMode = CullMode::BACK;
@@ -54,9 +54,9 @@ private:
 	bool m_DepthEnabled = true;
 	FillMode m_FillMode = FillMode::SOLID;
 
-	vector<pair<TextureSlot, Texture*>> m_Textures;
+	std::vector<std::pair<TextureSlot, Texture*>> m_Textures;
 
 	int m_BufferOffset = 0;
-	vector<pair<string, unsigned int>> m_Parameters;
-	vector<char> m_ParameterBuffer;
+	std::vector<std::pair<std::string, unsigned int>> m_Parameters;
+	std::vector<char> m_ParameterBuffer;
 };

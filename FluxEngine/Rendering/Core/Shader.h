@@ -17,25 +17,25 @@ public:
 
 	DELETE_COPY(Shader)
 
-	virtual bool Load(const string& filePath) override;
-	ShaderVariation* GetVariation(const ShaderType type, const string& defines = string(""));
-	const string& GetSource() { return m_ShaderSource; }
+	virtual bool Load(const std::string& filePath) override;
+	ShaderVariation* GetVariation(const ShaderType type, const std::string& defines = std::string(""));
+	const std::string& GetSource() { return m_ShaderSource; }
 
-	static string GetEntryPoint(const ShaderType type);
+	static std::string GetEntryPoint(const ShaderType type);
 
-	const string& GetName() const { return m_ShaderName; }
+	const std::string& GetName() const { return m_ShaderName; }
 
 private:
-	string MakeSearchHash(const ShaderType type, const string& defines);
+	std::string MakeSearchHash(const ShaderType type, const std::string& defines);
 
-	string m_FileDir;
-	string m_ShaderName;
+	std::string m_FileDir;
+	std::string m_ShaderName;
 
-	bool ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output);
+	bool ProcessSource(const std::unique_ptr<IFile>& pFile, std::stringstream& output);
 
-	string m_ShaderSource;
-	using ShaderVariationHash = string;
-	map<ShaderVariationHash, unique_ptr<ShaderVariation>> m_ShaderCache;
+	std::string m_ShaderSource;
+	using ShaderVariationHash = std::string;
+	std::map<ShaderVariationHash, std::unique_ptr<ShaderVariation>> m_ShaderCache;
 
 	Graphics* m_pGraphics;
 };

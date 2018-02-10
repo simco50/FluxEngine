@@ -23,7 +23,7 @@
 Graphics::Graphics(Context* pContext, Window* pWindow) :
 	Subsystem(pContext), m_pWindow(pWindow)
 {
-	m_pImpl = make_unique<GraphicsImpl>();
+	m_pImpl = std::make_unique<GraphicsImpl>();
 }
 
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
@@ -37,12 +37,12 @@ void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 	}
 }
 
-Shader* Graphics::GetShader(const string filePath)
+Shader* Graphics::GetShader(const std::string filePath)
 {
 	return GetSubsystem<ResourceManager>()->Load<Shader>(filePath);
 }
 
-ShaderVariation* Graphics::GetShader(const string filePath, const ShaderType type, const std::string& defines)
+ShaderVariation* Graphics::GetShader(const std::string filePath, const ShaderType type, const std::string& defines)
 {
 	Shader* pShader = GetShader(filePath);
 	if (pShader)
@@ -74,7 +74,7 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
 		else
 		{
 			AUTOPROFILE(Graphics_SetShaderParameter_CreateShaderProgram);
-			unique_ptr<ShaderProgram> pShaderProgram = make_unique<ShaderProgram>(m_CurrentShaders);
+			std::unique_ptr<ShaderProgram> pShaderProgram = std::make_unique<ShaderProgram>(m_CurrentShaders);
 			m_ShaderPrograms[hash] = std::move(pShaderProgram);
 			m_pCurrentShaderProgram = m_ShaderPrograms[hash].get();
 		}

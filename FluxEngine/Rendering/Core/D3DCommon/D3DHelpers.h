@@ -8,7 +8,7 @@ inline std::string D3DBlobToString(ID3DBlob* pBlob)
 	return data;
 }
 
-inline void D3DBlobToVector(ID3DBlob* pBlob, vector<char>& buffer)
+inline void D3DBlobToVector(ID3DBlob* pBlob, std::vector<char>& buffer)
 {
 	buffer.resize(pBlob->GetBufferSize());
 	memcpy(buffer.data(), pBlob->GetBufferPointer(), buffer.size());

@@ -29,7 +29,7 @@ public:
 
 private:
 	static void InitializeConsoleWindow();
-	static string GetTime();
+	static std::string GetTime();
 
 	static char* m_ConvertBuffer;
 	static const size_t m_ConvertBufferSize = 2048;

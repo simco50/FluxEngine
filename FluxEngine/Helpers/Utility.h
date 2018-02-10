@@ -48,19 +48,19 @@ inline void PhysXSafeRelease(T*& object)
 	}
 }
 
-inline string GetTimeStamp()
+inline std::string GetTimeStamp()
 {
 	time_t timer;
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	stringstream str;
+	std::stringstream str;
 	str << 1900 + localTime.tm_year << "-"
-		<< setfill('0') << setw(2) << localTime.tm_mon + 1
-		<< "-" << setw(2) << localTime.tm_mday
-		<< "_" << setw(2) << localTime.tm_hour
-		<< "-" << setw(2) << localTime.tm_min
-		<< "-" << setw(2) << localTime.tm_sec;
+		<< std::setfill('0') << std::setw(2) << localTime.tm_mon + 1
+		<< "-" << std::setw(2) << localTime.tm_mday
+		<< "_" << std::setw(2) << localTime.tm_hour
+		<< "-" << std::setw(2) << localTime.tm_min
+		<< "-" << std::setw(2) << localTime.tm_sec;
 	return str.str();
 }
 

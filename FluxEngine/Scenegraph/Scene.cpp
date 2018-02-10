@@ -6,7 +6,7 @@
 
 Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 {
-	m_pRenderer = make_unique<Renderer>(pContext);
+	m_pRenderer = std::make_unique<Renderer>(pContext);
 }
 
 Scene::~Scene()

@@ -4,15 +4,15 @@ class PerfTimer
 {
 public:
 	PerfTimer();
-	PerfTimer(const string& name = "", const string& description = "");
+	PerfTimer(const std::string& name = "", const std::string& description = "");
 	~PerfTimer();
 
 	void Start();
 	float Stop();
 
 protected:
-	string m_Name;
-	string m_Description;
+	std::string m_Name;
+	std::string m_Description;
 
 private:
 	double m_SecondsPerCount = 0.0f;
@@ -24,6 +24,6 @@ private:
 class AutoPerfTimer : public PerfTimer
 {
 public:
-	AutoPerfTimer(const string& name, const string& description = "");
+	AutoPerfTimer(const std::string& name, const std::string& description = "");
 	~AutoPerfTimer();
 };

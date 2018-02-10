@@ -25,7 +25,7 @@ struct CollisionResult
 		Vector3 Position = Vector3();
 		Vector3 Normal = Vector3();
 	};
-	vector<Contact> Contacts;
+	std::vector<Contact> Contacts;
 	Collider* pCollider = nullptr;
 	Rigidbody* pRigidbody = nullptr;
 	SceneNode* pNode = nullptr;
@@ -50,7 +50,7 @@ public:
 		const Vector3& origin,
 		const Vector3& direction,
 		RaycastResult& outResult,
-		const float length = numeric_limits<float>::max()
+		const float length = std::numeric_limits<float>::max()
 	) const;
 
 	void SetGravity(const float x, const float y, const float z);

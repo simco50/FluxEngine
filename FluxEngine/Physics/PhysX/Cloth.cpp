@@ -79,7 +79,7 @@ void Cloth::CreateCloth()
 	}
 	else
 	{
-		vector<int> indices(positionData.Count);
+		std::vector<int> indices(positionData.Count);
 		for (unsigned int i = 0; i < indices.size(); ++i)
 			indices[i] = i;
 

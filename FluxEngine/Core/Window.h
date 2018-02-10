@@ -17,7 +17,7 @@ public:
 	bool Open();
 
 	void SetIcon(const std::string& iconPath);
-	void SetTitle(const string& title);
+	void SetTitle(const std::string& title);
 	void SetPosition(const int x, const int y);
 
 	//WindowSizeChanged(int windowWidth, int windowHeight)

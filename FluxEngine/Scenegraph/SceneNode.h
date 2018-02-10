@@ -48,7 +48,7 @@ protected:
 	//Constructor used for Scene to be able to initialize with "this"
 	SceneNode(Context* pContext, Scene* pScene);
 
-	unique_ptr<Transform> m_pTransform;
+	std::unique_ptr<Transform> m_pTransform;
 	std::vector<Component*> m_Components;
 
 	SceneNode* m_pParent = nullptr;

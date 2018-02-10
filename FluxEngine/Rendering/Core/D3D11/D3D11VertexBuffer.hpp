@@ -1,6 +1,6 @@
 #include "D3D11GraphicsImpl.h"
 
-void VertexBuffer::Create(const int vertexCount, vector<VertexElement>& elements, bool dynamic)
+void VertexBuffer::Create(const int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
 {
 	AUTOPROFILE(VertexBuffer_Create);
 

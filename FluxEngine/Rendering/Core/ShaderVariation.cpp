@@ -26,11 +26,11 @@ void ShaderVariation::Release()
 	SafeRelease(m_pShaderObject);
 }
 
-void ShaderVariation::SetDefines(const string& defines)
+void ShaderVariation::SetDefines(const std::string& defines)
 {
-	stringstream stream(defines);
-	string define;
-	while (getline(stream, define, ','))
+	std::stringstream stream(defines);
+	std::string define;
+	while (std::getline(stream, define, ','))
 	{
 		m_Defines.push_back(define);
 	}

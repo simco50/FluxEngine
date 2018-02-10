@@ -34,7 +34,7 @@ InputEngine::~InputEngine()
 bool InputEngine::AddInputAction(InputAction action)
 {
 	if (m_InputActions.find(action.ActionID) == m_InputActions.end())
-		m_InputActions[action.ActionID] = vector<InputAction>();
+		m_InputActions[action.ActionID] = std::vector<InputAction>();
 
 	m_InputActions[action.ActionID].push_back(action); 
 

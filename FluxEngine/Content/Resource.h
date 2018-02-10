@@ -17,5 +17,5 @@ public:
 	const std::string& GetName() const { return m_Name; }
 
 protected:
-	string m_Name;
+	std::string m_Name;
 };

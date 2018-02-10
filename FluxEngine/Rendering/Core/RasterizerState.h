@@ -28,5 +28,5 @@ private:
 	FillMode m_FillMode = FillMode::SOLID;
 	CullMode m_CullMode = CullMode::BACK;
 
-	map<unsigned int, void*> m_RasterizerStates;
+	std::map<unsigned int, void*> m_RasterizerStates;
 };

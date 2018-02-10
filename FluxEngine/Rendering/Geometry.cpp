@@ -23,7 +23,7 @@ void Geometry::Draw(Graphics* pGraphics) const
 		pGraphics->Draw(m_PrimitiveType, 0, m_VertexCount);
 }
 
-Geometry::VertexData& Geometry::GetVertexData(const string& semantic)
+Geometry::VertexData& Geometry::GetVertexData(const std::string& semantic)
 {
 	auto it = m_VertexData.find(semantic);
 	if (it == m_VertexData.end())
@@ -31,12 +31,12 @@ Geometry::VertexData& Geometry::GetVertexData(const string& semantic)
 	return it->second;
 }
 
-Geometry::VertexData& Geometry::GetVertexDataUnsafe(const string& semantic)
+Geometry::VertexData& Geometry::GetVertexDataUnsafe(const std::string& semantic)
 {
 	return m_VertexData[semantic];
 }
 
-bool Geometry::HasData(const string& semantic) const
+bool Geometry::HasData(const std::string& semantic) const
 {
 	auto it = m_VertexData.find(semantic);
 	return !(it == m_VertexData.end());

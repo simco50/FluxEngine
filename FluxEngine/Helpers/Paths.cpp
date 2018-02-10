@@ -32,7 +32,7 @@ std::string Paths::GetFileNameWithoutExtension(const std::string& filePath)
 {
 	std::string fileName = GetFileName(filePath);
 	size_t dotPos = fileName.find('.');
-	if (dotPos == string::npos)
+	if (dotPos == std::string::npos)
 		return fileName;
 	return fileName.substr(0, dotPos);
 }
@@ -40,7 +40,7 @@ std::string Paths::GetFileNameWithoutExtension(const std::string& filePath)
 std::string Paths::GetFileExtenstion(const std::string& filePath)
 {
 	size_t dotPos = filePath.rfind('.');
-	if (dotPos == string::npos)
+	if (dotPos == std::string::npos)
 		return filePath;
 	return filePath.substr(dotPos + 1);
 }

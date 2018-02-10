@@ -42,7 +42,7 @@ public:
 			FLUX_LOG(ERROR, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic().c_str());
 			return nullptr;
 		}
-		std::unique_ptr<T> pSystem = make_unique<T>(this, args...);
+		std::unique_ptr<T> pSystem = std::make_unique<T>(this, args...);
 		StringHash type = pSystem->GetType();
 		m_Systems[type] = std::move(pSystem);
 		return (T*)m_Systems[type].get();
@@ -50,5 +50,5 @@ public:
 
 private:
 	//A collection of subsystems
-	map<StringHash, unique_ptr<Subsystem>> m_Systems;
+	std::map<StringHash, std::unique_ptr<Subsystem>> m_Systems;
 };

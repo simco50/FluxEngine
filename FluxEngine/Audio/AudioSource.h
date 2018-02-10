@@ -8,7 +8,7 @@ class AudioSource : public Component
 	FLUX_OBJECT(AudioSource, Component)
 
 public:
-	AudioSource(Context* pContext, const string& filePath, const FMOD_MODE& mode);
+	AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode);
 	AudioSource(Context* pContext, FMOD::Sound* pSound);
 	~AudioSource();
 
@@ -25,7 +25,7 @@ private:
 	virtual void OnMarkedDirty(const Transform* transform) override;
 
 	FMOD_MODE m_Mode;
-	string m_FilePath;
+	std::string m_FilePath;
 	FMOD::Sound* m_pSound = nullptr;
 	FMOD::Channel* m_pChannel = nullptr;
 

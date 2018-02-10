@@ -88,7 +88,7 @@ bool Texture::Save(const std::string& filePath)
 	{
 		UNREFERENCED_PARAMETER(context);
 
-		stringstream str;
+		std::stringstream str;
 		str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
 		PhysicalFile pFile(str.str());
 		if (!pFile.Open(FileMode::Write, ContentType::Binary))
@@ -137,8 +137,8 @@ void Texture::UpdateParameters()
 	desc.ComparisonFunc = D3D11ComparisonFunction(CompareMode::LESSEQUAL);
 	desc.Filter = D3D11Filter(TextureFilter::MIN_LINEAR_MAG_POINT_MIP_LINEAR);
 	desc.MaxAnisotropy = 1;
-	desc.MinLOD = numeric_limits<float>::min();
-	desc.MaxLOD = numeric_limits<float>::max();
+	desc.MinLOD = std::numeric_limits<float>::min();
+	desc.MaxLOD = std::numeric_limits<float>::max();
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
 }

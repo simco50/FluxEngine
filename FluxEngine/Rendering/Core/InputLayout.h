@@ -11,7 +11,7 @@ public:
 
 	DELETE_COPY(InputLayout)
 
-	void Create(vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation);
+	void Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation);
 	void Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation);
 
 	void* GetInputLayout() const { return m_pInputLayout; }

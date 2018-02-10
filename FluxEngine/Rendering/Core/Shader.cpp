@@ -14,14 +14,14 @@ Shader::~Shader()
 {
 }
 
-bool Shader::Load(const string& filePath)
+bool Shader::Load(const std::string& filePath)
 {
 	m_ShaderName = Paths::GetFileNameWithoutExtension(filePath);
 	m_FileDir = Paths::GetDirectoryPath(filePath);
 
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 
-	unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
 	if (pPtr == nullptr)
 	{
 		FLUX_LOG(WARNING, "Failed to get file: '%s'", filePath.c_str());
@@ -35,7 +35,7 @@ bool Shader::Load(const string& filePath)
 
 	{
 		AUTOPROFILE(Shader_ProcessSource);
-		stringstream codeStream;
+		std::stringstream codeStream;
 		if (!ProcessSource(std::move(pPtr), codeStream))
 			return false;
 
@@ -45,7 +45,7 @@ bool Shader::Load(const string& filePath)
 	return true;
 }
 
-ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defines)
+ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& defines)
 {
 	ShaderVariationHash searchKey = MakeSearchHash(type, defines);
 
@@ -53,7 +53,7 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const string& defin
 	if (pShader != m_ShaderCache.end())
 		return pShader->second.get();
 
-	unique_ptr<ShaderVariation> pVariation = make_unique<ShaderVariation>(this, type);
+	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(this, type);
 	pVariation->SetDefines(defines);
 	if (!pVariation->Create(m_pGraphics))
 	{
@@ -83,23 +83,23 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 	}
 }
 
-std::string Shader::MakeSearchHash(const ShaderType type, const string& defines)
+std::string Shader::MakeSearchHash(const ShaderType type, const std::string& defines)
 {
 	return Printf("TYPE_%i%s", type, defines.c_str());
 }
 
-bool Shader::ProcessSource(const unique_ptr<IFile>& pFile, stringstream& output)
+bool Shader::ProcessSource(const std::unique_ptr<IFile>& pFile, std::stringstream& output)
 {
-	string line;
+	std::string line;
 	while (pFile->GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
-			string includeFilePath = line.substr(9);
+			std::string includeFilePath = line.substr(9);
 			includeFilePath.erase(includeFilePath.begin());
 			includeFilePath.pop_back();
 
-			unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
+			std::unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
 			if (newFile == nullptr)
 				return false;
 			if (!newFile->Open(FileMode::Read, ContentType::Text))

@@ -13,9 +13,9 @@ Console::LogFormat(LogType::type, description, __VA_ARGS__);
 
 #define HR(command)\
 {HRESULT r = command;\
-stringstream stream;\
-stream << __FILE__ << __func__ << "()" << endl;\
-stream << "Line: " << __LINE__  << endl;\
+std::stringstream stream;\
+stream << __FILE__ << __func__ << "()" << std::endl;\
+stream << "Line: " << __LINE__  << std::endl;\
 stream << "Action: " << #command ;\
 Console::LogHRESULT(stream.str(), r);}
 

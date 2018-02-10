@@ -26,17 +26,17 @@ private:
 
 	/////Resource cache/////
 
-	vector<ID3D11SamplerState*> m_CurrentSamplerStates;
-	vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
+	std::vector<ID3D11SamplerState*> m_CurrentSamplerStates;
+	std::vector<ID3D11ShaderResourceView*> m_CurrentShaderResourceViews;
 
 	ComPtr<ID3D11Texture2D> m_pBackbufferResolveTexture;
 
-	map<unsigned long long, unique_ptr<InputLayout>> m_InputLayoutMap;
+	std::map<unsigned long long, std::unique_ptr<InputLayout>> m_InputLayoutMap;
 
 	D3D11_PRIMITIVE_TOPOLOGY m_CurrentPrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
 	//Vertex buffer
-	array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers;
-	array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets;
-	array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides;
+	std::array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers;
+	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets;
+	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides;
 };

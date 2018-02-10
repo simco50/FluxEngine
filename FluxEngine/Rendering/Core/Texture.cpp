@@ -34,12 +34,12 @@ bool Texture::Load(const std::string& filePath)
 {
 	AUTOPROFILE_DESC(Texture_Load, Paths::GetFileName(filePath));
 
-	unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
+	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
 	if (!pFile->Open(FileMode::Read, ContentType::Binary))
 		return false;
-	vector<char> buffer;
+	std::vector<char> buffer;
 	pFile->ReadAllBytes(buffer);
 	pFile->Close();
 
@@ -48,7 +48,7 @@ bool Texture::Load(const std::string& filePath)
 	{
 		AUTOPROFILE(Texture_Load_FromMemory);
 		pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
-		vector<unsigned char> pixels;
+		std::vector<unsigned char> pixels;
 		pixels.resize(width * height * bpp);
 		memcpy(pixels.data(), pPixels, pixels.size());
 	}

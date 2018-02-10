@@ -5,7 +5,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 
 	SafeRelease(m_pInputLayout);
 
-	vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
+	std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
 
 	for (unsigned int i = 0; i < bufferCount; ++i)
 	{
@@ -26,11 +26,11 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 			elementDesc.push_back(desc);
 		}
 	}
-	const vector<char>& byteCode = pVariation->GetByteCode();
+	const std::vector<char>& byteCode = pVariation->GetByteCode();
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
 }
 
-void InputLayout::Create(vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)
+void InputLayout::Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)
 {
 	Create(vertexBuffers.data(), (unsigned int)vertexBuffers.size(), pVariation);
 }
