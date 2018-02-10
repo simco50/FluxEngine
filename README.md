@@ -6,7 +6,7 @@
 
 | Service | System | Compiler | Branch | Status |
 | ------- | ------ | -------- | ------ | ------ |
-| [AppVeyor](https://ci.appveyor.com/project/simco50/fluxengine)| Windows 32/64 | Visual Studio 2017 | master | [![Build status](https://ci.appveyor.com/api/projects/status/77bjd3rev61gsaco/branch/master?svg=true)](https://ci.appveyor.com/project/simco50/fluxengine/branch/master)
+| [AppVeyor](https://ci.appveyor.com/project/simco50/fluxengine-9qb9d)| Windows 32/64 | Visual Studio 2017 | master | [![Build status](https://ci.appveyor.com/api/projects/status/3nqy4lhx9d15iqhm?svg=true)](https://ci.appveyor.com/project/simco50/fluxengine-9qb9d)
 
 ### Enternal libraries ###
 
