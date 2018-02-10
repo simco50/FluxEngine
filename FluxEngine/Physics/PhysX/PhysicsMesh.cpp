@@ -40,7 +40,7 @@ bool PhysicsMesh::Load(const std::string& filePath)
 	}
 	else
 	{
-		FLUX_LOG(ERROR, "[PhysicsMesh::Load] > Geometry type '%s' is unsupported", geometryType.c_str());
+		FLUX_LOG(Error, "[PhysicsMesh::Load] > Geometry type '%s' is unsupported", geometryType.c_str());
 		return false;
 	}
 	return m_pMesh != nullptr;

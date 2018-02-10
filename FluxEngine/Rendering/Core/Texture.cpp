@@ -68,7 +68,7 @@ bool Texture::SetSize(const int width, const int height, const unsigned int form
 
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
-		FLUX_LOG(ERROR, "[Texture::SetSize()] > Multisampling is only supported for rendertarget or depth-stencil textures");
+		FLUX_LOG(Error, "[Texture::SetSize()] > Multisampling is only supported for rendertarget or depth-stencil textures");
 		return false;
 	}
 

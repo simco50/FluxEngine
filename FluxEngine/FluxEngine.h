@@ -144,7 +144,6 @@ using namespace DirectX::SimpleMath;
 #pragma endregion XINPUT
 
 #pragma region
-#undef ERROR
 //Engine core include
 #include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"

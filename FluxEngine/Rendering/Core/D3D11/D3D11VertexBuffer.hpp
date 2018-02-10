@@ -41,7 +41,7 @@ void* VertexBuffer::Map(bool discard)
 {
 	if (!m_Dynamic)
 	{
-		FLUX_LOG(ERROR, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
+		FLUX_LOG(Error, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
 		return nullptr;
 	}
 

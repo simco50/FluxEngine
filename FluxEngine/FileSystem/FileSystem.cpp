@@ -35,7 +35,7 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 		return a.second->GetOrder() > b.second->GetOrder();
 	}
 	);
-	FLUX_LOG(INFO, "[FileSystem::Mount] > Mounted '%s' on '%s'", path.c_str(), virtualPath.c_str());
+	FLUX_LOG(Info, "[FileSystem::Mount] > Mounted '%s' on '%s'", path.c_str(), virtualPath.c_str());
 
 	return true;
 }

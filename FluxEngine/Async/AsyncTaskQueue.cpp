@@ -128,7 +128,7 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](AsyncTask* pOther) {return pOther == pItem; });
 	if (pIt == m_TaskPool.end())
 	{
-		FLUX_LOG(WARNING, "[AsyncTaskQueue::AddWorkItem] > Task is not in the pool");
+		FLUX_LOG(Warning, "[AsyncTaskQueue::AddWorkItem] > Task is not in the pool");
 		return;
 	}
 	m_Tasks.push_back(std::move(*pIt));

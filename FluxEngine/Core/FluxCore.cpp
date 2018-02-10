@@ -54,7 +54,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		FileSystem::AddPakLocation(Paths::PakFilesFolder, "Resources");
 		if (!FileSystem::Mount(Paths::ResourcesFolder, "Resources", ArchiveType::Physical))
 		{
-			FLUX_LOG(WARNING, "Failed to mount '%s'", Paths::ResourcesFolder.c_str());
+			FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesFolder.c_str());
 		}
 
 		Config::Initialize();
@@ -85,7 +85,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 			Config::GetInt("MSAA", "Window", 8),
 			Config::GetInt("RefreshRate", "Window", 60)))
 		{
-			FLUX_LOG(ERROR, "[FluxCore::Run] > Failed to initialize graphics");
+			FLUX_LOG(Error, "[FluxCore::Run] > Failed to initialize graphics");
 		}
 
 		m_pInput = m_pContext->RegisterSubsystem<InputEngine>(m_pWindow);

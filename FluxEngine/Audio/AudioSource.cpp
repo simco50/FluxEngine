@@ -24,7 +24,7 @@ void AudioSource::Play()
 {
 	if (m_pSound == nullptr)
 	{
-		FLUX_LOG(INFO, "AudioSource::Play() -> Sound is not set");
+		FLUX_LOG(Info, "AudioSource::Play() -> Sound is not set");
 		return;
 	}
 
@@ -35,7 +35,7 @@ void AudioSource::PlayOneShot(FMOD::Sound* pSound)
 {
 	if (m_pSound == nullptr)
 	{
-		FLUX_LOG(INFO, "AudioSource::PlayOneShot() -> Sound is nullptr");
+		FLUX_LOG(Info, "AudioSource::PlayOneShot() -> Sound is nullptr");
 		return;
 	}
 
@@ -46,7 +46,7 @@ void AudioSource::Stop()
 {
 	if (m_pChannel == nullptr)
 	{
-		FLUX_LOG(WARNING, "AudioSource::Stop() -> Channel is not set");
+		FLUX_LOG(Warning, "AudioSource::Stop() -> Channel is not set");
 		return;
 	}
 
@@ -57,7 +57,7 @@ void AudioSource::Pause(const bool paused)
 {
 	if (m_pChannel == nullptr)
 	{
-		FLUX_LOG(WARNING, "AudioSource::Pause() -> Channel is not set");
+		FLUX_LOG(Warning, "AudioSource::Pause() -> Channel is not set");
 		return;
 	}
 
@@ -68,7 +68,7 @@ void AudioSource::SetLoop(const bool loop)
 {
 	if (m_pChannel == nullptr)
 	{
-		FLUX_LOG(WARNING, "AudioSource::SetLoop() -> Channel is not set");
+		FLUX_LOG(Warning, "AudioSource::SetLoop() -> Channel is not set");
 		return;
 	}
 

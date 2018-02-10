@@ -29,7 +29,7 @@ void Console::Initialize()
 
 	if (!m_pFileLog->Open(FileMode::Write, ContentType::Text))
 	{
-		FLUX_LOG(ERROR, "Failed to open console log");
+		FLUX_LOG(Error, "Failed to open console log");
 	}
 
 	*m_pFileLog << IFile::endl << "-------------FLUX ENGINE LOG START--------------" << IFile::endl << IFile::endl;
@@ -55,7 +55,7 @@ bool Console::LogFmodResult(FMOD_RESULT result)
 	{
 		stringstream stream;
 		stream << "FMOD Error (" << result << ") " << FMOD_ErrorString(result);
-		Log(stream.str(), LogType::ERROR);
+		Log(stream.str(), LogType::Error);
 		return true;
 	}
 	return false;
@@ -92,7 +92,7 @@ bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 			ss << "'.";
 		}
 
-		Log(ss.str(), LogType::ERROR);
+		Log(ss.str(), LogType::Error);
 		return true;
 	}
 
@@ -110,15 +110,15 @@ void Console::Log(const std::string &message, LogType type)
 	stream << "[" << GetTime() << "]";
 	switch (type)
 	{
-	case LogType::INFO:
+	case LogType::Info:
 		stream << "[INFO] ";
 		break;
-	case LogType::WARNING:
+	case LogType::Warning:
 		if(m_ConsoleHandle)
 			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		stream << "[WARNING] ";
 		break;
-	case LogType::ERROR:
+	case LogType::Error:
 		if (m_ConsoleHandle)
 			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		stream << "[ERROR] ";
@@ -136,7 +136,7 @@ void Console::Log(const std::string &message, LogType type)
 
 	*m_pFileLog << stream.str() << IFile::endl;
 
-	if (type == LogType::ERROR)
+	if (type == LogType::Error)
 	{
 		MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
 		//PostQuitMessage(-1);
@@ -147,12 +147,12 @@ void Console::Log(const std::string &message, LogType type)
 
 void Console::LogWarning(const std::string& message)
 {
-	Log(message, LogType::WARNING);
+	Log(message, LogType::Warning);
 }
 
 void Console::LogError(const std::string& message)
 {
-	Log(message, LogType::ERROR);
+	Log(message, LogType::Error);
 }
 
 void Console::LogFormat(LogType type, const char* format, ...)

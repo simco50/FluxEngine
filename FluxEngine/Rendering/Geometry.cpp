@@ -27,7 +27,7 @@ Geometry::VertexData& Geometry::GetVertexData(const std::string& semantic)
 {
 	auto it = m_VertexData.find(semantic);
 	if (it == m_VertexData.end())
-		FLUX_LOG(ERROR, "MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", semantic.c_str());
+		FLUX_LOG(Error, "MeshFilter::GetVertexData() > VertexData with semantic '%s' not found.", semantic.c_str());
 	return it->second;
 }
 

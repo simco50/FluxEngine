@@ -24,12 +24,12 @@ bool Shader::Load(const std::string& filePath)
 	std::unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
 	if (pPtr == nullptr)
 	{
-		FLUX_LOG(WARNING, "Failed to get file: '%s'", filePath.c_str());
+		FLUX_LOG(Warning, "Failed to get file: '%s'", filePath.c_str());
 		return false;
 	}
 	if (!pPtr->Open(FileMode::Read, ContentType::Text))
 	{
-		FLUX_LOG(WARNING, "Failed to open file: '%s'", filePath.c_str());
+		FLUX_LOG(Warning, "Failed to open file: '%s'", filePath.c_str());
 		return false;
 	}
 
@@ -57,7 +57,7 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& 
 	pVariation->SetDefines(defines);
 	if (!pVariation->Create(m_pGraphics))
 	{
-		FLUX_LOG(ERROR, "[Shader::GetVariation()] > Failed to load shader variation");
+		FLUX_LOG(Error, "[Shader::GetVariation()] > Failed to load shader variation");
 		return nullptr;
 	}
 

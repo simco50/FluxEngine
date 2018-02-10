@@ -21,7 +21,7 @@ bool Texture::SetData(void* pData)
 	}
 	else
 	{
-		FLUX_LOG(ERROR, "[Texture::SetData()] > Not yet implemented!");
+		FLUX_LOG(Error, "[Texture::SetData()] > Not yet implemented!");
 		return false;
 	}
 	return true;
@@ -33,7 +33,7 @@ bool Texture::Save(const std::string& filePath)
 
 	if (extension != "png")
 	{
-		FLUX_LOG(ERROR, "[Texture::Save] > Only .png is supported");
+		FLUX_LOG(Error, "[Texture::Save] > Only .png is supported");
 		return false;
 	}
 
@@ -168,7 +168,7 @@ bool Texture::Create()
 	}
 	else
 	{
-		FLUX_LOG(ERROR, "[Texture::Create()] > Usage type of texture not implemented or undefined!");
+		FLUX_LOG(Error, "[Texture::Create()] > Usage type of texture not implemented or undefined!");
 		return false;
 	}
 	desc.CPUAccessFlags = m_Usage == TextureUsage::DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;

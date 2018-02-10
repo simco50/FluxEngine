@@ -41,17 +41,17 @@ bool RenderTarget::ValidateDesc(const RenderTargetDesc& desc) const
 {
 	if (desc.Width < 0 || desc.Height < 0)
 	{
-		FLUX_LOG(ERROR, "[RenderTarget::ValidateDesc] > RenderTarget dimensions (%i x %i) invalid", desc.Width, desc.Height);
+		FLUX_LOG(Error, "[RenderTarget::ValidateDesc] > RenderTarget dimensions (%i x %i) invalid", desc.Width, desc.Height);
 		return false;
 	}
 	if (!desc.ColorBuffer && !desc.DepthBuffer)
 	{
-		FLUX_LOG(ERROR, "[RenderTarget::ValidateDesc] > RenderTarget needs at least one buffer to create");
+		FLUX_LOG(Error, "[RenderTarget::ValidateDesc] > RenderTarget needs at least one buffer to create");
 		return false;
 	}
 	if (desc.MultiSample < 1)
 	{
-		FLUX_LOG(ERROR, "[RenderTarget::ValidateDesc] > MSAA Sample count has to be at least 1 (is %i)", desc.MultiSample);
+		FLUX_LOG(Error, "[RenderTarget::ValidateDesc] > MSAA Sample count has to be at least 1 (is %i)", desc.MultiSample);
 		return false;
 	}
 	return true;

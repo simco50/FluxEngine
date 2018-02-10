@@ -27,7 +27,7 @@ bool Mesh::Load(const std::string& filePath)
 	{
 		std::stringstream stream;
 		stream << "MeshLoader::LoadContent() -> '" << filePath << "' has a wrong file extension";
-		FLUX_LOG(ERROR, stream.str());
+		FLUX_LOG(Error, stream.str());
 		return false;
 	}
 
@@ -47,7 +47,7 @@ bool Mesh::Load(const std::string& filePath)
 	{
 		std::stringstream stream;
 		stream << "MeshLoader::LoadContent() File '" << filePath << "' version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
-		FLUX_LOG(ERROR, stream.str());
+		FLUX_LOG(Error, stream.str());
 	}
 
 	pFile->Read(sizeof(BoundingBox), (char*)&m_BoundingBox);
@@ -99,7 +99,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	int vertexStride = pVertexBuffer->GetVertexStride();
 	if (vertexStride == 0)
 	{
-		FLUX_LOG(ERROR, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
+		FLUX_LOG(Error, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
 		return;
 	}
 

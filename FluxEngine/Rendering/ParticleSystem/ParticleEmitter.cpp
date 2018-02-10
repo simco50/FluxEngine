@@ -248,7 +248,7 @@ void ParticleEmitter::Update()
 	if (m_pParticleSystem->MaxParticles > m_BufferSize)
 	{
 		m_BufferSize = m_pParticleSystem->MaxParticles + 500;
-		FLUX_LOG(WARNING, "ParticleEmitter::Render() > VertexBuffer too small! Increasing size...");
+		FLUX_LOG(Warning, "ParticleEmitter::Render() > VertexBuffer too small! Increasing size...");
 		CreateVertexBuffer(m_BufferSize);
 	}
 	m_pGeometry->SetDrawRange(PrimitiveType::POINTLIST, 0, m_ParticleCount);

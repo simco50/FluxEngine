@@ -65,7 +65,7 @@ void Model::SetMaterial(int index, Material* pMaterial)
 {
 	if (index >= (int)m_Batches.size())
 	{
-		FLUX_LOG(ERROR, "[Model::SetMaterial] > Index out of range! Is '%i' but model only has '%i' batches", index, m_Batches.size());
+		FLUX_LOG(Error, "[Model::SetMaterial] > Index out of range! Is '%i' but model only has '%i' batches", index, m_Batches.size());
 		return;
 	}
 	m_Batches[index].pMaterial = pMaterial;

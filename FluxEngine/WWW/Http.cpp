@@ -60,12 +60,12 @@ std::string Http::HttpGet(const std::string& host, const std::string& path)
 		response += std::string(buffer, result);
 		std::stringstream stream;
 		stream << "HttpGet() > Bytes received: " << bytesRecv;
-		FLUX_LOG(INFO, stream.str());
+		FLUX_LOG(Info, stream.str());
 		bytesRecv += result;
 	}
 	std::stringstream stream;
 	stream << "HttpGet() > Bytes received: " << bytesRecv;
-	FLUX_LOG(INFO, stream.str());
+	FLUX_LOG(Info, stream.str());
 
 	// cleanup
 	result = closesocket(sock);
@@ -78,7 +78,7 @@ std::string Http::HttpGet(const std::string& host, const std::string& path)
 
 	freeaddrinfo(pAddrInfo);
 
-	FLUX_LOG(INFO, "HttpGet() > Cleanup Successful ");
+	FLUX_LOG(Info, "HttpGet() > Cleanup Successful ");
 
 	return response;
 }

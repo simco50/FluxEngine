@@ -17,7 +17,7 @@ void Component::OnSceneSet(Scene* pScene)
 {
 	if (m_pScene)
 	{
-		FLUX_LOG(ERROR, "[Component::OnSceneSet] > Component already has a scene assigned!");
+		FLUX_LOG(Error, "[Component::OnSceneSet] > Component already has a scene assigned!");
 		return;
 	}
 	m_pScene = pScene;
@@ -27,7 +27,7 @@ void Component::OnNodeSet(SceneNode* pNode)
 {
 	if (m_pNode)
 	{
-		FLUX_LOG(ERROR, "[Component::OnNodeSet] > Component already has a node assigned!");
+		FLUX_LOG(Error, "[Component::OnNodeSet] > Component already has a node assigned!");
 		return;
 	}
 	m_pNode = pNode;

@@ -139,7 +139,7 @@ void Rigidbody::CreateBody(const Type type)
 
 	if (m_pBody)
 	{
-		FLUX_LOG(WARNING, "[Rigidbody::SetType] > Rigidbody already attached to the scene! Recreating body and transferring colliders. Set type before adding it to the node.");
+		FLUX_LOG(Warning, "[Rigidbody::SetType] > Rigidbody already attached to the scene! Recreating body and transferring colliders. Set type before adding it to the node.");
 
 		//Remove all the shapes from the old body and attach to the new one
 		std::vector<PxShape*> shapes(m_pBody->getNbShapes());

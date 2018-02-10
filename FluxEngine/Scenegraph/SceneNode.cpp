@@ -49,7 +49,7 @@ void SceneNode::AddComponent(Component* pComponent)
 {
 	if (GetComponent(pComponent->GetType()) != nullptr && !pComponent->CanHaveMultiple())
 	{
-		FLUX_LOG(ERROR, "[SceneNode::AddComponent] > SceneNode already has a %s", pComponent->GetTypeName().c_str());
+		FLUX_LOG(Error, "[SceneNode::AddComponent] > SceneNode already has a %s", pComponent->GetTypeName().c_str());
 		return;
 	}
 

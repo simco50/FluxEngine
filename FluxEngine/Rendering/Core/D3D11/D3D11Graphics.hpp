@@ -25,7 +25,7 @@ bool Graphics::SetMode(
 
 	if (m_pWindow == nullptr)
 	{
-		FLUX_LOG(ERROR, "[Graphics::Graphics] > Window is null");
+		FLUX_LOG(Error, "[Graphics::Graphics] > Window is null");
 		return false;
 	}
 	m_WindowSizeChangedHandle = m_pWindow->OnWindowSizeChanged().AddRaw(this, &Graphics::UpdateSwapchain);
@@ -51,7 +51,7 @@ bool Graphics::SetMode(
 	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
 
-	FLUX_LOG(INFO, "[Graphics::SetMode] Graphics initialized");
+	FLUX_LOG(Info, "[Graphics::SetMode] Graphics initialized");
 
 	return true;
 }
@@ -84,7 +84,7 @@ void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsi
 {
 	if (pBuffers.size() > GraphicsConstants::MAX_VERTEX_BUFFERS)
 	{
-		FLUX_LOG(ERROR, "[Graphics::SetVertexBuffers] > More than %i vertex buffers is not allowed", GraphicsConstants::MAX_VERTEX_BUFFERS);
+		FLUX_LOG(Error, "[Graphics::SetVertexBuffers] > More than %i vertex buffers is not allowed", GraphicsConstants::MAX_VERTEX_BUFFERS);
 		return;
 	}
 
@@ -152,7 +152,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
 			break;
 		default:
-			FLUX_LOG(ERROR, "[Graphics::SetShader] > Shader type not implemented");
+			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
 			return false;
 		}
 		m_ShaderProgramDirty = true;
@@ -429,7 +429,7 @@ bool Graphics::EnumerateAdapters()
 	unsigned long bestMemory = 0;
 
 	IDXGIAdapter* pAdapter = nullptr;
-	FLUX_LOG(INFO, "Adapters:");
+	FLUX_LOG(Info, "Adapters:");
 	while (m_pImpl->m_pFactory->EnumAdapters(adapterCount, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
 		DXGI_ADAPTER_DESC desc;
@@ -442,7 +442,7 @@ bool Graphics::EnumerateAdapters()
 		}
 
 		std::wstring gpuDesc(desc.Description);
-		FLUX_LOG(INFO, "\t[%i] %s", adapterCount, std::string(gpuDesc.begin(), gpuDesc.end()).c_str());
+		FLUX_LOG(Info, "\t[%i] %s", adapterCount, std::string(gpuDesc.begin(), gpuDesc.end()).c_str());
 
 		pAdapters.push_back(pAdapter);
 		++adapterCount;
@@ -480,7 +480,7 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 
 	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
 	{
-		FLUX_LOG(ERROR, "[Graphics::CreateDevice()] > Feature Level 11_0 not supported!");
+		FLUX_LOG(Error, "[Graphics::CreateDevice()] > Feature Level 11_0 not supported!");
 		return false;
 	}
 
@@ -566,7 +566,7 @@ ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, uns
 	{
 		if ((unsigned int)pIt->second->GetSize() != size)
 		{
-			FLUX_LOG(ERROR, "[Graphics::GetOrCreateConstantBuffer] > Constant buffer with name '%s' already exists but with a different size", name.c_str());
+			FLUX_LOG(Error, "[Graphics::GetOrCreateConstantBuffer] > Constant buffer with name '%s' already exists but with a different size", name.c_str());
 			return nullptr;
 		}
 		return pIt->second.get();

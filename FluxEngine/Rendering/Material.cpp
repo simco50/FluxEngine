@@ -36,7 +36,7 @@ bool Material::Load(const std::string& filePath)
 	XML::XMLDocument document;
 	if (document.Parse(buffer.data(), buffer.size()) != XML::XML_SUCCESS)
 	{
-		FLUX_LOG(ERROR, "[Material::Load] > %s", document.ErrorStr());
+		FLUX_LOG(Error, "[Material::Load] > %s", document.ErrorStr());
 		return false;
 	}
 
@@ -47,7 +47,7 @@ bool Material::Load(const std::string& filePath)
 	XML::XMLElement* pShaders = pRootNode->FirstChildElement("Shaders");
 	if (pShaders == nullptr)
 	{
-		FLUX_LOG(ERROR, "[Material::Load()] > '%s' : does not have a 'Shaders' section. This is required", m_Name.c_str());
+		FLUX_LOG(Error, "[Material::Load()] > '%s' : does not have a 'Shaders' section. This is required", m_Name.c_str());
 		return false;
 	}
 
@@ -66,7 +66,7 @@ bool Material::Load(const std::string& filePath)
 			type = ShaderType::ComputeShader;
 		else
 		{
-			FLUX_LOG(ERROR, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
+			FLUX_LOG(Error, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
 			return false;
 		}
 
@@ -100,7 +100,7 @@ bool Material::Load(const std::string& filePath)
 					slotType = TextureSlot::Normal;
 				else
 				{
-					FLUX_LOG(ERROR, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
+					FLUX_LOG(Error, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
 					return false;
 				}
 
@@ -115,7 +115,7 @@ bool Material::Load(const std::string& filePath)
 			}
 			else
 			{
-				FLUX_LOG(WARNING, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
+				FLUX_LOG(Warning, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
 			}
 
 			pParameter = pParameter->NextSiblingElement();
@@ -140,7 +140,7 @@ bool Material::Load(const std::string& filePath)
 				else if (value == "None")
 					m_CullMode = CullMode::NONE;
 				else
-					FLUX_LOG(WARNING, "[Material::Load()] > %s : Cull mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
+					FLUX_LOG(Warning, "[Material::Load()] > %s : Cull mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 			}
 			else if (propertyType == "BlendMode")
 			{
@@ -154,10 +154,10 @@ bool Material::Load(const std::string& filePath)
 				else if (value == "AddAlpha")
 					m_BlendMode = BlendMode::ADDALPHA;
 				else
-					FLUX_LOG(WARNING, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
+					FLUX_LOG(Warning, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 			}
 			else
-				FLUX_LOG(WARNING, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
+				FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
 
 			pProperty = pProperty->NextSiblingElement();
 		}

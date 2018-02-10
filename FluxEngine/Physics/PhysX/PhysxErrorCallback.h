@@ -8,18 +8,18 @@ public:
 		switch (code)
 		{
 		case physx::PxErrorCode::eDEBUG_INFO:
-			FLUX_LOG(INFO, "[PhysX] > %s", message);
+			FLUX_LOG(Info, "[PhysX] > %s", message);
 			break;
 		case physx::PxErrorCode::ePERF_WARNING:
 		case physx::PxErrorCode::eDEBUG_WARNING:
-			FLUX_LOG(WARNING, "[PhysX] > %s", message);
+			FLUX_LOG(Warning, "[PhysX] > %s", message);
 			break;
 		case physx::PxErrorCode::eINVALID_PARAMETER:
 		case physx::PxErrorCode::eINVALID_OPERATION:
 		case physx::PxErrorCode::eOUT_OF_MEMORY:
 		case physx::PxErrorCode::eINTERNAL_ERROR:
 		case physx::PxErrorCode::eABORT:
-			FLUX_LOG(ERROR, "[PhysX] > %s in '%s' - Line %i", message, file, line);
+			FLUX_LOG(Error, "[PhysX] > %s in '%s' - Line %i", message, file, line);
 		case physx::PxErrorCode::eMASK_ALL:
 		case physx::PxErrorCode::eNO_ERROR:
 		default:

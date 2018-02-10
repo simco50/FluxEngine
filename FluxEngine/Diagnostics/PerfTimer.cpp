@@ -44,5 +44,5 @@ AutoPerfTimer::~AutoPerfTimer()
 	const float time = Stop();
 	std::stringstream str;
 	str << "[" << m_Name << "] " << m_Description << " > " << time << " ms";
-	FLUX_LOG(INFO, str.str());
+	FLUX_LOG(Info, str.str());
 }

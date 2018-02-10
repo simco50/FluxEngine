@@ -12,15 +12,15 @@ PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
 
 	m_pFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, m_AllocatorCallback, m_ErrorCallback);
 	if (m_pFoundation == nullptr)
-		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");
+		FLUX_LOG(Error, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");
 
 #ifdef _DEBUG
 	m_pPvd = PxCreatePvd(*m_pFoundation);
 	if (m_pPvd == nullptr)
-		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPvd");
+		FLUX_LOG(Error, "[PhysxSystem::Initialize()] > Failed to create PxPvd");
 	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 25565, 10);
 	if (!m_pPvd->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eDEBUG))
-		FLUX_LOG(WARNING, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
+		FLUX_LOG(Warning, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
 #endif
 
 #ifdef _DEBUG
@@ -35,10 +35,10 @@ PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
 	scale.speed = 981;
 	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pPvd);
 	if (m_pPhysics == nullptr)
-		FLUX_LOG(ERROR, "[PhysxSystem::Initialize()] > Failed to create PxPhysics");
+		FLUX_LOG(Error, "[PhysxSystem::Initialize()] > Failed to create PxPhysics");
 
 	if (!PxInitExtensions(*m_pPhysics, m_pPvd))
-		FLUX_LOG(ERROR, "PxInitExtensions failed!");
+		FLUX_LOG(Error, "PxInitExtensions failed!");
 
 	if (pGraphics)
 	{

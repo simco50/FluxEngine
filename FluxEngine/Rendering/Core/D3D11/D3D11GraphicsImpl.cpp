@@ -22,7 +22,7 @@ bool GraphicsImpl::GetPrimitiveType(const PrimitiveType primitiveType, const uns
 		primitiveCount = elementCount / 2;
 		return true;
 	default:
-		FLUX_LOG(ERROR, "[Graphics::SetPrimitiveType()] > Invalid primitive type");
+		FLUX_LOG(Error, "[Graphics::SetPrimitiveType()] > Invalid primitive type");
 		return false;
 	}
 }

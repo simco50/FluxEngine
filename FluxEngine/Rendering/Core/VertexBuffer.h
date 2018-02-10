@@ -82,7 +82,7 @@ struct VertexElement
 		case VertexElementSemantic::OBJECTINDEX:
 			return "OBJECTINDEX";
 		}
-		FLUX_LOG(WARNING, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+		FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
 		return "INVALID";
 	}
 
@@ -105,7 +105,7 @@ struct VertexElement
 		case VertexElementType::FLOAT4:
 			return DXGI_FORMAT_R32G32B32A32_FLOAT;
 		}
-		FLUX_LOG(WARNING, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
+		FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
 		return (DXGI_FORMAT)0;
 	}
 
@@ -125,7 +125,7 @@ struct VertexElement
 		case VertexElementType::FLOAT4:
 			return 16;
 		}
-		FLUX_LOG(WARNING, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
+		FLUX_LOG(Warning, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
 		return 0;
 	}
 };

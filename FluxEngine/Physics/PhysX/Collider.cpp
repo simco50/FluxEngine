@@ -41,7 +41,7 @@ void Collider::SetTrigger(bool isTrigger)
 {
 	if (m_pShape == nullptr)
 	{
-		FLUX_LOG(WARNING, "[Collider::SetTrigger] Collider does not have a shape");
+		FLUX_LOG(Warning, "[Collider::SetTrigger] Collider does not have a shape");
 		return;
 	}
 	m_pShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
@@ -166,7 +166,7 @@ void MeshCollider::CreateGeometry()
 {
 	if (m_pMesh == nullptr)
 	{
-		FLUX_LOG(ERROR, "[MeshCollider::MeshCollider] > Given PhysicsMesh is null");
+		FLUX_LOG(Error, "[MeshCollider::MeshCollider] > Given PhysicsMesh is null");
 		return;
 	}
 	switch (m_pMesh->GetMeshType())
@@ -179,7 +179,7 @@ void MeshCollider::CreateGeometry()
 		break;
 	case PhysicsMesh::Type::None:
 	default:
-		FLUX_LOG(ERROR, "[MeshCollider::MeshCollider] > Given PhysicsMesh has an invalid type");
+		FLUX_LOG(Error, "[MeshCollider::MeshCollider] > Given PhysicsMesh has an invalid type");
 		return;
 	}
 	return;
