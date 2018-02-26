@@ -44,8 +44,6 @@ void Renderer::Draw()
 			if(!pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				continue;
 
-			ParticleEmitter* emitter = DynamicCast<ParticleEmitter>(pDrawable);
-			emitter;
 			const std::vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{
