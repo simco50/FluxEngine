@@ -26,13 +26,8 @@ public:
 	virtual bool IsOpen() const override;
 	virtual unsigned int GetSize() const override;
 
-
-
 private:
 	bool CacheUncompressedData();
-
-	bool Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData);
-	bool Compress(void *pInData, size_t inDataSize, std::vector<char> &outData);
 
 	PakFileEntry* m_pTableEntry;
 	PakMountPoint* m_pMountPoint;

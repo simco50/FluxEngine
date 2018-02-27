@@ -1,8 +1,6 @@
 #include "FluxEngine.h"
 #include "AudioEngine.h"
 
-using namespace std;
-
 AudioEngine::AudioEngine(Context* pContext):
 	Subsystem(pContext)
 {

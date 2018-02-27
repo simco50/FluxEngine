@@ -30,7 +30,7 @@ public:
 	bool IsTypeOf(const TypeInfo* pTypeInfo);
 	bool IsTypeOf(StringHash type);
 	template<typename T>
-	bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
+	inline bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
 
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>

@@ -9,10 +9,6 @@
 #error Character set must be MBCS
 #endif
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #pragma region
 //Standard Library
 #include <iostream>
@@ -21,39 +17,41 @@
 #include <string>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 #include <sstream>
 #include <memory>
 #include <iomanip>
 #include <queue>
+#include <limits>
 #pragma endregion STL
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 #ifdef PHYSX
 #include <PxPhysicsAPI.h>
 #if defined(x64) && defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x64.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
 #pragma comment(lib, "PxFoundationDEBUG_x64.lib")
 #pragma comment(lib, "PxTaskDEBUG_x64.lib")
 #pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
 #elif defined(x64) && defined(NDEBUG)
 #pragma comment(lib, "PhysX3_x64.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
-#pragma comment(lib, "PhysX3Common_x64.lib")
 #pragma comment(lib, "PxFoundation_x64.lib")
 #pragma comment(lib, "PxTask_x64.lib")
 #pragma comment(lib, "PxPvdSDK_x64.lib")
 #elif defined(x86) && defined(_DEBUG)
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
 #pragma comment(lib, "PxFoundationDEBUG_x86.lib")
 #pragma comment(lib, "PxTaskDEBUG_x86.lib")
 #pragma comment(lib, "PxPvdSDKDEBUG_x86.lib")
 #elif defined(x86) && defined(NDEBUG)
 #pragma comment(lib, "PhysX3_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
-#pragma comment(lib, "PhysX3Common_x86.lib")
 #pragma comment(lib, "PxFoundation_x86.lib")
 #pragma comment(lib, "PxTask_x86.lib")
 #pragma comment(lib, "PxPvdSDK_x86.lib")
@@ -70,44 +68,18 @@
 #pragma endregion IMGUI
 
 #pragma region
-//DirectX
-#include <dxgi.h>
-#pragma comment(lib, "dxgi.lib")
-#include <d3d11.h>
-#pragma comment(lib, "d3d11.lib")
-#include <d3dcompiler.h>
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "dxguid.lib")
-
 //DirectXMath
-#include <DirectXMath.h>
+#include <dxgi.h>
+#include <d3d11.h>
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3d11.lib")
 #include <DirectXColors.h>
-#include <DirectXPackedVector.h>
-#include <DirectXCollision.h>
 using namespace DirectX;
-
 #include "External/SimpleMath/SimpleMath.h"
 using namespace DirectX::SimpleMath;
 #pragma endregion D3D
 
-#ifdef FLEX
 #pragma region
-#include <NvFlex.h>
-#include <NvFlexExt.h>
-
-#ifdef _DEBUG
-#pragma comment(lib, "NvFlexDebugD3D_x86.lib")
-#pragma comment(lib, "NvFlexExtDebugD3D_x86.lib")
-#else
-#pragma comment(lib, "NvFlexReleaseD3D_x86.lib")
-#pragma comment(lib, "NvFlexExtReleaseCUDA_x86.lib")
-#endif
-#pragma endregion FLEX
-#endif
-
-#pragma region
-
-//FMOD
 #include "fmod.hpp"
 #pragma warning(push)
 #pragma warning(disable: 4505) //Unreferenced local function removed (FMOD_ErrorString)
@@ -124,24 +96,10 @@ using namespace DirectX::SimpleMath;
 #pragma comment(lib, "fmodL_vc.lib")
 #endif
 #endif
-
 #pragma endregion FMOD
 
-#pragma region
-//XINPUT
 #include <Xinput.h>
 #pragma comment(lib, "XINPUT9_1_0.LIB")
-#pragma endregion XINPUT
-
-#pragma region
-//XINPUT
-#include <Zlib.h>
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "zlib_DEBUG.lib")
-#else
-#pragma comment(lib, "zlib.lib")
-#endif
-#pragma endregion XINPUT
 
 #pragma region
 //Engine core include
@@ -150,7 +108,6 @@ using namespace DirectX::SimpleMath;
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
 #include "Helpers/Utility.h"
-#include "Rendering/Core/ShaderStructs.h"
 
 #include "Diagnostics/Console.h"
 #include "Diagnostics/PerfTimer.h"

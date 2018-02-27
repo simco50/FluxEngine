@@ -1,4 +1,8 @@
+#include "FluxEngine.h"
+#include "../RasterizerState.h"
 #include "D3D11GraphicsImpl.h"
+#include "../Graphics.h"
+
 void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =

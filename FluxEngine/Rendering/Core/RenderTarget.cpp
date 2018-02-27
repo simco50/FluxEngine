@@ -3,10 +3,6 @@
 #include "Texture.h"
 #include "Graphics.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11RenderTarget.hpp"
-#endif
-
 RenderTarget::RenderTarget(Context* pContext) :
 	Object(pContext)
 {

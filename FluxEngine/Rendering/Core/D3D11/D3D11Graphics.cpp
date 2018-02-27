@@ -1,4 +1,26 @@
+#include "FluxEngine.h"
 #include "D3D11GraphicsImpl.h"
+#include "../Graphics.h"
+#include "../RasterizerState.h"
+#include "../RenderTarget.h"
+#include "../ShaderVariation.h"
+#include "../IndexBuffer.h"
+#include "../ConstantBuffer.h"
+#include "../VertexBuffer.h"
+#include "../Texture.h"
+#include "../DepthStencilState.h"
+#include "../InputLayout.h"
+#include "../BlendState.h"
+#include "../Shader.h"
+#include "../ShaderProgram.h"
+#include "UI/ImmediateUI.h"
+#include "Core/Window.h"
+
+Graphics::Graphics(Context* pContext, Window* pWindow) :
+	Subsystem(pContext), m_pWindow(pWindow)
+{
+	m_pImpl = std::make_unique<GraphicsImpl>();
+}
 
 Graphics::~Graphics()
 {

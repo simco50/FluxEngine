@@ -4,10 +4,6 @@
 #include "Graphics.h"
 #include "ConstantBuffer.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11ShaderVariation.hpp"
-#endif
-
 ShaderVariation::ShaderVariation(Shader* pShader, const ShaderType type) :
 	m_pParentShader(pShader),
 	m_ShaderType(type)

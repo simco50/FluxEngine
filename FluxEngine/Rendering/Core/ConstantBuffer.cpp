@@ -2,10 +2,6 @@
 #include "ConstantBuffer.h"
 #include "Graphics.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11ConstantBuffer.hpp"
-#endif
-
 ConstantBuffer::ConstantBuffer(Graphics* pGraphics) : 
 	m_pGraphics(pGraphics)
 {

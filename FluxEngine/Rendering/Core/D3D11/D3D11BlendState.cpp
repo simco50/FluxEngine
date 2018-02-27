@@ -1,4 +1,7 @@
+#include "FluxEngine.h"
 #include "D3D11GraphicsImpl.h"
+#include "../BlendState.h"
+#include "../Graphics.h"
 
 void* BlendState::GetOrCreate(Graphics* pGraphics)
 {

@@ -3,6 +3,8 @@
 #include "FileSystem/MountPoint/PakMountPoint.h"
 #include "PhysicalFile.h"
 
+#include "Helpers/Compression.h"
+
 bool PakFile::Open(const FileMode mode, const ContentType writeMode)
 {
 	m_ContentType = writeMode;
@@ -123,119 +125,8 @@ bool PakFile::CacheUncompressedData()
 			tempBuffer.swap(m_UncompressedCache);
 
 		m_UncompressedCache.resize(m_pTableEntry->UncompressedSize);
-		if (!Decompress(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache))
+		if (!Compression::Decompress(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache))
 			return false;
 	}
-	return true;
-}
-
-bool PakFile::Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData)
-{
-	AUTOPROFILE_DESC(PakFile_Decompress, m_pTableEntry->FilePath);
-
-	const size_t BUFSIZE = 128 * 1024;
-
-	z_stream strm;
-	strm.zalloc = 0;
-	strm.zfree = 0;
-	strm.next_in = reinterpret_cast<unsigned char*>(pInData);
-	strm.avail_in = (uInt)inDataSize;
-	strm.next_out = reinterpret_cast<unsigned char*>(outData.data());
-	strm.avail_out = BUFSIZE;
-
-	unsigned int currSize = 0;
-
-	inflateInit(&strm);
-
-	while (strm.avail_in != 0)
-	{
-		int res = inflate(&strm, Z_NO_FLUSH);
-		if (res != Z_OK && res != Z_STREAM_END)
-		{
-			return false;
-		}
-		if (strm.avail_out == 0)
-		{
-			currSize += BUFSIZE;
-			strm.next_out = reinterpret_cast<unsigned char*>(outData.data() + currSize);
-			strm.avail_out = BUFSIZE;
-		}
-	}
-
-	int deflate_res = Z_OK;
-	while (deflate_res == Z_OK)
-	{
-		if (strm.avail_out == 0)
-		{
-			currSize += BUFSIZE;
-			strm.next_out = reinterpret_cast<unsigned char*>(outData.data() + currSize);
-			strm.avail_out = BUFSIZE;
-		}
-		deflate_res = inflate(&strm, Z_FINISH);
-	}
-
-	if (deflate_res != Z_STREAM_END)
-	{
-		return false;
-	}
-
-	inflateEnd(&strm);
-
-	return true;
-}
-
-bool PakFile::Compress(void *pInData, size_t inDataSize, std::vector<char> &outData)
-{
-	AUTOPROFILE_DESC(PakFile_Compress, m_pTableEntry->FilePath);
-
-	const size_t BUFSIZE = 128 * 1024;
-	unsigned char temp_buffer[BUFSIZE];
-
-	z_stream strm;
-	strm.zalloc = 0;
-	strm.zfree = 0;
-	strm.next_in = reinterpret_cast<unsigned char*>(pInData);
-	strm.avail_in = (uInt)inDataSize;
-	strm.next_out = temp_buffer;
-	strm.avail_out = BUFSIZE;
-
-	deflateInit(&strm, Z_BEST_SPEED);
-
-	while (strm.avail_in != 0)
-	{
-		int res = deflate(&strm, Z_NO_FLUSH);
-		if (res != Z_OK)
-		{
-			return false;
-		}
-
-		if (strm.avail_out == 0)
-		{
-			outData.insert(outData.end(), temp_buffer, temp_buffer + BUFSIZE);
-			strm.next_out = temp_buffer;
-			strm.avail_out = BUFSIZE;
-		}
-	}
-
-	int deflate_res = Z_OK;
-	while (deflate_res == Z_OK)
-	{
-		if (strm.avail_out == 0)
-		{
-			outData.insert(outData.end(), temp_buffer, temp_buffer + BUFSIZE);
-			strm.next_out = temp_buffer;
-			strm.avail_out = BUFSIZE;
-		}
-		deflate_res = deflate(&strm, Z_FINISH);
-	}
-
-	if (deflate_res != Z_STREAM_END)
-	{
-		return false;
-	}
-
-	outData.insert(outData.end(), temp_buffer, temp_buffer + BUFSIZE - strm.avail_out);
-	deflateEnd(&strm);
-
 	return true;
 }

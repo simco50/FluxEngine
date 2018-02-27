@@ -15,17 +15,6 @@
 #include "ShaderProgram.h"
 #include "Core/Window.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11Graphics.hpp"
-#include "D3D11/D3D11GraphicsImpl.h"
-#endif
-
-Graphics::Graphics(Context* pContext, Window* pWindow) :
-	Subsystem(pContext), m_pWindow(pWindow)
-{
-	m_pImpl = std::make_unique<GraphicsImpl>();
-}
-
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
 	m_pRasterizerState->SetScissorEnabled(enabled);

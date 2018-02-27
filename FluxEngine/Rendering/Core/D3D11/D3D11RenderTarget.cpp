@@ -1,4 +1,8 @@
+#include "FluxEngine.h"
+#include "../RenderTarget.h"
 #include "D3D11GraphicsImpl.h"
+#include "../Graphics.h"
+#include "../Texture.h"
 
 void RenderTarget::Clear(const ClearFlags clearFlags, const Color& color, const float depth, unsigned char stencil)
 {

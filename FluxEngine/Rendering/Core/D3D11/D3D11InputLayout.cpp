@@ -1,4 +1,10 @@
+#include "FluxEngine.h"
+#include "../InputLayout.h"
 #include "D3D11GraphicsImpl.h"
+#include "../Graphics.h"
+#include "../ShaderVariation.h"
+#include "../VertexBuffer.h"
+
 void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation)
 {
 	AUTOPROFILE_DESC(InputLayout_Create, pVariation->GetName());

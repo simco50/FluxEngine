@@ -1,4 +1,7 @@
+#include "FluxEngine.h"
+#include "../Texture.h"
 #include "D3D11GraphicsImpl.h"
+#include "../Graphics.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"

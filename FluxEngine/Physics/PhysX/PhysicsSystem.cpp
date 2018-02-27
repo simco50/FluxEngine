@@ -1,7 +1,10 @@
 #include "FluxEngine.h"
 #include "PhysicsSystem.h"
 #include "Rendering\Core\Graphics.h"
+
+#ifdef GRAPHICS_D3D11
 #include "Rendering\Core\D3D11\D3D11GraphicsImpl.h"
+#endif
 
 using namespace physx;
 
@@ -40,6 +43,7 @@ PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
 	if (!PxInitExtensions(*m_pPhysics, m_pPvd))
 		FLUX_LOG(Error, "PxInitExtensions failed!");
 
+#ifdef GRAPHICS_D3D11
 	if (pGraphics)
 	{
 		PxCudaContextManagerDesc desc = {};
@@ -61,6 +65,7 @@ PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
 			m_pCudaContextManager = nullptr;
 		}
 	}
+#endif
 
 	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(3);
 

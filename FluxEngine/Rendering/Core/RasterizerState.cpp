@@ -2,10 +2,6 @@
 #include "RasterizerState.h"
 #include "Graphics.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11RasterizerState.hpp"
-#endif
-
 RasterizerState::RasterizerState()
 {
 

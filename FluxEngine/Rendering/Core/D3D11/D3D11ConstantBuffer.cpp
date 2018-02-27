@@ -1,4 +1,7 @@
+#include "FluxEngine.h"
 #include "D3D11GraphicsImpl.h"
+#include "../ConstantBuffer.h"
+#include "../Graphics.h"
 
 void ConstantBuffer::SetSize(const unsigned int size)
 {

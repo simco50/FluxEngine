@@ -1,4 +1,8 @@
+#include "FluxEngine.h"
 #include "D3D11GraphicsImpl.h"
+#include "../DepthStencilState.h"
+#include "../Graphics.h"
+
 void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =

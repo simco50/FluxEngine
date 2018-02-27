@@ -2,10 +2,6 @@
 #include "Texture.h"
 #include "Graphics.h"
 
-#ifdef D3D11
-#include "D3D11/D3D11Texture.hpp"
-#endif
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 

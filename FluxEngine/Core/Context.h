@@ -21,7 +21,6 @@ public:
 	T* GetSubsystem(bool required = true) const
 	{
 		T* pSystem = static_cast<T*>(GetSubsystem(T::GetTypeStatic()));
-
 		if (pSystem == nullptr)
 		{
 			if (required)
@@ -45,10 +44,10 @@ public:
 		std::unique_ptr<T> pSystem = std::make_unique<T>(this, args...);
 		StringHash type = pSystem->GetType();
 		m_Systems[type] = std::move(pSystem);
-		return (T*)m_Systems[type].get();
+		return static_cast<T*>(m_Systems[type].get());
 	}
 
 private:
 	//A collection of subsystems
-	std::map<StringHash, std::unique_ptr<Subsystem>> m_Systems;
+	std::unordered_map<StringHash, std::unique_ptr<Subsystem>> m_Systems;
 };
