@@ -12,24 +12,22 @@ using FileHandle = HANDLE;
 using FileHandle = int;
 #endif
 
-class PhysicalFile : public IFile
+class PhysicalFile : public File
 {
 public:
-	PhysicalFile(const std::string& fileName) : IFile(fileName)
+	PhysicalFile(const std::string& fileName) : File(fileName)
 	{}
 	virtual ~PhysicalFile();
 
 	virtual bool Open(const FileMode mode, const ContentType writeMode = ContentType::Text) override;
-	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) override;
-	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) override;
-	virtual unsigned int Read(const unsigned int size, char* pBuffer) override;
-	virtual unsigned int Write(const char* pBuffer, const unsigned int size) override;
+	virtual size_t Read(void* pBuffer, const size_t size) override;
+	virtual size_t Write(const void* pBuffer, const size_t size) override;
 	virtual bool Flush() override;
-	virtual bool SetPointer(const unsigned int position) override;
-	virtual bool MovePointer(const int delta) override;
-	virtual unsigned int GetSize() const override;
 	virtual bool Close() override;
 	virtual bool IsOpen() const override;
+
+	virtual bool SetPointer(const size_t position) override;
+	virtual size_t GetSize() const override;
 
 private:
 	void CreateDirectoryTree(const std::string& path);

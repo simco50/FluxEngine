@@ -1,5 +1,8 @@
 #pragma once
 
+class InputStream;
+class OutputStream;
+
 class Resource : public Object
 {
 	FLUX_OBJECT(Resource, Object)
@@ -10,8 +13,8 @@ public:
 
 	DELETE_COPY(Resource)
 
-	virtual bool Load(const std::string& filePath) = 0;
-	virtual bool Save(const std::string& filePath);
+	virtual bool Load(InputStream& inputStream) = 0;
+	virtual bool Save(OutputStream& outputStream);
 
 	void SetName(const std::string& name) { m_Name = name; }
 	const std::string& GetName() const { return m_Name; }

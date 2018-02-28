@@ -3,11 +3,11 @@
 
 #include "Rendering/Core/IndexBuffer.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "FileSystem/File/PhysicalFile.h"
 #include "Geometry.h"
 
 #include "Async/AsyncTaskQueue.h"
 #include "Core/Graphics.h"
+#include "IO/InputStream.h"
 
 Mesh::Mesh(Context* pContext):
 	Resource(pContext)
@@ -18,67 +18,62 @@ Mesh::~Mesh()
 {
 }
 
-bool Mesh::Load(const std::string& filePath)
+bool Mesh::Load(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(Mesh_Load, Paths::GetFileName(filePath));
+	std::string fileName = inputStream.GetSource();
+	AUTOPROFILE_DESC(Mesh_Load, Paths::GetFileName(fileName));
 
-	std::string extension = Paths::GetFileExtenstion(filePath);
+	std::string extension = Paths::GetFileExtenstion(fileName);
 	if (extension != "flux")
 	{
 		std::stringstream stream;
-		stream << "MeshLoader::LoadContent() -> '" << filePath << "' has a wrong file extension";
+		stream << "MeshLoader::LoadContent() -> '" << fileName << "' has a wrong file extension";
 		FLUX_LOG(Error, stream.str());
 		return false;
 	}
 
-	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
-	if (pFile == nullptr)
-		return false;
-	if (!pFile->Open(FileMode::Read, ContentType::Binary))
-		return false;
+	m_MeshName = Paths::GetFileName(fileName);
 
-	m_MeshName = Paths::GetFileName(filePath);
-
-	std::string magic = pFile->ReadSizedString();
+	std::string magic = inputStream.ReadSizedString();
 	char minVersion, maxVersion;
-	*pFile >> minVersion >> maxVersion;
+	inputStream.Read(&minVersion, sizeof(char));
+	inputStream.Read(&maxVersion, sizeof(char));
 	UNREFERENCED_PARAMETER(maxVersion);
 	if (minVersion != MESH_VERSION)
 	{
 		std::stringstream stream;
-		stream << "MeshLoader::LoadContent() File '" << filePath << "' version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
+		stream << "MeshLoader::LoadContent() File '" << fileName << "' version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
 		FLUX_LOG(Error, stream.str());
 	}
 
-	pFile->Read(sizeof(BoundingBox), (char*)&m_BoundingBox);
+	inputStream.Read((char*)&m_BoundingBox, sizeof(BoundingBox));
 
-	*pFile >> m_GeometryCount;
+	inputStream.Read(&m_GeometryCount, sizeof(int));
 
 	for (int i = 0; i < m_GeometryCount; ++i)
 	{
 		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
 		for (;;)
 		{
-			std::string block = pFile->ReadSizedString();
+			std::string block = inputStream.ReadSizedString();
 			for (char& c : block)
 				c = (char)toupper(c);
 			if (block == "ENDMESH")
 				break;
 
 			unsigned int length, stride;
-			*pFile >> length >> stride;
+			inputStream.Read(&length, sizeof(unsigned int));
+			inputStream.Read(&stride, sizeof(unsigned int));
 
 			pGeometry->GetVertexDataUnsafe(block).pData = new char[length * stride];
 			pGeometry->GetVertexDataUnsafe(block).Count = length;
 			pGeometry->GetVertexDataUnsafe(block).Stride = stride;
-			pFile->Read(length * stride, (char*)pGeometry->GetVertexDataUnsafe(block).pData);
+			inputStream.Read((char*)pGeometry->GetVertexDataUnsafe(block).pData, length * stride);
 		}
 
 		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pGeometry->GetDataCount("INDEX"), pGeometry->GetDataCount("POSITION"));
 		m_Geometries.push_back(std::move(pGeometry));
 	}
-
-	pFile->Close();
 	return true;
 }
 

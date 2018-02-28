@@ -76,7 +76,7 @@ void PhysicalFile::CreateDirectoryTree(const std::string& path)
 	}
 }
 
-unsigned int PhysicalFile::Write(const char* pBuffer, const unsigned int size)
+size_t PhysicalFile::Write(const void* pBuffer, const size_t size)
 {
 	if (m_Handle == FILE_HANDLE_INVALID)
 		return 0;
@@ -99,34 +99,14 @@ bool PhysicalFile::Flush()
 	return FlushFileBuffers(m_Handle) > 1;
 }
 
-unsigned int PhysicalFile::ReadAllBytes(std::vector<char>& pBuffer)
+size_t PhysicalFile::Read(void* pBuffer, const size_t size)
 {
-	if (m_Handle == FILE_HANDLE_INVALID)
-		return false;
-
-	AUTOPROFILE_DESC(PhysicalFile_ReadAllBytes, m_FileName);
-
-	unsigned int size = GetSize();
-	pBuffer.resize(size);
-
-	return Read(size, pBuffer.data());
-}
-
-unsigned int PhysicalFile::Read(const unsigned int from, const unsigned int size, char* pBuffer)
-{
-	if (!SetPointer(from))
-		return false;
-	return Read(size, pBuffer);
-}
-
-unsigned int PhysicalFile::Read(const unsigned int size, char* pBuffer)
-{
-	DWORD bytesToRead = size;
+	DWORD bytesToRead = (DWORD)size;
 
 	while (bytesToRead > 0)
 	{
 		DWORD read = 0;
-		if (!ReadFile(m_Handle, pBuffer + size - bytesToRead, bytesToRead, &read, nullptr))
+		if (!ReadFile(m_Handle, (char*)pBuffer + size - bytesToRead, bytesToRead, &read, nullptr))
 		{
 			return size - bytesToRead;
 		}
@@ -140,25 +120,16 @@ unsigned int PhysicalFile::Read(const unsigned int size, char* pBuffer)
 	return size - bytesToRead;
 }
 
-bool PhysicalFile::SetPointer(const unsigned int position)
+bool PhysicalFile::SetPointer(const size_t position)
 {
 	if (m_Handle == INVALID_HANDLE_VALUE)
 		return false;
-	if (SetFilePointer(m_Handle, position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return false;
 	return true;
 }
 
-bool PhysicalFile::MovePointer(const int delta)
-{
-	if (m_Handle == INVALID_HANDLE_VALUE)
-		return false;
-	if (SetFilePointer(m_Handle, delta, nullptr, FILE_CURRENT) == INVALID_SET_FILE_POINTER)
-		return false;
-	return true;
-}
-
-unsigned int PhysicalFile::GetSize() const
+size_t PhysicalFile::GetSize() const
 {
 	assert(IsOpen());
 	LARGE_INTEGER fileSize;

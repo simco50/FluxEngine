@@ -2,7 +2,7 @@
 class IMountPoint;
 class PhysicalMountPoint;
 class PakMountPoint;
-class IFile;
+class File;
 class PhysicalFile;
 class PakFile;
 
@@ -25,7 +25,7 @@ public:
 
 	static void AddPakLocation(const std::string& path, const std::string& virtualPath);
 
-	static std::unique_ptr<IFile> GetFile(const std::string& fileName);
+	static std::unique_ptr<File> GetFile(const std::string& fileName);
 
 private:
 	static std::vector<std::string> GetPakFilesInDirectory(const std::string& directory);

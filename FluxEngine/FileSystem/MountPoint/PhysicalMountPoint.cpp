@@ -29,7 +29,7 @@ bool PhysicalMountPoint::HasFile(const std::string& filePath) const
 	}) != m_FileEntries.end();
 }
 
-std::unique_ptr<IFile> PhysicalMountPoint::GetFile(const std::string& filePath)
+std::unique_ptr<File> PhysicalMountPoint::GetFile(const std::string& filePath)
 {
 	const std::string resolvedPath = m_PhysicalPath + "\\" + filePath;
 

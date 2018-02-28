@@ -15,6 +15,7 @@
 #include "../ShaderProgram.h"
 #include "UI/ImmediateUI.h"
 #include "Core/Window.h"
+#include "FileSystem/File/PhysicalFile.h"
 
 Graphics::Graphics(Context* pContext, Window* pWindow) :
 	Subsystem(pContext), m_pWindow(pWindow)
@@ -578,7 +579,11 @@ void Graphics::TakeScreenshot()
 {
 	std::stringstream str;
 	str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
-	m_pDefaultRenderTarget->GetRenderTexture()->Save(str.str());
+	PhysicalFile file(str.str());
+	if (!file.Open(FileMode::Write, ContentType::Binary))
+		return;
+	m_pDefaultRenderTarget->GetRenderTexture()->Save(file);
+	file.Close();
 }
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)

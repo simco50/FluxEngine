@@ -12,8 +12,8 @@ Resource::~Resource()
 
 }
 
-bool Resource::Save(const std::string& filePath)
+bool Resource::Save(OutputStream& outputStream)
 {
-	UNREFERENCED_PARAMETER(filePath);
+	UNREFERENCED_PARAMETER(outputStream);
 	return false;
 }

@@ -17,7 +17,7 @@ public:
 
 	DELETE_COPY(Mesh)
 
-	virtual bool Load(const std::string& filePath) override;
+	virtual bool Load(InputStream& inputStream) override;
 
 	void CreateBuffers(std::vector<VertexElement>& elementDesc);
 

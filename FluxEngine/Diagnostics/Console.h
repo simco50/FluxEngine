@@ -7,7 +7,7 @@ enum class LogType
 	Error,
 };
 
-class IFile;
+class File;
 
 class Console
 {
@@ -34,6 +34,6 @@ private:
 	static char* m_ConvertBuffer;
 	static const size_t m_ConvertBufferSize = 2048;
 
-	static IFile* m_pFileLog;
+	static File* m_pFileLog;
 	static HANDLE m_ConsoleHandle;
 };

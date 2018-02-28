@@ -5,7 +5,7 @@ enum class ShaderType;
 
 class Graphics;
 class ShaderVariation;
-class IFile;
+class File;
 
 class Shader : public Resource
 {
@@ -17,7 +17,7 @@ public:
 
 	DELETE_COPY(Shader)
 
-	virtual bool Load(const std::string& filePath) override;
+	virtual bool Load(InputStream& inputStream) override;
 	ShaderVariation* GetVariation(const ShaderType type, const std::string& defines = std::string(""));
 	const std::string& GetSource() { return m_ShaderSource; }
 
@@ -31,7 +31,7 @@ private:
 	std::string m_FileDir;
 	std::string m_ShaderName;
 
-	bool ProcessSource(const std::unique_ptr<IFile>& pFile, std::stringstream& output);
+	bool ProcessSource(InputStream* pInputStream, std::stringstream& output);
 
 	std::string m_ShaderSource;
 	using ShaderVariationHash = std::string;

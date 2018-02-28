@@ -5,7 +5,7 @@
 
 using namespace std;
 
-IFile* Console::m_pFileLog = nullptr;
+File* Console::m_pFileLog = nullptr;
 HANDLE Console::m_ConsoleHandle;
 char* Console::m_ConvertBuffer = new char[m_ConvertBufferSize];
 
@@ -32,10 +32,12 @@ void Console::Initialize()
 		FLUX_LOG(Error, "Failed to open console log");
 	}
 
-	*m_pFileLog << IFile::endl << "-------------FLUX ENGINE LOG START--------------" << IFile::endl << IFile::endl;
-
-	*m_pFileLog << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << IFile::endl;
-	*m_pFileLog << "Time: " << GetTime() << IFile::endl;
+	std::stringstream stream;
+	stream << "\n-------------FLUX ENGINE LOG START--------------\n\n";
+	stream << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << "\n";
+	stream << "Time: " << GetTime() << "\n";
+	std::string output = stream.str();
+	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
 
 #ifdef _DEBUG
 	InitializeConsoleWindow();
@@ -44,7 +46,10 @@ void Console::Initialize()
 
 void Console::Release()
 {
-	*m_pFileLog  << IFile::endl << "--------------FLUX ENGINE LOG END---------------" << IFile::endl;
+	std::stringstream stream;
+	stream << "\n--------------FLUX ENGINE LOG END---------------\n";
+	std::string output = stream.str();
+	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
 }
@@ -127,14 +132,11 @@ void Console::Log(const std::string &message, LogType type)
 		break;
 	}
 
-	stream << message;
+	stream << message << "\n";
 	if (m_ConsoleHandle)
-	{
-		cout << stream.str() << endl;
 		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	}
-
-	*m_pFileLog << stream.str() << IFile::endl;
+	std::string output = stream.str();
+	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
 
 	if (type == LogType::Error)
 	{

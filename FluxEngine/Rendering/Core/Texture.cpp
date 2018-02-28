@@ -26,18 +26,10 @@ Texture::~Texture()
 	Release();
 }
 
-bool Texture::Load(const std::string& filePath)
+bool Texture::Load(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(Texture_Load, Paths::GetFileName(filePath));
-
-	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
-	if (pFile == nullptr)
-		return false;
-	if (!pFile->Open(FileMode::Read, ContentType::Binary))
-		return false;
 	std::vector<char> buffer;
-	pFile->ReadAllBytes(buffer);
-	pFile->Close();
+	inputStream.ReadAllBytes(buffer);
 
 	unsigned char* pPixels;
 	int width, height, bpp;

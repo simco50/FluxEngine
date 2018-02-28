@@ -23,8 +23,6 @@
 #include "Context.h"
 #include "Async/AsyncTaskQueue.h"
 
-using namespace std;
-
 FluxCore::FluxCore()
 {
 }
@@ -126,7 +124,7 @@ void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
 
-	m_pScene = make_unique<Scene>(m_pContext);
+	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
@@ -207,9 +205,9 @@ void FluxCore::RenderUI()
 	unsigned int batchCount, primitiveCount;
 	m_pGraphics->GetDebugInfo(batchCount, primitiveCount);
 
-	stringstream timeStr;
-	timeStr << setw(2) << setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << setw(2) << (int)GameTimer::GameTime() % 60;
-	string time = timeStr.str();
+	std::stringstream timeStr;
+	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;
+	std::string time = timeStr.str();
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());

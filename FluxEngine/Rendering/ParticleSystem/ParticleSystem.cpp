@@ -2,6 +2,7 @@
 #include "ParticleSystem.h"
 
 #include "External/NlohmannJson/json.hpp"
+#include "IO/InputStream.h"
 
 using json = nlohmann::json;
 
@@ -27,20 +28,14 @@ using json = nlohmann::json;
 }\
 name.ConstantValue = data[#name]["Constant"];
 
-bool ParticleSystem::Load(const std::string& filePath)
+bool ParticleSystem::Load(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(ParticleSystem_Load, Paths::GetFileName(filePath));
-
-	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
-	if (pFile == nullptr)
-		return false;
-	if (!pFile->Open(FileMode::Read, ContentType::Text))
-		return false;
+	std::string fileName = inputStream.GetSource();
+	AUTOPROFILE_DESC(ParticleSystem_Load, Paths::GetFileName(fileName));
 
 	std::string buffer;
-	buffer.resize(pFile->GetSize());
-	pFile->Read((unsigned int)buffer.size(), (char*)&buffer[0]);
-	pFile->Close();
+	buffer.resize(inputStream.GetSize());
+	inputStream.Read((char*)&buffer[0], buffer.size());
 
 	try
 	{

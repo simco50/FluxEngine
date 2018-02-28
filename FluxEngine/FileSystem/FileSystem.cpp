@@ -58,7 +58,7 @@ void FileSystem::AddPakLocation(const std::string& path, const std::string& virt
 	}
 }
 
-std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
+std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 {
 	const std::string path = FixPath(fileName);
 	//Search through all the mount points
@@ -69,7 +69,7 @@ std::unique_ptr<IFile> FileSystem::GetFile(const std::string& fileName)
 		std::string searchPath = path.substr(0, pMp.first.size());
 		if (pMp.first == searchPath)
 		{
-			std::unique_ptr<IFile> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
+			std::unique_ptr<File> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
 
 			//If we didn't find the file, continue looking in the other mount points
 			if(pFile == nullptr)

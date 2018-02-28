@@ -18,7 +18,7 @@ bool PakMountPoint::OnMount()
 
 	//Read in the header
 	std::vector<char> pBuffer;
-	if (!m_pPakFile->Read(0, sizeof(PakFileHeader), reinterpret_cast<char*>(&m_Header)))
+	if (!m_pPakFile->ReadFrom(reinterpret_cast<char*>(&m_Header), 0, sizeof(PakFileHeader)))
 		return false;
 
 	if (std::string(m_Header.ID) != "PAK")
@@ -31,7 +31,7 @@ bool PakMountPoint::OnMount()
 
 	//Read in all the table entries
 	m_FileEntries.resize(m_Header.NumEntries);
-	if (!m_pPakFile->Read(sizeof(PakFileHeader), m_Header.NumEntries * sizeof(PakFileEntry), reinterpret_cast<char*>(m_FileEntries.data())))
+	if (!m_pPakFile->ReadFrom(reinterpret_cast<char*>(m_FileEntries.data()), sizeof(PakFileHeader), m_Header.NumEntries * sizeof(PakFileEntry)))
 		return false;
 
 	//Set all characters to lower case
@@ -57,7 +57,7 @@ bool PakMountPoint::HasFile(const std::string& filePath) const
 	}) != m_FileEntries.end();
 }
 
-std::unique_ptr<IFile> PakMountPoint::GetFile(const std::string& filePath)
+std::unique_ptr<File> PakMountPoint::GetFile(const std::string& filePath)
 {
 	//Even if we are sure the file created exists, we still need to do a find to create the file.
 	auto pIt = std::find_if(m_FileEntries.begin(), m_FileEntries.end(), [&filePath](const PakFileEntry& entry)
