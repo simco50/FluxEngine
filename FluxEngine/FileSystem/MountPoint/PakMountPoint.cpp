@@ -17,7 +17,6 @@ bool PakMountPoint::OnMount()
 		return false;
 
 	//Read in the header
-	std::vector<char> pBuffer;
 	if (!m_pPakFile->ReadFrom(reinterpret_cast<char*>(&m_Header), 0, sizeof(PakFileHeader)))
 		return false;
 

@@ -27,7 +27,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 
 	if (!pResource->Load(*pFile.get()))
 	{
-		FLUX_LOG(Error, "File with name '%s' not found.", filePath.c_str());
+		FLUX_LOG(Error, "Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
 	return true;

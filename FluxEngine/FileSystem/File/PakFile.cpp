@@ -24,7 +24,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 	if (sizeToRead <= 0)
 		return 0;
 
-	size_t read;
+	size_t read = 0;
 	if (m_pTableEntry->Compressed)
 	{
 		//If the file is compressed we have to cache the uncompressed data if we want to use it later
@@ -38,14 +38,13 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 	{
 		read = pMountPoint->GetPakFile()->ReadFrom(pBuffer, m_pTableEntry->Offset + m_FilePointer, sizeToRead);
 	}
-	if (!MovePointer(sizeToRead))
-		return 0;
+	MovePointer(sizeToRead);
 	return read;
 }
 
 bool PakFile::SetPointer(const size_t position)
 {
-	if (position >= m_pTableEntry->UncompressedSize)
+	if (position > m_pTableEntry->UncompressedSize)
 		return false;
 	m_FilePointer = position;
 	return true;
