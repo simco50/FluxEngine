@@ -1,4 +1,5 @@
 #pragma once
+#include "Async\Mutex.h"
 
 enum class LogType
 {
@@ -15,8 +16,9 @@ public:
 	Console();
 	~Console();
 
-	static void Initialize();
-	static void Release();
+	void Initialize();
+	void Release();
+	void FlushThreadedMessages();
 
 	static bool LogFmodResult(FMOD_RESULT result);
 	static bool LogHRESULT(const std::string &source, HRESULT hr);
@@ -28,12 +30,23 @@ public:
 	static void LogFormat(LogType type, const std::string& format, ...);
 
 private:
-	static void InitializeConsoleWindow();
+	void InitializeConsoleWindow();
 	static std::string GetTime();
 
-	static char* m_ConvertBuffer;
-	static const size_t m_ConvertBufferSize = 2048;
+	char* m_ConvertBuffer;
+	const size_t m_ConvertBufferSize = 2048;
 
-	static File* m_pFileLog;
-	static HANDLE m_ConsoleHandle;
+	struct QueuedMessage
+	{
+		QueuedMessage(const std::string& message, const LogType type) :
+			Message(message), Type(type)
+		{}
+		std::string Message;
+		LogType Type;
+	};
+	std::queue<QueuedMessage> m_MessageQueue;
+	Mutex m_QueueMutex;
+
+	File* m_pFileLog;
+	HANDLE m_ConsoleHandle;
 };

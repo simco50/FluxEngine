@@ -5,6 +5,8 @@
 #include <thread>
 #endif
 
+unsigned int Thread::m_MainThread;
+
 Thread::Thread()
 {
 }
@@ -85,6 +87,17 @@ DWORD WINAPI Thread::ThreadFunctionStatic(void* pData)
 {
 	Thread* pThread = static_cast<Thread*>(pData);
 	return pThread->ThreadFunction();
+}
+
+
+void Thread::SetMainThread()
+{
+	m_MainThread = GetCurrentId();
+}
+
+bool Thread::IsMainThread()
+{
+	return m_MainThread == GetCurrentId();
 }
 
 //WORKER THREAD

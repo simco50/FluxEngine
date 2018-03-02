@@ -2,23 +2,16 @@
 #include <time.h>
 #include <iomanip>
 #include "FileSystem\File\PhysicalFile.h"
+#include "Async\Thread.h"
 
 using namespace std;
 
-File* Console::m_pFileLog = nullptr;
-HANDLE Console::m_ConsoleHandle;
-char* Console::m_ConvertBuffer = new char[m_ConvertBufferSize];
-
+static Console* consoleInstance = nullptr;
 Console::Console()
-{}
-
-Console::~Console()
-{
-}
-
-void Console::Initialize()
 {
 	AUTOPROFILE(Console_Initialize);
+	consoleInstance = this;
+	m_ConvertBuffer = new char[m_ConvertBufferSize];
 
 	time_t timer;
 	time(&timer);
@@ -44,7 +37,7 @@ void Console::Initialize()
 #endif
 }
 
-void Console::Release()
+Console::~Console()
 {
 	std::stringstream stream;
 	stream << "\n--------------FLUX ENGINE LOG END---------------\n";
@@ -52,6 +45,21 @@ void Console::Release()
 	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
+}
+
+void Console::FlushThreadedMessages()
+{
+	checkf(Thread::IsMainThread(), "Console::FlushThreadedMessages() must run on the main thread!");
+	if (m_MessageQueue.size() == 0)
+		return;
+
+	ScopeLock lock(m_QueueMutex);
+	while (m_MessageQueue.size() > 0)
+	{
+		const QueuedMessage& message = m_MessageQueue.front();
+		Log(message.Message, message.Type);
+		m_MessageQueue.pop();
+	}
 }
 
 bool Console::LogFmodResult(FMOD_RESULT result)
@@ -111,39 +119,50 @@ bool Console::LogHRESULT(char* source, HRESULT hr)
 
 void Console::Log(const std::string &message, LogType type)
 {
-	stringstream stream;
-	stream << "[" << GetTime() << "]";
-	switch (type)
+	if (!Thread::IsMainThread())
 	{
-	case LogType::Info:
-		stream << "[INFO] ";
-		break;
-	case LogType::Warning:
-		if(m_ConsoleHandle)
-			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-		stream << "[WARNING] ";
-		break;
-	case LogType::Error:
-		if (m_ConsoleHandle)
-			SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
-		stream << "[ERROR] ";
-		break;
-	default:
-		break;
+		ScopeLock lock(consoleInstance->m_QueueMutex);
+		consoleInstance->m_MessageQueue.push(QueuedMessage(message, type));
 	}
-
-	stream << message << "\n";
-	if (m_ConsoleHandle)
-		SetConsoleTextAttribute(m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	std::string output = stream.str();
-	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
-
-	if (type == LogType::Error)
+	else
 	{
-		MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
-		//PostQuitMessage(-1);
-		//__debugbreak();
-		abort();
+		stringstream stream;
+		stream << "[" << GetTime() << "]";
+		switch (type)
+		{
+		case LogType::Info:
+			stream << "[INFO] ";
+			break;
+		case LogType::Warning:
+			if (consoleInstance->m_ConsoleHandle)
+				SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			stream << "[WARNING] ";
+			break;
+		case LogType::Error:
+			if (consoleInstance->m_ConsoleHandle)
+				SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
+			stream << "[ERROR] ";
+			break;
+		default:
+			break;
+		}
+
+		stream << message << "\n";
+		std::string output = stream.str();
+
+		std::cout << output;
+		if (consoleInstance->m_ConsoleHandle)
+			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+		consoleInstance->m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
+
+		if (type == LogType::Error)
+		{
+			MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
+			//PostQuitMessage(-1);
+			//__debugbreak();
+			abort();
+		}
 	}
 }
 
@@ -162,9 +181,9 @@ void Console::LogFormat(LogType type, const char* format, ...)
 	va_list ap;
 
 	va_start(ap, format);
-	_vsnprintf_s(&m_ConvertBuffer[0], m_ConvertBufferSize, m_ConvertBufferSize, format, ap);
+	_vsnprintf_s(&consoleInstance->m_ConvertBuffer[0], consoleInstance->m_ConvertBufferSize, consoleInstance->m_ConvertBufferSize, format, ap);
 	va_end(ap);
-	Log(&m_ConvertBuffer[0], type);
+	Log(&consoleInstance->m_ConvertBuffer[0], type);
 }
 
 void Console::LogFormat(LogType type, const std::string& format, ...)
@@ -173,9 +192,9 @@ void Console::LogFormat(LogType type, const std::string& format, ...)
 
 	const char* f = format.c_str();
 	va_start(ap, f);
-	_vsnprintf_s(&m_ConvertBuffer[0], m_ConvertBufferSize, m_ConvertBufferSize, f, ap);
+	_vsnprintf_s(&consoleInstance->m_ConvertBuffer[0], consoleInstance->m_ConvertBufferSize, consoleInstance->m_ConvertBufferSize, f, ap);
 	va_end(ap);
-	Log(&m_ConvertBuffer[0], type);
+	Log(&consoleInstance->m_ConvertBuffer[0], type);
 }
 
 void Console::InitializeConsoleWindow()

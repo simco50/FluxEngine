@@ -22,6 +22,7 @@
 #include "Rendering/DebugRenderer.h"
 #include "Context.h"
 #include "Async/AsyncTaskQueue.h"
+#include "Async/Thread.h"
 
 FluxCore::FluxCore()
 {
@@ -32,13 +33,13 @@ FluxCore::~FluxCore()
 	SafeDelete(m_pContext);
 	SafeDelete(m_pWindow);
 
-	Console::Release();
 	Config::Flush();
 	Profiler::DestroyInstance();
 }
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
+	Thread::SetMainThread();
 	UNREFERENCED_PARAMETER(hInstance);
 	Profiler::CreateInstance();
 
@@ -46,7 +47,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 	{
 		AUTOPROFILE(FluxCore_Initialize);
 		m_pContext = new Context();
-		Console::Initialize();
+		m_pConsole = std::make_unique<Console>();
 
 		//Register resource locations
 		FileSystem::AddPakLocation(Paths::PakFilesFolder, "Resources");
@@ -112,6 +113,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 			{
 				GameTimer::Tick();
 				GameLoop();
+				m_pConsole->FlushThreadedMessages();
 			}
 			else
 				Sleep(100);
