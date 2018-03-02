@@ -240,8 +240,7 @@ string Console::GetTime()
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	stringstream stream;
-	stream << setfill('0');
-	stream << setw(2) << localTime.tm_hour << ":" << setw(2) << localTime.tm_min << ":" << setw(2) << localTime.tm_sec;
-	return stream.str();
+	char convertBuffer[9];
+	sprintf_s(convertBuffer, "%02d:%02d:%02d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec);
+	return convertBuffer;
 }
