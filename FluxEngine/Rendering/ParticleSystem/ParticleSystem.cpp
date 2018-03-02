@@ -39,7 +39,7 @@ bool ParticleSystem::Load(InputStream& inputStream)
 
 	try
 	{
-		json data = json::parse(buffer.data());
+		json data = json::parse(buffer);
 
 		int version = data["Version"];
 		if (version != VERSION)

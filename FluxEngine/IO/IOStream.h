@@ -2,6 +2,7 @@
 #include "InputStream.h"
 #include "OutputStream.h"
 
+//Base for classes that have both input and output
 class IOStream : public InputStream, public OutputStream
 {
 public:

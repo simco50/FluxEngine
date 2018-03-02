@@ -34,10 +34,10 @@ bool Mesh::Load(InputStream& inputStream)
 
 	m_MeshName = Paths::GetFileName(fileName);
 
-	std::string magic = inputStream.ReadSizedString();
-	char minVersion, maxVersion;
-	inputStream.Read(&minVersion, sizeof(char));
-	inputStream.Read(&maxVersion, sizeof(char));
+	const std::string magic = inputStream.ReadSizedString();
+	const char minVersion = inputStream.ReadByte();
+	const char maxVersion = inputStream.ReadByte();
+
 	UNREFERENCED_PARAMETER(maxVersion);
 	if (minVersion != MESH_VERSION)
 	{
@@ -48,7 +48,7 @@ bool Mesh::Load(InputStream& inputStream)
 
 	inputStream.Read((char*)&m_BoundingBox, sizeof(BoundingBox));
 
-	inputStream.Read(&m_GeometryCount, sizeof(int));
+	m_GeometryCount = inputStream.ReadInt();
 
 	for (int i = 0; i < m_GeometryCount; ++i)
 	{
@@ -61,9 +61,8 @@ bool Mesh::Load(InputStream& inputStream)
 			if (block == "ENDMESH")
 				break;
 
-			unsigned int length, stride;
-			inputStream.Read(&length, sizeof(unsigned int));
-			inputStream.Read(&stride, sizeof(unsigned int));
+			const unsigned int length = inputStream.ReadUInt();
+			const unsigned int stride = inputStream.ReadUInt();
 
 			pGeometry->GetVertexDataUnsafe(block).pData = new char[length * stride];
 			pGeometry->GetVertexDataUnsafe(block).Count = length;

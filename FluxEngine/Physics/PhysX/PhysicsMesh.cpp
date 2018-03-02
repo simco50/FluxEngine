@@ -17,8 +17,8 @@ PhysicsMesh::~PhysicsMesh()
 bool PhysicsMesh::Load(InputStream& inputStream)
 {
 	std::string geometryType = inputStream.ReadSizedString();
-	unsigned int byteSize;
-	inputStream.Read(&byteSize, sizeof(unsigned int));
+	unsigned int byteSize =	inputStream.ReadUByte();
+	UNREFERENCED_PARAMETER(byteSize);
 
 	PhysxInputStream physicsInputStream(inputStream);
 

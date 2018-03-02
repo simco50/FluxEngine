@@ -23,10 +23,26 @@ inline void Clamp(T& value, T hi, T lo)
 }
 
 template<typename T>
+inline T Clamp(const T value, T hi, T lo)
+{
+	if (value > hi)
+		return hi;
+	else if (value < lo)
+		return lo;
+	return value;
+}
+
+template<typename T>
 inline void ClampMin(T& value, T lo)
 {
 	if (value < lo)
 		value = lo;
+}
+
+template<typename T>
+inline T ClampMin(const T value, T lo)
+{
+	return value < lo ? lo : value;
 }
 
 template<typename T>
@@ -37,12 +53,28 @@ inline void ClampMax(T& value, T hi)
 }
 
 template<typename T>
+inline T ClampMax(const T value, T hi)
+{
+	return value > hi ? hi : value;
+}
+
+template<typename T>
 inline void Clamp01(T& value)
 {
 	if (value > 1)
 		value = 1;
 	else if (value < 0)
 		value = 0;
+}
+
+template<typename T>
+inline T Clamp01(const T value)
+{
+	if (value > 1)
+		return 1;
+	else if (value < 0)
+		return 0;
+	return value;
 }
 
 inline float RadToDeg(float rad)
