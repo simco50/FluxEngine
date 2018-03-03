@@ -32,7 +32,7 @@ public:
 
 	virtual bool OnMount() override;
 	virtual bool HasFile(const std::string& filePath) const override;
-	virtual std::unique_ptr<IFile> GetFile(const std::string& filePath) override;
+	virtual std::unique_ptr<File> GetFile(const std::string& filePath) override;
 
 	PhysicalFile* GetPakFile() const { return m_pPakFile.get(); }
 

@@ -22,7 +22,7 @@ Profiler::~Profiler()
 	pFile->Close();
 }
 
-void Profiler::OutputLog(IFile* pFile, int maxDepth)
+void Profiler::OutputLog(File* pFile, int maxDepth)
 {
 	m_pCurrentBlock = m_pRootBlock->Children.front().get();
 	int depth = 0;
@@ -30,15 +30,18 @@ void Profiler::OutputLog(IFile* pFile, int maxDepth)
 	{
 		if (depth <= maxDepth)
 		{
-			*pFile << "[" << m_pCurrentBlock->Frame << "]\t";
+			std::stringstream stream;
+			stream << "[" << m_pCurrentBlock->Frame << "]\t";
 			for (int i = 0; i < depth; ++i)
 			{
-				*pFile << "\t";
+				stream << "\t";
 			}
 			if (m_pCurrentBlock->Description.empty())
-				*pFile << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Time << " ms" << IFile::endl;
+				stream << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Time << " ms" << std::endl;
 			else
-				*pFile << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Description << " : " << m_pCurrentBlock->Time << " ms" << IFile::endl;
+				stream << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Description << " : " << m_pCurrentBlock->Time << " ms" << std::endl;
+			std::string output = stream.str();
+			pFile->Write(output.c_str(), (unsigned int)output.size());
 		}
 
 		while (m_pCurrentBlock->Children.size() == 0)

@@ -7,7 +7,7 @@ public:
 	Profiler();
 	~Profiler();
 
-	void OutputLog(IFile* pFile, int maxDepth = 20);
+	void OutputLog(File* pFile, int maxDepth = 20);
 
 	struct AutoProfilerBlock
 	{

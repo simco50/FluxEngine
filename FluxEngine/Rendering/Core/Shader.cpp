@@ -2,7 +2,7 @@
 #include "Shader.h"
 #include "ShaderVariation.h"
 #include "Graphics.h"
-#include "FileSystem\File\PhysicalFile.h"
+#include "IO\InputStream.h"
 
 Shader::Shader(Context* pContext) :
 	Resource(pContext)
@@ -14,29 +14,18 @@ Shader::~Shader()
 {
 }
 
-bool Shader::Load(const std::string& filePath)
+bool Shader::Load(InputStream& inputStream)
 {
-	m_ShaderName = Paths::GetFileNameWithoutExtension(filePath);
-	m_FileDir = Paths::GetDirectoryPath(filePath);
+	std::string fileName = inputStream.GetSource();
+	m_ShaderName = Paths::GetFileNameWithoutExtension(fileName);
+	m_FileDir = Paths::GetDirectoryPath(fileName);
 
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
-
-	std::unique_ptr<IFile> pPtr = FileSystem::GetFile(filePath);
-	if (pPtr == nullptr)
-	{
-		FLUX_LOG(Warning, "Failed to get file: '%s'", filePath.c_str());
-		return false;
-	}
-	if (!pPtr->Open(FileMode::Read, ContentType::Text))
-	{
-		FLUX_LOG(Warning, "Failed to open file: '%s'", filePath.c_str());
-		return false;
-	}
 
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
-		if (!ProcessSource(std::move(pPtr), codeStream))
+		if (!ProcessSource(&inputStream, codeStream))
 			return false;
 
 		m_ShaderSource = codeStream.str();
@@ -88,10 +77,10 @@ std::string Shader::MakeSearchHash(const ShaderType type, const std::string& def
 	return Printf("TYPE_%i%s", type, defines.c_str());
 }
 
-bool Shader::ProcessSource(const std::unique_ptr<IFile>& pFile, std::stringstream& output)
+bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output)
 {
 	std::string line;
-	while (pFile->GetLine(line))
+	while (pInputStream->GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
@@ -99,13 +88,13 @@ bool Shader::ProcessSource(const std::unique_ptr<IFile>& pFile, std::stringstrea
 			includeFilePath.erase(includeFilePath.begin());
 			includeFilePath.pop_back();
 
-			std::unique_ptr<IFile> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
+			std::unique_ptr<File> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
 			if (newFile == nullptr)
 				return false;
 			if (!newFile->Open(FileMode::Read, ContentType::Text))
 				return false;
 
-			if(!ProcessSource(std::move(newFile), output))
+			if (!ProcessSource(newFile.get(), output))
 				return false;
 		}
 		else

@@ -1,5 +1,5 @@
 #pragma once
-#include "Content\Resource.h"
+#include "Content/Resource.h"
 
 class PhysicsSystem;
 
@@ -11,7 +11,7 @@ public:
 	PhysicsMesh(Context* pContext);
 	virtual ~PhysicsMesh();
 
-	virtual bool Load(const std::string& filePath) override;
+	virtual bool Load(InputStream& inputStream) override;
 
 	physx::PxBase* GetMesh() const { return m_pMesh; }
 
@@ -27,20 +27,20 @@ private:
 	PhysicsSystem * m_pPhysicsSystem;
 	Type m_Type = Type::None;
 
-	class InputStream : public physx::PxInputStream
+	class PhysxInputStream : public physx::PxInputStream
 	{
 	public:
-		InputStream(IFile* pFile) : 
-			m_pFile(pFile)
+		PhysxInputStream(InputStream& inputStream) :
+			m_pStream(&inputStream)
 		{}
 
 		virtual uint32_t read(void* dest, uint32_t count) override
 		{
-			return m_pFile->Read((unsigned int)count, (char*)dest);
+			return (uint32_t)m_pStream->Read((char*)dest, (size_t)count);
 		}
 
 	private:
-		IFile * m_pFile;
+		InputStream* m_pStream;
 	};
 
 	physx::PxBase* m_pMesh = nullptr;

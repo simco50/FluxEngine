@@ -7,6 +7,7 @@
 #include "Core/Shader.h"
 #include "Core/ShaderVariation.h"
 #include "Core/Texture.h"
+#include "IO/InputStream.h"
 
 namespace XML = tinyxml2;
 
@@ -20,17 +21,10 @@ Material::~Material()
 {
 }
 
-bool Material::Load(const std::string& filePath)
+bool Material::Load(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(Material_Load, Paths::GetFileName(filePath));
-
-	std::unique_ptr<IFile> pFile = FileSystem::GetFile(filePath);
-	if (pFile == nullptr)
-		return false;
-	if (!pFile->Open(FileMode::Read, ContentType::Text))
-		return false;
 	std::vector<char> buffer;
-	if (!pFile->ReadAllBytes(buffer))
+	if (!inputStream.ReadAllBytes(buffer))
 		return false;
 
 	XML::XMLDocument document;

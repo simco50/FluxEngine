@@ -20,8 +20,12 @@ public:
 	bool IsCurrentThread() const { return GetId() == GetCurrentId(); }
 	static unsigned int GetCurrentId();
 
+	static void SetMainThread();
+	static bool IsMainThread();
+
 private:
 	static DWORD WINAPI ThreadFunctionStatic(void* pData);
+	static unsigned int m_MainThread;
 	unsigned long m_ThreadId;
 	void* m_pHandle = nullptr;
 };

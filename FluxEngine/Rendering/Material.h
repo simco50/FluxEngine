@@ -15,7 +15,7 @@ public:
 	Material(Context* pContext);
 	~Material();
 
-	virtual bool Load(const std::string& filePath) override;
+	virtual bool Load(InputStream& inputStream) override;
 
 	ShaderVariation* GetShader(const ShaderType type) const;
 	const std::vector<std::pair<TextureSlot, Texture*>> GetTextures() const { return m_Textures; }

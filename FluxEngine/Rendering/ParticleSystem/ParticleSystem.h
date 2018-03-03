@@ -36,7 +36,7 @@ public:
 	{}
 	virtual ~ParticleSystem() {}
 
-	virtual bool Load(const std::string& filePath) override;
+	virtual bool Load(InputStream& inputStream) override;
 
 	//General
 	float Duration = 1.0f;

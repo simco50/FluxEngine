@@ -38,6 +38,7 @@ private:
 	bool m_DebugPhysics = false;
 
 	//Systems
+	std::unique_ptr<Console> m_pConsole;
 	Graphics* m_pGraphics = nullptr;
 	ImmediateUI* m_pImmediateUI = nullptr;
 	InputEngine* m_pInput = nullptr;

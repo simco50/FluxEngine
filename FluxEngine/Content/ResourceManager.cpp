@@ -1,6 +1,7 @@
 #include "FluxEngine.h"
 #include "ResourceManager.h"
 #include "Resource.h"
+#include "FileSystem\File\File.h"
 
 ResourceManager::ResourceManager(Context* pContext) :
 	Subsystem(pContext)
@@ -17,9 +18,16 @@ ResourceManager::~ResourceManager()
 
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
 {
-	if (!pResource->Load(filePath))
+	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
+	if (pFile == nullptr)
+		return false;
+	if (pFile->Open(FileMode::Read, ContentType::Binary) == false)
+		return false;
+	pFile->SetSource(filePath);
+
+	if (!pResource->Load(*pFile.get()))
 	{
-		FLUX_LOG(Error, "File with name '%s' not found.", filePath.c_str());
+		FLUX_LOG(Error, "Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
 	return true;

@@ -5,26 +5,24 @@ class IMountPoint;
 class PakMountPoint;
 struct PakFileEntry;
 
-class PakFile : public IFile
+class PakFile : public File
 {
 public:
 	PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry) :
-		IFile(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
+		File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
 	{}
 	virtual ~PakFile()
 	{}
 
 	virtual bool Open(const FileMode mode, const ContentType writeMode = ContentType::Binary) override;
-	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) override;
-	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) override;
-	virtual unsigned int Read(const unsigned int size, char* pBuffer) override;
-	virtual unsigned int Write(const char* pBuffer, const unsigned int size) override;
+	virtual size_t Read(void* pBuffer, const size_t size) override;
+	virtual size_t Write(const void* pBuffer, const size_t size) override;
 	bool virtual Flush() override;
 	virtual bool Close() override { return true; }
-	virtual bool SetPointer(const unsigned int position) override;
-	virtual bool MovePointer(const int delta) override;
 	virtual bool IsOpen() const override;
-	virtual unsigned int GetSize() const override;
+	virtual size_t GetSize() const override;
+
+	virtual bool SetPointer(const size_t position) override;
 
 private:
 	bool CacheUncompressedData();
@@ -33,5 +31,4 @@ private:
 	PakMountPoint* m_pMountPoint;
 
 	std::vector<char> m_UncompressedCache;
-	unsigned int m_FilePointer = 0;
 };

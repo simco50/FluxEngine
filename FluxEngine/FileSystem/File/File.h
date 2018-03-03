@@ -1,4 +1,5 @@
 #pragma once
+#include "IO\IOStream.h"
 
 class IMountPoint;
 
@@ -15,51 +16,21 @@ enum class ContentType
 	Binary,
 };
 
-class IFile
+class File : public IOStream
 {
 public:
-	IFile(const std::string& fileName) :
+	File(const std::string& fileName) :
 		m_FileName(fileName)
 	{}
-	virtual ~IFile() {}
+	virtual ~File() {}
 
 	virtual bool Open(const FileMode mode, const ContentType writeMode) = 0;
-	virtual unsigned int ReadAllBytes(std::vector<char>& pBuffer) = 0;
-	virtual unsigned int Read(const unsigned int from, const unsigned int size, char* pBuffer) = 0;
-	virtual unsigned int Read(const unsigned int size, char* pBuffer) = 0;
-	virtual unsigned int Write(const char* pBuffer, const unsigned int size) = 0;
 	bool virtual Flush() = 0;
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;
-	virtual bool SetPointer(const unsigned int position) = 0;
-	virtual bool MovePointer(const int delta) = 0;
-	virtual unsigned int GetSize() const = 0;
-	bool GetLine(std::string& outLine, const char delimiter = '\n');
 
-	IFile& operator<<(const std::string& text);
-	IFile& operator<<(const char* pData);
-	IFile& operator<<(const char value);
-	IFile& operator<<(const unsigned char value);
-	IFile& operator<<(const int value);
-	IFile& operator<<(const unsigned int value);
-	IFile& operator<<(const float value);
-	IFile& operator<<(const double value);
-	IFile& operator<<(const bool value);
-	IFile& operator<<(IFile& (*pf)(IFile&));
-
-	IFile& operator>>(std::string& text);
-	IFile& operator>>(char*& pData);
-	IFile& operator>>(char& value);
-	IFile& operator>>(unsigned char& value);
-	IFile& operator>>(int& value);
-	IFile& operator>>(unsigned int& value);
-	IFile& operator>>(float& value);
-	IFile& operator>>(double& value);
-	IFile& operator>>(bool& value);
-
-	static IFile& endl(IFile& other);
-
-	std::string ReadSizedString();
+	File& operator<<(const std::string& text);
+	File& operator>>(std::string& text);
 
 	std::string GetDirectoryPath() const;
 	std::string GetFileName() const;

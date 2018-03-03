@@ -30,17 +30,9 @@ bool Texture::SetData(void* pData)
 	return true;
 }
 
-bool Texture::Save(const std::string& filePath)
+bool Texture::Save(OutputStream& outputStream)
 {
-	std::string extension = Paths::GetFileExtenstion(filePath);
-
-	if (extension != "png")
-	{
-		FLUX_LOG(Error, "[Texture::Save] > Only .png is supported");
-		return false;
-	}
-
-	AUTOPROFILE_DESC(Texture_Save, Paths::GetFileName(filePath));
+	AUTOPROFILE(Texture_Save);
 
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;
@@ -89,18 +81,10 @@ bool Texture::Save(const std::string& filePath)
 
 	stbi_write_png_to_func([](void *context, void *data, int size)
 	{
-		UNREFERENCED_PARAMETER(context);
-
-		std::stringstream str;
-		str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
-		PhysicalFile pFile(str.str());
-		if (!pFile.Open(FileMode::Write, ContentType::Binary))
+		OutputStream* pStream = reinterpret_cast<OutputStream*>(context);
+		if (!pStream->Write((char*)data, size))
 			return;
-		if (!pFile.Write((char*)data, size))
-			return;
-		pFile.Close();
-
-	}, nullptr, m_Width, m_Height, 4, pData.pData, pData.RowPitch);
+	}, &outputStream, m_Width, m_Height, 4, pData.pData, pData.RowPitch);
 	m_pGraphics->GetImpl()->GetDeviceContext()->Unmap(pStagingTexture.Get(), 0);
 	return true;
 }
