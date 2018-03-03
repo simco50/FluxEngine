@@ -19,6 +19,11 @@ Material::Material(Context* pContext) :
 
 Material::~Material()
 {
+	for (auto& pIt : m_Parameters)
+	{
+		if (pIt.second.pData)
+			delete[] pIt.second.pData;
+	}
 }
 
 bool Material::Load(InputStream& inputStream)
@@ -187,34 +192,22 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 
 	std::stringstream stream(valueString);
 	std::string stringValue;
-	std::vector<std::string> values;
+	std::vector<float> values;
 	while (std::getline(stream, stringValue, ' '))
 	{
-		values.push_back(stringValue);
+		values.push_back(stof(stringValue));
 	}
-	bool isInt = values[0].find('.') == std::string::npos;
-	void* pPointer = nullptr;
-	if (isInt)
+	size_t byteSize = values.size() * sizeof(float);
+	auto it = m_Parameters.find(name);
+	if (it != m_Parameters.end() && it->second.Size == byteSize)
 	{
-		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(int));
-		pPointer = &m_ParameterBuffer[0] + m_BufferOffset;
-		for (size_t i = 0; i < values.size(); ++i)
-		{
-			int v = stoi(values[i]);
-			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(int));
-			m_BufferOffset += sizeof(int);
-		}
+		memcpy(it->second.pData, values.data(), byteSize);
 	}
 	else
 	{
-		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(float));
-		pPointer = &m_ParameterBuffer[0] + m_BufferOffset;
-		for (size_t i = 0; i < values.size(); ++i)
-		{
-			float v = stof(values[i]);
-			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(float));
-			m_BufferOffset += sizeof(float);
-		}
+		void* pPointer = new char[byteSize];
+		ParameterEntry e(byteSize, pPointer);
+		memcpy(pPointer, values.data(), sizeof(float) * values.size());
+		m_Parameters[name] = e;
 	}
-	m_Parameters[name] = pPointer;
 }

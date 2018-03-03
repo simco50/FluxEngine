@@ -156,7 +156,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	const auto& pParameters = m_pCurrentMaterial->GetShaderParameters();
 	for (const auto& pParameter : pParameters)
 	{
-		m_pGraphics->SetShaderParameter(pParameter.first, pParameter.second);
+		m_pGraphics->SetShaderParameter(pParameter.first, pParameter.second.pData);
 	}
 
 	const auto& pTextures = m_pCurrentMaterial->GetTextures();

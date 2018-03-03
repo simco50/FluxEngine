@@ -15,11 +15,22 @@ public:
 	Material(Context* pContext);
 	~Material();
 
+	struct ParameterEntry
+	{
+		ParameterEntry()
+		{}
+		ParameterEntry(const size_t size, void* pData) :
+			Size(size), pData(pData)
+		{}
+		size_t Size;
+		void* pData;
+	};
+
 	virtual bool Load(InputStream& inputStream) override;
 
 	ShaderVariation* GetShader(const ShaderType type) const;
 	const std::unordered_map<TextureSlot, Texture*> GetTextures() const { return m_Textures; }
-	const std::unordered_map<std::string, void*>& GetShaderParameters() const { return m_Parameters; }
+	const std::unordered_map<std::string, ParameterEntry>& GetShaderParameters() const { return m_Parameters; }
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);
 
@@ -54,7 +65,7 @@ private:
 	FillMode m_FillMode = FillMode::SOLID;
 
 	std::unordered_map<TextureSlot, Texture*> m_Textures;
-	std::unordered_map<std::string, void*> m_Parameters;
+
+	std::unordered_map<std::string, ParameterEntry> m_Parameters;
 	int m_BufferOffset = 0;
-	std::vector<char> m_ParameterBuffer;
 };
