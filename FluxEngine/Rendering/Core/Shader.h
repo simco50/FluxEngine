@@ -27,15 +27,13 @@ public:
 
 private:
 	std::string MakeSearchHash(const ShaderType type, const std::string& defines);
+	bool ProcessSource(InputStream* pInputStream, std::stringstream& output);
 
 	std::string m_FileDir;
 	std::string m_ShaderName;
-
-	bool ProcessSource(InputStream* pInputStream, std::stringstream& output);
-
 	std::string m_ShaderSource;
-	using ShaderVariationHash = std::string;
-	std::map<ShaderVariationHash, std::unique_ptr<ShaderVariation>> m_ShaderCache;
+
+	std::map<size_t, std::unique_ptr<ShaderVariation>> m_ShaderCache;
 
 	Graphics* m_pGraphics;
 };

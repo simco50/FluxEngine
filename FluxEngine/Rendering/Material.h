@@ -18,9 +18,8 @@ public:
 	virtual bool Load(InputStream& inputStream) override;
 
 	ShaderVariation* GetShader(const ShaderType type) const;
-	const std::vector<std::pair<TextureSlot, Texture*>> GetTextures() const { return m_Textures; }
-	const std::vector<std::pair<std::string, unsigned int>>& GetShaderParameters() const { return m_Parameters; }
-	const std::vector<char>& GetParameterBuffer() const { return m_ParameterBuffer; }
+	const std::unordered_map<TextureSlot, Texture*> GetTextures() const { return m_Textures; }
+	const std::unordered_map<std::string, void*>& GetShaderParameters() const { return m_Parameters; }
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);
 
@@ -54,9 +53,8 @@ private:
 	bool m_DepthEnabled = true;
 	FillMode m_FillMode = FillMode::SOLID;
 
-	std::vector<std::pair<TextureSlot, Texture*>> m_Textures;
-
+	std::unordered_map<TextureSlot, Texture*> m_Textures;
+	std::unordered_map<std::string, void*> m_Parameters;
 	int m_BufferOffset = 0;
-	std::vector<std::pair<std::string, unsigned int>> m_Parameters;
 	std::vector<char> m_ParameterBuffer;
 };
