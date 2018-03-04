@@ -3,13 +3,14 @@
 
 #include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
-
 #include "SceneGraph/Transform.h"
 
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Renderer.h"
+
 #include "Audio/AudioListener.h"
 #include "Physics/PhysX/PhysicsScene.h"
+#include "Input/InputEngine.h"
 
 Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
 	Component(pContext), m_pInput(pInput), m_pGraphics(pGraphics)

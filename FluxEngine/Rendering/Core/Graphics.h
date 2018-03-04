@@ -14,7 +14,6 @@ class DepthStencilState;
 class ConstantBuffer;
 class Shader;
 class ShaderProgram;
-class Window;
 
 class GraphicsImpl;
 
@@ -23,12 +22,16 @@ class Graphics : public Subsystem
 	FLUX_OBJECT(Graphics, Subsystem)
 
 public:
-	Graphics(Context* pContext, Window* pWindow);
+	Graphics(Context* pContext);
 	~Graphics();
 
 	DELETE_COPY(Graphics)
 
 	bool SetMode(
+		const int width,
+		const int height,
+		WindowType windowType,
+		const bool resizable,
 		const bool vsync,
 		const int multiSample,
 		const int refreshRate);
@@ -59,15 +62,16 @@ public:
 	ShaderVariation* GetShader(const std::string filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
+	void OnResize();
 	void BeginFrame();
 	void EndFrame();
 
 	void TakeScreenshot();
 
 	//Getters
-	Window* GetWindow() const { return m_pWindow; }
-	int GetWindowWidth() const { return m_Width; }
-	int GetWindowHeight() const { return m_Height; }
+	HWND GetWindow() const;
+	int GetWindowWidth() const { return m_WindowWidth; }
+	int GetWindowHeight() const { return m_WindowHeight; }
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
@@ -81,14 +85,18 @@ public:
 private:
 	void PrepareDraw();
 
+	bool OpenWindow();
 	bool EnumerateAdapters();
 	bool CreateDevice(const int windowWidth, const int windowHeight);
 	void UpdateSwapchain(int windowWidth, int windowHeight);
 
-	Window* m_pWindow;
 	DelegateHandle m_WindowSizeChangedHandle;
-	int m_Width = 0;
-	int m_Height = 0;
+	SDL_Window* m_pWindow = nullptr;
+	int m_WindowWidth = 0;
+	int m_WindowHeight = 0;
+	bool m_Resizable = true;
+	WindowType m_WindowType;
+	std::string m_WindowTitle;
 	bool m_Vsync = true;
 	int m_Multisample = 1;
 	int m_RefreshRate = 60;

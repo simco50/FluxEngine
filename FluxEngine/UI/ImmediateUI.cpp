@@ -10,18 +10,16 @@
 #include "Rendering\Core\DepthStencilState.h"
 #include "Rendering\Core\BlendState.h"
 #include "Rendering\Core\RasterizerState.h"
-#include "Core\Window.h"
+#include "Input/InputEngine.h"
 
-ImmediateUI::ImmediateUI(Context* pContext, Window* pWindow) :
-	Subsystem(pContext),
-	m_pWindow(pWindow)
+ImmediateUI::ImmediateUI(Context* pContext) :
+	Subsystem(pContext)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
 
 	m_pInput = pContext->GetSubsystem<InputEngine>();
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
-
-	m_WndProcHandle = pWindow->OnWndProc().AddRaw(this, &ImmediateUI::WndProc);
+	m_SDLEventHandle = m_pInput->OnHandleSDL().AddRaw(this, &ImmediateUI::HandleSDLEvent);
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
@@ -76,8 +74,6 @@ ImmediateUI::ImmediateUI(Context* pContext, Window* pWindow) :
 
 ImmediateUI::~ImmediateUI()
 {
-	m_pWindow->OnWndProc().Remove(m_WndProcHandle);
-
 	ImGui::Shutdown();
 }
 
@@ -91,9 +87,12 @@ void ImmediateUI::NewFrame()
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
-
+	
+	int posX, posY;
+	SDL_GetMouseState(&posX, &posY);
+	io.MousePos.x = (float)posX;
+	io.MousePos.y = (float)posY;
 	io.MouseDrawCursor = true;
-	//m_pInput->CursorVisible(!io.MouseDrawCursor);
 
 	ImGui::NewFrame();
 }
@@ -174,52 +173,47 @@ void ImmediateUI::Render()
 	}
 }
 
-void ImmediateUI::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+void ImmediateUI::HandleSDLEvent(SDL_Event* pEvent)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-
 	ImGuiIO& io = ImGui::GetIO();
-	switch (message)
+	switch (pEvent->type)
 	{
-	case WM_LBUTTONDOWN:
-		io.MouseDown[0] = true;
+	case SDL_MOUSEWHEEL:
+	{
+		if (pEvent->wheel.y > 0) io.MouseWheel += 1;
+		if (pEvent->wheel.y < 0) io.MouseWheel -= 1;
 		return;
-	case WM_LBUTTONUP:
-		io.MouseDown[0] = false;
-		return;
-	case WM_RBUTTONDOWN:
-		io.MouseDown[1] = true;
-		return;
-	case WM_RBUTTONUP:
-		io.MouseDown[1] = false;
-		return;
-	case WM_MBUTTONDOWN:
-		io.MouseDown[2] = true;
-		return;
-	case WM_MBUTTONUP:
-		io.MouseDown[2] = false;
-		return;
-	case WM_MOUSEWHEEL:
-		io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
-		return;
-	case WM_MOUSEMOVE:
-		io.MousePos.x = (signed short)(lParam);
-		io.MousePos.y = (signed short)(lParam >> 16);
-		return;
-	case WM_KEYUP:
-		if (wParam < 256)
-			io.KeysDown[wParam] = false;
-		return;
-	case WM_CHAR:
-		// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-		if (wParam > 0 && wParam < 0x10000)
-			io.AddInputCharacter((unsigned short)wParam);
-		return;
-	case WM_KEYDOWN:
-		if (wParam < 256)
-			io.KeysDown[wParam] = true;
-		return;
-	default:
-		break;
 	}
+	case SDL_MOUSEBUTTONDOWN:
+	{
+		if (pEvent->button.button == SDL_BUTTON_LEFT) io.MouseDown[0] = true;
+		if (pEvent->button.button == SDL_BUTTON_RIGHT) io.MouseDown[1] = true;
+		if (pEvent->button.button == SDL_BUTTON_MIDDLE) io.MouseDown[2] = true;
+		return;
+	}
+	case SDL_MOUSEBUTTONUP:
+	{
+		if (pEvent->button.button == SDL_BUTTON_LEFT) io.MouseDown[0] = false;
+		if (pEvent->button.button == SDL_BUTTON_RIGHT) io.MouseDown[1] = false;
+		if (pEvent->button.button == SDL_BUTTON_MIDDLE) io.MouseDown[2] = false;
+		return;
+	}
+	case SDL_TEXTINPUT:
+	{
+		io.AddInputCharactersUTF8(pEvent->text.text);
+		return;
+	}
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+	{
+		int key = pEvent->key.keysym.scancode;
+		io.KeysDown[key] = (pEvent->type == SDL_KEYDOWN);
+		io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+		io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+		io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+		io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+		return;
+	}
+	}
+	return;
 }

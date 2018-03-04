@@ -29,6 +29,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <SDL.h>
+#pragma comment(lib, "sdl2.lib")
+#pragma comment(lib, "sdl2main.lib")
+
 #ifdef PHYSX
 #include <PxPhysicsAPI.h>
 #if defined(x64) && defined(_DEBUG)
@@ -118,7 +122,6 @@ using namespace DirectX::SimpleMath;
 #include "Core/Object.h"
 #include "Core/Delegates.h"
 #include "Core/GameTimer.h"
-#include "Input/InputEngine.h"
 
 #include "Audio/AudioEngine.h"
 

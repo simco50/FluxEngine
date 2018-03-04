@@ -7,7 +7,6 @@ class FreeCamera;
 class Scene;
 class SceneNode;
 class PhysicsSystem;
-class Window;
 class DebugRenderer;
 class Context;
 class ResourceManager;
@@ -24,6 +23,8 @@ public:
 	void GameLoop();
 	void RenderUI();
 	void InitGame();
+
+	static void DoExit();
 
 private:
 	void OnPause(bool isActive);
@@ -46,6 +47,7 @@ private:
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
 
-	Window* m_pWindow;
 	Context* m_pContext;
+
+	static bool m_Exiting;
 };

@@ -3,6 +3,7 @@
 
 class Graphics;
 class Camera;
+class InputEngine;
 
 class FreeCamera : public SceneNode
 {
@@ -17,7 +18,6 @@ public:
 	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }
-	void UseController(const bool use) { m_UseController = use; }
 
 	void SetSpeed(const float speed) { m_MoveSpeed = speed; }
 
@@ -26,7 +26,6 @@ private:
 	Graphics* m_pGraphics = nullptr;
 
 	void KeyboardMouse();
-	void Controller();
 
 	float m_MoveSpeed = 5.0f;
 	float m_ShiftMultiplier = 3.0f;
@@ -34,7 +33,5 @@ private:
 	Camera *m_pCamera = nullptr;
 
 	bool m_UseMouseAndKeyboard = true;
-	bool m_UseController = true;
-	float m_GamepadSensitivity = 4.0f;
 };
 

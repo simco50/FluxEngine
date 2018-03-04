@@ -15,3 +15,4 @@
 * tinyxml2
 * Fmod
 * Dear, ImGUI
+* SDL2

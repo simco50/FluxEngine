@@ -13,7 +13,6 @@
 #include "Shader.h"
 #include "UI/ImmediateUI.h"
 #include "ShaderProgram.h"
-#include "Core/Window.h"
 
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {

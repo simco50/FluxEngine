@@ -10,28 +10,27 @@ struct VertexElement;
 class ConstantBuffer;
 class Texture;
 class InputEngine;
-class Window;
 
 class ImmediateUI : public Subsystem
 {
 	FLUX_OBJECT(ImmediateUI, Subsystem)
 
 public:
-	ImmediateUI(Context* pContext, Window* pWindow);
+	ImmediateUI(Context* pContext);
 	~ImmediateUI();
 
 	DELETE_COPY(ImmediateUI)
 
 	void NewFrame();
 	void Render();
-	void WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
+	void HandleSDLEvent(SDL_Event* pEvent);
+
 	Graphics* m_pGraphics;
-	Window* m_pWindow;
 	InputEngine* m_pInput;
 
-	DelegateHandle m_WndProcHandle;
+	DelegateHandle m_SDLEventHandle;
 
 	std::vector<VertexElement> m_VertexElements;
 

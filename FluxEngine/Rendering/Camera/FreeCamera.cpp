@@ -4,6 +4,7 @@
 #include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
 #include "Rendering/Core/Graphics.h"
+#include "Input/InputEngine.h"
 
 FreeCamera::FreeCamera(Context* pContext) :
 	SceneNode(pContext)
@@ -32,8 +33,6 @@ void FreeCamera::Update()
 
 	if(m_UseMouseAndKeyboard)
 		KeyboardMouse();
-	/*if (m_UseController)
-		Controller();*/
 }
 
 void FreeCamera::KeyboardMouse()
@@ -50,15 +49,15 @@ void FreeCamera::KeyboardMouse()
 	moveDirection.y += m_pInput->IsKeyboardKeyDown('E') ? 1 : 0;
 
 	float moveSpeed = m_MoveSpeed;
-	if (m_pInput->IsKeyboardKeyDown(VK_LSHIFT))
-		moveSpeed *= m_ShiftMultiplier;
+	/*if (m_pInput->IsKeyboardKeyDown(SDLK_LSHIFT))
+		moveSpeed *= m_ShiftMultiplier;*/
 	moveDirection *= dt * moveSpeed;
 
 	if(moveDirection != Vector3())
 		GetTransform()->Translate(moveDirection, Space::SELF);
 
 	//Rotation
-	if ( m_pInput->IsMouseButtonDown(VK_RBUTTON))
+	if ( m_pInput->IsMouseButtonDown(SDL_BUTTON_RIGHT))
 	{
 		Vector2 mouseMove =  m_pInput->GetMouseMovement();
 		if (mouseMove != Vector2())
@@ -67,34 +66,4 @@ void FreeCamera::KeyboardMouse()
 			GetTransform()->Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
 		}
 	}
-}
-
-void FreeCamera::Controller()
-{
-	float dt = GameTimer::DeltaTime();
-
-	Vector2 leftStick = m_pInput->GetThumbstickPosition();
-	Vector2 rightStick = m_pInput->GetThumbstickPosition(false);
-	bool lb = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_SHOULDER);
-	bool rb = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-	bool leftStickPress = m_pInput->IsGamepadButtonDown(XINPUT_GAMEPAD_LEFT_THUMB);
-
-	//Moving
-	Vector3 moveDirection(0, 0, 0);
-	moveDirection.x = leftStick.x;
-	moveDirection.z = leftStick.y;
-	moveDirection.y += lb ? -1 : 0;
-	moveDirection.y += rb ? 1 : 0;
-
-	float moveSpeed = m_MoveSpeed;
-	if (leftStickPress)
-		moveSpeed *= m_ShiftMultiplier;
-
-	moveDirection *= dt * moveSpeed;
-
-	GetTransform()->Translate(moveDirection, Space::SELF);
-
-	//Rotation
-	GetTransform()->Rotate(-rightStick.y * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, 0.0f, Space::SELF);
-	GetTransform()->Rotate(0.0f, rightStick.x * dt * m_RotationSpeed*m_GamepadSensitivity, 0.0f, Space::WORLD);
 }

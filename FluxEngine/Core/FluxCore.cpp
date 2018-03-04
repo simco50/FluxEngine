@@ -18,11 +18,13 @@
 #include "Physics/PhysX/PhysicsScene.h"
 #include "Physics/PhysX/Rigidbody.h"
 #include "Physics/PhysX/Collider.h"
-#include "Window.h"
 #include "Rendering/DebugRenderer.h"
 #include "Context.h"
 #include "Async/AsyncTaskQueue.h"
 #include "Async/Thread.h"
+#include "Input/InputEngine.h"
+
+bool FluxCore::m_Exiting;
 
 FluxCore::FluxCore()
 {
@@ -31,7 +33,6 @@ FluxCore::FluxCore()
 FluxCore::~FluxCore()
 {
 	SafeDelete(m_pContext);
-	SafeDelete(m_pWindow);
 
 	Config::Flush();
 	Profiler::DestroyInstance();
@@ -58,37 +59,26 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		Config::Initialize();
 
-		//Window
-		m_pWindow = new Window(
-			Config::GetInt("Width", "Window", 1240),
-			Config::GetInt("Height", "Window", 720),
-			Config::GetString("Title", "Window", "FluxEngine"),
-			(WindowType)Config::GetInt("WindowMode", "Window", 0),
-			Config::GetBool("Resizable", "Window", true),
-			"windowClass"
-			);
-		if (!m_pWindow->Open())
-			return 1;
-		m_pWindow->SetIcon("Logo.ico");
-		m_pWindow->OnWindowStateChanged().AddRaw(this, &FluxCore::OnPause);
-
 		//ResourceManager
 		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
 		//Audio
 		m_pContext->RegisterSubsystem<AudioEngine>();
 
 		//Graphics
-		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>(m_pWindow);
+		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
 		if (!m_pGraphics->SetMode(
+			Config::GetInt("Width", "Window", 1240),
+			Config::GetInt("Height", "Window", 720),
+			(WindowType)Config::GetInt("WindowMode", "Window", 0),
+			Config::GetBool("Resizable", "Window", true),
 			Config::GetBool("VSync", "Window", true),
 			Config::GetInt("MSAA", "Window", 8),
 			Config::GetInt("RefreshRate", "Window", 60)))
 		{
 			FLUX_LOG(Error, "[FluxCore::Run] > Failed to initialize graphics");
 		}
-
-		m_pInput = m_pContext->RegisterSubsystem<InputEngine>(m_pWindow);
-		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>(m_pWindow);
+		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
+		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
 
@@ -99,27 +89,19 @@ int FluxCore::Run(HINSTANCE hInstance)
 	}
 
 	//Message loop
-	MSG msg = {};
-	while (msg.message != WM_QUIT)
+	while(m_Exiting == false)
 	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		m_pInput->Update();
+		if (!GameTimer::IsPaused())
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			GameTimer::Tick();
+			GameLoop();
+			m_pConsole->FlushThreadedMessages();
 		}
 		else
-		{
-			if (!GameTimer::IsPaused())
-			{
-				GameTimer::Tick();
-				GameLoop();
-				m_pConsole->FlushThreadedMessages();
-			}
-			else
-				Sleep(100);
-		}
+			Sleep(100);
 	}
-	return (int)msg.wParam;
+	return 0;
 }
 
 void FluxCore::InitGame()
@@ -172,6 +154,11 @@ void FluxCore::InitGame()
 	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
+void FluxCore::DoExit()
+{
+	m_Exiting = true;
+}
+
 void FluxCore::OnPause(bool isActive)
 {
 	if (isActive)
@@ -182,7 +169,6 @@ void FluxCore::OnPause(bool isActive)
 
 void FluxCore::GameLoop()
 {
-	m_pInput->Update();
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
 	m_pGraphics->BeginFrame();
@@ -193,6 +179,9 @@ void FluxCore::GameLoop()
 	if(m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
+	if (m_pInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
+		std::cout << "Left button pressed" << std::endl;
+		
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
 

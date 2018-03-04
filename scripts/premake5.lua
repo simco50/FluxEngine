@@ -58,6 +58,7 @@ workspace "FluxEngine"
 			"../Libraries/Zlib/include",
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
 			"../Libraries/PhysX 3.4/PxShared/include",
+			"../Libraries/SDL2-2.0.7/include",
 		}
 
 		libdirs
@@ -67,6 +68,7 @@ workspace "FluxEngine"
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
+			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
 		}
 
 	project "FluxGame"
@@ -97,6 +99,7 @@ workspace "FluxEngine"
 			"../Libraries/Zlib/include",
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
 			"../Libraries/PhysX 3.4/PxShared/include",
+			"../Libraries/SDL2-2.0.7/include",
 		}
 
 		libdirs
@@ -106,11 +109,13 @@ workspace "FluxEngine"
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
+			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
 		}
 
 		postbuildcommands
 		{ 
 			"xcopy \"$(ProjectDir)Logo.ico\" \"$(OutDir)\" /Y /D",
+			"xcopy \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\" /Y /D",
 		}
 
 		filter { "configurations:Debug" }

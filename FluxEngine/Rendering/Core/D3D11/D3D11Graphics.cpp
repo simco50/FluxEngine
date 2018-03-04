@@ -14,15 +14,19 @@
 #include "../Shader.h"
 #include "../ShaderProgram.h"
 #include "UI/ImmediateUI.h"
-#include "Core/Window.h"
 #include "FileSystem/File/PhysicalFile.h"
 
-Graphics::Graphics(Context* pContext, Window* pWindow) :
-	Subsystem(pContext), m_pWindow(pWindow)
+#include <SDL.h>
+#include <SDL_syswm.h>
+
+Graphics::Graphics(Context* pContext) :
+	Subsystem(pContext)
 {
 	m_pImpl = std::make_unique<GraphicsImpl>();
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
+
+	SDL_Init(SDL_INIT_VIDEO);
 }
 
 Graphics::~Graphics()
@@ -30,7 +34,8 @@ Graphics::~Graphics()
 	if (m_pImpl->m_pSwapChain.IsValid())
 		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, NULL);
 
-	m_pWindow->OnWindowSizeChanged().Remove(m_WindowSizeChangedHandle);
+	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+	SDL_Quit();
 
 #if 0
 	ComPtr<ID3D11Debug> pDebug;
@@ -39,32 +44,44 @@ Graphics::~Graphics()
 #endif
 }
 
-bool Graphics::SetMode(
+HWND Graphics::GetWindow() const
+{
+	SDL_SysWMinfo sysInfo;
+	SDL_VERSION(&sysInfo.version);
+	SDL_GetWindowWMInfo(m_pWindow, &sysInfo);
+	return sysInfo.info.win.window;
+}
+
+bool Graphics::SetMode(const int width,
+	const int height,
+	WindowType windowType,
+	const bool resizable,
 	const bool vsync,
 	const int multiSample,
 	const int refreshRate)
 {
 	AUTOPROFILE(Graphics_SetMode);
 
-	if (m_pWindow == nullptr)
-	{
-		FLUX_LOG(Error, "[Graphics::Graphics] > Window is null");
-		return false;
-	}
-	m_WindowSizeChangedHandle = m_pWindow->OnWindowSizeChanged().AddRaw(this, &Graphics::UpdateSwapchain);
-	m_Width = m_pWindow->GetWidth();
-	m_Height = m_pWindow->GetHeight();
+	m_WindowWidth = width;
+	m_WindowHeight = height;
+	m_WindowType = windowType;
+	m_Resizable = resizable;
 
 	m_Vsync = vsync;
 	m_RefreshRate = refreshRate;
 	m_Multisample = multiSample;
 
+	if (!OpenWindow())
+	{
+		return false;
+	}
+
 	if (!m_pImpl->m_pDevice.IsValid() || m_Multisample != multiSample)
 	{
-		if (!CreateDevice(m_Width, m_Height))
+		if (!CreateDevice(m_WindowWidth, m_WindowHeight))
 			return false;
 	}
-	UpdateSwapchain(m_Width, m_Height);
+	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
 	m_pBlendState = std::make_unique<BlendState>();
 	m_pRasterizerState = std::make_unique<RasterizerState>();
@@ -77,6 +94,36 @@ bool Graphics::SetMode(
 	FLUX_LOG(Info, "[Graphics::SetMode] Graphics initialized");
 
 	return true;
+}
+
+bool Graphics::OpenWindow()
+{
+	SDL_DisplayMode displayMode;
+	SDL_GetCurrentDisplayMode(0, &displayMode);
+	int windowPosX = (displayMode.w - m_WindowWidth) / 2;
+	int windowPosY = (displayMode.h - m_WindowHeight) / 2;
+
+	unsigned flags = 0;
+	if (m_Resizable)
+		flags |= SDL_WINDOW_RESIZABLE;
+	switch (m_WindowType)
+	{
+	case WindowType::BORDERLESS:
+		flags |= SDL_WINDOW_BORDERLESS;
+		m_WindowWidth = displayMode.w;
+		m_WindowHeight = displayMode.h;
+		windowPosX = 0;
+		windowPosY = 0;
+		break;
+	case WindowType::FULLSCREEN:
+		flags |= SDL_WINDOW_FULLSCREEN;
+		break;
+	case WindowType::WINDOWED:
+	default:
+		break;
+	}
+	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), windowPosX, windowPosY, m_WindowWidth, m_WindowHeight, flags);
+	return m_pWindow != nullptr;
 }
 
 void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
@@ -253,14 +300,14 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 	{
 		m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
 
-		viewport.Height *= m_Height;
-		viewport.Width *= m_Width;
-		viewport.TopLeftX *= m_Width;
-		viewport.TopLeftY *= m_Height;
+		viewport.Height *= m_WindowHeight;
+		viewport.Width *= m_WindowWidth;
+		viewport.TopLeftX *= m_WindowWidth;
+		viewport.TopLeftY *= m_WindowHeight;
 	}
 	else
 	{
-		m_CurrentViewport = { viewport.TopLeftX / m_Width, viewport.TopLeftY / m_Height, viewport.Width / m_Width, viewport.Height / m_Height };
+		m_CurrentViewport = { viewport.TopLeftX / m_WindowWidth, viewport.TopLeftY / m_WindowHeight, viewport.Width / m_WindowWidth, viewport.Height / m_WindowHeight };
 	}
 
 	m_pImpl->m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -559,9 +606,9 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapDesc.SampleDesc.Count = m_Multisample;
 	swapDesc.SampleDesc.Quality = m_pImpl->GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
-	swapDesc.OutputWindow = m_pWindow->GetHandle();
+	swapDesc.OutputWindow = GetWindow();
 	swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapDesc.Windowed = m_pWindow->GetType() != WindowType::FULLSCREEN;
+	swapDesc.Windowed = m_WindowType != WindowType::FULLSCREEN;
 
 	//Create the swap chain
 	HR(m_pImpl->m_pFactory->CreateSwapChain(m_pImpl->m_pDevice.Get(), &swapDesc, m_pImpl->m_pSwapChain.GetAddressOf()));
@@ -573,8 +620,8 @@ void Graphics::UpdateSwapchain(int width, int height)
 {
 	AUTOPROFILE(Graphics_UpdateSwapchain);
 
-	m_Width = width;
-	m_Height = height;
+	m_WindowWidth = width;
+	m_WindowHeight = height;
 
 	if (!m_pImpl->m_pSwapChain.IsValid())
 		return;
@@ -585,14 +632,14 @@ void Graphics::UpdateSwapchain(int width, int height)
 	m_pImpl->m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
 
-	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_WindowWidth, m_WindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pImpl->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
 	RenderTargetDesc desc = {};
-	desc.Width = m_Width;
-	desc.Height = m_Height;
+	desc.Width = m_WindowWidth;
+	desc.Height = m_WindowHeight;
 	desc.pColorResource = pBackbuffer;
 	desc.pDepthResource = nullptr;
 	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -611,6 +658,16 @@ void Graphics::UpdateSwapchain(int width, int height)
 
 	SetRenderTarget(0, m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);
+}
+
+void Graphics::OnResize()
+{
+	int width = 0, height = 0;
+	SDL_GetWindowSize(m_pWindow, &width, &height);
+	if (width != m_WindowWidth || height != m_WindowHeight)
+	{
+		UpdateSwapchain(width, height);
+	}
 }
 
 void Graphics::TakeScreenshot()

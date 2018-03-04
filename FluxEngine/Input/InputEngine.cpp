@@ -1,34 +1,18 @@
 #include "FluxEngine.h"
 #include "InputEngine.h"
-#include "Core/Window.h"
+#include "Rendering/Core/Graphics.h"
+#include "Core/FluxCore.h"
 
-InputEngine::InputEngine(Context* pContext, Window* pWindow) :
+InputEngine::InputEngine(Context* pContext) :
 	Subsystem(pContext),
-	m_pWindow(pWindow),
 	m_Enabled(false), 
 	m_ForceToCenter(false)
 {
-	m_pKeyboardState0 = new BYTE[256];
-	m_pKeyboardState1 = new BYTE[256];
-
-	GetKeyboardState(m_pKeyboardState0);
-	GetKeyboardState(m_pKeyboardState1);
-
-	RefreshControllerConnections();
+	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 InputEngine::~InputEngine()
 {
-	if(m_pKeyboardState0 != nullptr)
-	{
-		delete [] m_pKeyboardState0;
-		delete [] m_pKeyboardState1;
-
-		m_pKeyboardState0 = nullptr;
-		m_pKeyboardState1 = nullptr;
-		m_pCurrKeyboardState = nullptr;
-		m_pOldKeyboardState = nullptr;
-	}
 }
 
 bool InputEngine::AddInputAction(InputAction action)
@@ -66,59 +50,51 @@ bool InputEngine::IsActionTriggered(int actionID)
 	return false;
 }
 
-void InputEngine::RefreshControllerConnections()
-{
-	for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
-	{
-		XINPUT_STATE state;
-		ZeroMemory(&state, sizeof(XINPUT_STATE));
-		DWORD dwResult = XInputGetState(i, &state);
-		m_ConnectedGamepads[i] = (dwResult == ERROR_SUCCESS);
-	}
-}
-
-void InputEngine::UpdateGamepadStates()
-{
-	for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
-	{
-		if (!m_ConnectedGamepads[i])
-			return;
-
-		m_OldGamepadState[i] = m_CurrGamepadState[i];
-
-		DWORD dwResult = XInputGetState(i, &m_CurrGamepadState[i]);
-		m_ConnectedGamepads[i] = (dwResult == ERROR_SUCCESS);
-	}
-}
-
-bool InputEngine::UpdateKeyboardStates()
-{
-	//Get Current KeyboardState and set Old KeyboardState
-	BOOL getKeyboardResult;
-	if(m_KeyboardState0Active)
-	{
-		getKeyboardResult = GetKeyboardState(m_pKeyboardState1);
-		m_pOldKeyboardState = m_pKeyboardState0;
-		m_pCurrKeyboardState = m_pKeyboardState1;
-	}
-	else
-	{
-		getKeyboardResult = GetKeyboardState(m_pKeyboardState0);
-		m_pOldKeyboardState = m_pKeyboardState1;
-		m_pCurrKeyboardState = m_pKeyboardState0;
-	}
-
-	m_KeyboardState0Active = !m_KeyboardState0Active;
-
-	return getKeyboardResult>0?true:false;
-}
-
 void InputEngine::Update()
 {
-	UpdateKeyboardStates();
-	UpdateGamepadStates();
+	ZeroMemory(m_KeyPressed.data(), m_KeyPressed.size() * sizeof(bool));
+	m_MouseButtonPressed = 0;
 
-	UpdateKeyboard();
+	SDL_Event event;
+	while(SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_WINDOWEVENT:
+		{
+			switch (event.window.event)
+			{
+			case SDL_WINDOWEVENT_RESIZED:
+				m_pGraphics->OnResize();
+				break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+			case SDL_WINDOWEVENT_MINIMIZED:
+				GameTimer::Stop();
+				break;
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+			case SDL_WINDOWEVENT_MAXIMIZED:
+				GameTimer::Start();
+				break;
+			}
+		}
+		/*case SDL_KEYDOWN:
+			SetKey(SDL_toupper(event.key.keysym.sym), true);
+			break;
+		case SDL_KEYUP:
+			SetKey(SDL_toupper(event.key.keysym.sym), false);
+			break;*/
+		case SDL_MOUSEBUTTONDOWN:
+			SetMouseButton(1 << (event.button.button - 1), true);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			SetMouseButton(1 << (event.button.button - 1), false);
+			break;
+		case SDL_QUIT:
+			FluxCore::DoExit();
+			break;
+		}
+		m_OnHandleSDLEvent.Broadcast(&event);
+	}
 
 	//Mouse Position
 	if (m_MouseMove)
@@ -127,192 +103,71 @@ void InputEngine::Update()
 		m_MouseMovement = Vector2(0, 0);
 
 	m_OldMousePosition = m_CurrMousePosition;
-	if(GetCursorPos(&m_CurrMousePosition))
-	{
-		ScreenToClient(m_pWindow->GetHandle(), &m_CurrMousePosition);
-	}
+	int mousePosX, mousePosY;
+	SDL_GetMouseState(&mousePosX, &mousePosY);
+	m_CurrMousePosition.x = mousePosX;
+	m_CurrMousePosition.y = mousePosY;
 
 	m_MouseMovement.x = (float)m_CurrMousePosition.x - (float)m_OldMousePosition.x;
 	m_MouseMovement.y = (float)m_CurrMousePosition.y - (float)m_OldMousePosition.y;
+}
 
-	if (m_ForceToCenter)
-	{
-		POINT mouseCenter;
-		m_CurrMousePosition.x = m_pWindow->GetWidth() / 2;
-		m_CurrMousePosition.y = m_pWindow->GetHeight() / 2;
-		mouseCenter.x = m_CurrMousePosition.x;
-		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(m_pWindow->GetHandle(), &mouseCenter);
-
-		SetCursorPos(mouseCenter.x, mouseCenter.y);
-	}
+void InputEngine::CursorVisible(bool visible) const
+{
+	SDL_ShowCursor((int)visible);
 }
 
 bool InputEngine::IsKeyboardKeyDown(int key) const
 {
-	return (m_pCurrKeyboardState[key] & 0xF0) != 0;
+	return m_KeyDown[key];
 }
 
 bool InputEngine::IsKeyboardKeyPressed(int key) const
 {
-	return (m_pCurrKeyboardState[key] & 0xF0) != 0 && m_pCurrKeyboardState[key] != m_pOldKeyboardState[key];
+	return m_KeyPressed[key];
 }
 
 bool InputEngine::IsMouseButtonDown(int button) const
 {
-	return (m_pCurrKeyboardState[button] & 0xF0) != 0 ? true : false;
+	return ((m_MouseButtonDown >> (button - 1)) & 1) == 1;
 }
 
-bool InputEngine::IsGamepadButtonDown(WORD button, GamepadIndex playerIndex) const
+bool InputEngine::IsMouseButtonPressed(int button) const
 {
-	return (m_CurrGamepadState[playerIndex].Gamepad.wButtons&button) != 0 ? true : false;
+	return ((m_MouseButtonPressed >> (button - 1)) & 1) == 1;
 }
 
-Vector2 InputEngine::GetThumbstickPosition(bool leftThumbstick, GamepadIndex playerIndex) const
+void InputEngine::SetKey(int keyCode, bool down)
 {
-	Vector2 pos;
-	if(leftThumbstick)
+	if (down)
 	{
-		pos = Vector2(m_CurrGamepadState[playerIndex].Gamepad.sThumbLX, m_CurrGamepadState[playerIndex].Gamepad.sThumbLY);
-		
-		if(pos.x>-XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pos.x<XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)pos.x = 0;
-		if(pos.y>-XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pos.y<XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)pos.y = 0;
+		if (m_KeyDown[keyCode] == false)
+			m_KeyPressed[keyCode] = true;
+		m_KeyDown[keyCode] = true;
 	}
 	else
 	{
-		pos = Vector2(m_CurrGamepadState[playerIndex].Gamepad.sThumbRX, m_CurrGamepadState[playerIndex].Gamepad.sThumbRY);
-
-		if(pos.x>-XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pos.x<XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)pos.x = 0;
-		if(pos.y>-XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pos.y<XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)pos.y = 0;
+		m_KeyDown[keyCode] = false;
 	}
-
-	if (pos.x < 0)
-		pos.x /= 32768;
-	else 
-		pos.x /= 32767;
-
-	if (pos.y < 0)
-		pos.y /= 32768;
-	else 
-		pos.y /= 32767;
-	
-	return pos;
 }
 
-void InputEngine::UpdateKeyboard()
+void InputEngine::SetMouseButton(int mouseButton, bool down)
 {
-	for (auto it = m_InputActions.begin(); it != m_InputActions.end(); ++it)
+	if (down)
 	{
-		for (InputAction& action : it->second)
+		if ((m_MouseButtonDown & mouseButton) == 0)
 		{
-			if (action.TriggerState == Pressed)
-			{
-				if (action.KeyboardCode != -1)
-				{
-					if (m_pCurrKeyboardState[action.KeyboardCode] & 0xF0 && (m_pOldKeyboardState[action.KeyboardCode] & 0xF0) == false)
-						action.Pressed = true;
-					else
-						action.Pressed = false;
-				}
-				else if (action.MouseButtonCode != -1)
-				{
-					if (m_pCurrKeyboardState[action.MouseButtonCode] & 0xF0 && (m_pOldKeyboardState[action.MouseButtonCode] & 0xF0) == false)
-						action.Pressed = true;
-					else
-						action.Pressed = false;
-				}
-				else if (action.GamepadButtonCode != -1)
-				{
-					if (m_CurrGamepadState[action.PlayerIndex].Gamepad.wButtons&action.GamepadButtonCode && (m_CurrGamepadState[action.PlayerIndex].Gamepad.wButtons&action.GamepadButtonCode) == 0)
-						action.Pressed = true;
-					else
-						action.Pressed = false;
-				}
-			}
-			else if (action.TriggerState == Down)
-			{
-				if (action.KeyboardCode != -1)
-				{
-					if (m_pCurrKeyboardState[action.KeyboardCode] & 0xF0 || m_pOldKeyboardState[action.KeyboardCode] & 0xF0)
-						action.Down = true;
-					else
-						action.Down = false;
-				}
-				else if (action.MouseButtonCode != -1)
-				{
-					if (m_pCurrKeyboardState[action.MouseButtonCode] & 0xF0 || m_pOldKeyboardState[action.MouseButtonCode] & 0xF0)
-						action.Down = true;
-					else
-						action.Down = false;
-				}
-				else if (action.GamepadButtonCode != -1)
-				{
-					if (m_CurrGamepadState[action.PlayerIndex].Gamepad.wButtons&action.GamepadButtonCode)
-						action.Down = true;
-					else
-						action.Down = false;
-				}
-			}
-			else if (action.TriggerState == Released)
-			{
-				if (action.KeyboardCode != -1)
-				{
-					if (m_pOldKeyboardState[action.KeyboardCode] & 0xF0 && (m_pCurrKeyboardState[action.KeyboardCode] & 0xF0) == false)
-						action.Released = true;
-					else
-						action.Released = false;
-				}
-				else if (action.MouseButtonCode != -1)
-				{
-					if (m_pOldKeyboardState[action.MouseButtonCode] & 0xF0 && (m_pCurrKeyboardState[action.MouseButtonCode] & 0xF0) == false)
-						action.Released = true;
-					else
-						action.Released = false;
-				}
-				else if (action.GamepadButtonCode != -1)
-				{
-					if (m_OldGamepadState[action.PlayerIndex].Gamepad.wButtons&action.GamepadButtonCode && (m_CurrGamepadState[action.PlayerIndex].Gamepad.wButtons&action.GamepadButtonCode) == 0)
-						action.Released = true;
-					else
-						action.Released = false;
-				}
-			}
+			m_MouseButtonPressed |= mouseButton;
 		}
+		m_MouseButtonDown |= mouseButton;
 	}
-}
-
-float InputEngine::GetTriggerPressure(bool leftTrigger, GamepadIndex playerIndex) const
-{
-	if (leftTrigger)
-		return m_CurrGamepadState[playerIndex].Gamepad.bLeftTrigger / 255.0f;
-	return m_CurrGamepadState[playerIndex].Gamepad.bRightTrigger / 255.0f;
-}
-
-void InputEngine::SetVibration(float leftVibration, float rightVibration, GamepadIndex playerIndex) const
-{
-	XINPUT_VIBRATION vibration;
-    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-
-    vibration.wLeftMotorSpeed = static_cast<WORD>(leftVibration * 65535);
-	vibration.wRightMotorSpeed = static_cast<WORD>(rightVibration * 65535);
-
-    XInputSetState(playerIndex, &vibration);
+	else
+	{
+		m_MouseButtonDown &= ~mouseButton;
+	}
 }
 
 void InputEngine::ForceMouseToCenter(bool force)
 {
-	m_ForceToCenter = force;
-
-	if (force)
-	{
-		POINT mouseCenter;
-		m_CurrMousePosition.x = m_pWindow->GetWidth() / 2;
-		m_CurrMousePosition.y = m_pWindow->GetHeight() / 2;
-		mouseCenter.x = m_CurrMousePosition.x;
-		mouseCenter.y = m_CurrMousePosition.y;
-		ClientToScreen(m_pWindow->GetHandle(), &mouseCenter);
-
-		SetCursorPos(mouseCenter.x, mouseCenter.y);
-	}
+	SDL_SetRelativeMouseMode(force ? SDL_TRUE : SDL_FALSE);
 }
-

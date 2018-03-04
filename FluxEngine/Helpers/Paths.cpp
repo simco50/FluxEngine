@@ -4,8 +4,8 @@
 
 const std::string Paths::LogsFolder =			"Saved\\Logs";
 const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
-const std::string Paths::GameIniFile =			"Config\\Game.ini";
-const std::string Paths::EngineIniFile =		"Config\\Engine.ini";
+const std::string Paths::GameIniFile =			"Saved\\Config\\Game.ini";
+const std::string Paths::EngineIniFile =		"Saved\\Config\\Engine.ini";
 const std::string Paths::ResourcesFolder =		".\\Resources";
 const std::string Paths::PakFilesFolder =		".";
 
