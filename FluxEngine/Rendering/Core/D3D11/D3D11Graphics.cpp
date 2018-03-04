@@ -21,6 +21,8 @@ Graphics::Graphics(Context* pContext, Window* pWindow) :
 	Subsystem(pContext), m_pWindow(pWindow)
 {
 	m_pImpl = std::make_unique<GraphicsImpl>();
+	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
+		m_CurrentRenderTargets[i] = nullptr;
 }
 
 Graphics::~Graphics()
@@ -30,13 +32,11 @@ Graphics::~Graphics()
 
 	m_pWindow->OnWindowSizeChanged().Remove(m_WindowSizeChangedHandle);
 
-	/*
-	#ifdef _DEBUG
+#if 0
 	ComPtr<ID3D11Debug> pDebug;
 	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
 	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_SUMMARY);
-	#endif
-	*/
+#endif
 }
 
 bool Graphics::SetMode(
@@ -79,23 +79,18 @@ bool Graphics::SetMode(
 	return true;
 }
 
-void Graphics::SetRenderTarget(RenderTarget* pRenderTarget)
+void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 {
-	ID3D11RenderTargetView* pRtv = pRenderTarget ? (ID3D11RenderTargetView*)pRenderTarget->GetRenderTexture()->GetRenderTargetView() : nullptr;
-	if (pRenderTarget != nullptr)
-		m_pImpl->m_pDeviceContext->OMSetRenderTargets(1, &pRtv, (ID3D11DepthStencilView*)pRenderTarget->GetDepthTexture()->GetRenderTargetView());
-}
-
-void Graphics::SetRenderTargets(const std::vector<RenderTarget*>& pRenderTargets)
-{
-	std::vector<ID3D11RenderTargetView*> pRtvs;
-	pRtvs.reserve(pRenderTargets.size());
-	for (RenderTarget* pRt : pRenderTargets)
+	if (index == 0 && pRenderTarget == nullptr)
 	{
-		ID3D11RenderTargetView* pRenderTarget = pRt ? (ID3D11RenderTargetView*)pRt->GetRenderTexture()->GetRenderTargetView() : nullptr;
-		pRtvs.push_back(pRenderTarget);
+		m_CurrentRenderTargets[0] = m_pDefaultRenderTarget.get();
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
-	m_pImpl->m_pDeviceContext->OMSetRenderTargets((UINT)pRenderTargets.size(), pRtvs.data(), pRenderTargets[0] ? (ID3D11DepthStencilView*)pRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr);
+	else if(m_CurrentRenderTargets[index] != pRenderTarget)
+	{
+		m_CurrentRenderTargets[index] = pRenderTarget;
+		m_pImpl->m_RenderTargetsDirty = true;
+	}
 }
 
 void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
@@ -134,11 +129,11 @@ void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsi
 		}
 		if (changed)
 		{
-			m_VertexBuffersDirty = true;
-			if (i < m_FirstDirtyVertexBuffer)
-				m_FirstDirtyVertexBuffer = i;
-			if (i > m_LastDirtyVertexBuffer)
-				m_LastDirtyVertexBuffer = i;
+			m_pImpl->m_VertexBuffersDirty = true;
+			if (i < m_pImpl->m_FirstDirtyVertexBuffer)
+				m_pImpl->m_FirstDirtyVertexBuffer = i;
+			if (i > m_pImpl->m_LastDirtyVertexBuffer)
+				m_pImpl->m_LastDirtyVertexBuffer = i;
 		}
 	}
 }
@@ -178,7 +173,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
 			return false;
 		}
-		m_ShaderProgramDirty = true;
+		m_pImpl->m_ShaderProgramDirty = true;
 	}
 
 	if (pShader)
@@ -217,6 +212,33 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 	return true;
 }
 
+bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+{
+	if (m_pImpl->m_ShaderProgramDirty)
+	{
+		unsigned int hash = 0;
+		for (ShaderVariation* pVariation : m_CurrentShaders)
+		{
+			hash <<= 8;
+			if (pVariation == nullptr)
+				continue;
+			hash |= pVariation->GetName().size();
+		}
+		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
+		if (pIt != m_pImpl->m_ShaderPrograms.end())
+			m_pImpl->m_pCurrentShaderProgram = pIt->second.get();
+		else
+		{
+			AUTOPROFILE(Graphics_SetShaderParameter_CreateShaderProgram);
+			std::unique_ptr<ShaderProgram> pShaderProgram = std::make_unique<ShaderProgram>(m_CurrentShaders);
+			m_pImpl->m_ShaderPrograms[hash] = std::move(pShaderProgram);
+			m_pImpl->m_pCurrentShaderProgram = m_pImpl->m_ShaderPrograms[hash].get();
+		}
+		m_pImpl->m_ShaderProgramDirty = false;
+	}
+	return m_pImpl->m_pCurrentShaderProgram->SetParameter(name, pData);
+}
+
 void Graphics::SetViewport(const FloatRect& rect, bool relative)
 {
 	D3D11_VIEWPORT viewport;
@@ -246,26 +268,26 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 
 void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 {
-	if ((unsigned int)slot >= m_pImpl->m_CurrentSamplerStates.size())
+	if (slot >= TextureSlot::MAX)
 	{
-		m_pImpl->m_CurrentSamplerStates.resize((unsigned int)slot + 1);
-		m_pImpl->m_CurrentShaderResourceViews.resize((unsigned int)slot + 1);
+		FLUX_LOG(Warning, "[Graphics::SetTexture] > Can't assign a texture to a slot out of range");
+		return;
 	}
 
-	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_CurrentShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_CurrentSamplerStates[(unsigned int)slot]))
+	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_SamplerStates[(unsigned int)slot]))
 		return;
 
 	if (pTexture)
 		pTexture->UpdateParameters();
 
-	m_pImpl->m_CurrentShaderResourceViews[(unsigned int)slot] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
-	m_pImpl->m_CurrentSamplerStates[(unsigned int)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
+	m_pImpl->m_ShaderResourceViews[(size_t)slot] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
+	m_pImpl->m_SamplerStates[(size_t)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
-	m_TexturesDirty = true;
-	if (m_FirstDirtyTexture > (unsigned int)slot)
-		m_FirstDirtyTexture = (unsigned int)slot;
-	if (m_LastDirtyTexture < (unsigned int)slot)
-		m_LastDirtyTexture = (unsigned int)slot;
+	m_pImpl->m_TexturesDirty = true;
+	if (m_pImpl->m_FirstDirtyTexture > (unsigned int)slot)
+		m_pImpl->m_FirstDirtyTexture = (unsigned int)slot;
+	if (m_pImpl->m_LastDirtyTexture < (unsigned int)slot)
+		m_pImpl->m_LastDirtyTexture = (unsigned int)slot;
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
@@ -333,6 +355,15 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 
 void Graphics::PrepareDraw()
 {
+	if (m_pImpl->m_RenderTargetsDirty)
+	{
+		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
+			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTexture()->GetRenderTargetView() : nullptr;
+		m_pImpl->m_pDepthStencilView = m_CurrentRenderTargets[0] ? (ID3D11DepthStencilView*)m_CurrentRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr;
+		m_pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, m_pImpl->m_RenderTargetViews.data(), m_pImpl->m_pDepthStencilView);
+		m_pImpl->m_RenderTargetsDirty = false;
+	}
+
 	if (m_pDepthStencilState->IsDirty())
 	{
 		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
@@ -351,27 +382,27 @@ void Graphics::PrepareDraw()
 		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
 	}
 
-	if (m_TexturesDirty)
+	if (m_pImpl->m_TexturesDirty)
 	{
-		m_pImpl->m_pDeviceContext->VSSetSamplers(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_pImpl->m_CurrentSamplerStates.data() + m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetSamplers(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_pImpl->m_CurrentSamplerStates.data() + m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_pImpl->m_CurrentShaderResourceViews.data() + m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_FirstDirtyTexture, m_LastDirtyTexture - m_FirstDirtyTexture + 1, m_pImpl->m_CurrentShaderResourceViews.data() + m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 
-		m_TexturesDirty = false;
-		m_FirstDirtyTexture = m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
-		m_LastDirtyTexture = 0;
+		m_pImpl->m_TexturesDirty = false;
+		m_pImpl->m_FirstDirtyTexture = m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_LastDirtyTexture = 0;
 	}
 
-	if (m_VertexBuffersDirty)
+	if (m_pImpl->m_VertexBuffersDirty)
 	{
 		//Set the vertex buffers
 		m_pImpl->m_pDeviceContext->IASetVertexBuffers(
-			m_FirstDirtyVertexBuffer,
-			m_LastDirtyVertexBuffer - m_FirstDirtyVertexBuffer + 1,
-			&m_pImpl->m_CurrentVertexBuffers[m_FirstDirtyVertexBuffer],
-			&m_pImpl->m_CurrentStrides[m_FirstDirtyVertexBuffer],
-			&m_pImpl->m_CurrentOffsets[m_FirstDirtyVertexBuffer]);
+			m_pImpl->m_FirstDirtyVertexBuffer,
+			m_pImpl->m_LastDirtyVertexBuffer - m_pImpl->m_FirstDirtyVertexBuffer + 1,
+			&m_pImpl->m_CurrentVertexBuffers[m_pImpl->m_FirstDirtyVertexBuffer],
+			&m_pImpl->m_CurrentStrides[m_pImpl->m_FirstDirtyVertexBuffer],
+			&m_pImpl->m_CurrentOffsets[m_pImpl->m_FirstDirtyVertexBuffer]);
 
 		//Calculate the input element description hash to find the correct input layout
 		unsigned long long hash = 0;
@@ -399,9 +430,9 @@ void Graphics::PrepareDraw()
 			m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
 		}
 
-		m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
-		m_LastDirtyVertexBuffer = 0;
-		m_VertexBuffersDirty = false;
+		m_pImpl->m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_LastDirtyVertexBuffer = 0;
+		m_pImpl->m_VertexBuffersDirty = false;
 	}
 
 	if (m_ScissorRectDirty)
@@ -548,8 +579,6 @@ void Graphics::UpdateSwapchain(int width, int height)
 	if (!m_pImpl->m_pSwapChain.IsValid())
 		return;
 
-	m_pImpl->m_pBackbufferResolveTexture.Reset();
-
 	assert(m_pImpl->m_pDevice.IsValid());
 	assert(m_pImpl->m_pSwapChain.IsValid());
 
@@ -571,7 +600,16 @@ void Graphics::UpdateSwapchain(int width, int height)
 	desc.MultiSample = m_Multisample;
 	m_pDefaultRenderTarget = std::make_unique<RenderTarget>(m_pContext);
 	m_pDefaultRenderTarget->Create(desc);
-	SetRenderTarget(m_pDefaultRenderTarget.get());
+
+	m_pImpl->m_pDepthStencilView = nullptr;
+	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
+	{
+		m_CurrentRenderTargets[i] = nullptr;
+		m_pImpl->m_RenderTargetViews[i] = nullptr;
+	}
+	m_pImpl->m_RenderTargetsDirty = true;
+
+	SetRenderTarget(0, m_pDefaultRenderTarget.get());
 	SetViewport(m_CurrentViewport, true);
 }
 

@@ -34,8 +34,7 @@ public:
 		const int refreshRate);
 
 	//Graphics
-	void SetRenderTarget(RenderTarget* pRenderTarget);
-	void SetRenderTargets(const std::vector<RenderTarget*>& pRenderTargets);
+	void SetRenderTarget(const int index, RenderTarget* pRenderTarget);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
 	void SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
@@ -78,6 +77,7 @@ public:
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
+
 private:
 	void PrepareDraw();
 
@@ -102,17 +102,10 @@ private:
 
 	//All ConstantBuffers
 	std::map<std::string, std::unique_ptr<ConstantBuffer>> m_ConstantBuffers;
-	//Reference to all current ConstantBuffers
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
 	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
-	//References to all current shaders
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
-	//All shaders
-	std::map<std::string, std::unique_ptr<Shader>> m_Shaders;
-
-	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	std::map<unsigned int, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
-	bool m_ShaderProgramDirty = false;
+	std::map<std::string, std::unique_ptr<Shader>> m_ShaderCache;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;
@@ -121,14 +114,7 @@ private:
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	std::array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
-	unsigned int m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
-	unsigned int m_LastDirtyVertexBuffer = 0;
-	bool m_VertexBuffersDirty = false;
-
-	//Textures
-	bool m_TexturesDirty = false;
-	unsigned int m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
-	unsigned int m_LastDirtyTexture = 0;
+	std::array<RenderTarget*, GraphicsConstants::MAX_RENDERTARGETS> m_CurrentRenderTargets;
 
 	//Debug data
 	unsigned int m_BatchCount = 0;
