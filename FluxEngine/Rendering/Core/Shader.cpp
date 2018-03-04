@@ -31,16 +31,25 @@ bool Shader::Load(InputStream& inputStream)
 		m_ShaderSource = codeStream.str();
 	}
 
+	//Reload all shaders in the cache
+	for (auto& p : m_ShaderCache)
+	{
+		if (p.second == nullptr)
+			continue;
+		p.second->Create(m_pGraphics);
+	}
+
 	return true;
 }
 
 ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& defines)
 {
-	ShaderVariationHash searchKey = MakeSearchHash(type, defines);
+	std::hash<std::string> hasher;
+	size_t hash = hasher(defines + (char)type);
 
-	auto pShader = m_ShaderCache.find(searchKey);
-	if (pShader != m_ShaderCache.end())
-		return pShader->second.get();
+	auto pIt = m_ShaderCache.find(hash);
+	if (pIt != m_ShaderCache.end())
+		return pIt->second.get();
 
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(this, type);
 	pVariation->SetDefines(defines);
@@ -50,9 +59,8 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& 
 		return nullptr;
 	}
 
-	m_ShaderCache[searchKey] = std::move(pVariation);
-
-	return m_ShaderCache[searchKey].get();
+	m_ShaderCache[hash] = std::move(pVariation);
+	return m_ShaderCache[hash].get();
 }
 
 std::string Shader::GetEntryPoint(const ShaderType type)

@@ -220,6 +220,14 @@ void FluxCore::RenderUI()
 
 	ImGui::Begin("Debug");
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
+	if(ImGui::Button("Reload shader"))
+	{
+		m_pResourceManager->Reload<Shader>("Resources/Shaders/Diffuse.hlsl");
+	}
+	if (ImGui::Button("Reload material"))
+	{
+		m_pResourceManager->Reload<Shader>("Resources/Materials/Default.xml");
+	}
 	ImGui::End();
 
 	m_pImmediateUI->Render();

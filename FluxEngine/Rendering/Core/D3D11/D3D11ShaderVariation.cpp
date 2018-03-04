@@ -24,6 +24,8 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 		return false;
 	}
 
+	SafeRelease(m_pShaderObject);
+
 	switch (m_ShaderType)
 	{
 	case ShaderType::VertexShader:

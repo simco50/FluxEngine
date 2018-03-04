@@ -19,6 +19,11 @@ Material::Material(Context* pContext) :
 
 Material::~Material()
 {
+	for (auto& pIt : m_Parameters)
+	{
+		if (pIt.second.pData)
+			delete[] pIt.second.pData;
+	}
 }
 
 bool Material::Load(InputStream& inputStream)
@@ -44,6 +49,9 @@ bool Material::Load(InputStream& inputStream)
 		FLUX_LOG(Error, "[Material::Load()] > '%s' : does not have a 'Shaders' section. This is required", m_Name.c_str());
 		return false;
 	}
+
+	for (ShaderVariation*& pShader : m_ShaderVariations)
+		pShader = nullptr;
 
 	XML::XMLElement* pShader = pShaders->FirstChildElement();
 	while (pShader != nullptr)
@@ -75,7 +83,6 @@ bool Material::Load(InputStream& inputStream)
 		pShader = pShader->NextSiblingElement();
 	}
 
-
 	//Load the Parameter data
 	XML::XMLElement* pParameters = pRootNode->FirstChildElement("Parameters");
 	if (pParameters != nullptr)
@@ -99,7 +106,7 @@ bool Material::Load(InputStream& inputStream)
 				}
 
 				Texture* pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pParameter->Attribute("value"));
-				m_Textures.push_back(std::pair<TextureSlot, Texture*>(slotType, pTexture));
+				m_Textures[slotType] = pTexture;
 			}
 			else if (parameterType == "Value")
 			{
@@ -175,7 +182,7 @@ void Material::SetTexture(const TextureSlot slot, Texture* pTexture)
 			return;
 		}
 	}
-	m_Textures.push_back(std::pair<TextureSlot, Texture*>(slot, pTexture));
+	m_Textures[slot] = pTexture;
 }
 
 //#todo: This is really hacky and unsafe, should find a better way to store arbitrary shader values
@@ -185,31 +192,22 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 
 	std::stringstream stream(valueString);
 	std::string stringValue;
-	std::vector<std::string> values;
+	std::vector<float> values;
 	while (std::getline(stream, stringValue, ' '))
 	{
-		values.push_back(stringValue);
+		values.push_back(stof(stringValue));
 	}
-	bool isInt = values[0].find('.') == std::string::npos;
-	if (isInt)
+	size_t byteSize = values.size() * sizeof(float);
+	auto it = m_Parameters.find(name);
+	if (it != m_Parameters.end() && it->second.Size == byteSize)
 	{
-		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(int));
-		for (size_t i = 0; i < values.size(); ++i)
-		{
-			int v = stoi(values[i]);
-			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(int));
-			m_BufferOffset += sizeof(int);
-		}
+		memcpy(it->second.pData, values.data(), byteSize);
 	}
 	else
 	{
-		m_ParameterBuffer.resize(m_ParameterBuffer.size() + values.size() * sizeof(float));
-		for (size_t i = 0; i < values.size(); ++i)
-		{
-			float v = stof(values[i]);
-			memcpy(&m_ParameterBuffer[0] + m_BufferOffset, &v, sizeof(float));
-			m_BufferOffset += sizeof(float);
-		}
+		void* pPointer = new char[byteSize];
+		ParameterEntry e(byteSize, pPointer);
+		memcpy(pPointer, values.data(), sizeof(float) * values.size());
+		m_Parameters[name] = e;
 	}
-	m_Parameters.push_back(std::pair<std::string, unsigned int>(name, (unsigned int)(m_ParameterBuffer.size() - values.size() * sizeof(float))));
 }
