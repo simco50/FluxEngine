@@ -5,6 +5,32 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 
+namespace STBI
+{
+	int ReadCallback(void* pUser, char* pData, int size)
+	{
+		InputStream* pStream = (InputStream*)pUser;
+		if (pStream == nullptr)
+			return 0;
+		return (int)pStream->Read(pData, (size_t)size);
+	}
+
+	void SkipCallback(void* pUser, int n)
+	{
+		InputStream* pStream = (InputStream*)pUser;
+		if (pStream)
+			pStream->MovePointer(n);
+	}
+
+	int EofCallback(void* pUser)
+	{
+		InputStream* pStream = (InputStream*)pUser;
+		if (pStream == nullptr)
+			return 1;
+		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
+	}
+}
+
 Texture::Texture(Context* pContext, void* pTexture, void* pTextureSRV) :
 	Resource(pContext),
 	m_pResource(pTexture),
@@ -28,17 +54,19 @@ Texture::~Texture()
 
 bool Texture::Load(InputStream& inputStream)
 {
-	std::vector<char> buffer;
-	inputStream.ReadAllBytes(buffer);
+	AUTOPROFILE(Texture_Load);
 
-	unsigned char* pPixels;
+	unsigned char* pPixels = nullptr;
 	int width, height, bpp;
 	{
 		AUTOPROFILE(Texture_Load_FromMemory);
-		pPixels = stbi_load_from_memory((stbi_uc*)buffer.data(), (int)buffer.size(), &width, &height, &bpp, 4);
-		std::vector<unsigned char> pixels;
-		pixels.resize(width * height * bpp);
-		memcpy(pixels.data(), pPixels, pixels.size());
+		stbi_io_callbacks callbacks;
+		callbacks.read = STBI::ReadCallback;
+		callbacks.skip = STBI::SkipCallback;
+		callbacks.eof = STBI::EofCallback;
+		pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &width, &height, &bpp, 4);
+		if (pPixels == nullptr)
+			return false;
 	}
 
 	if (!SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
