@@ -7,7 +7,7 @@
 #include "External/Stb/stb_image_write.h"
 #include "FileSystem/File/PhysicalFile.h"
 
-bool Texture::SetData(void* pData)
+bool Texture::SetData(const void* pData)
 {
 	AUTOPROFILE(Texture_SetData);
 

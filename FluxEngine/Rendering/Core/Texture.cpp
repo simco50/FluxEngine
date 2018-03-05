@@ -2,34 +2,8 @@
 #include "Texture.h"
 #include "Graphics.h"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
-
-namespace STBI
-{
-	int ReadCallback(void* pUser, char* pData, int size)
-	{
-		InputStream* pStream = (InputStream*)pUser;
-		if (pStream == nullptr)
-			return 0;
-		return (int)pStream->Read(pData, (size_t)size);
-	}
-
-	void SkipCallback(void* pUser, int n)
-	{
-		InputStream* pStream = (InputStream*)pUser;
-		if (pStream)
-			pStream->MovePointer(n);
-	}
-
-	int EofCallback(void* pUser)
-	{
-		InputStream* pStream = (InputStream*)pUser;
-		if (pStream == nullptr)
-			return 1;
-		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
-	}
-}
+#include "Content/Image.h"
 
 Texture::Texture(Context* pContext, void* pTexture, void* pTextureSRV) :
 	Resource(pContext),
@@ -56,25 +30,14 @@ bool Texture::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Texture_Load);
 
-	unsigned char* pPixels = nullptr;
-	int width, height, bpp;
-	{
-		AUTOPROFILE(Texture_Load_FromMemory);
-		stbi_io_callbacks callbacks;
-		callbacks.read = STBI::ReadCallback;
-		callbacks.skip = STBI::SkipCallback;
-		callbacks.eof = STBI::EofCallback;
-		pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &width, &height, &bpp, 4);
-		if (pPixels == nullptr)
-			return false;
-	}
-
-	if (!SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+	m_pImage = std::make_unique<Image>(m_pContext);
+	if (!m_pImage->Load(inputStream))
 		return false;
-	if (!SetData(pPixels))
+	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+		return false;
+	if (!SetData(m_pImage->GetData()))
 		return false;
 
-	stbi_image_free(pPixels);
 	return true;
 }
 

@@ -24,6 +24,7 @@
 #include "Async/Thread.h"
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
+#include "Content/Image.h"
 
 bool FluxCore::m_Exiting;
 
@@ -66,6 +67,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		//Graphics
 		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
 		if (!m_pGraphics->SetMode(
+			Config::GetString("Title", "Window", "FluxEngine"),
 			Config::GetInt("Width", "Window", 1240),
 			Config::GetInt("Height", "Window", 720),
 			(WindowType)Config::GetInt("WindowMode", "Window", 0),
