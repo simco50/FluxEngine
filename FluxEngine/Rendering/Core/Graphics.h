@@ -28,6 +28,7 @@ public:
 	DELETE_COPY(Graphics)
 
 	bool SetMode(
+		const std::string& windowTitle,
 		const int width,
 		const int height,
 		WindowType windowType,

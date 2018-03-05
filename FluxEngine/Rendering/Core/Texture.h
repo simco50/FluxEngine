@@ -2,6 +2,7 @@
 #include "Content/Resource.h"
 
 class Graphics;
+class Image;
 
 enum class TextureUsage
 {
@@ -23,10 +24,9 @@ public:
 	DELETE_COPY(Texture)
 
 	virtual bool Load(InputStream& inputStream) override;
-	virtual bool Save(OutputStream& outputStream) override;
 
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
-	bool SetData(void* pData);
+	bool SetData(const void* pData);
 
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }
@@ -61,6 +61,7 @@ private:
 	unsigned int m_TextureFormat = 0;
 	unsigned int m_MultiSample = 1;
 
+	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
 	Graphics* m_pGraphics = nullptr;
 };

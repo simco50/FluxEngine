@@ -18,6 +18,7 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include "Content/Image.h"
 
 Graphics::Graphics(Context* pContext) :
 	Subsystem(pContext)
@@ -52,7 +53,9 @@ HWND Graphics::GetWindow() const
 	return sysInfo.info.win.window;
 }
 
-bool Graphics::SetMode(const int width,
+bool Graphics::SetMode(
+	const std::string& windowTitle,
+	const int width,
 	const int height,
 	WindowType windowType,
 	const bool resizable,
@@ -66,6 +69,7 @@ bool Graphics::SetMode(const int width,
 	m_WindowHeight = height;
 	m_WindowType = windowType;
 	m_Resizable = resizable;
+	m_WindowTitle = windowTitle;
 
 	m_Vsync = vsync;
 	m_RefreshRate = refreshRate;
@@ -123,7 +127,34 @@ bool Graphics::OpenWindow()
 		break;
 	}
 	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), windowPosX, windowPosY, m_WindowWidth, m_WindowHeight, flags);
-	return m_pWindow != nullptr;
+	if (!m_pWindow)
+		return false;
+	
+	//Hardcode the logo into the binary
+	unsigned int pLogo[] =
+	{
+		0x8ba28d3a, 0xfba28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa08c3b, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xfba28d3a, 0x8ba28d3a,
+		0xfba28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa89548, 0xffb6a666, 0xffd6d0b8, 0xff917f35, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xfba28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffb09f5c, 0xffb1a988, 0xff897731, 0xff7c6c2c, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa79346, 0xffc7be9a, 0xffbcb28d, 0xffb3ab8a, 0xffb2aa89, 0xffbcb28d, 0xffc6bc93, 0xffa08b39, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffb7a768, 0xff958b62, 0xff77682b, 0xffc6c1aa, 0xffc6c0aa, 0xff7d6d2d, 0xffb9b190, 0xff7d6d2c, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa38e3d, 0xffd2caaa, 0xffa0925c, 0xfffaf9f5, 0xfff8f7f4, 0xffb4ac8a, 0xffa19772, 0xff706227, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffbdae74, 0xff8b7f52, 0xffb1a576, 0xff877b4b, 0xffaea787, 0xff6e6027, 0xff8f7c33, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffc9bf94, 0xff867a4b, 0xfffefefe, 0xffa69a6b, 0xffb3a46a, 0xff998f67, 0xffa18c39, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffaa984d, 0xffb0a887, 0xff716228, 0xffa09156, 0xff6f7e7d, 0xff7997b0, 0xffcdc5a9, 0xff968339, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffcbc19a, 0xff757d70, 0xff7c8574, 0xff879998, 0xff6ea6f3, 0xff6ea6f4, 0xff909482, 0xffb6ad8a, 0xffa08b39, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffb09e58, 0xffa7a48c, 0xff6ea2e8, 0xff6ea6f4, 0xff6ea7f5, 0xff6ea7f5, 0xff6e9edb, 0xff6e97c6, 0xffcbc5ac, 0xff968643, 0xffa28d3a, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffa28d3a, 0xffc9c09d, 0xff718ba0, 0xff6e8dab, 0xff6e7c78, 0xff6ea7f5, 0xff6ea6f4, 0xff6ea7f5, 0xff6ea7f5, 0xff858f87, 0xffc8c2a9, 0xff9d8938, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffb4a462, 0xff9e9e8c, 0xff6ea5ef, 0xff6ea5f0, 0xff6ea2e9, 0xff6ea7f5, 0xff6e99cc, 0xff6ea7f5, 0xff6ea7f5, 0xff6e9dd8, 0xffc6c0a8, 0xff9f9159, 0xffa28d3a, 0xffa28d3a,
+		0xffa28d3a, 0xffa28d3a, 0xffcec49b, 0xff737762, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff6e848f, 0xff919076, 0xffb5ae91, 0xff978336, 0xffa28d3a,
+		0xfba28d3a, 0xffa28d3a, 0xffaa974c, 0xffb9b18f, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffb6af92, 0xffaca484, 0xff746730, 0xff887630, 0xfba28d3a,
+		0x8ba28d3a, 0xfba28d3a, 0xffa28d3a, 0xff9c8838, 0xff897730, 0xff877630, 0xff877630, 0xff877630, 0xff877630, 0xff877630, 0xff877630, 0xff877630, 0xff877630, 0xff8b7931, 0xfb9f8a39, 0x8ba28d3a,
+	};
+	SDL_Surface* pSurface = SDL_CreateRGBSurfaceFrom(pLogo, 16, 16, 4 * 8, 16 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	if (pSurface == nullptr)
+		return false;
+	SDL_SetWindowIcon(m_pWindow, pSurface);
+	return true;
 }
 
 void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
@@ -677,8 +708,71 @@ void Graphics::TakeScreenshot()
 	PhysicalFile file(str.str());
 	if (!file.Open(FileMode::Write, ContentType::Binary))
 		return;
-	m_pDefaultRenderTarget->GetRenderTexture()->Save(file);
-	file.Close();
+
+	AUTOPROFILE(Graphics_TakeScreenshot);
+
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.ArraySize = 1;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Width = m_WindowWidth;
+	desc.Height = m_WindowHeight;
+	desc.MipLevels = 1;
+	desc.MiscFlags = 0;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+
+	ComPtr<ID3D11Texture2D> pStagingTexture;
+	HR(m_pImpl->GetDevice()->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
+
+	//If we are using MSAA, we need to resolve the resource first
+	if (m_Multisample > 1)
+	{
+		ComPtr<ID3D11Texture2D> pResolveTexture;
+
+		D3D11_TEXTURE2D_DESC resolveTexDesc = {};
+		resolveTexDesc.ArraySize = 1;
+		resolveTexDesc.CPUAccessFlags = 0;
+		resolveTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		resolveTexDesc.Width = m_WindowWidth;
+		resolveTexDesc.Height = m_WindowHeight;
+		resolveTexDesc.MipLevels = 1;
+		resolveTexDesc.MiscFlags = 0;
+		resolveTexDesc.SampleDesc.Count = 1;
+		resolveTexDesc.SampleDesc.Quality = 0;
+		resolveTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		HR(m_pImpl->GetDevice()->CreateTexture2D(&resolveTexDesc, nullptr, pResolveTexture.GetAddressOf()));
+
+		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), pResolveTexture.Get());
+	}
+	else
+	{
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource());
+	}
+
+	Image destinationImage(m_pContext);
+	destinationImage.SetSize(m_WindowWidth, m_WindowHeight, 3);
+
+	D3D11_MAPPED_SUBRESOURCE pData = {};
+	m_pImpl->GetDeviceContext()->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &pData);
+	unsigned char* pDest = destinationImage.GetData();
+	for (int y = 0; y < m_WindowHeight; ++y)
+	{
+		unsigned char* pSrc = (unsigned char*)pData.pData + y * pData.RowPitch;
+		for (int x = 0; x < m_WindowWidth; ++x)
+		{
+			*pDest++ = *pSrc++;
+			*pDest++ = *pSrc++;
+			*pDest++ = *pSrc++;
+			++pSrc;
+		}
+	}
+	m_pImpl->GetDeviceContext()->Unmap(pStagingTexture.Get(), 0);
+
+	destinationImage.Save(file);
 }
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)

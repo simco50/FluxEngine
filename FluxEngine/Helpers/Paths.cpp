@@ -3,6 +3,7 @@
 
 
 const std::string Paths::LogsFolder =			"Saved\\Logs";
+const std::string Paths::ProfilingFolder =		"Saved\\Profiling";
 const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
 const std::string Paths::GameIniFile =			"Saved\\Config\\Game.ini";
 const std::string Paths::EngineIniFile =		"Saved\\Config\\Engine.ini";

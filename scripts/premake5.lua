@@ -114,7 +114,6 @@ workspace "FluxEngine"
 
 		postbuildcommands
 		{ 
-			"xcopy \"$(ProjectDir)Logo.ico\" \"$(OutDir)\" /Y /D",
 			"xcopy \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\" /Y /D",
 		}
 
