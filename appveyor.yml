@@ -1,5 +1,6 @@
 version: 1.0.{build}
 image: Visual Studio 2017
+shallow_clone: true
 environment:
   matrix:
     - configuration: Debug
