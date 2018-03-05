@@ -47,6 +47,12 @@ bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
 		nullptr
 	);
 
+	if (m_Handle == FILE_HANDLE_INVALID)
+	{
+		auto error = GetLastError();
+		FLUX_LOG_HR("[PhysicalFile::Open]", HRESULT_FROM_WIN32(error));
+	}
+
 	return m_Handle != FILE_HANDLE_INVALID;
 }
 

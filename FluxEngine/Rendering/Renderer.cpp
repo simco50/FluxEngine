@@ -119,8 +119,9 @@ void Renderer::SetPerFrameParameters()
 	{
 		m_CurrentFrame = frame;
 		float deltaTime = GameTimer::DeltaTime();
+		float elapsedTime = GameTimer::GameTime();
 		m_pGraphics->SetShaderParameter("cDeltaTime", &deltaTime);
-		m_pGraphics->SetShaderParameter("cElapsedTime", &deltaTime);
+		m_pGraphics->SetShaderParameter("cElapsedTime", &elapsedTime);
 		m_pGraphics->SetShaderParameter("cLightDirection", &m_LightDirection);
 	}
 }

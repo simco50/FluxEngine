@@ -41,16 +41,16 @@ void FreeCamera::KeyboardMouse()
 
 	//Moving
 	Vector3 moveDirection(0, 0, 0);
-	moveDirection.x += m_pInput->IsKeyboardKeyDown('A') ? -1 : 0;
-	moveDirection.x += m_pInput->IsKeyboardKeyDown('D') ? 1 : 0;
-	moveDirection.z += m_pInput->IsKeyboardKeyDown('S') ? -1 : 0;
-	moveDirection.z += m_pInput->IsKeyboardKeyDown('W') ? 1 : 0;
-	moveDirection.y += m_pInput->IsKeyboardKeyDown('Q') ? -1 : 0;
-	moveDirection.y += m_pInput->IsKeyboardKeyDown('E') ? 1 : 0;
+	moveDirection.x += m_pInput->IsKeyboardKeyDown(SDLK_a) ? -1 : 0;
+	moveDirection.x += m_pInput->IsKeyboardKeyDown(SDLK_d) ? 1 : 0;
+	moveDirection.z += m_pInput->IsKeyboardKeyDown(SDLK_s) ? -1 : 0;
+	moveDirection.z += m_pInput->IsKeyboardKeyDown(SDLK_w) ? 1 : 0;
+	moveDirection.y += m_pInput->IsKeyboardKeyDown(SDLK_q) ? -1 : 0;
+	moveDirection.y += m_pInput->IsKeyboardKeyDown(SDLK_e) ? 1 : 0;
 
 	float moveSpeed = m_MoveSpeed;
-	/*if (m_pInput->IsKeyboardKeyDown(SDLK_LSHIFT))
-		moveSpeed *= m_ShiftMultiplier;*/
+	if (m_pInput->IsKeyboardKeyDown(SDLK_LSHIFT))
+		moveSpeed *= m_ShiftMultiplier;
 	moveDirection *= dt * moveSpeed;
 
 	if(moveDirection != Vector3())

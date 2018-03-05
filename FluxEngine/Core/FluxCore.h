@@ -10,6 +10,7 @@ class PhysicsSystem;
 class DebugRenderer;
 class Context;
 class ResourceManager;
+class AudioEngine;
 
 class FluxCore
 {
@@ -46,6 +47,7 @@ private:
 	PhysicsSystem* m_pPhysics = nullptr;
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
+	AudioEngine* m_pAudioEngine = nullptr;
 
 	Context* m_pContext;
 

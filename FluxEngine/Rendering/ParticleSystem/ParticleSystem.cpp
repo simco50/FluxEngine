@@ -8,6 +8,7 @@ using json = nlohmann::json;
 
 #define LOAD_VECTOR3_KEY(jsonData, name) \
 {\
+	name.Clear(); \
 	json keys = jsonData[#name]["Keys"];\
 	for (auto it = keys.begin(); it != keys.end(); ++it)\
 	{\
@@ -22,6 +23,7 @@ using json = nlohmann::json;
 
 #define LOAD_FLOAT_KEY(jsonData, name) \
 {\
+	name.Clear(); \
 	json keys = jsonData[#name]["Keys"];\
 	for (auto it = keys.begin(); it != keys.end(); ++it)\
 		name.Add(stof(it.key()), it.value());\
@@ -64,6 +66,7 @@ bool ParticleSystem::Load(InputStream& inputStream)
 		//Emission
 		Emission = data["Emission"];
 		json keyData = data["Bursts"];
+		Bursts.clear();
 		for (auto it = keyData.begin(); it != keyData.end(); ++it)
 			Bursts[stof(it.key())] = it.value();
 
@@ -76,6 +79,7 @@ bool ParticleSystem::Load(InputStream& inputStream)
 
 		//Animation
 		keyData = data["Size"]["Keys"];
+		Size.Clear();
 		for (auto it = keyData.begin(); it != keyData.end(); ++it)
 			Size.Add(stof(it.key()), it.value());
 		Size.ConstantValue = data["Size"]["Constant"];

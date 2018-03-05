@@ -77,12 +77,14 @@ void InputEngine::Update()
 				break;
 			}
 		}
-		/*case SDL_KEYDOWN:
-			SetKey(SDL_toupper(event.key.keysym.sym), true);
+		case SDL_KEYDOWN:
+			if(event.key.keysym.scancode < m_KeyDown.size())
+				SetKey(event.key.keysym.scancode, true);
 			break;
 		case SDL_KEYUP:
-			SetKey(SDL_toupper(event.key.keysym.sym), false);
-			break;*/
+			if (event.key.keysym.scancode < m_KeyDown.size())
+				SetKey(event.key.keysym.scancode, false);
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 			SetMouseButton(1 << (event.button.button - 1), true);
 			break;
@@ -119,12 +121,12 @@ void InputEngine::CursorVisible(bool visible) const
 
 bool InputEngine::IsKeyboardKeyDown(int key) const
 {
-	return m_KeyDown[key];
+	return m_KeyDown[SDL_GetScancodeFromKey(key)];
 }
 
 bool InputEngine::IsKeyboardKeyPressed(int key) const
 {
-	return m_KeyPressed[key];
+	return m_KeyPressed[SDL_GetScancodeFromKey(key)];
 }
 
 bool InputEngine::IsMouseButtonDown(int button) const

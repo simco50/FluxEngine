@@ -13,7 +13,7 @@ inline int RandI(int min, int max)
 	return min + rand() % (max - min + 1);
 }
 template<typename T>
-inline void Clamp(T& value, T hi, T lo)
+inline void Clamp(T& value, const T hi, const T lo)
 {
 	if (value > hi)
 		value = hi;
@@ -23,7 +23,7 @@ inline void Clamp(T& value, T hi, T lo)
 }
 
 template<typename T>
-inline T Clamp(const T value, T hi, T lo)
+inline T Clamp(const T value, const T hi, const T lo)
 {
 	if (value > hi)
 		return hi;
@@ -33,27 +33,27 @@ inline T Clamp(const T value, T hi, T lo)
 }
 
 template<typename T>
-inline void ClampMin(T& value, T lo)
+inline void ClampMin(T& value, const T lo)
 {
 	if (value < lo)
 		value = lo;
 }
 
 template<typename T>
-inline T ClampMin(const T value, T lo)
+inline T ClampMin(const T value, const T lo)
 {
 	return value < lo ? lo : value;
 }
 
 template<typename T>
-inline void ClampMax(T& value, T hi)
+inline void ClampMax(T& value, const T hi)
 {
 	if (value > hi)
 		value = hi;
 }
 
 template<typename T>
-inline T ClampMax(const T value, T hi)
+inline T ClampMax(const T value, const T hi)
 {
 	return value > hi ? hi : value;
 }

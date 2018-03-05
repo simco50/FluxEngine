@@ -18,6 +18,7 @@ public:
 	DELETE_COPY(Shader)
 
 	virtual bool Load(InputStream& inputStream) override;
+	bool Reload();
 	ShaderVariation* GetVariation(const ShaderType type, const std::string& defines = std::string(""));
 	const std::string& GetSource() { return m_ShaderSource; }
 

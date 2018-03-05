@@ -19,6 +19,7 @@ public:
 	void SetLoop(const bool loop);
 
 	FMOD::Channel* GetChannel() const { return m_pChannel; }
+	FMOD::Sound* GetSound() const { return m_pSound; }
 
 private:
 	virtual void OnNodeSet(SceneNode* pNode) override;

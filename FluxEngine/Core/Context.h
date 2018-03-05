@@ -14,7 +14,7 @@ public:
 		{
 			return nullptr;
 		}
-		return pIt->second.get();
+		return pIt->second;
 	}
 
 	template<typename T>
@@ -41,13 +41,16 @@ public:
 			FLUX_LOG(Error, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic().c_str());
 			return nullptr;
 		}
-		std::unique_ptr<T> pSystem = std::make_unique<T>(this, args...);
+		m_SystemCache.push_back(std::make_unique<T>(this, args...));
+		Subsystem* pSystem = m_SystemCache[m_SystemCache.size() - 1].get();
 		StringHash type = pSystem->GetType();
-		m_Systems[type] = std::move(pSystem);
-		return static_cast<T*>(m_Systems[type].get());
+		m_Systems[type] = pSystem;
+		return static_cast<T*>(pSystem);
 	}
 
 private:
 	//A collection of subsystems
-	std::unordered_map<StringHash, std::unique_ptr<Subsystem>> m_Systems;
+	std::unordered_map<StringHash, Subsystem*> m_Systems;
+	//Vector to keep order of destruction
+	std::vector<std::unique_ptr<Subsystem>> m_SystemCache;
 };

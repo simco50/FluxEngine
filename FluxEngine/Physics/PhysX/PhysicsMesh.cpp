@@ -16,6 +16,11 @@ PhysicsMesh::~PhysicsMesh()
 
 bool PhysicsMesh::Load(InputStream& inputStream)
 {
+	AUTOPROFILE_DESC(PhysicsMesh_Load, inputStream.GetSource());
+
+	if (m_pMesh && m_pMesh->isReleasable())
+		m_pMesh->release();
+
 	std::string geometryType = inputStream.ReadSizedString();
 	unsigned int byteSize =	inputStream.ReadUByte();
 	UNREFERENCED_PARAMETER(byteSize);

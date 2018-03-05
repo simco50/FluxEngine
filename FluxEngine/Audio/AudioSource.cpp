@@ -7,8 +7,10 @@
 AudioSource::AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode):
 	Component(pContext), m_Mode(mode), m_FilePath(filePath)
 {
+	AudioEngine* pAudioEngine = pContext->GetSubsystem<AudioEngine>();
 	if (m_pSound == nullptr)
-		m_pSound = pContext->GetSubsystem<AudioEngine>()->LoadSound(m_FilePath, m_Mode, nullptr);
+		m_pSound = pAudioEngine->LoadSound(m_FilePath, m_Mode, nullptr);
+	m_pFmodSystem = pAudioEngine->GetSystem();
 }
 
 AudioSource::AudioSource(Context* pContext, FMOD::Sound* pSound): 

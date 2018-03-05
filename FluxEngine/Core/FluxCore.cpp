@@ -23,6 +23,7 @@
 #include "Async/AsyncTaskQueue.h"
 #include "Async/Thread.h"
 #include "Input/InputEngine.h"
+#include "Rendering/Core/Shader.h"
 
 bool FluxCore::m_Exiting;
 
@@ -61,8 +62,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		//ResourceManager
 		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
-		//Audio
-		m_pContext->RegisterSubsystem<AudioEngine>();
 
 		//Graphics
 		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
@@ -80,6 +79,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
 		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
+		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
 
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
@@ -174,14 +174,12 @@ void FluxCore::GameLoop()
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
 	
+	m_pAudioEngine->Update();
 	m_pScene->Update();
 
 	if(m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
-	if (m_pInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
-		std::cout << "Left button pressed" << std::endl;
-		
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
 
@@ -209,13 +207,21 @@ void FluxCore::RenderUI()
 
 	ImGui::Begin("Debug");
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-	if(ImGui::Button("Reload shader"))
+
+	if(ImGui::Button("Reload all shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		m_pResourceManager->Reload<Shader>("Resources/Shaders/Diffuse.hlsl");
+		for(const auto& p : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
+			m_pResourceManager->Reload(p.first);
 	}
-	if (ImGui::Button("Reload material"))
+	if (ImGui::Button("Reload all materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		m_pResourceManager->Reload<Shader>("Resources/Materials/Default.xml");
+		for (const auto& p : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
+			m_pResourceManager->Reload(p.first);
+	}
+	if (ImGui::Button("Reload all textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	{
+		for (const auto& p : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
+			m_pResourceManager->Reload(p.first);
 	}
 	ImGui::End();
 

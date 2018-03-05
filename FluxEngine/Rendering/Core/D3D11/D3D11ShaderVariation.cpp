@@ -14,13 +14,13 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 
 	if (!Compile(pGraphics))
 	{
-		FLUX_LOG(Error, "[ShaderVariation::Create()] > Failed to compile shader");
+		FLUX_LOG(Warning, "[ShaderVariation::Create()] > Failed to compile shader");
 		return false;
 	}
 
 	if (m_ShaderByteCode.size() == 0)
 	{
-		FLUX_LOG(Error, "[ShaderVariation::Create()] > Shader byte code is empty");
+		FLUX_LOG(Warning, "[ShaderVariation::Create()] > Shader byte code is empty");
 		return false;
 	}
 
@@ -128,7 +128,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	if (hr != S_OK)
 	{
 		std::string error = D3DBlobToString(pErrorBlob.Get());
-		FLUX_LOG(Error, error);
+		FLUX_LOG(Warning, error);
 		return false;
 	}
 	D3DBlobToVector(pShaderCode.Get(), m_ShaderByteCode);

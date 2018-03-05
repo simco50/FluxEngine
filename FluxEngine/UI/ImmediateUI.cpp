@@ -23,25 +23,25 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
-	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
-	io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
-	io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
-	io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
-	io.KeyMap[ImGuiKey_Home] = VK_HOME;
-	io.KeyMap[ImGuiKey_End] = VK_END;
-	io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
-	io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
-	io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
-	io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
-	io.KeyMap[ImGuiKey_A] = 'A';
-	io.KeyMap[ImGuiKey_C] = 'C';
-	io.KeyMap[ImGuiKey_V] = 'V';
-	io.KeyMap[ImGuiKey_X] = 'X';
-	io.KeyMap[ImGuiKey_Y] = 'Y';
-	io.KeyMap[ImGuiKey_Z] = 'Z';
+	io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
+	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
+	io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+	io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
+	io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
+	io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
+	io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
+	io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
+	io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+	io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
+	io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
+	io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
+	io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
+	io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
+	io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
+	io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
+	io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
+	io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
+	io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
 	io.RenderDrawListsFn = nullptr;
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
@@ -80,7 +80,6 @@ ImmediateUI::~ImmediateUI()
 void ImmediateUI::NewFrame()
 {
 	ImGuiIO& io = ImGui::GetIO();
-
 	io.DisplaySize = ImVec2((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	io.DeltaTime = GameTimer::DeltaTime();
 	io.KeyCtrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -93,6 +92,8 @@ void ImmediateUI::NewFrame()
 	io.MousePos.x = (float)posX;
 	io.MousePos.y = (float)posY;
 	io.MouseDrawCursor = true;
+
+	m_pInput->CursorVisible(!io.MouseDrawCursor);
 
 	ImGui::NewFrame();
 }

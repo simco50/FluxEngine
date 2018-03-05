@@ -35,7 +35,7 @@ std::unique_ptr<File> PhysicalMountPoint::GetFile(const std::string& filePath)
 
 	auto pIt = std::find_if(m_FileEntries.begin(), m_FileEntries.end(), [&resolvedPath](const PhysicalFileEntry& entry)
 	{
-		return entry.FilePath == resolvedPath;
+		return strcmp(entry.FilePath.c_str(), resolvedPath.c_str()) == 0;
 	});
 	if (pIt == m_FileEntries.end())
 		return nullptr;

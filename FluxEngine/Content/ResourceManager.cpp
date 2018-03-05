@@ -16,6 +16,17 @@ ResourceManager::~ResourceManager()
 	m_Resources.clear();
 }
 
+std::vector<std::pair<std::string, Resource*>> ResourceManager::GetResourcesOfType(StringHash type)
+{
+	std::vector<std::pair<std::string, Resource*>> resources;
+	for (const auto& p : m_Resources)
+	{
+		if (p.second->IsTypeOf(type))
+			resources.push_back(p);
+	}
+	return resources;
+}
+
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
 {
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);

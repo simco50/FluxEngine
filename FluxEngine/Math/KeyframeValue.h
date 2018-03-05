@@ -76,6 +76,12 @@ struct KeyframeValue
 		return Values.rbegin()->second;
 	}
 
+	void Clear()
+	{
+		Values.clear();
+	}
+	
+
 	const std::map<float, T>& GetData() const
 	{
 		return Values;

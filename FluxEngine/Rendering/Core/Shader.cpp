@@ -21,7 +21,6 @@ bool Shader::Load(InputStream& inputStream)
 	m_FileDir = Paths::GetDirectoryPath(fileName);
 
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
-
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
@@ -31,6 +30,14 @@ bool Shader::Load(InputStream& inputStream)
 		m_ShaderSource = codeStream.str();
 	}
 
+	Reload();
+
+	return true;
+}
+
+bool Shader::Reload()
+{
+	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 	//Reload all shaders in the cache
 	for (auto& p : m_ShaderCache)
 	{
@@ -38,7 +45,6 @@ bool Shader::Load(InputStream& inputStream)
 			continue;
 		p.second->Create(m_pGraphics);
 	}
-
 	return true;
 }
 

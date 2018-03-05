@@ -23,6 +23,8 @@ bool Mesh::Load(InputStream& inputStream)
 	std::string fileName = inputStream.GetSource();
 	AUTOPROFILE_DESC(Mesh_Load, Paths::GetFileName(fileName));
 
+	m_Geometries.clear();
+
 	std::string extension = Paths::GetFileExtenstion(fileName);
 	if (extension != "flux")
 	{

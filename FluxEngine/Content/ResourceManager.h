@@ -29,16 +29,15 @@ public:
 		return (T*)pResource;
 	}
 
-	template <typename T>
-	T* Reload(const std::string& filePath)
+	bool Reload(const std::string& filePath)
 	{
 		auto pIt = m_Resources.find(filePath);
 		if (pIt == m_Resources.end())
 			return nullptr;
-		if(LoadResourcePrivate(pIt->second, filePath))
-			return (T*)(pIt->second);
-		return nullptr;
+		return LoadResourcePrivate(pIt->second, filePath);
 	}
+
+	std::vector<std::pair<std::string, Resource*>> GetResourcesOfType(StringHash type);
 
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
