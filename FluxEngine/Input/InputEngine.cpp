@@ -78,11 +78,11 @@ void InputEngine::Update()
 			}
 		}
 		case SDL_KEYDOWN:
-			if(event.key.keysym.scancode < m_KeyDown.size())
+			if(event.key.keysym.scancode < (int)m_KeyDown.size())
 				SetKey(event.key.keysym.scancode, true);
 			break;
 		case SDL_KEYUP:
-			if (event.key.keysym.scancode < m_KeyDown.size())
+			if (event.key.keysym.scancode < (int)m_KeyDown.size())
 				SetKey(event.key.keysym.scancode, false);
 			break;
 		case SDL_MOUSEBUTTONDOWN:
