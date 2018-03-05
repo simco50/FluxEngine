@@ -209,7 +209,10 @@ void FluxCore::RenderUI()
 
 	ImGui::Begin("Debug");
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-
+	if (ImGui::Button("Screenshot", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	{
+		m_pGraphics->TakeScreenshot();
+	}
 	if(ImGui::Button("Reload all shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
 		for(const auto& p : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))

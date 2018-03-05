@@ -708,8 +708,71 @@ void Graphics::TakeScreenshot()
 	PhysicalFile file(str.str());
 	if (!file.Open(FileMode::Write, ContentType::Binary))
 		return;
-	m_pDefaultRenderTarget->GetRenderTexture()->Save(file);
-	file.Close();
+
+	AUTOPROFILE(Graphics_TakeScreenshot);
+
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.ArraySize = 1;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Width = m_WindowWidth;
+	desc.Height = m_WindowHeight;
+	desc.MipLevels = 1;
+	desc.MiscFlags = 0;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+
+	ComPtr<ID3D11Texture2D> pStagingTexture;
+	HR(m_pImpl->GetDevice()->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
+
+	//If we are using MSAA, we need to resolve the resource first
+	if (m_Multisample > 1)
+	{
+		ComPtr<ID3D11Texture2D> pResolveTexture;
+
+		D3D11_TEXTURE2D_DESC resolveTexDesc = {};
+		resolveTexDesc.ArraySize = 1;
+		resolveTexDesc.CPUAccessFlags = 0;
+		resolveTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		resolveTexDesc.Width = m_WindowWidth;
+		resolveTexDesc.Height = m_WindowHeight;
+		resolveTexDesc.MipLevels = 1;
+		resolveTexDesc.MiscFlags = 0;
+		resolveTexDesc.SampleDesc.Count = 1;
+		resolveTexDesc.SampleDesc.Quality = 0;
+		resolveTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		HR(m_pImpl->GetDevice()->CreateTexture2D(&resolveTexDesc, nullptr, pResolveTexture.GetAddressOf()));
+
+		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), pResolveTexture.Get());
+	}
+	else
+	{
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource());
+	}
+
+	Image destinationImage(m_pContext);
+	destinationImage.SetSize(m_WindowWidth, m_WindowHeight, 3);
+
+	D3D11_MAPPED_SUBRESOURCE pData = {};
+	m_pImpl->GetDeviceContext()->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &pData);
+	unsigned char* pDest = destinationImage.GetData();
+	for (int y = 0; y < m_WindowHeight; ++y)
+	{
+		unsigned char* pSrc = (unsigned char*)pData.pData + y * pData.RowPitch;
+		for (int x = 0; x < m_WindowWidth; ++x)
+		{
+			*pDest++ = *pSrc++;
+			*pDest++ = *pSrc++;
+			*pDest++ = *pSrc++;
+			++pSrc;
+		}
+	}
+	m_pImpl->GetDeviceContext()->Unmap(pStagingTexture.Get(), 0);
+
+	destinationImage.Save(file);
 }
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)

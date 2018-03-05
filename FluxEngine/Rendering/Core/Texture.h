@@ -24,7 +24,6 @@ public:
 	DELETE_COPY(Texture)
 
 	virtual bool Load(InputStream& inputStream) override;
-	virtual bool Save(OutputStream& outputStream) override;
 
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const void* pData);

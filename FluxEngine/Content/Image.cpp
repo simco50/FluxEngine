@@ -3,6 +3,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "External/Stb/stb_image_write.h"
 
 namespace STBI
 {
@@ -55,6 +57,44 @@ bool Image::Load(InputStream& inputStream)
 	m_Pixels.resize(m_Width * m_Height * 4);
 	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
 	stbi_image_free(pPixels);
+	return true;
+}
+
+bool Image::Save(OutputStream& outputStream)
+{
+	int result = stbi_write_png_to_func([](void *context, void *data, int size)
+	{
+		OutputStream* pStream = (OutputStream*)context;
+		if (!pStream->Write((char*)data, size))
+			return;
+	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), m_Width * m_Components * m_Depth);
+	return result > 0;
+}
+
+bool Image::SetSize(const int x, const int y, const int components)
+{
+	m_Width = x;
+	m_Height = y;
+	m_Depth = 1;
+	m_Components = components;
+	m_Pixels.clear();
+	m_Pixels.resize(x * y * components);
+	return true;
+}
+
+bool Image::SetData(const unsigned int* pPixels)
+{
+	memcpy(m_Pixels.data(), pPixels, m_Pixels.size() * m_Depth * m_Components);
+	return true;
+}
+
+bool Image::SetPixel(const int x, const int y, const Color& color)
+{
+	if (x + y * m_Width >= (int)m_Pixels.size())
+		return false;
+	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
+	for (int i = 0; i < m_Components; ++i)
+		pPixel[i] = (unsigned char)(color[i] * 255);
 	return true;
 }
 
