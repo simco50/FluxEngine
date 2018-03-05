@@ -28,12 +28,12 @@ Material::~Material()
 
 bool Material::Load(InputStream& inputStream)
 {
-	std::vector<char> buffer;
+	std::vector<unsigned char> buffer;
 	if (!inputStream.ReadAllBytes(buffer))
 		return false;
 
 	XML::XMLDocument document;
-	if (document.Parse(buffer.data(), buffer.size()) != XML::XML_SUCCESS)
+	if (document.Parse((char*)buffer.data(), buffer.size()) != XML::XML_SUCCESS)
 	{
 		FLUX_LOG(Error, "[Material::Load] > %s", document.ErrorStr());
 		return false;

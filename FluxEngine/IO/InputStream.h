@@ -16,7 +16,7 @@ public:
 	virtual size_t GetSize() const { return m_Size; }
 
 	size_t ReadFrom(void* pDestination, const size_t from, const size_t size);
-	bool ReadAllBytes(std::vector<char>& buffer);
+	bool ReadAllBytes(std::vector<unsigned char>& buffer);
 
 	bool MovePointer(const int delta);
 

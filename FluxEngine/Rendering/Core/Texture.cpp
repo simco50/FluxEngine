@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 
-namespace STBI
+/*namespace STBI
 {
 	int ReadCallback(void* pUser, char* pData, int size)
 	{
@@ -29,7 +29,7 @@ namespace STBI
 			return 1;
 		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
 	}
-}
+}*/
 
 Texture::Texture(Context* pContext, void* pTexture, void* pTextureSRV) :
 	Resource(pContext),
@@ -58,7 +58,10 @@ bool Texture::Load(InputStream& inputStream)
 
 	unsigned char* pPixels = nullptr;
 	int width, height, bpp;
-	{
+	std::vector<unsigned char> buffer;
+	inputStream.ReadAllBytes(buffer);
+	pPixels = stbi_load_from_memory(buffer.data(), buffer.size(), &width, &height, &bpp, 4);
+	/*{
 		AUTOPROFILE(Texture_Load_FromMemory);
 		stbi_io_callbacks callbacks;
 		callbacks.read = STBI::ReadCallback;
@@ -67,7 +70,7 @@ bool Texture::Load(InputStream& inputStream)
 		pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &width, &height, &bpp, 4);
 		if (pPixels == nullptr)
 			return false;
-	}
+	}*/
 
 	if (!SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
 		return false;

@@ -7,7 +7,7 @@ size_t InputStream::ReadFrom(void* pDestination, const size_t from, const size_t
 	return Read(pDestination, size);
 }
 
-bool InputStream::ReadAllBytes(std::vector<char>& buffer)
+bool InputStream::ReadAllBytes(std::vector<unsigned char>& buffer)
 {
 	const size_t size = GetSize();
 	buffer.resize(size);
