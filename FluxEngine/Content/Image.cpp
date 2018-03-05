@@ -50,7 +50,7 @@ bool Image::Load(InputStream& inputStream)
 	unsigned char* pPixels = nullptr;
 	std::vector<unsigned char> buffer;
 	inputStream.ReadAllBytes(buffer);
-	pPixels = stbi_load_from_memory(buffer.data(), buffer.size(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
+	pPixels = stbi_load_from_memory(buffer.data(), (int)buffer.size(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
 
 	/*stbi_io_callbacks callbacks;
 	callbacks.read = STBI::ReadCallback;
