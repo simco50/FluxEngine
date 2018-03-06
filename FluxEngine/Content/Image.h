@@ -14,12 +14,16 @@ public:
 	bool Save(const std::string& filePath);
 	bool SavePng(OutputStream& outputStream);
 	bool SaveBmp(OutputStream& outputStream);
-	bool SaveJpg(OutputStream& outputStream, const int quality = 8);
+	bool SaveJpg(OutputStream& outputStream, const int quality = 100);
 	bool SaveTga(OutputStream& outputStream);
 
 	bool SetSize(const int x, const int y, const int components);
 	bool SetData(const unsigned int* pPixels);
 	bool SetPixel(const int x, const int y, const Color& color);
+	bool SetPixelInt(const int x, const int y, const unsigned int color);
+
+	Color GetPixel(const int x, const int y) const;
+	unsigned int GetPixelInt(const int x, const int y) const;
 
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }

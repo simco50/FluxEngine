@@ -109,7 +109,7 @@ bool Image::SaveBmp(OutputStream& outputStream)
 	return result > 0;
 }
 
-bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 8*/)
+bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 {
 	int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
 	{
@@ -157,6 +157,42 @@ bool Image::SetPixel(const int x, const int y, const Color& color)
 	for (int i = 0; i < m_Components; ++i)
 		pPixel[i] = (unsigned char)(color[i] * 255);
 	return true;
+}
+
+bool Image::SetPixelInt(const int x, const int y, const unsigned int color)
+{
+	if (x + y * m_Width >= (int)m_Pixels.size())
+		return false;
+	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
+	for (int i = 0; i < m_Components; ++i)
+		pPixel[i] = reinterpret_cast<const unsigned char*>(&color)[i];
+	return true;
+}
+
+Color Image::GetPixel(const int x, const int y) const
+{
+	Color c = {};
+	if (x + y * m_Width >= (int)m_Pixels.size())
+		return c;
+	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
+	for (int i = 0; i < m_Components; ++i)
+		reinterpret_cast<float*>(&c)[i] = (float)pPixel[i] / 255.0f;
+	return c;
+}
+
+unsigned int Image::GetPixelInt(const int x, const int y) const
+{
+	unsigned int c = 0;
+	if (x + y * m_Width >= (int)m_Pixels.size())
+		return c;
+	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
+	for (int i = 0; i < m_Components; ++i)
+	{
+		c <<= 8;
+		c |= pPixel[i];
+	}
+	c <<= 8 * (4 - m_Components);
+	return c;
 }
 
 SDL_Surface* Image::GetSDLSurface()
