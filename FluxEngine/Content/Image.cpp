@@ -6,7 +6,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
 
-/*namespace STBI
+namespace STBI
 {
 	int ReadCallback(void* pUser, char* pData, int size)
 	{
@@ -30,7 +30,7 @@
 			return 1;
 		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
 	}
-}*/
+}
 
 Image::Image(Context* pContext) :
 	Resource(pContext)
@@ -46,17 +46,12 @@ Image::~Image()
 bool Image::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Image_Load);
-
 	unsigned char* pPixels = nullptr;
-	std::vector<unsigned char> buffer;
-	inputStream.ReadAllBytes(buffer);
-	pPixels = stbi_load_from_memory(buffer.data(), (int)buffer.size(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
-
-	/*stbi_io_callbacks callbacks;
+	stbi_io_callbacks callbacks;
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, 4);*/
+	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, 4);
 	if (pPixels == nullptr)
 		return false;
 	m_Pixels.resize(m_Width * m_Height * 4);

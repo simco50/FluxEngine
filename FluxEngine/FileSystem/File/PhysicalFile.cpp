@@ -88,6 +88,7 @@ size_t PhysicalFile::Write(const void* pBuffer, const size_t size)
 		if (!WriteFile(m_Handle, pBuffer, bytesToWrite, &written, nullptr))
 			return 0;
 		bytesToWrite -= written;
+		m_FilePointer += written;
 	}
 	return size - bytesToWrite;
 }
@@ -116,6 +117,7 @@ size_t PhysicalFile::Read(void* pBuffer, const size_t size)
 			return size - bytesToRead;
 		}
 		bytesToRead -= read;
+		m_FilePointer += read;
 	}
 	return size - bytesToRead;
 }
@@ -126,6 +128,7 @@ bool PhysicalFile::SetPointer(const size_t position)
 		return false;
 	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return false;
+	m_FilePointer = position;
 	return true;
 }
 

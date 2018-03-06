@@ -6,6 +6,7 @@
 
 	<Properties>
 		<CullMode value="Back"/>
+		<BlendMode value="Replace"/>
 	</Properties>
 
 	<Parameters>

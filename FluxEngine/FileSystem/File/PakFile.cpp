@@ -38,7 +38,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 	{
 		read = pMountPoint->GetPakFile()->ReadFrom(pBuffer, m_pTableEntry->Offset + m_FilePointer, sizeToRead);
 	}
-	MovePointer(sizeToRead);
+	m_FilePointer += read;
 	return read;
 }
 

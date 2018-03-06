@@ -72,7 +72,7 @@ bool Material::Load(InputStream& inputStream)
 			return false;
 		}
 
-		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] >Shader for slot already defined");
+		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] > Shader for slot already defined");
 
 		const char* pAttribute = pShader->Attribute("defines");
 		std::string defines = "";
