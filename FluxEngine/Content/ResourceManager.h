@@ -12,6 +12,7 @@ public:
 	ResourceManager(Context* pContext);
 	~ResourceManager();
 
+	//Get the resource, if it is already loaded, take that
 	template <typename T, typename ...Args>
 	T* Load(const std::string& filePath, Args... args)
 	{
@@ -29,16 +30,13 @@ public:
 		return (T*)pResource;
 	}
 
-	bool Reload(const std::string& filePath)
-	{
-		auto pIt = m_Resources.find(filePath);
-		if (pIt == m_Resources.end())
-			return nullptr;
-		return LoadResourcePrivate(pIt->second, filePath);
-	}
+	//Reload the resource
+	bool Reload(Resource* pResource);
 
-	std::vector<std::pair<std::string, Resource*>> GetResourcesOfType(StringHash type);
+	//Map resource to another file
+	bool Reload(Resource* pResource, const std::string& filePath);
 
+	std::vector<Resource*> GetResourcesOfType(StringHash type);
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
 	std::map<std::string, Resource*> m_Resources;

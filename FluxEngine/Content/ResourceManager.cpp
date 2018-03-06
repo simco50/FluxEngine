@@ -16,19 +16,38 @@ ResourceManager::~ResourceManager()
 	m_Resources.clear();
 }
 
-std::vector<std::pair<std::string, Resource*>> ResourceManager::GetResourcesOfType(StringHash type)
+bool ResourceManager::Reload(Resource* pResource)
 {
-	std::vector<std::pair<std::string, Resource*>> resources;
+	if (pResource == nullptr)
+		return false;
+	return LoadResourcePrivate(pResource, pResource->GetName());
+}
+
+bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
+{
+	if (pResource == nullptr)
+		return false;
+	auto pIt = m_Resources.find(pResource->GetName());
+	if(pIt != m_Resources.end())
+		m_Resources.erase(pIt);
+	m_Resources[filePath] = pResource;
+	return LoadResourcePrivate(pResource, filePath);
+}
+
+std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
+{
+	std::vector<Resource*> resources;
 	for (const auto& p : m_Resources)
 	{
 		if (p.second->IsTypeOf(type))
-			resources.push_back(p);
+			resources.push_back(p.second);
 	}
 	return resources;
 }
 
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
 {
+	pResource->SetName(filePath);
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
