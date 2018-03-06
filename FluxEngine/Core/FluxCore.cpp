@@ -225,8 +225,8 @@ void FluxCore::RenderUI()
 	}
 	if (ImGui::Button("Reload all textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		/*for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
-			m_pResourceManager->Reload(pResource);*/
+		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
+			m_pResourceManager->Reload(pResource);
 	}
 	ImGui::End();
 

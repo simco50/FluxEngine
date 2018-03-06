@@ -11,9 +11,13 @@ ResourceManager::ResourceManager(Context* pContext) :
 
 ResourceManager::~ResourceManager()
 {
-	for (std::pair<std::string, Resource*> pResource : m_Resources)
-		SafeDelete(pResource.second);
-	m_Resources.clear();
+	for (auto& resourceGroupEntry : m_Resources)
+	{
+		for (auto& resourceEntry : resourceGroupEntry.second)
+		{
+			SafeDelete(resourceEntry.second);
+		}
+	}
 }
 
 bool ResourceManager::Reload(Resource* pResource)
@@ -27,17 +31,32 @@ bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 {
 	if (pResource == nullptr)
 		return false;
-	auto pIt = m_Resources.find(pResource->GetName());
-	if(pIt != m_Resources.end())
-		m_Resources.erase(pIt);
-	m_Resources[filePath] = pResource;
+	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
+	auto pIt = resourceGroup.find(pResource->GetName());
+	if(pIt != resourceGroup.end())
+		resourceGroup.erase(pIt);
+	resourceGroup[filePath] = pResource;
 	return LoadResourcePrivate(pResource, filePath);
+}
+
+void ResourceManager::Unload(Resource*& pResource)
+{
+	if (pResource == nullptr)
+		return;
+
+	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
+	auto pIt = resourceGroup.find(pResource->GetName());
+	if (pIt != resourceGroup.end())
+		resourceGroup.erase(pIt);
+	delete pResource;
+	pResource = nullptr;
 }
 
 std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
 {
+	const ResourceGroup& resourceGroup = m_Resources[type];
 	std::vector<Resource*> resources;
-	for (const auto& p : m_Resources)
+	for (const auto& p : resourceGroup)
 	{
 		if (p.second->IsTypeOf(type))
 			resources.push_back(p.second);
@@ -61,4 +80,13 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 		return false;
 	}
 	return true;
+}
+
+Resource* ResourceManager::FindResource(const std::string& filePath, const StringHash type)
+{
+	ResourceGroup& group = m_Resources[type];
+	auto pIt = group.find(filePath);
+	if (pIt != group.end())
+		return pIt->second;
+	return nullptr;
 }
