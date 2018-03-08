@@ -48,8 +48,6 @@ bool ShaderVariation::Create(Graphics* pGraphics)
 
 bool ShaderVariation::Compile(Graphics* pGraphics)
 {
-	Release();
-
 	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
 	AUTOPROFILE_DESC(ShaderVariation_Compile, m_Name);
 
