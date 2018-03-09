@@ -25,10 +25,6 @@
 #include <limits>
 #pragma endregion STL
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <SDL.h>
 #pragma comment(lib, "sdl2.lib")
 #pragma comment(lib, "sdl2main.lib")
@@ -73,6 +69,8 @@
 
 #pragma region
 //DirectXMath
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <dxgi.h>
 #include <d3d11.h>
 #pragma comment(lib, "dxgi.lib")
@@ -101,9 +99,6 @@ using namespace DirectX::SimpleMath;
 #endif
 #endif
 #pragma endregion FMOD
-
-#include <Xinput.h>
-#pragma comment(lib, "XINPUT9_1_0.LIB")
 
 #pragma region
 //Engine core include

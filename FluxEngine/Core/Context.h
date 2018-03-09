@@ -7,6 +7,7 @@ public:
 	Context() {}
 	~Context()
 	{
+		m_SystemCache.clear();
 		if (m_SdlInits > 0)
 			FLUX_LOG(Warning, "SDL hasn't been properly shut down");
 	}

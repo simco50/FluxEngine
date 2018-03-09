@@ -16,8 +16,6 @@ public:
 	Console();
 	~Console();
 
-	void Initialize();
-	void Release();
 	void FlushThreadedMessages();
 
 	static bool LogFmodResult(FMOD_RESULT result);
