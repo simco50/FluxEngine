@@ -11,24 +11,62 @@ ResourceManager::ResourceManager(Context* pContext) :
 
 ResourceManager::~ResourceManager()
 {
-	for (std::pair<std::string, Resource*> pResource : m_Resources)
-		SafeDelete(pResource.second);
-	m_Resources.clear();
+	for (auto& resourceGroupEntry : m_Resources)
+	{
+		for (auto& resourceEntry : resourceGroupEntry.second)
+		{
+			SafeDelete(resourceEntry.second);
+		}
+	}
 }
 
-std::vector<std::pair<std::string, Resource*>> ResourceManager::GetResourcesOfType(StringHash type)
+bool ResourceManager::Reload(Resource* pResource)
 {
-	std::vector<std::pair<std::string, Resource*>> resources;
-	for (const auto& p : m_Resources)
+	if (pResource == nullptr)
+		return false;
+	return LoadResourcePrivate(pResource, pResource->GetName());
+}
+
+bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
+{
+	if (pResource == nullptr)
+		return false;
+	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
+	auto pIt = resourceGroup.find(pResource->GetName());
+	if(pIt != resourceGroup.end())
+		resourceGroup.erase(pIt);
+	resourceGroup[filePath] = pResource;
+	return LoadResourcePrivate(pResource, filePath);
+}
+
+void ResourceManager::Unload(Resource*& pResource)
+{
+	if (pResource == nullptr)
+		return;
+
+	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
+	auto pIt = resourceGroup.find(pResource->GetName());
+	if (pIt != resourceGroup.end())
+		resourceGroup.erase(pIt);
+	delete pResource;
+	pResource = nullptr;
+}
+
+std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
+{
+	const ResourceGroup& resourceGroup = m_Resources[type];
+	std::vector<Resource*> resources;
+	for (const auto& p : resourceGroup)
 	{
 		if (p.second->IsTypeOf(type))
-			resources.push_back(p);
+			resources.push_back(p.second);
 	}
 	return resources;
 }
 
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
 {
+	pResource->SetName(filePath);
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 		return false;
@@ -42,4 +80,13 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 		return false;
 	}
 	return true;
+}
+
+Resource* ResourceManager::FindResource(const std::string& filePath, const StringHash type)
+{
+	ResourceGroup& group = m_Resources[type];
+	auto pIt = group.find(filePath);
+	if (pIt != group.end())
+		return pIt->second;
+	return nullptr;
 }

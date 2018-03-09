@@ -5,7 +5,12 @@ class Context
 {
 public:
 	Context() {}
-	~Context() {}
+	~Context()
+	{
+		m_SystemCache.clear();
+		if (m_SdlInits > 0)
+			FLUX_LOG(Warning, "SDL hasn't been properly shut down");
+	}
 
 	Subsystem* GetSubsystem(StringHash type) const
 	{
@@ -15,6 +20,26 @@ public:
 			return nullptr;
 		}
 		return pIt->second;
+	}
+
+	void InitSDLSystem(unsigned int flag)
+	{
+		if (m_SdlInits == 0)
+			SDL_Init(0);
+
+		unsigned int flagsToEnable = flag & ~SDL_WasInit(0);
+		SDL_InitSubSystem(flagsToEnable);
+		++m_SdlInits;
+	}
+
+	void ShutdownSDL()
+	{
+		--m_SdlInits;
+		if (m_SdlInits == 0)
+		{
+			SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+			SDL_Quit();
+		}
 	}
 
 	template<typename T>
@@ -53,4 +78,6 @@ private:
 	std::unordered_map<StringHash, Subsystem*> m_Systems;
 	//Vector to keep order of destruction
 	std::vector<std::unique_ptr<Subsystem>> m_SystemCache;
+
+	int m_SdlInits = 0;
 };

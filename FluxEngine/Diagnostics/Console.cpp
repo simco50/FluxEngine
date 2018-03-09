@@ -39,10 +39,7 @@ Console::Console()
 
 Console::~Console()
 {
-	std::stringstream stream;
-	stream << "\n--------------FLUX ENGINE LOG END---------------\n";
-	std::string output = stream.str();
-	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
+	m_pFileLog->WriteString("\n--------------FLUX ENGINE LOG END---------------\n");
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
 }
@@ -66,9 +63,7 @@ bool Console::LogFmodResult(FMOD_RESULT result)
 {
 	if (result != FMOD_OK)
 	{
-		stringstream stream;
-		stream << "FMOD Error (" << result << ") " << FMOD_ErrorString(result);
-		Log(stream.str(), LogType::Error);
+		Log(Printf("FMOD Error (%d) %s", result, FMOD_ErrorString(result)), LogType::Error);
 		return true;
 	}
 	return false;
@@ -114,7 +109,7 @@ bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 
 bool Console::LogHRESULT(char* source, HRESULT hr)
 {
-	return LogHRESULT(string(source), hr);
+	return LogHRESULT(std::string(source), hr);
 }
 
 void Console::Log(const std::string &message, LogType type)
@@ -234,13 +229,11 @@ void Console::InitializeConsoleWindow()
 	}
 }
 
-string Console::GetTime()
+std::string Console::GetTime()
 {
 	time_t timer;
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	char convertBuffer[9];
-	sprintf_s(convertBuffer, "%02d:%02d:%02d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec);
-	return convertBuffer;
+	return Printf("%02d:%02d:%02d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec);
 }

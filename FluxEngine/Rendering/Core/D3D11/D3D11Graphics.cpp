@@ -27,7 +27,7 @@ Graphics::Graphics(Context* pContext) :
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
 
-	SDL_Init(SDL_INIT_VIDEO);
+	pContext->InitSDLSystem(SDL_INIT_VIDEO);
 }
 
 Graphics::~Graphics()
@@ -35,8 +35,7 @@ Graphics::~Graphics()
 	if (m_pImpl->m_pSwapChain.IsValid())
 		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, NULL);
 
-	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
-	SDL_Quit();
+	m_pContext->ShutdownSDL();
 
 #if 0
 	ComPtr<ID3D11Debug> pDebug;
@@ -442,6 +441,18 @@ void Graphics::PrepareDraw()
 		m_pImpl->m_RenderTargetsDirty = false;
 	}
 
+	if (m_pImpl->m_TexturesDirty)
+	{
+		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+
+		m_pImpl->m_TexturesDirty = false;
+		m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_LastDirtyTexture = 0;
+	}
+
 	if (m_pDepthStencilState->IsDirty())
 	{
 		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
@@ -458,18 +469,6 @@ void Graphics::PrepareDraw()
 	{
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
-	}
-
-	if (m_pImpl->m_TexturesDirty)
-	{
-		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
-
-		m_pImpl->m_TexturesDirty = false;
-		m_pImpl->m_FirstDirtyTexture = m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
-		m_pImpl->m_LastDirtyTexture = 0;
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)

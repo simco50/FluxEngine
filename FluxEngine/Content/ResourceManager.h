@@ -1,5 +1,4 @@
 #pragma once
-#include "Resource.h"
 #include "Core\Subsystem.h"
 
 class Resource;
@@ -8,38 +7,42 @@ class ResourceManager : public Subsystem
 {
 	FLUX_OBJECT(ResourceManager, Subsystem)
 
+private:
+	using ResourceGroup = std::map<std::string, Resource*>;
+	using ResourceCache = std::map<StringHash, ResourceGroup>;
+
 public:
 	ResourceManager(Context* pContext);
 	~ResourceManager();
 
-	template <typename T, typename ...Args>
-	T* Load(const std::string& filePath, Args... args)
+	//Get the resource, if it is already loaded, take that
+	template <typename T>
+	T* Load(const std::string& filePath)
 	{
-		auto pIt = m_Resources.find(filePath);
-		if (pIt != m_Resources.end())
-			return (T*)(pIt->second);
-
-		Resource* pResource = new T(m_pContext, args...);
+		Resource* pResource = FindResource(filePath, T::GetTypeStatic());
+		if (pResource)
+			return (T*)pResource;
+		pResource = new T(m_pContext);
 		if (!LoadResourcePrivate(pResource, filePath))
 		{
 			delete pResource;
 			return nullptr;
 		}
-		m_Resources[filePath] = pResource;
+		m_Resources[T::GetTypeStatic()][filePath] = pResource;
 		return (T*)pResource;
 	}
 
-	bool Reload(const std::string& filePath)
-	{
-		auto pIt = m_Resources.find(filePath);
-		if (pIt == m_Resources.end())
-			return nullptr;
-		return LoadResourcePrivate(pIt->second, filePath);
-	}
+	//Reload the resource
+	bool Reload(Resource* pResource);
+	//Map resource to another file
+	bool Reload(Resource* pResource, const std::string& filePath);
 
-	std::vector<std::pair<std::string, Resource*>> GetResourcesOfType(StringHash type);
+	void Unload(Resource*& pResource);
 
+	std::vector<Resource*> GetResourcesOfType(StringHash type);
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
-	std::map<std::string, Resource*> m_Resources;
+	Resource* FindResource(const std::string& filePath, const StringHash type);
+
+	ResourceCache m_Resources;
 };

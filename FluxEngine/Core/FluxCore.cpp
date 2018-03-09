@@ -215,18 +215,18 @@ void FluxCore::RenderUI()
 	}
 	if(ImGui::Button("Reload all shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		for(const auto& p : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
-			m_pResourceManager->Reload(p.first);
+		for(Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
+			m_pResourceManager->Reload(pResource);
 	}
 	if (ImGui::Button("Reload all materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		for (const auto& p : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
-			m_pResourceManager->Reload(p.first);
+		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
+			m_pResourceManager->Reload(pResource);
 	}
 	if (ImGui::Button("Reload all textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		for (const auto& p : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
-			m_pResourceManager->Reload(p.first);
+		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
+			m_pResourceManager->Reload(pResource);
 	}
 	ImGui::End();
 

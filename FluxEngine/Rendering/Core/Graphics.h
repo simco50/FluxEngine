@@ -37,7 +37,6 @@ public:
 		const int multiSample,
 		const int refreshRate);
 
-	//Graphics
 	void SetRenderTarget(const int index, RenderTarget* pRenderTarget);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
@@ -71,6 +70,7 @@ public:
 
 	//Getters
 	HWND GetWindow() const;
+	SDL_Window* GetSDLWindow() const { return m_pWindow; }
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
 
