@@ -426,8 +426,11 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
-	if(m_pDefaultRenderTarget)
-		m_pDefaultRenderTarget->Clear(clearFlags, color, depth, stencil);
+	for (RenderTarget* pRenderTarget : m_CurrentRenderTargets)
+	{
+		if (pRenderTarget)
+			pRenderTarget->Clear(clearFlags, color, depth, stencil);
+	}
 }
 
 void Graphics::PrepareDraw()
@@ -496,15 +499,22 @@ void Graphics::PrepareDraw()
 			}
 		}
 
-		auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
-		if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
-			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
+		if (hash == 0)
+		{
+			m_pImpl->m_pDeviceContext->IASetInputLayout(nullptr);
+		}
 		else
 		{
-			std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
-			pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
-			m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
-			m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
+			auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
+			if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
+			else
+			{
+				std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
+				pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
+				m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
+			}
 		}
 
 		m_pImpl->m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
