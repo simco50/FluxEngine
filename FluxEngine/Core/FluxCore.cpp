@@ -28,7 +28,8 @@
 
 bool FluxCore::m_Exiting;
 
-FluxCore::FluxCore()
+FluxCore::FluxCore(Context* pContext) :
+	Object(pContext)
 {
 }
 
@@ -73,7 +74,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 			(WindowType)Config::GetInt("WindowMode", "Window", 0),
 			Config::GetBool("Resizable", "Window", true),
 			Config::GetBool("VSync", "Window", true),
-			Config::GetInt("MSAA", "Window", 8),
+			Config::GetInt("MSAA", "Window", 1),
 			Config::GetInt("RefreshRate", "Window", 60)))
 		{
 			FLUX_LOG(Error, "[FluxCore::Run] > Failed to initialize graphics");
@@ -89,21 +90,42 @@ int FluxCore::Run(HINSTANCE hInstance)
 		InitGame();
 		GameTimer::Reset();
 	}
+	return 0;
+}
 
-	//Message loop
-	while(m_Exiting == false)
+void FluxCore::ProcessFrame()
+{
+	GameTimer::Tick();
+	m_pInput->Update();
+	m_pConsole->FlushThreadedMessages();
+
+	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
+
+	if (m_pInput->IsMouseButtonPressed(SDL_BUTTON_LEFT) && !ImGui::IsMouseHoveringAnyWindow())
 	{
-		m_pInput->Update();
-		if (!GameTimer::IsPaused())
+		RaycastResult result;
+		if (m_pCamera->GetCamera()->Raycast(result))
 		{
-			GameTimer::Tick();
-			GameLoop();
-			m_pConsole->FlushThreadedMessages();
+			m_pSelectedNode = result.pRigidbody->GetNode();
 		}
 		else
-			Sleep(100);
+			m_pSelectedNode = nullptr;
 	}
-	return 0;
+
+	m_pGraphics->BeginFrame();
+	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
+
+	m_pAudioEngine->Update();
+	m_pScene->Update();
+
+	if (m_DebugPhysics)
+		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
+
+	m_pDebugRenderer->Render();
+	m_pDebugRenderer->EndFrame();
+
+	RenderUI();
+	m_pGraphics->EndFrame();
 }
 
 void FluxCore::InitGame()
@@ -117,7 +139,7 @@ void FluxCore::InitGame()
 
 	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -133,7 +155,7 @@ void FluxCore::InitGame()
 			for (int z = 0; z < 2; ++z)
 	{
 		m_pNode = new SceneNode(m_pContext, "Cube");
-		m_pNode->GetTransform()->Translate((float)x, y + 0.5f, (float)z);
+		m_pNode->GetTransform()->Translate((float)x,  2 *y + 0.5f, (float)z);
 		Model* pModel = new Model(m_pContext);
 		pModel->SetMesh(pMesh);
 		pModel->SetMaterial(pMaterial);
@@ -169,26 +191,6 @@ void FluxCore::OnPause(bool isActive)
 		GameTimer::Stop();
 }
 
-void FluxCore::GameLoop()
-{
-	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
-
-	m_pGraphics->BeginFrame();
-	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
-	
-	m_pAudioEngine->Update();
-	m_pScene->Update();
-
-	if(m_DebugPhysics)
-		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
-
-	m_pDebugRenderer->Render();
-	m_pDebugRenderer->EndFrame();
-
-	RenderUI();
-	m_pGraphics->EndFrame();
-}
-
 void FluxCore::RenderUI()
 {
 	m_pImmediateUI->NewFrame();
@@ -202,32 +204,45 @@ void FluxCore::RenderUI()
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
+	ImGui::SameLine(150);
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
 	ImGui::Text("Primitives: %i", primitiveCount);
+	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
-	ImGui::End();
-
-	ImGui::Begin("Debug");
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-	if (ImGui::Button("Screenshot", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	ImGui::Separator();
+	ImGui::Text("Resources");
+	if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
-		m_pGraphics->TakeScreenshot();
-	}
-	if(ImGui::Button("Reload all shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-	{
-		for(Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
+		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
 			m_pResourceManager->Reload(pResource);
 	}
-	if (ImGui::Button("Reload all materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	if (ImGui::Button("Reload materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
 		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
 			m_pResourceManager->Reload(pResource);
 	}
-	if (ImGui::Button("Reload all textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	if (ImGui::Button("Reload textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
 		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
 			m_pResourceManager->Reload(pResource);
 	}
+	ImGui::Separator();
+	if (m_pSelectedNode)
+	{
+		ImGui::Text(m_pSelectedNode->GetName().c_str());
+		ImGui::Text("Components:");
+		for (const Component* pComponent : m_pSelectedNode->GetComponents())
+		{
+			std::string t = std::string("- ") + pComponent->GetTypeName();
+			ImGui::Text(t.c_str());
+		}
+		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+		Model* pModel = m_pSelectedNode->GetComponent<Model>();
+		if (pModel)
+			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+	}
+
 	ImGui::End();
 
 	m_pImmediateUI->Render();

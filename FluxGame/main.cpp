@@ -1,22 +1,18 @@
 #include "FluxGame.h"
-#include <Core/FluxCore.h>
+#include "Core/Application.h"
+#include "Core/Context.h"
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-	// Enable run-time memory leak check for debug builds.
 #ifdef _DEBUG
-	// notify user if heap is corrupt
 	HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
-
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
-
 	//_CrtSetBreakAlloc(4322);
 #endif
 
-	std::unique_ptr<FluxCore> pCore = std::make_unique<FluxCore>();
-	pCore->Run(hInstance);
+	Application* pCore = new Application();
+	pCore->Run();
+	delete pCore;
 
 	return 0;
 }

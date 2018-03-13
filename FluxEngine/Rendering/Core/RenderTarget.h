@@ -31,7 +31,6 @@ public:
 	DELETE_COPY(RenderTarget)
 
 	bool Create(const RenderTargetDesc& RenderTargetDesc);
-	void Clear(const ClearFlags clearFlags, const Color& color, const float depth, unsigned char stencil);
 
 	Texture* GetDepthTexture() const { return m_pDepthTexture.get(); }
 	Texture* GetRenderTexture() const { return m_pRenderTexture.get(); }

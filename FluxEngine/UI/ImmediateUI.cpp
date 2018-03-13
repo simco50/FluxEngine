@@ -46,8 +46,8 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
 	//Load shader
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/Imgui.hlsl", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/Imgui.hlsl", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::PixelShader);
 
 	//Create vertex buffer
 	m_pVertexBuffer.reset();

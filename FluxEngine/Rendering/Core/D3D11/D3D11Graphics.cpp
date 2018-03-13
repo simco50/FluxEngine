@@ -20,6 +20,8 @@
 #include <SDL_syswm.h>
 #include "Content/Image.h"
 
+std::string Graphics::m_ShaderExtension = ".hlsl";
+
 Graphics::Graphics(Context* pContext) :
 	Subsystem(pContext)
 {
@@ -103,8 +105,6 @@ bool Graphics::OpenWindow()
 {
 	SDL_DisplayMode displayMode;
 	SDL_GetCurrentDisplayMode(0, &displayMode);
-	int windowPosX = (displayMode.w - m_WindowWidth) / 2;
-	int windowPosY = (displayMode.h - m_WindowHeight) / 2;
 
 	unsigned flags = 0;
 	if (m_Resizable)
@@ -115,8 +115,6 @@ bool Graphics::OpenWindow()
 		flags |= SDL_WINDOW_BORDERLESS;
 		m_WindowWidth = displayMode.w;
 		m_WindowHeight = displayMode.h;
-		windowPosX = 0;
-		windowPosY = 0;
 		break;
 	case WindowType::FULLSCREEN:
 		flags |= SDL_WINDOW_FULLSCREEN;
@@ -125,7 +123,7 @@ bool Graphics::OpenWindow()
 	default:
 		break;
 	}
-	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), windowPosX, windowPosY, m_WindowWidth, m_WindowHeight, flags);
+	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_WindowWidth, m_WindowHeight, flags);
 	if (!m_pWindow)
 		return false;
 	
@@ -426,10 +424,21 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
-	for (RenderTarget* pRenderTarget : m_CurrentRenderTargets)
+	PrepareDraw();
+	ID3D11RenderTargetView* pRtv = m_pImpl->m_RenderTargetViews[0];
+	ID3D11DepthStencilView* pDsv = m_pImpl->m_pDepthStencilView;
+	if (pRtv && (clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget)
 	{
-		if (pRenderTarget)
-			pRenderTarget->Clear(clearFlags, color, depth, stencil);
+		m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
+	}
+	if (pDsv && (clearFlags & (ClearFlags::Depth | ClearFlags::Stencil)) == (ClearFlags::Depth | ClearFlags::Stencil))
+	{
+		unsigned int depthClearFlags = 0;
+		if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
+			depthClearFlags |= D3D11_CLEAR_DEPTH;
+		if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
+			depthClearFlags |= D3D11_CLEAR_STENCIL;
+		m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
 	}
 }
 

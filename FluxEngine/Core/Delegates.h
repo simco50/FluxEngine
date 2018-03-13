@@ -1,5 +1,9 @@
 #pragma once
 
+#include <assert.h>
+#include <memory>
+#include <map>
+
 //Base type for delegates
 template<typename RetVal, typename ...Args>
 class IDelegate
@@ -52,7 +56,7 @@ private:
 };
 
 //Delegate for lambdas
-template< typename TLambda, typename RetVal, typename... Args>
+template<typename TLambda, typename RetVal, typename... Args>
 class LambdaDelegate : public IDelegate<RetVal, Args...>
 {
 public:
@@ -232,7 +236,7 @@ public:
 	//Execute the function
 	RetVal Execute(Args ...args)
 	{
-		checkf(IsBound(), "[SinglecastDelegate::Execute] > Delegate is not bound");
+		assert(IsBound());
 		return m_pEvent->Execute(args...);
 	}
 

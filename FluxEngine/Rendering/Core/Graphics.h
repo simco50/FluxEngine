@@ -114,6 +114,7 @@ private:
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
 	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
+	static std::string m_ShaderExtension;
 
 	FloatRect m_CurrentViewport = FloatRect(0, 0, 1, 1);
 	IntRect m_CurrentScissorRect;

@@ -93,11 +93,13 @@ public:
 	void AddPolygon(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d, const Color& color);
 	void AddBoundingBox(const BoundingBox& boundingBox, const Color& color, const bool solid = false);
 	void AddBoundingBox(const BoundingBox& boundingBox, const Matrix& transform, const Color& color, const bool solid = false);
+	void AddOrientedBoundingBox(const BoundingOrientedBox& boundingBox, const Matrix& transform, const Color& color, const bool solid = false);
 	void AddSphere(const Vector3& position, const float radius, const int slices, const int stacks, const Color& color, const bool solid = false);
 	void AddFrustrum(const BoundingFrustum& frustrum, const Color& color);
 	void AddAxisSystem(const Matrix& transform, const float lineLength = 1.0f);
 	void AddPhysicsScene(PhysicsScene* pScene);
 	void AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid = false);
+	void AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid = false);
 
 private:
 	Graphics* m_pGraphics;

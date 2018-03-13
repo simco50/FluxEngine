@@ -10,7 +10,6 @@
 #include "Core/BlendState.h"
 #include "Core/RasterizerState.h"
 #include "Core/DepthStencilState.h"
-#include "ParticleSystem/ParticleEmitter.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext) 

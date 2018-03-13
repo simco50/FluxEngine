@@ -1,4 +1,5 @@
 #pragma once
+#include "Object.h"
 
 class Graphics;
 class ImmediateUI;
@@ -12,22 +13,23 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 
-class FluxCore
+class FluxCore : public Object
 {
 public:
-	FluxCore();
+	FluxCore(Context* pContext);
 	virtual ~FluxCore();
 
 	DELETE_COPY(FluxCore)
 
 	int Run(HINSTANCE hInstance);
-	void GameLoop();
-	void RenderUI();
+	void ProcessFrame();
 	void InitGame();
 
 	static void DoExit();
+	static bool IsExiting() { return m_Exiting; }
 
 private:
+	void RenderUI();
 	void OnPause(bool isActive);
 
 	//Window variables
@@ -48,6 +50,8 @@ private:
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
+
+	SceneNode* m_pSelectedNode = nullptr;
 
 	Context* m_pContext;
 

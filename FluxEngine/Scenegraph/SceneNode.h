@@ -30,6 +30,7 @@ public:
 	}
 
 	Component* GetComponent(StringHash type);
+	const std::vector<Component*>& GetComponents() const { return m_Components; }
 
 	template<typename T, typename ...Args>
 	T* GetOrCreateComponent(Args ...args)

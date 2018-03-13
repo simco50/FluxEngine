@@ -1,8 +1,8 @@
 <Material name="Particles">
 	<Shaders>
-		<Shader type="Vertex" source="Resources/Shaders/Particles.hlsl"/>
-		<Shader type="Geometry" source="Resources/Shaders/Particles.hlsl"/>
-		<Shader type="Pixel" source="Resources/Shaders/Particles.hlsl"/>
+		<Shader type="Vertex" source="Resources/Shaders/Particles"/>
+		<Shader type="Geometry" source="Resources/Shaders/Particles"/>
+		<Shader type="Pixel" source="Resources/Shaders/Particles"/>
 	</Shaders>
 
 	<Properties>

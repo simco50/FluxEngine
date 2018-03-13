@@ -21,8 +21,8 @@ DebugRenderer::DebugRenderer(Context* pContext) :
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 	};
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer.hlsl", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::PixelShader);
 	m_pVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 }
 
@@ -339,6 +339,11 @@ void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
 
 void DebugRenderer::AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid)
 {
+	AddMesh(pMesh, Matrix::CreateTranslation(position), color, solid);
+}
+
+void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid /*= false*/)
+{
 	if (pMesh == nullptr)
 		return;
 	for (int i = 0; i < pMesh->GetGeometryCount(); ++i)
@@ -356,9 +361,9 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Vector3& position, const Color& c
 				const unsigned int indexB = static_cast<unsigned int*>(indexData.pData)[index + 1];
 				const unsigned int indexC = static_cast<unsigned int*>(indexData.pData)[index + 2];
 
-				Vector3 vertexA = static_cast<Vector3*>(vertexData.pData)[indexA] + position;
-				Vector3 vertexB = static_cast<Vector3*>(vertexData.pData)[indexB] + position;
-				Vector3 vertexC = static_cast<Vector3*>(vertexData.pData)[indexC] + position;
+				Vector3 vertexA = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[indexA], worldMatrix);
+				Vector3 vertexB = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[indexB], worldMatrix);
+				Vector3 vertexC = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[indexC], worldMatrix);
 
 				AddTriangle(vertexA, vertexB, vertexC, color, solid);
 			}
@@ -367,9 +372,9 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Vector3& position, const Color& c
 		{
 			for (int index = 0; index < vertexData.Count; index += 3)
 			{
-				Vector3 vertexA = static_cast<Vector3*>(vertexData.pData)[index] + position;
-				Vector3 vertexB = static_cast<Vector3*>(vertexData.pData)[index + 1] + position;
-				Vector3 vertexC = static_cast<Vector3*>(vertexData.pData)[index + 2] + position;
+				Vector3 vertexA = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[index], worldMatrix);
+				Vector3 vertexB = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[index + 1], worldMatrix);
+				Vector3 vertexC = Vector3::Transform(static_cast<Vector3*>(vertexData.pData)[index + 2], worldMatrix);
 
 				AddTriangle(vertexA, vertexB, vertexC, color, solid);
 			}
