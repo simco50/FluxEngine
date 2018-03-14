@@ -11,7 +11,7 @@ public:
 	virtual bool Load(InputStream& inputStream) override;
 	virtual bool Save(OutputStream& outputStream) override;
 
-	//bool LoadLUT(InputStream& inputStream);
+	bool LoadLUT(InputStream& inputStream);
 
 	bool Save(const std::string& filePath);
 	bool SavePng(OutputStream& outputStream);

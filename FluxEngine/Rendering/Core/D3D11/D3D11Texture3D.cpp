@@ -21,10 +21,10 @@ bool Texture3D::Load(InputStream& inputStream)
 	AUTOPROFILE(Texture3D_Load);
 
 	m_pImage = std::make_unique<Image>(m_pContext);
-	if (!m_pImage->Load(inputStream))
+	if (!m_pImage->LoadLUT(inputStream))
 		return false;
-	//m_pImage->ConvertToRGBA();
-	if (!SetSize(m_pImage->GetHeight(), m_pImage->GetHeight(), m_pImage->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+	
+	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), m_pImage->GetDepth(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
 		return false;
 	if (!SetData(m_pImage->GetData()))
 		return false;

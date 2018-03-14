@@ -86,6 +86,25 @@ bool Image::Save(const std::string& filePath)
 	return false;
 }
 
+bool Image::LoadLUT(InputStream& inputStream)
+{
+	AUTOPROFILE(Image_Load);
+	m_Components = 4;
+	unsigned char* pPixels = nullptr;
+	stbi_io_callbacks callbacks;
+	callbacks.read = STBI::ReadCallback;
+	callbacks.skip = STBI::SkipCallback;
+	callbacks.eof = STBI::EofCallback;
+	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
+	if (pPixels == nullptr)
+		return false;
+	m_Pixels.resize(m_Height * m_Width * m_Components);
+	m_Depth = m_Width = m_Height;
+	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+	stbi_image_free(pPixels);
+	return true;
+}
+
 bool Image::SavePng(OutputStream& outputStream)
 {
 	int result = stbi_write_png_to_func([](void *context, void *data, int size)
