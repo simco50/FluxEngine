@@ -13,6 +13,7 @@ class Subsystem;
         static StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
         static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
         static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic(#typeName, baseTypeName::GetTypeInfoStatic()); return &typeInfoStatic; } \
+	private: \
 
 class Object
 {

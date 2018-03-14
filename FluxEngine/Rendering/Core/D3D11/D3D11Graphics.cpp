@@ -7,7 +7,7 @@
 #include "../IndexBuffer.h"
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
-#include "../Texture.h"
+#include "../Texture2D.h"
 #include "../DepthStencilState.h"
 #include "../InputLayout.h"
 #include "../BlendState.h"

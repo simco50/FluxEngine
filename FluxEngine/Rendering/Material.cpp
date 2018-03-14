@@ -6,8 +6,8 @@
 #include "Core/Graphics.h"
 #include "Core/Shader.h"
 #include "Core/ShaderVariation.h"
-#include "Core/Texture.h"
 #include "IO/InputStream.h"
+#include "Core/Texture2D.h"
 
 namespace XML = tinyxml2;
 
@@ -105,7 +105,7 @@ bool Material::Load(InputStream& inputStream)
 					return false;
 				}
 
-				Texture* pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pParameter->Attribute("value"));
+				Texture2D* pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
 				m_Textures[slotType] = pTexture;
 			}
 			else if (parameterType == "Value")

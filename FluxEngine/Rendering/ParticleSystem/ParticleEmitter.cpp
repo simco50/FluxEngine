@@ -10,11 +10,11 @@
 
 #include "Rendering/Geometry.h"
 #include "Rendering/Material.h"
-#include "Rendering/Core/Texture.h"
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
+#include "Rendering/Core/Texture2D.h"
 
 ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
 	Drawable(pContext),
@@ -54,7 +54,7 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	CreateVertexBuffer(m_BufferSize);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
 
-	m_pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pSettings->ImagePath);
+	m_pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pSettings->ImagePath);
 	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture);
 	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
 	m_pMaterial->SetDepthEnabled(false);

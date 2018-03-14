@@ -18,37 +18,33 @@ class Texture : public Resource
 
 public:
 	Texture(Context* pContext);
-	Texture(Context* pContext, void* pTexture, void* pTextureSRV);
-	~Texture();
+	virtual ~Texture();
 
 	DELETE_COPY(Texture)
 
-	virtual bool Load(InputStream& inputStream) override;
-
-	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
-	bool SetData(const void* pData);
+		virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
 
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }
 	void* GetResourceView() const { return m_pShaderResourceView; }
 	void* GetSamplerState() const { return m_pSamplerState; }
 
-	const int& GetWidth() const { return m_Width; }
-	const int& GetHeight() const { return m_Height; }
+	int GetWidth() const { return m_Width; }
+	int GetHeight() const { return m_Height; }
+	int GetDepth() const { return m_Depth; }
 
 	void UpdateParameters();
 
-private:
-	void UpdateProperties(void* pTexture);
-
+protected:
 	void Release();
-	bool Create();
+	virtual bool Create() { return true; }
 
 	unsigned int GetSRVFormat(const unsigned int format);
 	unsigned int GetDSVFormat(const unsigned int format);
 
 	unsigned int m_Width = 0;
 	unsigned int m_Height = 0;
+	unsigned int m_Depth = 0;
 
 	void* m_pResource = nullptr;
 	void* m_pShaderResourceView = nullptr;
