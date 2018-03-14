@@ -25,6 +25,10 @@
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
 #include "Content/Image.h"
+#include "Rendering/Core/Texture3D.h"
+#include "Rendering/Core/Texture2D.h"
+#include "Rendering/Core/RenderTarget.h"
+#include "Rendering/Core/DepthStencilState.h"
 
 bool FluxCore::m_Exiting;
 
@@ -118,6 +122,31 @@ void FluxCore::ProcessFrame()
 	m_pAudioEngine->Update();
 	m_pScene->Update();
 
+	if (m_EnableLUT)
+	{
+		m_pGraphics->PrepareDraw();
+
+		m_pGraphics->SetShader(ShaderType::VertexShader, m_pGraphics->GetShader("Resources/Shaders/LUT", ShaderType::VertexShader));
+		m_pGraphics->SetShader(ShaderType::PixelShader, m_pGraphics->GetShader("Resources/Shaders/LUT", ShaderType::PixelShader));
+		m_pGraphics->SetTexture(TextureSlot::Volume, m_pLUT);
+		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pGraphics->GetRenderTarget()->GetRenderTexture());
+		m_pGraphics->SetRenderTarget(0, m_pIntermediateRenderTarget.get());
+
+		m_pGraphics->SetVertexBuffer(nullptr);
+		m_pGraphics->SetIndexBuffer(nullptr);
+		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
+
+		m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
+		m_pGraphics->PrepareDraw();
+		m_pGraphics->SetRenderTarget(0, nullptr);
+
+		m_pGraphics->SetShader(ShaderType::VertexShader, m_pGraphics->GetShader("Resources/Shaders/FullScreenTriangle", ShaderType::VertexShader));
+		m_pGraphics->SetShader(ShaderType::PixelShader, m_pGraphics->GetShader("Resources/Shaders/FullScreenTriangle", ShaderType::PixelShader));
+		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pIntermediateRenderTarget->GetRenderTexture());
+		m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
+		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
+	}
+
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
@@ -131,6 +160,18 @@ void FluxCore::ProcessFrame()
 void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
+
+	m_pLUT = m_pResourceManager->Load<Texture3D>("Resources/Textures/RGBTable16x1.png");
+	m_p2DLUT = m_pResourceManager->Load<Texture2D>("Resources/Textures/RGBTable16x1.png");
+
+	{
+		RenderTargetDesc desc = {};
+		desc.Width = 1240;
+		desc.Height = 720;
+		desc.MultiSample = 1;
+		m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(m_pContext);
+		m_pIntermediateRenderTarget->Create(desc);
+	}
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
@@ -210,6 +251,9 @@ void FluxCore::RenderUI()
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
+	ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
+	float size = 4.0f;
+	ImGui::Image(m_p2DLUT, ImVec2(256 * size, 16 * size));
 	ImGui::Separator();
 	ImGui::Text("Resources");
 	if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

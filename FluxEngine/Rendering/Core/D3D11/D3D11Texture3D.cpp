@@ -16,6 +16,22 @@ Texture3D::~Texture3D()
 
 }
 
+bool Texture3D::Load(InputStream& inputStream)
+{
+	AUTOPROFILE(Texture3D_Load);
+
+	m_pImage = std::make_unique<Image>(m_pContext);
+	if (!m_pImage->Load(inputStream))
+		return false;
+	//m_pImage->ConvertToRGBA();
+	if (!SetSize(m_pImage->GetHeight(), m_pImage->GetHeight(), m_pImage->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+		return false;
+	if (!SetData(m_pImage->GetData()))
+		return false;
+
+	return true;
+}
+
 bool Texture3D::SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
 {
 	AUTOPROFILE(Texture_SetSize);
@@ -54,7 +70,7 @@ bool Texture3D::SetData(const void* pData)
 		box.top = 0;
 		box.right = m_Width;
 		box.bottom = m_Height;
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &box, pData, m_Width * 4, 0);
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &box, pData, m_Width * 4, m_Depth * m_Width * 4);
 	}
 	else
 	{

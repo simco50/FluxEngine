@@ -54,12 +54,17 @@ void ResourceManager::Unload(Resource*& pResource)
 
 std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
 {
-	const ResourceGroup& resourceGroup = m_Resources[type];
 	std::vector<Resource*> resources;
-	for (const auto& p : resourceGroup)
+	for (auto& resourceGroup : m_Resources)
 	{
-		if (p.second->IsTypeOf(type))
-			resources.push_back(p.second);
+		if (resourceGroup.second.size() > 0 && resourceGroup.second.begin()->second->IsTypeOf(type))
+		{
+			for (auto& p : resourceGroup.second)
+			{
+				if (p.second->IsTypeOf(type))
+					resources.push_back(p.second);
+			}
+		}
 	}
 	return resources;
 }

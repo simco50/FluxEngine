@@ -112,6 +112,7 @@ enum class TextureSlot
 {
 	Diffuse = 0,
 	Normal,
+	Volume,
 	MAX
 };
 

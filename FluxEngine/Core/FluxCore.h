@@ -12,6 +12,8 @@ class DebugRenderer;
 class Context;
 class ResourceManager;
 class AudioEngine;
+class Texture;
+class RenderTarget;
 
 class FluxCore : public Object
 {
@@ -53,7 +55,14 @@ private:
 
 	SceneNode* m_pSelectedNode = nullptr;
 
+	Texture* m_pLUT;
+	Texture* m_p2DLUT;
+	std::unique_ptr<RenderTarget> m_pIntermediateRenderTarget;
+
+
 	Context* m_pContext;
+
+	bool m_EnableLUT = true;
 
 	static bool m_Exiting;
 };

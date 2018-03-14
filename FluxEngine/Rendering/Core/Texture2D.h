@@ -12,8 +12,10 @@ public:
 	virtual ~Texture2D()
 	{}
 
-	virtual bool Create() override;
 	bool Load(InputStream& inputStream);
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const void* pData);
+
+private:
+	virtual bool Create() override;
 };

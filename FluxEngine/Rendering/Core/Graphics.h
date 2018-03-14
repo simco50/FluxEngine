@@ -83,8 +83,8 @@ public:
 
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
 
-private:
 	void PrepareDraw();
+private:
 
 	bool OpenWindow();
 	bool EnumerateAdapters();

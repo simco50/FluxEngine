@@ -11,6 +11,8 @@ public:
 	virtual bool Load(InputStream& inputStream) override;
 	virtual bool Save(OutputStream& outputStream) override;
 
+	//bool LoadLUT(InputStream& inputStream);
+
 	bool Save(const std::string& filePath);
 	bool SavePng(OutputStream& outputStream);
 	bool SaveBmp(OutputStream& outputStream);
@@ -22,11 +24,14 @@ public:
 	bool SetPixel(const int x, const int y, const Color& color);
 	bool SetPixelInt(const int x, const int y, const unsigned int color);
 
+	//void ConvertToRGBA();
+
 	Color GetPixel(const int x, const int y) const;
 	unsigned int GetPixelInt(const int x, const int y) const;
 
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
+	int GetDepth() const { return m_Depth; }
 	int GetBPP() const { return 4; }
 	int ActualBPP() const { return m_BytesPerPixel; }
 	unsigned char* GetData() { return m_Pixels.data(); }

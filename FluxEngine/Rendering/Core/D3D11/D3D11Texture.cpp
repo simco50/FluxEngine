@@ -39,7 +39,7 @@ void Texture::UpdateParameters()
 
 	memcpy(desc.BorderColor, &borderColor, 4 * sizeof(float));
 	desc.ComparisonFunc = D3D11ComparisonFunction(CompareMode::LESSEQUAL);
-	desc.Filter = D3D11Filter(TextureFilter::MIN_LINEAR_MAG_POINT_MIP_LINEAR);
+	desc.Filter = D3D11Filter(TextureFilter::MIN_MAG_MIP_LINEAR);
 	desc.MaxAnisotropy = 1;
 	desc.MinLOD = std::numeric_limits<float>::min();
 	desc.MaxLOD = std::numeric_limits<float>::max();
