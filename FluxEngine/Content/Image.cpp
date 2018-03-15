@@ -98,10 +98,20 @@ bool Image::LoadLUT(InputStream& inputStream)
 	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
 	if (pPixels == nullptr)
 		return false;
-	m_Pixels.resize(m_Height * m_Width * m_Components);
-	m_Height = m_Depth = m_Width;
 
-	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+	m_Pixels.resize(m_Height * m_Width * m_Components);
+	m_Width = m_Depth = m_Height = 16;
+
+	int* c3D = (int*)m_Pixels.data();
+	int* c2D = (int*)pPixels;
+	int dim = m_Height;
+	for (int z = 0; z < dim; ++z)
+		for (int y = 0; y < dim; ++y)
+			for (int x = 0; x < dim; ++x)
+				c3D[x + y * dim + z * dim * dim]
+				= c2D[x + y * dim * dim + z * dim];
+
+
 	stbi_image_free(pPixels);
 	return true;
 }

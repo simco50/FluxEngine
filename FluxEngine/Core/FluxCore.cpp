@@ -254,6 +254,7 @@ void FluxCore::RenderUI()
 	ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
 	ImGui::Separator();
 	ImGui::Text("Resources");
+	ImGui::Image(m_p2DLUT, ImVec2(256, 16));
 	if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 	{
 		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
