@@ -252,8 +252,6 @@ void FluxCore::RenderUI()
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
 	ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
-	float size = 4.0f;
-	ImGui::Image(m_p2DLUT, ImVec2(256 * size, 16 * size));
 	ImGui::Separator();
 	ImGui::Text("Resources");
 	if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

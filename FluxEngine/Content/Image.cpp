@@ -99,7 +99,8 @@ bool Image::LoadLUT(InputStream& inputStream)
 	if (pPixels == nullptr)
 		return false;
 	m_Pixels.resize(m_Height * m_Width * m_Components);
-	m_Depth = m_Width = m_Height;
+	m_Height = m_Depth = m_Width;
+
 	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
 	stbi_image_free(pPixels);
 	return true;
