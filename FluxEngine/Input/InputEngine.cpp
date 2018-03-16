@@ -65,7 +65,8 @@ void InputEngine::Update()
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				m_pGraphics->OnResize();
+				m_pGraphics->OnResize(event.window.data1, event.window.data2);
+				m_OnWindowSizeChangedEvent.Broadcast(event.window.data1, event.window.data2);
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 			case SDL_WINDOWEVENT_MINIMIZED:

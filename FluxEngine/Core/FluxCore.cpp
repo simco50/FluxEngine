@@ -161,16 +161,25 @@ void FluxCore::InitGame()
 {
 	AUTOPROFILE(FluxCore_InitGame);
 
-	m_pLUT = m_pResourceManager->Load<Texture3D>("Resources/Textures/RGBTable16x1.png");
-	m_p2DLUT = m_pResourceManager->Load<Texture2D>("Resources/Textures/RGBTable16x1.png");
-
 	{
+		m_pLUT = m_pResourceManager->Load<Texture3D>("Resources/Textures/RGBTable16x1_edit.png");
+		m_p2DLUT = m_pResourceManager->Load<Texture2D>("Resources/Textures/RGBTable16x1_edit.png");
+
 		RenderTargetDesc desc = {};
-		desc.Width = 1240;
-		desc.Height = 720;
+		desc.Width = m_pGraphics->GetWindowWidth();
+		desc.Height = m_pGraphics->GetWindowHeight();;
 		desc.MultiSample = 1;
 		m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(m_pContext);
 		m_pIntermediateRenderTarget->Create(desc);
+
+		m_pInput->OnWindowSizeChanged().AddLambda([this](int width, int height)
+		{
+			RenderTargetDesc desc = {};
+			desc.Width = width;
+			desc.Height = height;
+			desc.MultiSample = 1;
+			m_pIntermediateRenderTarget->Create(desc);
+		});
 	}
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
@@ -250,28 +259,39 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
-	ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-	ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
-	ImGui::Separator();
-	ImGui::Text("Resources");
-	ImGui::Image(m_p2DLUT, ImVec2(256, 16));
-	if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	ImGui::End();
+
+	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
-			m_pResourceManager->Reload(pResource);
+		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
+		ImGui::TreePop();
 	}
-	if (ImGui::Button("Reload materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	if(ImGui::TreeNodeEx("Post processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
-			m_pResourceManager->Reload(pResource);
+		ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
+		ImGui::Image(m_p2DLUT, ImVec2(256, 16));
+		ImGui::TreePop();
 	}
-	if (ImGui::Button("Reload textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
-			m_pResourceManager->Reload(pResource);
+		if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
+				m_pResourceManager->Reload(pResource);
+		}
+		if (ImGui::Button("Reload materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
+				m_pResourceManager->Reload(pResource);
+		}
+		if (ImGui::Button("Reload textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
+				m_pResourceManager->Reload(pResource);
+		}
+		ImGui::TreePop();
 	}
-	ImGui::Separator();
-	if (m_pSelectedNode)
+	if (m_pSelectedNode && ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text(m_pSelectedNode->GetName().c_str());
 		ImGui::Text("Components:");
@@ -284,9 +304,9 @@ void FluxCore::RenderUI()
 		Model* pModel = m_pSelectedNode->GetComponent<Model>();
 		if (pModel)
 			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+		ImGui::TreePop();
 	}
 
-	ImGui::End();
 
 	m_pImmediateUI->Render();
 }

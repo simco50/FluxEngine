@@ -64,12 +64,14 @@ public:
 	bool IsMouseButtonPressed(int button) const;
 
 	MulticastDelegate<SDL_Event*>& OnHandleSDL() { return m_OnHandleSDLEvent; }
+	MulticastDelegate<int, int>& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
 
 private:
 	void SetKey(int keyCode, bool down);
 	void SetMouseButton(int mouseButton, bool down);
 
 	MulticastDelegate<SDL_Event*> m_OnHandleSDLEvent;
+	MulticastDelegate<int, int> m_OnWindowSizeChangedEvent;
 
 	Graphics * m_pGraphics = nullptr;
 

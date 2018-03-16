@@ -62,7 +62,7 @@ public:
 	ShaderVariation* GetShader(const std::string filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
-	void OnResize();
+	void OnResize(const int width, const int height);
 	void BeginFrame();
 	void EndFrame();
 
