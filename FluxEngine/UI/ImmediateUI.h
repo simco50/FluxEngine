@@ -8,7 +8,7 @@ class Shader;
 class ShaderVariation;
 struct VertexElement;
 class ConstantBuffer;
-class Texture;
+class Texture2D;
 class InputEngine;
 
 class ImmediateUI : public Subsystem
@@ -34,7 +34,7 @@ private:
 
 	std::vector<VertexElement> m_VertexElements;
 
-	std::unique_ptr<Texture> m_pFontTexture;
+	std::unique_ptr<Texture2D> m_pFontTexture;
 	std::unique_ptr<VertexBuffer> m_pVertexBuffer;
 	std::unique_ptr<IndexBuffer> m_pIndexBuffer;
 	ShaderVariation* m_pPixelShader = nullptr;

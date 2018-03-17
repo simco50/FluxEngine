@@ -25,12 +25,12 @@ void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 	}
 }
 
-Shader* Graphics::GetShader(const std::string& filePath)
+Shader* Graphics::GetShader(const std::string filePath)
 {
 	return GetSubsystem<ResourceManager>()->Load<Shader>(filePath + m_ShaderExtension);
 }
 
-ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderType type, const std::string& defines)
+ShaderVariation* Graphics::GetShader(const std::string filePath, const ShaderType type, const std::string& defines)
 {
 	Shader* pShader = GetShader(filePath);
 	if (pShader)

@@ -1,7 +1,7 @@
 #include "FluxEngine.h"
 #include "RenderTarget.h"
-#include "Texture.h"
 #include "Graphics.h"
+#include "Texture2D.h"
 
 RenderTarget::RenderTarget(Context* pContext) :
 	Object(pContext)
@@ -22,11 +22,11 @@ bool RenderTarget::Create(const RenderTargetDesc& RenderTargetDesc)
 
 	m_pRenderTexture.reset();
 	m_pDepthTexture.reset();
-	m_pRenderTexture = std::make_unique<Texture>(m_pContext);
+	m_pRenderTexture = std::make_unique<Texture2D>(m_pContext);
 	if (!m_pRenderTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.ColorFormat, TextureUsage::RENDERTARGET, RenderTargetDesc.MultiSample, RenderTargetDesc.pColorResource))
 		return false;
 
-	m_pDepthTexture = std::make_unique<Texture>(m_pContext);
+	m_pDepthTexture = std::make_unique<Texture2D>(m_pContext);
 	if (!m_pDepthTexture->SetSize(RenderTargetDesc.Width, RenderTargetDesc.Height, RenderTargetDesc.DepthFormat, TextureUsage::DEPTHSTENCILBUFFER, RenderTargetDesc.MultiSample, RenderTargetDesc.pDepthResource))
 		return false;
 

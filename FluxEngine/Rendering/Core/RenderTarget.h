@@ -1,5 +1,5 @@
 #pragma once
-class Texture;
+class Texture2D;
 class Graphics;
 
 enum class ClearFlags;
@@ -32,14 +32,14 @@ public:
 
 	bool Create(const RenderTargetDesc& RenderTargetDesc);
 
-	Texture* GetDepthTexture() const { return m_pDepthTexture.get(); }
-	Texture* GetRenderTexture() const { return m_pRenderTexture.get(); }
+	Texture2D* GetDepthTexture() const { return m_pDepthTexture.get(); }
+	Texture2D* GetRenderTexture() const { return m_pRenderTexture.get(); }
 
 private:
 	bool ValidateDesc(const RenderTargetDesc& desc) const;
 
 	Graphics* m_pGraphics;
 
-	std::unique_ptr<Texture> m_pRenderTexture;
-	std::unique_ptr<Texture> m_pDepthTexture;
+	std::unique_ptr<Texture2D> m_pRenderTexture;
+	std::unique_ptr<Texture2D> m_pDepthTexture;
 };

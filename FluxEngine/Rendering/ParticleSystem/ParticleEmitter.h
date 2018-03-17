@@ -2,7 +2,7 @@
 #include "Rendering/Drawable.h"
 
 class Particle;
-class Texture;
+class Texture2D;
 class Graphics;
 class VertexBuffer;
 class ParticleSystem;
@@ -59,7 +59,7 @@ private:
 	std::unique_ptr<VertexBuffer> m_pVertexBuffer;
 
 	Material* m_pMaterial = nullptr;
-	Texture* m_pTexture = nullptr;
+	Texture2D* m_pTexture = nullptr;
 
 	std::wstring m_AssetFile;
 

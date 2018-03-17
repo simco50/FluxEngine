@@ -6,8 +6,9 @@
 #include "Core/Graphics.h"
 #include "Core/Shader.h"
 #include "Core/ShaderVariation.h"
-#include "Core/Texture.h"
 #include "IO/InputStream.h"
+#include "Core/Texture2D.h"
+#include "Core/Texture3D.h"
 
 namespace XML = tinyxml2;
 
@@ -35,146 +36,139 @@ bool Material::Load(InputStream& inputStream)
 	XML::XMLDocument document;
 	if (document.Parse((char*)buffer.data(), buffer.size()) != XML::XML_SUCCESS)
 	{
-		FLUX_LOG(Warning, "[Material::Load] > %s", document.ErrorStr());
+		FLUX_LOG(Error, "[Material::Load] > %s", document.ErrorStr());
 		return false;
 	}
 
 	XML::XMLElement* pRootNode = document.FirstChildElement();
-	const char* pName = pRootNode->Attribute("name");
-	if (pName)
-		m_Name = pName;
+	m_Name = pRootNode->Attribute("name");
 
-	XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement();
-	while (pCurrentElement != nullptr)
+	//Load the shader data
+	XML::XMLElement* pShaders = pRootNode->FirstChildElement("Shaders");
+	if (pShaders == nullptr)
 	{
-		std::string elementName = pCurrentElement->Value();
-		if (elementName == "Shaders")
+		FLUX_LOG(Error, "[Material::Load()] > '%s' : does not have a 'Shaders' section. This is required", m_Name.c_str());
+		return false;
+	}
+
+	for (ShaderVariation*& pShader : m_ShaderVariations)
+		pShader = nullptr;
+
+	XML::XMLElement* pShader = pShaders->FirstChildElement();
+	while (pShader != nullptr)
+	{
+		std::string shaderType = pShader->Attribute("type");
+		ShaderType type;
+		if (shaderType == "Vertex")
+			type = ShaderType::VertexShader;
+		else if (shaderType == "Pixel")
+			type = ShaderType::PixelShader;
+		else if (shaderType == "Geometry")
+			type = ShaderType::GeometryShader;
+		else if (shaderType == "Compute")
+			type = ShaderType::ComputeShader;
+		else
 		{
-			std::array<ShaderVariation*, (size_t)ShaderType::MAX> shaders = {};
-			XML::XMLElement* pShader = pCurrentElement->FirstChildElement();
-			while (pShader != nullptr)
+			FLUX_LOG(Error, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
+			return false;
+		}
+
+		checkf(m_ShaderVariations[(unsigned int)type] == nullptr, "[Material::Load] > Shader for slot already defined");
+
+		const char* pAttribute = pShader->Attribute("defines");
+		std::string defines = "";
+		if (pAttribute)
+			defines = pAttribute;
+		std::string source = pShader->Attribute("source");
+		m_ShaderVariations[(unsigned int)type] = m_pGraphics->GetShader(source, type, defines);
+		pShader = pShader->NextSiblingElement();
+	}
+
+	//Load the Parameter data
+	XML::XMLElement* pParameters = pRootNode->FirstChildElement("Parameters");
+	if (pParameters != nullptr)
+	{
+		XML::XMLElement* pParameter = pParameters->FirstChildElement();
+		while (pParameter != nullptr)
+		{
+			std::string parameterType = pParameter->Value();
+			if (parameterType == "Texture" || parameterType == "Texture3D")
 			{
-				std::string shaderType = pShader->Attribute("type");
-				ShaderType type;
-				if (shaderType == "Vertex")
-					type = ShaderType::VertexShader;
-				else if (shaderType == "Pixel")
-					type = ShaderType::PixelShader;
-				else if (shaderType == "Geometry")
-					type = ShaderType::GeometryShader;
-				else if (shaderType == "Compute")
-					type = ShaderType::ComputeShader;
+				std::string slot = pParameter->Attribute("slot");
+				TextureSlot slotType = TextureSlot::MAX;
+				if (slot == "Diffuse")
+					slotType = TextureSlot::Diffuse;
+				else if (slot == "Normal")
+					slotType = TextureSlot::Normal;
+				else if (slot == "Volume")
+					slotType = TextureSlot::Volume;
 				else
 				{
-					FLUX_LOG(Warning, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
+					FLUX_LOG(Error, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
 					return false;
 				}
 
-				if (shaders[(unsigned int)type] != nullptr)
-				{
-					FLUX_LOG(Warning, "[Material::Load] > Shader for slot '%s' already defined", shaderType.c_str());
-					return false;
-				}
-
-				const char* pAttribute = pShader->Attribute("defines");
-				std::string defines = "";
-				if (pAttribute)
-					defines = pAttribute;
-				std::string source = pShader->Attribute("source");
-				ShaderVariation* pShaderVariation = m_pGraphics->GetShader(source, type, defines);
-				if (pShaderVariation == nullptr)
-				{
-					FLUX_LOG(Warning, "[Material::Load] > Shader '%s' is invalid", source.c_str());
-					return false;
-				}
-				shaders[(unsigned int)type] = pShaderVariation;
-				pShader = pShader->NextSiblingElement();
-			}
-			m_ShaderVariations.swap(shaders);
-		}
-		else if (elementName == "Parameters")
-		{
-			XML::XMLElement* pParameter = pCurrentElement->FirstChildElement();
-			while (pParameter != nullptr)
-			{
-				std::string parameterType = pParameter->Value();
-				if (parameterType == "Texture")
-				{
-					const char* slot = pParameter->Attribute("slot");
-					if (slot == nullptr)
-					{
-						FLUX_LOG(Warning, "[Material::Load()] > %s : Texture has no 'slot' attribute", m_Name.c_str(), slot);
-						return false;
-					}
-					TextureSlot slotType = TextureSlot::MAX;
-					if (strcmp(slot, "Diffuse") == 0)
-						slotType = TextureSlot::Diffuse;
-					else if (strcmp(slot, "Normal") == 0)
-						slotType = TextureSlot::Normal;
-					else
-					{
-						FLUX_LOG(Warning, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot);
-						return false;
-					}
-
-					Texture* pTexture = GetSubsystem<ResourceManager>()->Load<Texture>(pParameter->Attribute("value"));
-					m_Textures[slotType] = pTexture;
-				}
-				else if (parameterType == "Value")
-				{
-					std::string name = pParameter->Attribute("name");
-					std::string value = pParameter->Attribute("value");
-					ParseValue(name, value);
-				}
+				Texture* pTexture = nullptr;
+				if(parameterType == "Texture3D")
+					pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
 				else
-				{
-					FLUX_LOG(Warning, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
-				}
-
-				pParameter = pParameter->NextSiblingElement();
+					pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
+				m_Textures[slotType] = pTexture;
 			}
-		}
-		else if (elementName == "Properties")
-		{
-			XML::XMLElement* pProperty = pCurrentElement->FirstChildElement();
-			while (pProperty != nullptr)
+			else if (parameterType == "Value")
 			{
-				std::string propertyType = pProperty->Value();
-				if (propertyType == "CullMode")
-				{
-					std::string value = pProperty->Attribute("value");
-					if (value == "Back")
-						m_CullMode = CullMode::BACK;
-					else if (value == "Front")
-						m_CullMode = CullMode::FRONT;
-					else if (value == "None")
-						m_CullMode = CullMode::NONE;
-					else
-						FLUX_LOG(Warning, "[Material::Load()] > %s : Cull mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
-				}
-				else if (propertyType == "BlendMode")
-				{
-					std::string value = pProperty->Attribute("value");
-					if (value == "Replace")
-						m_BlendMode = BlendMode::REPLACE;
-					else if (value == "Alpha")
-						m_BlendMode = BlendMode::ALPHA;
-					else if (value == "Add")
-						m_BlendMode = BlendMode::ADD;
-					else if (value == "AddAlpha")
-						m_BlendMode = BlendMode::ADDALPHA;
-					else
-						FLUX_LOG(Warning, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
-				}
-				else
-					FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
-
-				pProperty = pProperty->NextSiblingElement();
+				std::string name = pParameter->Attribute("name");
+				std::string value = pParameter->Attribute("value");
+				ParseValue(name, value);
 			}
+			else
+			{
+				FLUX_LOG(Warning, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
+			}
+
+			pParameter = pParameter->NextSiblingElement();
 		}
+	}
 
+	//Load the properties
+	XML::XMLElement* pProperties = pRootNode->FirstChildElement("Properties");
+	if (pProperties != nullptr)
+	{
+		XML::XMLElement* pProperty = pProperties->FirstChildElement();
+		while (pProperty != nullptr)
+		{
+			std::string propertyType = pProperty->Value();
+			if (propertyType == "CullMode")
+			{
+				std::string value = pProperty->Attribute("value");
+				if (value == "Back")
+					m_CullMode = CullMode::BACK;
+				else if (value == "Front")
+					m_CullMode = CullMode::FRONT;
+				else if (value == "None")
+					m_CullMode = CullMode::NONE;
+				else
+					FLUX_LOG(Warning, "[Material::Load()] > %s : Cull mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
+			}
+			else if (propertyType == "BlendMode")
+			{
+				std::string value = pProperty->Attribute("value");
+				if (value == "Replace")
+					m_BlendMode = BlendMode::REPLACE;
+				else if (value == "Alpha")
+					m_BlendMode = BlendMode::ALPHA;
+				else if (value == "Add")
+					m_BlendMode = BlendMode::ADD;
+				else if (value == "AddAlpha")
+					m_BlendMode = BlendMode::ADDALPHA;
+				else
+					FLUX_LOG(Warning, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
+			}
+			else
+				FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
 
-		pCurrentElement = pCurrentElement->NextSiblingElement();
+			pProperty = pProperty->NextSiblingElement();
+		}
 	}
 
 	return true;

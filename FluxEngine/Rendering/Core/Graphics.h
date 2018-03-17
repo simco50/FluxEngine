@@ -58,11 +58,11 @@ public:
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
-	Shader* GetShader(const std::string& filePath);
-	ShaderVariation* GetShader(const std::string& filePath, const ShaderType type, const std::string& defines = "");
+	Shader* GetShader(const std::string filePath);
+	ShaderVariation* GetShader(const std::string filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
-	void OnResize();
+	void OnResize(const int width, const int height);
 	void BeginFrame();
 	void EndFrame();
 
@@ -73,6 +73,7 @@ public:
 	SDL_Window* GetSDLWindow() const { return m_pWindow; }
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
+	int GetMultisample() const { return m_Multisample; }
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
@@ -83,8 +84,8 @@ public:
 
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
 
-private:
 	void PrepareDraw();
+private:
 
 	bool OpenWindow();
 	bool EnumerateAdapters();
@@ -96,7 +97,7 @@ private:
 	int m_WindowWidth = 0;
 	int m_WindowHeight = 0;
 	bool m_Resizable = true;
-	WindowType m_WindowType = WindowType::BORDERLESS;
+	WindowType m_WindowType;
 	std::string m_WindowTitle;
 	bool m_Vsync = true;
 	int m_Multisample = 1;

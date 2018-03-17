@@ -7,7 +7,7 @@
 #include "../IndexBuffer.h"
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
-#include "../Texture.h"
+#include "../Texture2D.h"
 #include "../DepthStencilState.h"
 #include "../InputLayout.h"
 #include "../BlendState.h"
@@ -709,10 +709,8 @@ void Graphics::UpdateSwapchain(int width, int height)
 	SetViewport(m_CurrentViewport, true);
 }
 
-void Graphics::OnResize()
+void Graphics::OnResize(const int width, const int height)
 {
-	int width = 0, height = 0;
-	SDL_GetWindowSize(m_pWindow, &width, &height);
 	if (width != m_WindowWidth || height != m_WindowHeight)
 	{
 		UpdateSwapchain(width, height);

@@ -11,6 +11,7 @@
 #include "Rendering\Core\BlendState.h"
 #include "Rendering\Core\RasterizerState.h"
 #include "Input/InputEngine.h"
+#include "Rendering\Core\Texture2D.h"
 
 ImmediateUI::ImmediateUI(Context* pContext) :
 	Subsystem(pContext)
@@ -66,7 +67,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-	m_pFontTexture = std::make_unique<Texture>(m_pContext);
+	m_pFontTexture = std::make_unique<Texture2D>(m_pContext);
 	m_pFontTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
 	m_pFontTexture->SetData(pixels);
 	io.Fonts->TexID = m_pFontTexture.get();
