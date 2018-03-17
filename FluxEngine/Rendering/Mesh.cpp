@@ -105,11 +105,10 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	//Instead of getting the info every vertex, cache it in a local struct
 	struct ElementInfo
 	{
-		ElementInfo(const VertexElement& element)
-		{
-			semanticName = VertexElement::GetSemanticOfType(element.Semantic);
-			elementSize = VertexElement::GetSizeOfType(element.Type);
-		}
+		ElementInfo(const VertexElement& element) :
+			semanticName(VertexElement::GetSemanticOfType(element.Semantic)),
+			elementSize(VertexElement::GetSizeOfType(element.Type))
+		{ }
 		std::string semanticName;
 		unsigned int elementSize;
 	};

@@ -49,15 +49,14 @@ bool Image::Load(InputStream& inputStream)
 	AUTOPROFILE(Image_Load);
 	m_Components = 4;
 	m_Depth = 1;
-	unsigned char* pPixels = nullptr;
 	stbi_io_callbacks callbacks;
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
+	unsigned char* pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
 	if (pPixels == nullptr)
 		return false;
-	m_Pixels.resize(m_Width * m_Height * m_Components);
+	m_Pixels.resize((size_t)(m_Width * m_Height * m_Components));
 	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
 	stbi_image_free(pPixels);
 	return true;
@@ -91,7 +90,7 @@ bool Image::SavePng(OutputStream& outputStream)
 	int result = stbi_write_png_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
-		if (!pStream->Write((char*)data, size))
+		if (!pStream->Write((char*)data, (size_t)size))
 			return;
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), m_Width * m_Components * m_Depth);
 	return result > 0;

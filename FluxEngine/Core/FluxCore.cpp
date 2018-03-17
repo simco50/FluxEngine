@@ -183,14 +183,6 @@ void FluxCore::DoExit()
 	m_Exiting = true;
 }
 
-void FluxCore::OnPause(bool isActive)
-{
-	if (isActive)
-		GameTimer::Start();
-	else
-		GameTimer::Stop();
-}
-
 void FluxCore::RenderUI()
 {
 	m_pImmediateUI->NewFrame();

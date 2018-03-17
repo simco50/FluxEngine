@@ -50,7 +50,7 @@ namespace FmodCallbacks
 			return FMOD_ERR_FILE_BAD;
 		File* pFile = (File*)handle;
 		if (!pFile->SetPointer(pos))
-			FMOD_ERR_FILE_COULDNOTSEEK;
+			return FMOD_ERR_FILE_COULDNOTSEEK;
 		return FMOD_OK;
 	}
 }

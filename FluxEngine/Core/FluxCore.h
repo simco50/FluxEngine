@@ -30,7 +30,6 @@ public:
 
 private:
 	void RenderUI();
-	void OnPause(bool isActive);
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -52,8 +51,6 @@ private:
 	AudioEngine* m_pAudioEngine = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
-
-	Context* m_pContext;
 
 	static bool m_Exiting;
 };

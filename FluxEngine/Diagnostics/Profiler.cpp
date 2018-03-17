@@ -41,7 +41,7 @@ void Profiler::OutputLog(File* pFile, int maxDepth)
 			else
 				stream << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Description << " : " << m_pCurrentBlock->Time << " ms" << std::endl;
 			std::string output = stream.str();
-			pFile->Write(output.c_str(), (unsigned int)output.size());
+			pFile->Write(output.c_str(), output.size());
 		}
 
 		while (m_pCurrentBlock->Children.size() == 0)

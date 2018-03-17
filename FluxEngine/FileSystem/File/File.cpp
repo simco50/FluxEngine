@@ -3,7 +3,7 @@
 
 File& File::operator<<(const std::string& text)
 {
-	Write(text.data(), (unsigned int)text.size());
+	Write(text.data(), text.size());
 	return *this;
 }
 

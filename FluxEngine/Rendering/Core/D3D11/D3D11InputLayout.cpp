@@ -33,7 +33,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 		}
 	}
 	const std::vector<char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (unsigned int)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
 }
 
 void InputLayout::Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)

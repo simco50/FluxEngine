@@ -54,7 +54,7 @@ std::string Paths::GetDirectoryPath(const std::string& filePath)
 	});
 	if (it == filePath.rend())
 	{
-		if (filePath.rfind('.'))
+		if (filePath.rfind('.') == std::string::npos)
 			return "/";
 		return filePath;
 	}

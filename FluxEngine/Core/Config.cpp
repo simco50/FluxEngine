@@ -160,7 +160,7 @@ bool Config::FlushConfigValues(const Type t)
 		}
 		stream << "\n";
 		std::string data = stream.str();
-		pFile->Write(data.c_str(), (unsigned int)data.size());
+		pFile->Write(data.c_str(), data.size());
 	}
 
 	return pFile->Close();

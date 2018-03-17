@@ -23,9 +23,9 @@
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
 Graphics::Graphics(Context* pContext) :
-	Subsystem(pContext)
+	Subsystem(pContext),
+	m_pImpl(std::make_unique<GraphicsImpl>())
 {
-	m_pImpl = std::make_unique<GraphicsImpl>();
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
 

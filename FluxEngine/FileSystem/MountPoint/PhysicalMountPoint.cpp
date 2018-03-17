@@ -58,7 +58,10 @@ bool PhysicalMountPoint::RegisterDirectory(const std::string& path)
 			if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
 				continue;
 			if (!RegisterDirectory(path + "\\" + find_data.cFileName))
+			{
+				FindClose(handle);
 				return false;
+			}
 		}
 		else
 		{

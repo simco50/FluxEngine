@@ -30,7 +30,6 @@ struct InputAction
 	InputTriggerState TriggerState;
 	int KeyboardCode; //VK_... (Range 0x07 <> 0xFE)
 	int MouseButtonCode; //VK_... (Range 0x00 <> 0x06)
-	WORD GamepadButtonCode; //XINPUT_GAMEPAD_...
 	bool Pressed = false;
 	bool Released = false;
 	bool Down = false;
@@ -75,8 +74,8 @@ private:
 
 	std::map<int, std::vector<InputAction>> m_InputActions;
 	
-	POINT m_CurrMousePosition;
-	POINT m_OldMousePosition;
+	POINT m_CurrMousePosition = {};
+	POINT m_OldMousePosition = {};
 	bool m_MouseMove = false;
 	Vector2 m_MouseMovement;
 

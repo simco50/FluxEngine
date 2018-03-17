@@ -30,7 +30,7 @@ Console::Console()
 	stream << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << "\n";
 	stream << "Time: " << GetTime() << "\n";
 	std::string output = stream.str();
-	m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
+	m_pFileLog->Write(output.c_str(), output.size());
 
 #ifdef _DEBUG
 	InitializeConsoleWindow();
@@ -149,7 +149,7 @@ void Console::Log(const std::string &message, LogType type)
 		if (consoleInstance->m_ConsoleHandle)
 			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
-		consoleInstance->m_pFileLog->Write(output.c_str(), (unsigned int)output.size());
+		consoleInstance->m_pFileLog->Write(output.c_str(), output.size());
 
 		if (type == LogType::Error)
 		{
@@ -212,7 +212,6 @@ void Console::InitializeConsoleWindow()
 		std::wcerr.clear();
 		std::cerr.clear();
 		std::wcin.clear();
-		std::cin.clear();
 		std::cin.clear();
 
 		//Set ConsoleHandle

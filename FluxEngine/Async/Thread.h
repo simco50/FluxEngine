@@ -26,7 +26,7 @@ public:
 private:
 	static DWORD WINAPI ThreadFunctionStatic(void* pData);
 	static unsigned int m_MainThread;
-	unsigned long m_ThreadId;
+	unsigned long m_ThreadId = 0;
 	void* m_pHandle = nullptr;
 };
 

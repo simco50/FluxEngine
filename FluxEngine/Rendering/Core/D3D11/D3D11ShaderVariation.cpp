@@ -103,7 +103,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		if (assignmentOp != std::string::npos)
 		{
 			std::string name = define.substr(0, assignmentOp);
-			std::string definition = define.substr(assignmentOp + 1).c_str();
+			std::string definition = define.substr(assignmentOp + 1);
 			macro.Name = name.c_str();
 			macro.Definition = definition.c_str();
 		}

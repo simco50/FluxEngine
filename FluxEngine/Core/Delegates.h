@@ -84,7 +84,7 @@ class SPDelegate : public IDelegate<RetVal, Args...>
 public:
 	using DelegateFunction = RetVal(T::*)(Args...);
 
-	SPDelegate(std::shared_ptr<T> pObject, DelegateFunction pFunction) :
+	SPDelegate(const std::shared_ptr<T>& pObject, DelegateFunction pFunction) :
 		m_pObject(pObject),
 		m_pFunction(pFunction)
 	{}
@@ -112,7 +112,7 @@ public:
 	{}
 
 	template<typename T>
-	DelegateWrapper(std::shared_ptr<T> pObj, RetVal(T::*pFunction)(Args...)) :
+	DelegateWrapper(const std::shared_ptr<T>& pObj, RetVal(T::*pFunction)(Args...)) :
 		m_pDelegate(new SPDelegate<RetVal, T, Args...>(pObj, pFunction))
 	{}
 
@@ -236,12 +236,12 @@ public:
 	//Execute the function
 	RetVal Execute(Args ...args)
 	{
-		assert(IsBound());
+		assert(m_pEvent != nullptr);
 		return m_pEvent->Execute(args...);
 	}
 
 	//Check if there is a function bound
-	bool IsBound()
+	bool IsBound() const
 	{
 		return m_pEvent != nullptr;
 	}

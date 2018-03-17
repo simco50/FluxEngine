@@ -18,7 +18,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 		return 0;
 	const PakMountPoint* pMountPoint = static_cast<const PakMountPoint*>(m_pMountPoint);
 
-	unsigned int sizeToRead = (unsigned int)(m_FilePointer + size) > m_pTableEntry->UncompressedSize ? m_pTableEntry->UncompressedSize - (unsigned int)m_FilePointer : (unsigned int)size;
+	int sizeToRead = m_FilePointer + size > m_pTableEntry->UncompressedSize ? m_pTableEntry->UncompressedSize - (unsigned int)m_FilePointer : (unsigned int)size;
 
 	//We're at the 'virtual' EOF
 	if (sizeToRead <= 0)
@@ -36,7 +36,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 	}
 	else
 	{
-		read = pMountPoint->GetPakFile()->ReadFrom(pBuffer, m_pTableEntry->Offset + m_FilePointer, sizeToRead);
+		read = pMountPoint->GetPakFile()->ReadFrom(pBuffer, m_pTableEntry->Offset + m_FilePointer, (size_t)sizeToRead);
 	}
 	m_FilePointer += read;
 	return read;
