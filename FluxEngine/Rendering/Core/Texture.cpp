@@ -25,7 +25,6 @@ void Texture::Release()
 	SafeRelease(m_pSamplerState);
 }
 
-
 unsigned int Texture::GetSRVFormat(const unsigned int format)
 {
 	if (format == DXGI_FORMAT_R24G8_TYPELESS)

@@ -54,7 +54,7 @@ bool Image::Load(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
+	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
 	if (pPixels == nullptr)
 		return false;
 	m_Pixels.resize(m_Width * m_Height * m_Components);
@@ -95,7 +95,7 @@ bool Image::LoadLUT(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_BytesPerPixel, m_Components);
+	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
 	if (pPixels == nullptr)
 		return false;
 

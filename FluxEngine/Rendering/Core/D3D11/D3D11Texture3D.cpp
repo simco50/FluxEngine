@@ -23,18 +23,13 @@ bool Texture3D::Load(InputStream& inputStream)
 	m_pImage = std::make_unique<Image>(m_pContext);
 	if (!m_pImage->LoadLUT(inputStream))
 		return false;
-	
-	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), m_pImage->GetDepth(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
-		return false;
-	if (!SetData(m_pImage->GetData()))
-		return false;
 
-	return true;
+	return SetData(m_pImage.get());
 }
 
 bool Texture3D::SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
 {
-	AUTOPROFILE(Texture_SetSize);
+	AUTOPROFILE(Texture3D_SetSize);
 
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
@@ -59,7 +54,7 @@ bool Texture3D::SetSize(const int width, const int height, const int depth, cons
 
 bool Texture3D::SetData(const void* pData)
 {
-	AUTOPROFILE(Texture_SetData);
+	AUTOPROFILE(Texture3D_SetData);
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
@@ -80,9 +75,18 @@ bool Texture3D::SetData(const void* pData)
 	return true;
 }
 
+bool Texture3D::SetData(Image * pImage)
+{
+	AUTOPROFILE(Texture3D_SetData_Image);
+
+	if (!SetSize(pImage->GetWidth(), pImage->GetHeight(), pImage->GetDepth(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+		return false;
+	return SetData(pImage->GetData());
+}
+
 bool Texture3D::Create()
 {
-	AUTOPROFILE(Texture_Create);
+	AUTOPROFILE(Texture3D_Create);
 
 	D3D11_TEXTURE3D_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;

@@ -13,6 +13,8 @@ public:
 
 	bool SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const void* pData);
+	bool SetData(Image* pImage);
+
 private:
 	virtual bool Create() override;
 };

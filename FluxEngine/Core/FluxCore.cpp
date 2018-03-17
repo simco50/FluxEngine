@@ -24,11 +24,6 @@
 #include "Async/Thread.h"
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
-#include "Content/Image.h"
-#include "Rendering/Core/Texture3D.h"
-#include "Rendering/Core/Texture2D.h"
-#include "Rendering/Core/RenderTarget.h"
-#include "Rendering/Core/DepthStencilState.h"
 
 bool FluxCore::m_Exiting;
 
@@ -88,13 +83,62 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
 		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
-
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 
 		InitGame();
 		GameTimer::Reset();
 	}
 	return 0;
+}
+
+void FluxCore::InitGame()
+{
+	AUTOPROFILE(FluxCore_InitGame);
+
+	m_pScene = std::make_unique<Scene>(m_pContext);
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
+	m_pCamera = new FreeCamera(m_pContext);
+	m_pScene->AddChild(m_pCamera);
+
+	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
+
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
+	std::vector<VertexElement> desc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
+	};
+	pMesh->CreateBuffers(desc);
+
+	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+
+	for (int x = 0; x < 2; ++x)
+		for (int y = 0; y < 2; ++y)
+			for (int z = 0; z < 2; ++z)
+			{
+				m_pNode = new SceneNode(m_pContext, "Cube");
+				m_pNode->GetTransform()->Translate((float)x, 2 * y + 0.5f, (float)z);
+				Model* pModel = new Model(m_pContext);
+				pModel->SetMesh(pMesh);
+				pModel->SetMaterial(pMaterial);
+				m_pNode->AddComponent(pModel);
+				Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+				pRigidbody->SetBodyType(Rigidbody::Dynamic);
+				m_pNode->AddComponent(pRigidbody);
+				Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
+				m_pNode->AddComponent(pBoxCollider);
+				m_pScene->AddChild(m_pNode);
+			}
+	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
+	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
+	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
+	pFloor->AddComponent(pPlaneCollider);
+	m_pScene->AddChild(pFloor);
+
+	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
+
+	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
 void FluxCore::ProcessFrame()
@@ -122,31 +166,6 @@ void FluxCore::ProcessFrame()
 	m_pAudioEngine->Update();
 	m_pScene->Update();
 
-	if (m_EnableLUT)
-	{
-		m_pGraphics->PrepareDraw();
-
-		m_pGraphics->SetShader(ShaderType::VertexShader, m_pGraphics->GetShader("Resources/Shaders/LUT", ShaderType::VertexShader));
-		m_pGraphics->SetShader(ShaderType::PixelShader, m_pGraphics->GetShader("Resources/Shaders/LUT", ShaderType::PixelShader));
-		m_pGraphics->SetTexture(TextureSlot::Volume, m_pLUT);
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pGraphics->GetRenderTarget()->GetRenderTexture());
-		m_pGraphics->SetRenderTarget(0, m_pIntermediateRenderTarget.get());
-
-		m_pGraphics->SetVertexBuffer(nullptr);
-		m_pGraphics->SetIndexBuffer(nullptr);
-		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
-
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-		m_pGraphics->PrepareDraw();
-		m_pGraphics->SetRenderTarget(0, nullptr);
-
-		m_pGraphics->SetShader(ShaderType::VertexShader, m_pGraphics->GetShader("Resources/Shaders/FullScreenTriangle", ShaderType::VertexShader));
-		m_pGraphics->SetShader(ShaderType::PixelShader, m_pGraphics->GetShader("Resources/Shaders/FullScreenTriangle", ShaderType::PixelShader));
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pIntermediateRenderTarget->GetRenderTexture());
-		m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
-		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
-	}
-
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
@@ -155,77 +174,6 @@ void FluxCore::ProcessFrame()
 
 	RenderUI();
 	m_pGraphics->EndFrame();
-}
-
-void FluxCore::InitGame()
-{
-	AUTOPROFILE(FluxCore_InitGame);
-
-	{
-		m_pLUT = m_pResourceManager->Load<Texture3D>("Resources/Textures/RGBTable16x1_edit.png");
-		m_p2DLUT = m_pResourceManager->Load<Texture2D>("Resources/Textures/RGBTable16x1_edit.png");
-
-		RenderTargetDesc desc = {};
-		desc.Width = m_pGraphics->GetWindowWidth();
-		desc.Height = m_pGraphics->GetWindowHeight();;
-		desc.MultiSample = 1;
-		m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(m_pContext);
-		m_pIntermediateRenderTarget->Create(desc);
-
-		m_pInput->OnWindowSizeChanged().AddLambda([this](int width, int height)
-		{
-			RenderTargetDesc desc = {};
-			desc.Width = width;
-			desc.Height = height;
-			desc.MultiSample = 1;
-			m_pIntermediateRenderTarget->Create(desc);
-		});
-	}
-
-	m_pScene = std::make_unique<Scene>(m_pContext);
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-	m_pCamera = new FreeCamera(m_pContext);
-	m_pScene->AddChild(m_pCamera);
-
-	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
-
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
-	std::vector<VertexElement> desc =
-	{
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
-	};
-	pMesh->CreateBuffers(desc);
-
-	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
-
-	for (int x = 0; x < 2; ++x)
-		for (int y = 0; y < 2; ++y)
-			for (int z = 0; z < 2; ++z)
-	{
-		m_pNode = new SceneNode(m_pContext, "Cube");
-		m_pNode->GetTransform()->Translate((float)x,  2 *y + 0.5f, (float)z);
-		Model* pModel = new Model(m_pContext);
-		pModel->SetMesh(pMesh);
-		pModel->SetMaterial(pMaterial);
-		m_pNode->AddComponent(pModel);
-		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-		pRigidbody->SetBodyType(Rigidbody::Dynamic);
-		m_pNode->AddComponent(pRigidbody);
-		Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
-		m_pNode->AddComponent(pBoxCollider);
-		m_pScene->AddChild(m_pNode);
-	}
-	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
-	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
-	pFloor->AddComponent(pPlaneCollider);
-	m_pScene->AddChild(pFloor);
-
-	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
-
-	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
 void FluxCore::DoExit()
@@ -264,12 +212,6 @@ void FluxCore::RenderUI()
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-		ImGui::TreePop();
-	}
-	if(ImGui::TreeNodeEx("Post processing", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Checkbox("Color Lookup Table", &m_EnableLUT);
-		ImGui::Image(m_p2DLUT, ImVec2(256, 16));
 		ImGui::TreePop();
 	}
 	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))

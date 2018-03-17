@@ -8,6 +8,7 @@
 #include "Core/ShaderVariation.h"
 #include "IO/InputStream.h"
 #include "Core/Texture2D.h"
+#include "Core/Texture3D.h"
 
 namespace XML = tinyxml2;
 
@@ -91,7 +92,7 @@ bool Material::Load(InputStream& inputStream)
 		while (pParameter != nullptr)
 		{
 			std::string parameterType = pParameter->Value();
-			if (parameterType == "Texture")
+			if (parameterType == "Texture" || parameterType == "Texture3D")
 			{
 				std::string slot = pParameter->Attribute("slot");
 				TextureSlot slotType = TextureSlot::MAX;
@@ -99,13 +100,19 @@ bool Material::Load(InputStream& inputStream)
 					slotType = TextureSlot::Diffuse;
 				else if (slot == "Normal")
 					slotType = TextureSlot::Normal;
+				else if (slot == "Volume")
+					slotType = TextureSlot::Volume;
 				else
 				{
 					FLUX_LOG(Error, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
 					return false;
 				}
 
-				Texture2D* pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
+				Texture* pTexture = nullptr;
+				if(parameterType == "Texture3D")
+					pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
+				else
+					pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
 				m_Textures[slotType] = pTexture;
 			}
 			else if (parameterType == "Value")

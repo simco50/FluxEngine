@@ -23,7 +23,7 @@ bool Texture2D::Load(InputStream& inputStream)
 
 bool Texture2D::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
 {
-	AUTOPROFILE(Texture_SetSize);
+	AUTOPROFILE(Texture2D_SetSize);
 
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
@@ -48,7 +48,7 @@ bool Texture2D::SetSize(const int width, const int height, const unsigned int fo
 
 bool Texture2D::SetData(const void* pData)
 {
-	AUTOPROFILE(Texture_SetData);
+	AUTOPROFILE(Texture2D_SetData);
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
@@ -71,7 +71,7 @@ bool Texture2D::SetData(const void* pData)
 
 bool Texture2D::Create()
 {
-	AUTOPROFILE(Texture_Create);
+	AUTOPROFILE(Texture2D_Create);
 
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.ArraySize = 1;

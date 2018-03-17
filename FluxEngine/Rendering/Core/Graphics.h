@@ -73,6 +73,7 @@ public:
 	SDL_Window* GetSDLWindow() const { return m_pWindow; }
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
+	int GetMultisample() const { return m_Multisample; }
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
