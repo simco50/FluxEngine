@@ -7,13 +7,9 @@ class Thread
 {
 public:
 	Thread();
-	~Thread();
+	virtual ~Thread();
 
-	bool Run();
-	void Stop();
 	bool SetPriority(const int priority);
-
-	virtual int ThreadFunction() = 0;
 
 	//Get the given thread ID
 	unsigned long GetId() const { return m_ThreadId; }
@@ -23,7 +19,12 @@ public:
 	static void SetMainThread();
 	static bool IsMainThread();
 
+protected:
+	bool RunThread();
+	void StopThread();
+
 private:
+	virtual int ThreadFunction() = 0;
 	static DWORD WINAPI ThreadFunctionStatic(void* pData);
 	static unsigned int m_MainThread;
 	unsigned long m_ThreadId = 0;
@@ -35,6 +36,8 @@ class WorkerThread : public Thread
 public:
 	WorkerThread(AsyncTaskQueue* pOwner, int index);
 	virtual int ThreadFunction() override;
+
+	bool Run() { return RunThread(); }
 
 	int GetIndex() const { return m_Index; }
 private:

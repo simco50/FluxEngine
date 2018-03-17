@@ -39,6 +39,26 @@ bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 	return LoadResourcePrivate(pResource, filePath);
 }
 
+bool ResourceManager::Reload(const std::string& filePath)
+{
+	for (auto& groupPair : m_Resources)
+	{
+		for (auto& resourcePair : groupPair.second)
+		{
+			if (resourcePair.first == filePath)
+			{
+				if (Reload(resourcePair.second))
+				{
+					FLUX_LOG(Info, "[ResourceManager::Reload] > Reloaded %s", filePath.c_str());
+					return true;
+				}
+				return false;
+			}
+		}
+	}
+	return false;
+}
+
 void ResourceManager::Unload(Resource*& pResource)
 {
 	if (pResource == nullptr)
@@ -76,7 +96,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 
 	if (!pResource->Load(*pFile.get()))
 	{
-		FLUX_LOG(Error, "Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
 	return true;

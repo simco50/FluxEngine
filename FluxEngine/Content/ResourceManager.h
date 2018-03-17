@@ -37,6 +37,8 @@ public:
 	//Map resource to another file
 	bool Reload(Resource* pResource, const std::string& filePath);
 
+	bool Reload(const std::string& filePath);
+
 	void Unload(Resource*& pResource);
 
 	std::vector<Resource*> GetResourcesOfType(StringHash type);

@@ -109,7 +109,6 @@ using namespace DirectX::SimpleMath;
 #include "Helpers/Utility.h"
 
 #include "Diagnostics/Console.h"
-#include "Diagnostics/PerfTimer.h"
 #include "Diagnostics/Profiler.h"
 
 #include "Core/TypeInfo.h"

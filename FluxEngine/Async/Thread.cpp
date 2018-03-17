@@ -13,10 +13,10 @@ Thread::Thread()
 
 Thread::~Thread()
 {
-	Stop();
+	StopThread();
 }
 
-bool Thread::Run()
+bool Thread::RunThread()
 {
 #ifdef WIN32
 	if (m_pHandle)
@@ -35,7 +35,7 @@ bool Thread::Run()
 #endif
 }
 
-void Thread::Stop()
+void Thread::StopThread()
 {
 	if (!m_pHandle)
 		return;
