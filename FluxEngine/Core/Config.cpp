@@ -153,12 +153,12 @@ bool Config::FlushConfigValues(const Type t)
 	for (const auto& section : valueMap->second.Sections)
 	{
 		std::stringstream stream;
-		stream << "[" << section.second.Name << "]\n";
+		stream << "[" << section.second.Name << "]\r\n";
 		for (const auto& value : section.second.Values)
 		{
-			stream << value.first << "=" << value.second.Value << "\n";
+			stream << value.first << "=" << value.second.Value << "\r\n";
 		}
-		stream << "\n";
+		stream << "\r\n";
 		std::string data = stream.str();
 		pFile->Write(data.c_str(), data.size());
 	}

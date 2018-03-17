@@ -61,7 +61,7 @@ ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& 
 	pVariation->SetDefines(defines);
 	if (!pVariation->Create(m_pGraphics))
 	{
-		FLUX_LOG(Error, "[Shader::GetVariation()] > Failed to load shader variation");
+		FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
 		return nullptr;
 	}
 

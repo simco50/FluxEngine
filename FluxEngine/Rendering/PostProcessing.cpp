@@ -6,6 +6,7 @@
 #include "Core\Texture3D.h"
 #include "Material.h"
 #include "Core\DepthStencilState.h"
+#include "Input\InputEngine.h"
 
 PostProcessing::PostProcessing(Context* pContext) :
 	Subsystem(pContext)
@@ -13,6 +14,8 @@ PostProcessing::PostProcessing(Context* pContext) :
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
 	m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(pContext);
 	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
+
+	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw(this, &PostProcessing::OnResize);
 
 	m_pBlitVertexShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::VertexShader);
 	m_pBlitPixelShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::PixelShader);

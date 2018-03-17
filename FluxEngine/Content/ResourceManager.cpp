@@ -2,6 +2,7 @@
 #include "ResourceManager.h"
 #include "Resource.h"
 #include "FileSystem\File\File.h"
+#include "FileSystem\FileWatcher.h"
 
 ResourceManager::ResourceManager(Context* pContext) :
 	Subsystem(pContext)
@@ -18,6 +19,25 @@ ResourceManager::~ResourceManager()
 			SafeDelete(resourceEntry.second);
 		}
 	}
+}
+
+void ResourceManager::Update()
+{
+	if (m_pResourceWatcher)
+	{
+		std::string resource;
+		while (m_pResourceWatcher->GetNextChange(resource))
+		{
+			std::string filePath = std::string("Resources/") + resource;
+			Reload(filePath);
+		}
+	}
+}
+
+void ResourceManager::EnableAutoReload()
+{
+	m_pResourceWatcher = std::make_unique<FileWatcher>();
+	m_pResourceWatcher->StartWatching("Resources", true);
 }
 
 bool ResourceManager::Reload(Resource* pResource)
@@ -94,9 +114,15 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 	pResource->SetName(filePath);
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
+	{
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'. File not found", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
+	}
 	if (pFile->Open(FileMode::Read, ContentType::Binary) == false)
+	{
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to open file '%s'", filePath.c_str());
 		return false;
+	}
 	pFile->SetSource(filePath);
 
 	if (!pResource->Load(*pFile.get()))

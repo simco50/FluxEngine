@@ -12,6 +12,7 @@ class DebugRenderer;
 class Context;
 class ResourceManager;
 class AudioEngine;
+class PostProcessing;
 
 class FluxCore : public Object
 {
@@ -30,7 +31,6 @@ public:
 
 private:
 	void RenderUI();
-	void OnPause(bool isActive);
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
@@ -50,9 +50,8 @@ private:
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
+	PostProcessing* m_pPostProcessing = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
-	Context* m_pContext;
-
 	static bool m_Exiting;
 };

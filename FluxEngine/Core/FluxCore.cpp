@@ -24,6 +24,7 @@
 #include "Async/Thread.h"
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
+#include "Rendering/PostProcessing.h"
 
 bool FluxCore::m_Exiting;
 
@@ -34,8 +35,6 @@ FluxCore::FluxCore(Context* pContext) :
 
 FluxCore::~FluxCore()
 {
-	SafeDelete(m_pContext);
-
 	Config::Flush();
 	Profiler::DestroyInstance();
 }
@@ -49,7 +48,6 @@ int FluxCore::Run(HINSTANCE hInstance)
 	AUTOPROFILE(FluxCore_Run);
 	{
 		AUTOPROFILE(FluxCore_Initialize);
-		m_pContext = new Context();
 		m_pConsole = std::make_unique<Console>();
 
 		//Register resource locations
@@ -63,6 +61,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		//ResourceManager
 		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
+		m_pResourceManager->EnableAutoReload();
 
 		//Graphics
 		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
@@ -84,6 +83,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
+		m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
 
 		InitGame();
 		GameTimer::Reset();
@@ -100,6 +100,8 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
 
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+
 	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
 	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
@@ -114,7 +116,9 @@ void FluxCore::InitGame()
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 
 	for (int x = 0; x < 2; ++x)
+	{
 		for (int y = 0; y < 2; ++y)
+		{
 			for (int z = 0; z < 2; ++z)
 			{
 				m_pNode = new SceneNode(m_pContext, "Cube");
@@ -130,6 +134,8 @@ void FluxCore::InitGame()
 				m_pNode->AddComponent(pBoxCollider);
 				m_pScene->AddChild(m_pNode);
 			}
+		}
+	}
 	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
 	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
@@ -166,6 +172,8 @@ void FluxCore::ProcessFrame()
 	m_pAudioEngine->Update();
 	m_pScene->Update();
 
+	m_pPostProcessing->Draw();
+
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
@@ -174,6 +182,7 @@ void FluxCore::ProcessFrame()
 
 	RenderUI();
 	m_pGraphics->EndFrame();
+	m_pResourceManager->Update();
 }
 
 void FluxCore::DoExit()
