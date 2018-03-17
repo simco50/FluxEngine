@@ -58,8 +58,8 @@ public:
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
 	
 	ConstantBuffer* GetOrCreateConstantBuffer(const std::string& name, unsigned int size);
-	Shader* GetShader(const std::string filePath);
-	ShaderVariation* GetShader(const std::string filePath, const ShaderType type, const std::string& defines = "");
+	Shader* GetShader(const std::string& filePath);
+	ShaderVariation* GetShader(const std::string& filePath, const ShaderType type, const std::string& defines = "");
 	bool SetShaderParameter(const std::string& name, const void* pData);
 
 	void OnResize(const int width, const int height);
