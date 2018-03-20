@@ -127,21 +127,18 @@ void Renderer::SetPerFrameParameters()
 
 void Renderer::SetPerCameraParameters(Camera* pCamera)
 {
-	if (m_pCurrentCamera != pCamera)
-	{
-		m_pCurrentCamera = pCamera;
-		Matrix viewProj = pCamera->GetViewProjection();
-		Matrix view = pCamera->GetView();
-		Matrix viewInv = pCamera->GetViewInverse();
-		float nearPlane = pCamera->GetNearPlane();
-		float farPlane = pCamera->GetFarPlane();
+	m_pCurrentCamera = pCamera;
+	Matrix viewProj = pCamera->GetViewProjection();
+	Matrix view = pCamera->GetView();
+	Matrix viewInv = pCamera->GetViewInverse();
+	float nearPlane = pCamera->GetNearPlane();
+	float farPlane = pCamera->GetFarPlane();
 
-		m_pGraphics->SetShaderParameter("cViewProj", &viewProj);
-		m_pGraphics->SetShaderParameter("cView", &view);
-		m_pGraphics->SetShaderParameter("cViewInverse", &viewInv);
-		m_pGraphics->SetShaderParameter("cNearClip", &nearPlane);
-		m_pGraphics->SetShaderParameter("cFarClip", &farPlane);
-	}
+	m_pGraphics->SetShaderParameter("cViewProj", &viewProj);
+	m_pGraphics->SetShaderParameter("cView", &view);
+	m_pGraphics->SetShaderParameter("cViewInverse", &viewInv);
+	m_pGraphics->SetShaderParameter("cNearClip", &nearPlane);
+	m_pGraphics->SetShaderParameter("cFarClip", &farPlane);
 }
 
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
@@ -175,6 +172,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	//Depth stencil state
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
+	m_pGraphics->GetDepthStencilState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
 }
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)

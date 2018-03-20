@@ -25,6 +25,15 @@ void DepthStencilState::SetDepthEnabled(const bool enabled)
 	}
 }
 
+void DepthStencilState::SetDepthWrite(const bool enabled)
+{
+	if (enabled != m_DepthWrite)
+	{
+		m_DepthWrite = enabled;
+		m_IsDirty = true;
+	}
+}
+
 void DepthStencilState::SetDepthTest(const CompareMode& comparison)
 {
 	if (comparison != m_DepthCompareMode)

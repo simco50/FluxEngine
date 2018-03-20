@@ -25,6 +25,8 @@
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/PostProcessing.h"
+#include "Rendering/ParticleSystem/ParticleSystem.h"
+#include "Rendering/ParticleSystem/ParticleEmitter.h"
 
 bool FluxCore::m_Exiting;
 
@@ -115,27 +117,27 @@ void FluxCore::InitGame()
 
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 
-	for (int x = 0; x < 2; ++x)
-	{
-		for (int y = 0; y < 2; ++y)
-		{
-			for (int z = 0; z < 2; ++z)
-			{
-				m_pNode = new SceneNode(m_pContext, "Cube");
-				m_pNode->GetTransform()->Translate((float)x, 2 * y + 0.5f, (float)z);
-				Model* pModel = new Model(m_pContext);
-				pModel->SetMesh(pMesh);
-				pModel->SetMaterial(pMaterial);
-				m_pNode->AddComponent(pModel);
-				Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-				pRigidbody->SetBodyType(Rigidbody::Dynamic);
-				m_pNode->AddComponent(pRigidbody);
-				Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
-				m_pNode->AddComponent(pBoxCollider);
-				m_pScene->AddChild(m_pNode);
-			}
-		}
-	}
+	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
+	Model* pModel = new Model(m_pContext);
+	pModel->SetMesh(pMesh);
+	pModel->SetMaterial(pMaterial);
+	pObject->AddComponent(pModel);
+	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+	pRigidbody->SetBodyType(Rigidbody::Dynamic);
+	pObject->AddComponent(pRigidbody);
+	Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
+	pObject->AddComponent(pBoxCollider);
+	m_pScene->AddChild(pObject);
+
+	SceneNode* pParticles = new SceneNode(m_pContext, "Particles");
+	pParticles->GetTransform()->Translate(4, 0, 0);
+	ParticleSystem* pParticleSystem = m_pResourceManager->Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
+	ParticleEmitter* pEmitter = new ParticleEmitter(m_pContext, pParticleSystem);
+	pParticles->AddComponent(pEmitter);
+	pBoxCollider = new BoxCollider(m_pContext, pEmitter->GetBoundingBox());
+	pParticles->AddComponent(pBoxCollider);
+	m_pScene->AddChild(pParticles);
+
 	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
 	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
 	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
@@ -244,7 +246,7 @@ void FluxCore::RenderUI()
 			ImGui::Text(t.c_str());
 		}
 		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
-		Model* pModel = m_pSelectedNode->GetComponent<Model>();
+		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
 		if (pModel)
 			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
 		ImGui::TreePop();

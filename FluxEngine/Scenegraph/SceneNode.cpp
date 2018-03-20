@@ -65,7 +65,7 @@ Component* SceneNode::GetComponent(StringHash type)
 {
 	for (Component* pComponent : m_Components)
 	{
-		if (type == pComponent->GetType())
+		if (pComponent->IsTypeOf(type))
 			return pComponent;
 	}
 	return nullptr;

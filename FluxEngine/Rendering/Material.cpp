@@ -158,7 +158,8 @@ bool Material::Load(InputStream& inputStream)
 						pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
 					else
 						pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
-					m_Textures[slotType] = pTexture;
+					if(pTexture)
+						m_Textures[slotType] = pTexture;
 				}
 				else if (parameterType == "Value")
 				{

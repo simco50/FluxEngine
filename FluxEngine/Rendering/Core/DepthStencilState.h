@@ -15,12 +15,14 @@ public:
 	unsigned int GetStencilRef() const { return m_StencilRef; }
 
 	void SetDepthEnabled(const bool enabled);
+	void SetDepthWrite(const bool enabled);
 	void SetDepthTest(const CompareMode& comparison);
 	void SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, const unsigned char writeMask);
 private:
 	bool m_IsDirty = true;
 
 	bool m_DepthEnabled = true;
+	bool m_DepthWrite = true;
 	CompareMode m_DepthCompareMode = CompareMode::LESS;
 	bool m_StencilTestEnabled = false;
 	CompareMode m_StencilTestMode = CompareMode::ALWAYS;

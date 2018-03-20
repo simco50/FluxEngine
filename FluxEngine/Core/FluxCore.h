@@ -37,7 +37,6 @@ private:
 
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
-	SceneNode* m_pNode = nullptr;
 
 	bool m_DebugPhysics = false;
 

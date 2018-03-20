@@ -70,5 +70,5 @@ std::string Printf(const std::string& format, Args... args)
 	auto size = std::snprintf(nullptr, 0, format.c_str(), args...);
 	std::string output(size + 1, '\0');
 	sprintf_s(&output[0], output.size(), format.c_str(), args...);
-	return output;
+	return std::string(output.begin(), output.end() - 1);
 }

@@ -40,6 +40,8 @@ public:
 	void SetAlphaToCoverage(bool enabled) { m_AlphaToCoverage = enabled; }
 	void SetFillMode(FillMode mode) { m_FillMode = mode; }
 	void SetDepthEnabled(bool enabled) { m_DepthEnabled = enabled; }
+	void SetDepthWrite(bool enabled) { m_DepthWrite = enabled; }
+
 
 	CullMode GetCullMode() const { return m_CullMode; }
 	BlendMode GetBlendMode() const { return m_BlendMode; }
@@ -47,6 +49,7 @@ public:
 	bool GetAlphaToCoverage() const { return m_AlphaToCoverage; }
 	FillMode GetFillMode() const { return m_FillMode; }
 	bool GetDepthEnabled() const { return m_DepthEnabled; }
+	bool GetDepthWrite() const { return m_DepthWrite; }
 
 private:
 	Graphics* m_pGraphics;
@@ -62,6 +65,7 @@ private:
 	CompareMode m_DepthTestMode = CompareMode::LESSEQUAL;
 	bool m_AlphaToCoverage = false;
 	bool m_DepthEnabled = true;
+	bool m_DepthWrite = true;
 	FillMode m_FillMode = FillMode::SOLID;
 
 	std::unordered_map<TextureSlot, Texture*> m_Textures;

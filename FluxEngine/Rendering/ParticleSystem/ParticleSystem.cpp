@@ -101,7 +101,7 @@ bool ParticleSystem::Load(InputStream& inputStream)
 	catch (std::exception& exception)
 	{
 		std::string error = exception.what();
-		FLUX_LOG(Error, "Particle loading failed!\nJson Parser: %s", std::wstring(error.begin(), error.end()).c_str());
+		FLUX_LOG(Warning, "Particle loading failed!\nJson Parser: %s", std::wstring(error.begin(), error.end()).c_str());
 		return false;
 	}
 	return true;

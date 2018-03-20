@@ -65,8 +65,15 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	m_pIndexBuffer = std::make_unique<IndexBuffer>(m_pGraphics);
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
-
-	 io.Fonts->AddFontFromFileTTF("Resources/OpenSans-Regular.ttf", 18.0f);
+	std::unique_ptr<File> pFile = FileSystem::GetFile("Resources/OpenSans-Regular.ttf");
+	if (pFile && pFile->Open(FileMode::Read, ContentType::Binary))
+	{
+		size_t size = pFile->GetSize();
+		unsigned char* pBuffer = new unsigned char[size];
+		pFile->Read(pBuffer, size);
+		pFile->Close();
+		io.Fonts->AddFontFromMemoryTTF(pBuffer, size, 18.0f);
+	}
 	unsigned char *pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);

@@ -17,7 +17,7 @@ Console::Console()
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	const std::string filePath = Printf("%s\\%s.log", Paths::LogsFolder.c_str(), GetTimeStamp().c_str());
+	std::string filePath = Printf("%s\\%s.log", Paths::LogsFolder.c_str(), GetTimeStamp().c_str());
 	m_pFileLog = new PhysicalFile(filePath);
 
 	if (!m_pFileLog->Open(FileMode::Write, ContentType::Text))
@@ -26,20 +26,20 @@ Console::Console()
 	}
 
 	std::stringstream stream;
-	stream << "\n-------------FLUX ENGINE LOG START--------------\n\n";
+	stream << "-------------FLUX ENGINE LOG START--------------" << std::endl;
 	stream << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << "\n";
 	stream << "Time: " << GetTime() << "\n";
 	std::string output = stream.str();
 	m_pFileLog->Write(output.c_str(), output.size());
 
 #ifdef _DEBUG
-	InitializeConsoleWindow();
+		InitializeConsoleWindow();
 #endif
 }
 
 Console::~Console()
 {
-	m_pFileLog->WriteString("\n--------------FLUX ENGINE LOG END---------------\n");
+	m_pFileLog->WriteLine("--------------FLUX ENGINE LOG END---------------");
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
 }
@@ -142,14 +142,14 @@ void Console::Log(const std::string &message, LogType type)
 			break;
 		}
 
-		stream << message << "\n";
+		stream << message;
 		std::string output = stream.str();
 
-		std::cout << output;
+		std::cout << output << std::endl;
 		if (consoleInstance->m_ConsoleHandle)
 			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
-		consoleInstance->m_pFileLog->Write(output.c_str(), output.size());
+		consoleInstance->m_pFileLog->WriteLine(output.c_str());
 
 		if (type == LogType::Error)
 		{

@@ -23,7 +23,7 @@ PhysicsSystem::PhysicsSystem(Context* pContext, Graphics* pGraphics) :
 		FLUX_LOG(Error, "[PhysxSystem::Initialize()] > Failed to create PxPvd");
 	m_pPvdTransport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 25565, 10);
 	if (!m_pPvd->connect(*m_pPvdTransport, PxPvdInstrumentationFlag::eDEBUG))
-		FLUX_LOG(Warning, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
+		FLUX_LOG(Info, "[PhysicsSystem::PhysicsSystem] > Failed to connect to PhysX Visual Debugger");
 #endif
 
 #ifdef _DEBUG

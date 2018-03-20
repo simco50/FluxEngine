@@ -31,6 +31,7 @@ void PostProcessing::Draw()
 		return;
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
+	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 	RenderTarget* pCurrentSource = m_pGraphics->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pIntermediateRenderTarget.get();
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);

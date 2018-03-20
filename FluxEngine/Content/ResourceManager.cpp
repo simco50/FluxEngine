@@ -130,6 +130,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
+	pResource->OnLoaded().Broadcast();
 	return true;
 }
 

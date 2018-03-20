@@ -7,14 +7,15 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 {
 	unsigned int stateHash =
 		(unsigned char)m_DepthEnabled << 0
-		| (unsigned char)m_DepthCompareMode << 1
-		| (unsigned char)m_StencilTestEnabled << 5
-		| (unsigned char)m_StencilTestMode << 6
-		| (unsigned char)m_StencilTestPassOperation << 10
-		| (unsigned char)m_StencilTestFailOperation << 14
-		| (unsigned char)m_StencilTestZFailOperation << 18
-		| (unsigned char)m_StencilCompareMask << 22
-		| (unsigned char)m_StencilWriteMask << 26;
+		| (unsigned char)m_DepthWrite << 1
+		| (unsigned char)m_DepthCompareMode << 2
+		| (unsigned char)m_StencilTestEnabled << 6
+		| (unsigned char)m_StencilTestMode << 7
+		| (unsigned char)m_StencilTestPassOperation << 11
+		| (unsigned char)m_StencilTestFailOperation << 15
+		| (unsigned char)m_StencilTestZFailOperation << 19
+		| (unsigned char)m_StencilCompareMask << 23
+		| (unsigned char)m_StencilWriteMask << 27;
 
 	auto state = m_DepthStencilStates.find(stateHash);
 	if (state != m_DepthStencilStates.end())
@@ -27,7 +28,7 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 
 	D3D11_DEPTH_STENCIL_DESC desc = {};
 	desc.DepthEnable = m_DepthEnabled;
-	desc.DepthWriteMask = m_DepthEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+	desc.DepthWriteMask = m_DepthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
 
 	desc.DepthFunc = D3D11ComparisonFunction(m_DepthCompareMode);
 

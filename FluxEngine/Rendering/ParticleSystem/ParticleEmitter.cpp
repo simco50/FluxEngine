@@ -17,8 +17,7 @@
 #include "Rendering/Core/Texture2D.h"
 
 ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
-	Drawable(pContext),
-	m_pParticleSystem(pSystem)
+	Drawable(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
@@ -26,7 +25,9 @@ ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
 	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");
-	m_pMaterial->SetDepthTestMode(CompareMode::ALWAYS);
+	m_pMaterial->SetDepthTestMode(CompareMode::LESSEQUAL);
+	m_pMaterial->SetDepthEnabled(true);
+	m_pMaterial->SetDepthWrite(false);
 	m_Batches[0].pMaterial = m_pMaterial;
 
 	SetSystem(pSystem);
@@ -39,7 +40,11 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
-	m_pParticleSystem = pSettings;
+	if (pSettings != m_pParticleSystem)
+	{
+		m_pParticleSystem = pSettings;
+		pSettings->OnLoaded().AddLambda([this]() { SetSystem(m_pParticleSystem); });
+	}
 	if (pSettings == nullptr)
 		return;
 
@@ -57,7 +62,6 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	m_pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pSettings->ImagePath);
 	m_pMaterial->SetTexture(TextureSlot::Diffuse, m_pTexture);
 	m_pMaterial->SetBlendMode(pSettings->BlendingMode);
-	m_pMaterial->SetDepthEnabled(false);
 
 	m_BurstIterator = m_pParticleSystem->Bursts.begin();
 	Reset();

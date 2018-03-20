@@ -19,6 +19,9 @@ public:
 	void SetName(const std::string& name) { m_Name = name; }
 	const std::string& GetName() const { return m_Name; }
 
+	MulticastDelegate<>& OnLoaded() { return m_OnLoadedEvent; }
+
 protected:
 	std::string m_Name;
+	MulticastDelegate<> m_OnLoadedEvent;
 };
