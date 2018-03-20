@@ -72,7 +72,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 		unsigned char* pBuffer = new unsigned char[size];
 		pFile->Read(pBuffer, size);
 		pFile->Close();
-		io.Fonts->AddFontFromMemoryTTF(pBuffer, size, 18.0f);
+		io.Fonts->AddFontFromMemoryTTF(pBuffer, (int)size, 18.0f);
 	}
 	unsigned char *pixels;
 	int width, height;
