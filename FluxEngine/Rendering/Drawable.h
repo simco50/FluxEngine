@@ -26,7 +26,7 @@ public:
 	std::vector<Batch>& GetBatches() { return m_Batches; }
 
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
-	virtual BoundingBox GetWorldBoundingBox() const { return m_BoundingBox; }
+	BoundingBox GetWorldBoundingBox() const;
 
 	bool DrawEnabled() const { return m_Draw; }
 

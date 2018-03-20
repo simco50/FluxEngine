@@ -15,8 +15,6 @@ public:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
-	virtual BoundingBox GetWorldBoundingBox() const override;
-
 	void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);

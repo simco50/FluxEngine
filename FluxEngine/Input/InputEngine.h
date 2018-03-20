@@ -1,5 +1,6 @@
 #pragma once
 #include "Core\Subsystem.h"
+#include "InputMapping.h"
 
 class Graphics;
 
@@ -51,16 +52,17 @@ public:
 	void ForceMouseToCenter(bool force);
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 
-	POINT GetMousePosition(bool previousFrame = false) const {return (previousFrame)?m_OldMousePosition:m_CurrMousePosition; }
+	const Vector2& GetMousePosition(bool previousFrame = false) const {return (previousFrame)?m_OldMousePosition:m_CurrMousePosition; }
 	const Vector2& GetMouseMovement() const { return m_MouseMovement; }
+	int GetMouseWheel() const { return m_MouseWheel; }
 	void SetMouseMovement(const Vector2 &mouseMovement) { m_MouseMove = true;  m_MouseMovement = mouseMovement; }
 
 	void CursorVisible(bool visible) const;
 
-	bool IsKeyboardKeyDown(int key) const;
-	bool IsKeyboardKeyPressed(int key) const;
-	bool IsMouseButtonDown(int button) const;
-	bool IsMouseButtonPressed(int button) const;
+	bool IsKeyboardKeyDown(KeyboardKey key) const;
+	bool IsKeyboardKeyPressed(KeyboardKey key) const;
+	bool IsMouseButtonDown(MouseKey button) const;
+	bool IsMouseButtonPressed(MouseKey button) const;
 
 	MulticastDelegate<SDL_Event*>& OnHandleSDL() { return m_OnHandleSDLEvent; }
 	MulticastDelegate<int, int>& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
@@ -76,15 +78,17 @@ private:
 
 	std::map<int, std::vector<InputAction>> m_InputActions;
 	
-	POINT m_CurrMousePosition = {};
-	POINT m_OldMousePosition = {};
+	Vector2 m_CurrMousePosition = {};
+	Vector2 m_OldMousePosition = {};
 	bool m_MouseMove = false;
 	Vector2 m_MouseMovement;
 
 	unsigned int m_MouseButtonDown = 0;
 	unsigned int m_MouseButtonPressed = 0;
-	std::array<bool, 256> m_KeyDown = {};
-	std::array<bool, 256> m_KeyPressed = {};
+	int m_MouseWheel = 0;
+
+	std::array<bool, (size_t)KeyboardKey::MAX> m_KeyDown = {};
+	std::array<bool, (size_t)KeyboardKey::MAX> m_KeyPressed = {};
 
 	bool m_Enabled;
 	bool m_ForceToCenter;

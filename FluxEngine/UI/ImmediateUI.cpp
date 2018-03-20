@@ -24,25 +24,25 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
-	io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-	io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-	io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-	io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-	io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-	io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-	io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
-	io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
-	io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
-	io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
-	io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
-	io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
-	io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
-	io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
-	io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
-	io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
+	io.KeyMap[ImGuiKey_Tab] = (int)KeyboardKey::KEY_TAB;
+	io.KeyMap[ImGuiKey_LeftArrow] = (int)KeyboardKey::KEY_LEFT;
+	io.KeyMap[ImGuiKey_RightArrow] = (int)KeyboardKey::KEY_RIGHT;
+	io.KeyMap[ImGuiKey_UpArrow] = (int)KeyboardKey::KEY_UP;
+	io.KeyMap[ImGuiKey_DownArrow] = (int)KeyboardKey::KEY_DOWN;
+	io.KeyMap[ImGuiKey_PageUp] = (int)KeyboardKey::KEY_PAGEUP;
+	io.KeyMap[ImGuiKey_PageDown] = (int)KeyboardKey::KEY_PAGEDOWN;
+	io.KeyMap[ImGuiKey_Home] = (int)KeyboardKey::KEY_HOME;
+	io.KeyMap[ImGuiKey_End] = (int)KeyboardKey::KEY_END;
+	io.KeyMap[ImGuiKey_Delete] = (int)KeyboardKey::KEY_DELETE;
+	io.KeyMap[ImGuiKey_Backspace] = (int)KeyboardKey::KEY_BACKSPACE;
+	io.KeyMap[ImGuiKey_Enter] = (int)KeyboardKey::KEY_RETURN;
+	io.KeyMap[ImGuiKey_Escape] = (int)KeyboardKey::KEY_ESCAPE;
+	io.KeyMap[ImGuiKey_A] = (int)KeyboardKey::KEY_A;
+	io.KeyMap[ImGuiKey_C] = (int)KeyboardKey::KEY_C;
+	io.KeyMap[ImGuiKey_V] = (int)KeyboardKey::KEY_V;
+	io.KeyMap[ImGuiKey_X] = (int)KeyboardKey::KEY_X;
+	io.KeyMap[ImGuiKey_Y] = (int)KeyboardKey::KEY_Y;
+	io.KeyMap[ImGuiKey_Z] = (int)KeyboardKey::KEY_Z;
 	io.RenderDrawListsFn = nullptr;
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
@@ -66,7 +66,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
 	std::unique_ptr<File> pFile = FileSystem::GetFile("Resources/OpenSans-Regular.ttf");
-	if (pFile && pFile->Open(FileMode::Read, ContentType::Binary))
+	if (pFile && pFile->Open(FileMode::Read))
 	{
 		size_t size = pFile->GetSize();
 		unsigned char* pBuffer = new unsigned char[size];
@@ -98,10 +98,9 @@ void ImmediateUI::NewFrame()
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
 	
-	int posX, posY;
-	SDL_GetMouseState(&posX, &posY);
-	io.MousePos.x = (float)posX;
-	io.MousePos.y = (float)posY;
+	Vector2 mousePos = m_pInput->GetMousePosition();
+	io.MousePos.x = mousePos.x;
+	io.MousePos.y = mousePos.y;
 	io.MouseDrawCursor = true;
 
 	m_pInput->CursorVisible(!io.MouseDrawCursor);

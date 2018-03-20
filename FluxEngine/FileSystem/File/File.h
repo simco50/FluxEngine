@@ -24,7 +24,7 @@ public:
 	{}
 	virtual ~File() {}
 
-	virtual bool Open(const FileMode mode, const ContentType writeMode) = 0;
+	virtual bool Open(const FileMode mode) = 0;
 	bool virtual Flush() = 0;
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;
@@ -37,5 +37,4 @@ public:
 
 protected:
 	std::string m_FileName;
-	ContentType m_ContentType = ContentType::Binary;
 };

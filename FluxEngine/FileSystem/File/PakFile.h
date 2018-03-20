@@ -14,7 +14,7 @@ public:
 	virtual ~PakFile()
 	{}
 
-	virtual bool Open(const FileMode mode, const ContentType writeMode = ContentType::Binary) override;
+	virtual bool Open(const FileMode mode) override;
 	virtual size_t Read(void* pBuffer, const size_t size) override;
 	virtual size_t Write(const void* pBuffer, const size_t size) override;
 	bool virtual Flush() override;

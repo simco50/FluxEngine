@@ -105,7 +105,7 @@ bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output)
 			std::unique_ptr<File> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
 			if (newFile == nullptr)
 				return false;
-			if (!newFile->Open(FileMode::Read, ContentType::Text))
+			if (!newFile->Open(FileMode::Read))
 				return false;
 
 			if (!ProcessSource(newFile.get(), output))

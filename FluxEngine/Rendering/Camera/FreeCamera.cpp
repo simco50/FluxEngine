@@ -41,15 +41,15 @@ void FreeCamera::KeyboardMouse()
 
 	//Moving
 	Vector3 moveDirection(0, 0, 0);
-	moveDirection.x += m_pInput->IsKeyboardKeyDown(SDLK_a) ? -1 : 0;
-	moveDirection.x += m_pInput->IsKeyboardKeyDown(SDLK_d) ? 1 : 0;
-	moveDirection.z += m_pInput->IsKeyboardKeyDown(SDLK_s) ? -1 : 0;
-	moveDirection.z += m_pInput->IsKeyboardKeyDown(SDLK_w) ? 1 : 0;
-	moveDirection.y += m_pInput->IsKeyboardKeyDown(SDLK_q) ? -1 : 0;
-	moveDirection.y += m_pInput->IsKeyboardKeyDown(SDLK_e) ? 1 : 0;
+	moveDirection.x += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_A) ? -1 : 0;
+	moveDirection.x += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_D) ? 1 : 0;
+	moveDirection.z += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_S) ? -1 : 0;
+	moveDirection.z += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_W) ? 1 : 0;
+	moveDirection.y += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_Q) ? -1 : 0;
+	moveDirection.y += m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_E) ? 1 : 0;
 
 	float moveSpeed = m_MoveSpeed;
-	if (m_pInput->IsKeyboardKeyDown(SDLK_LSHIFT))
+	if (m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_LEFT_SHIFT))
 		moveSpeed *= m_ShiftMultiplier;
 	moveDirection *= dt * moveSpeed;
 
@@ -57,7 +57,7 @@ void FreeCamera::KeyboardMouse()
 		GetTransform()->Translate(moveDirection, Space::SELF);
 
 	//Rotation
-	if ( m_pInput->IsMouseButtonDown(SDL_BUTTON_RIGHT))
+	if ( m_pInput->IsMouseButtonDown(MouseKey::RIGHT_BUTTON))
 	{
 		Vector2 mouseMove =  m_pInput->GetMouseMovement();
 		if (mouseMove != Vector2())

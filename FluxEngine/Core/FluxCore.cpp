@@ -157,7 +157,7 @@ void FluxCore::ProcessFrame()
 
 	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 
-	if (m_pInput->IsMouseButtonPressed(SDL_BUTTON_LEFT) && !ImGui::IsMouseHoveringAnyWindow())
+	if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::IsMouseHoveringAnyWindow())
 	{
 		RaycastResult result;
 		if (m_pCamera->GetCamera()->Raycast(result))

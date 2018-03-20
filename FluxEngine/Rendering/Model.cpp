@@ -70,10 +70,3 @@ void Model::SetMaterial(int index, Material* pMaterial)
 	}
 	m_Batches[index].pMaterial = pMaterial;
 }
-
-DirectX::BoundingBox Model::GetWorldBoundingBox() const
-{
-	BoundingBox worldBoundingBox;
-	m_BoundingBox.Transform(worldBoundingBox, m_pNode->GetTransform()->GetWorldMatrix());
-	return worldBoundingBox;
-}

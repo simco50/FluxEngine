@@ -20,7 +20,7 @@ Console::Console()
 	std::string filePath = Printf("%s\\%s.log", Paths::LogsFolder.c_str(), GetTimeStamp().c_str());
 	m_pFileLog = new PhysicalFile(filePath);
 
-	if (!m_pFileLog->Open(FileMode::Write, ContentType::Text))
+	if (!m_pFileLog->Open(FileMode::Write))
 	{
 		FLUX_LOG(Error, "Failed to open console log");
 	}

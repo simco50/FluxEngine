@@ -5,9 +5,8 @@
 
 #include "Helpers/Compression.h"
 
-bool PakFile::Open(const FileMode mode, const ContentType writeMode)
+bool PakFile::Open(const FileMode mode)
 {
-	m_ContentType = writeMode;
 	UNREFERENCED_PARAMETER(mode); 
 	return true;
 }

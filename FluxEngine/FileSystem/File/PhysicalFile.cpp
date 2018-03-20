@@ -6,10 +6,8 @@ PhysicalFile::~PhysicalFile()
 	PhysicalFile::Close();
 }
 
-bool PhysicalFile::Open(const FileMode mode, const ContentType writeMode)
+bool PhysicalFile::Open(const FileMode mode)
 {
-	m_ContentType = writeMode;
-
 	DWORD access;
 	DWORD creation_disposition;
 

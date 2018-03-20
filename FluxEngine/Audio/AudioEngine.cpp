@@ -10,7 +10,7 @@ namespace FmodCallbacks
 		std::unique_ptr<File> pFile = FileSystem::GetFile(name);
 		if (pFile == nullptr)
 			return FMOD_ERR_FILE_NOTFOUND;
-		if (!pFile->Open(FileMode::Read, ContentType::Binary))
+		if (!pFile->Open(FileMode::Read))
 			return FMOD_ERR_FILE_BAD;
 		*fileSize = (unsigned int)pFile->GetSize();
 		File* pHandle = pFile.release();

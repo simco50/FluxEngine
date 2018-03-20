@@ -17,7 +17,7 @@ Profiler::~Profiler()
 	m_pRootBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0 / m_Frequency;
 
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(Paths::ProfilingFolder + "\\Profiler.log");
-	pFile->Open(FileMode::Write, ContentType::Text);
+	pFile->Open(FileMode::Write);
 	OutputLog(pFile.get());
 	pFile->Close();
 }

@@ -722,7 +722,7 @@ void Graphics::TakeScreenshot()
 	std::stringstream str;
 	str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
 	PhysicalFile file(str.str());
-	if (!file.Open(FileMode::Write, ContentType::Binary))
+	if (!file.Open(FileMode::Write))
 		return;
 
 	AUTOPROFILE(Graphics_TakeScreenshot);

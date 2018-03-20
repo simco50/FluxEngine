@@ -19,7 +19,7 @@ public:
 	{}
 	virtual ~PhysicalFile();
 
-	virtual bool Open(const FileMode mode, const ContentType writeMode = ContentType::Text) override;
+	virtual bool Open(const FileMode mode) override;
 	virtual size_t Read(void* pBuffer, const size_t size) override;
 	virtual size_t Write(const void* pBuffer, const size_t size) override;
 	virtual bool Flush() override;

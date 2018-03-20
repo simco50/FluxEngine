@@ -54,6 +54,7 @@ void InputEngine::Update()
 {
 	ZeroMemory(m_KeyPressed.data(), m_KeyPressed.size() * sizeof(bool));
 	m_MouseButtonPressed = 0;
+	m_MouseWheel = 0;
 
 	SDL_Event event;
 	while(SDL_PollEvent(&event))
@@ -77,20 +78,22 @@ void InputEngine::Update()
 				GameTimer::Start();
 				break;
 			}
+			break;
 		}
 		case SDL_KEYDOWN:
-			if(event.key.keysym.scancode < (int)m_KeyDown.size())
-				SetKey(event.key.keysym.scancode, true);
+			SetKey(event.key.keysym.scancode, true);
 			break;
 		case SDL_KEYUP:
-			if (event.key.keysym.scancode < (int)m_KeyDown.size())
-				SetKey(event.key.keysym.scancode, false);
+			SetKey(event.key.keysym.scancode, false);
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			SetMouseButton(1 << (event.button.button - 1), true);
 			break;
 		case SDL_MOUSEBUTTONUP:
 			SetMouseButton(1 << (event.button.button - 1), false);
+			break;
+		case SDL_MOUSEWHEEL:
+			m_MouseWheel += event.wheel.y;
 			break;
 		case SDL_QUIT:
 			FluxCore::DoExit();
@@ -108,8 +111,8 @@ void InputEngine::Update()
 	m_OldMousePosition = m_CurrMousePosition;
 	int mousePosX, mousePosY;
 	SDL_GetMouseState(&mousePosX, &mousePosY);
-	m_CurrMousePosition.x = mousePosX;
-	m_CurrMousePosition.y = mousePosY;
+	m_CurrMousePosition.x = (float)mousePosX;
+	m_CurrMousePosition.y = (float)mousePosY;
 
 	m_MouseMovement.x = (float)m_CurrMousePosition.x - (float)m_OldMousePosition.x;
 	m_MouseMovement.y = (float)m_CurrMousePosition.y - (float)m_OldMousePosition.y;
@@ -120,24 +123,24 @@ void InputEngine::CursorVisible(bool visible) const
 	SDL_ShowCursor((int)visible);
 }
 
-bool InputEngine::IsKeyboardKeyDown(int key) const
+bool InputEngine::IsKeyboardKeyDown(KeyboardKey key) const
 {
-	return m_KeyDown[SDL_GetScancodeFromKey(key)];
+	return m_KeyDown[(int)key];
 }
 
-bool InputEngine::IsKeyboardKeyPressed(int key) const
+bool InputEngine::IsKeyboardKeyPressed(KeyboardKey key) const
 {
-	return m_KeyPressed[SDL_GetScancodeFromKey(key)];
+	return m_KeyPressed[(int)key];
 }
 
-bool InputEngine::IsMouseButtonDown(int button) const
+bool InputEngine::IsMouseButtonDown(MouseKey button) const
 {
-	return ((m_MouseButtonDown >> (button - 1)) & 1) == 1;
+	return ((m_MouseButtonDown >> ((int)button - 1)) & 1) == 1;
 }
 
-bool InputEngine::IsMouseButtonPressed(int button) const
+bool InputEngine::IsMouseButtonPressed(MouseKey button) const
 {
-	return ((m_MouseButtonPressed >> (button - 1)) & 1) == 1;
+	return ((m_MouseButtonPressed >> ((int)button - 1)) & 1) == 1;
 }
 
 void InputEngine::SetKey(int keyCode, bool down)
