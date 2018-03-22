@@ -116,15 +116,6 @@ enum class TextureSlot
 	MAX
 };
 
-enum class TextureAddressMode
-{
-	WRAP = 0,
-	MIRROR,
-	CLAMP,
-	BORDER,
-	MIRROR_ONCE,
-};
-
 enum class TextureFilter
 {
 	MIN_MAG_MIP_POINT = 0,

@@ -10,6 +10,17 @@ enum class TextureUsage
 	DYNAMIC,
 	RENDERTARGET,
 	DEPTHSTENCILBUFFER,
+	MAX
+};
+
+enum class TextureAddressMode
+{
+	WRAP = 0,
+	MIRROR,
+	CLAMP,
+	BORDER,
+	MIRROR_ONCE,
+	MAX
 };
 
 class Texture : public Resource
@@ -32,6 +43,8 @@ public:
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
+
+	void SetAddressMode(const TextureAddressMode addressMode);
 
 	void UpdateParameters();
 
@@ -57,6 +70,7 @@ protected:
 	unsigned int m_TextureFormat = 0;
 	unsigned int m_MultiSample = 1;
 
+	TextureAddressMode m_TextureAddressMode = TextureAddressMode::WRAP;
 	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
 	Graphics* m_pGraphics = nullptr;

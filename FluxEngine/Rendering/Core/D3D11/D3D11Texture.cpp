@@ -17,8 +17,7 @@ void Texture::UpdateParameters()
 
 	D3D11_SAMPLER_DESC desc = {};
 	Color borderColor = Color();
-	TextureAddressMode mode = TextureAddressMode::WRAP;
-	switch (mode)
+	switch (m_TextureAddressMode)
 	{
 	case TextureAddressMode::WRAP:
 		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;

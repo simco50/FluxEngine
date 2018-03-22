@@ -16,6 +16,15 @@ Texture::~Texture()
 	Release();
 }
 
+void Texture::SetAddressMode(const TextureAddressMode addressMode)
+{
+	if (m_TextureAddressMode != addressMode)
+	{
+		m_TextureAddressMode = addressMode;
+		m_ParametersDirty = true;
+	}
+}
+
 void Texture::Release()
 {
 	SafeRelease(m_pResource);

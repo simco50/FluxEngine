@@ -32,7 +32,6 @@ public:
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
-	int GetBPP() const { return 4; }
 	int GetComponents() const { return m_Components; }
 	int GetActualComponents() const { return m_ActualComponents; }
 	unsigned char* GetData() { return m_Pixels.data(); }

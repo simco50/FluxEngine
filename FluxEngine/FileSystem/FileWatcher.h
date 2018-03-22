@@ -20,6 +20,6 @@ private:
 	bool m_Exiting = true;
 	bool m_RecursiveWatch = true;
 	Mutex m_Mutex;
-	HANDLE m_FileHandle;
+	HANDLE m_FileHandle = nullptr;
 	std::map<std::string, Timer> m_Changes;
 };

@@ -115,11 +115,11 @@ void ImmediateUI::Render()
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough
-	if(m_pVertexBuffer == nullptr || (int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
+	if((int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
 		m_pVertexBuffer->Create(m_pVertexBuffer->GetVertexCount() + 5000, m_VertexElements, true);
 
 	//Recreate the indexbuffer if it is not large enough
-	if (m_pIndexBuffer == nullptr || (int)m_pIndexBuffer->GetCount() < pDrawData->TotalIdxCount)
+	if ((int)m_pIndexBuffer->GetCount() < pDrawData->TotalIdxCount)
 		m_pIndexBuffer->Create(m_pIndexBuffer->GetCount() + 10000, true, true);
 
 	//Copy the new data to the buffers
@@ -280,7 +280,7 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 
 	if (dark)
 	{
-		for (int i = 0; i <= ImGuiCol_COUNT; i++)
+		for (int i = 0; i < ImGuiCol_COUNT; i++)
 		{
 			ImVec4& col = style.Colors[i];
 			float H, S, V;

@@ -49,12 +49,11 @@ bool Image::Load(InputStream& inputStream)
 	AUTOPROFILE(Image_Load);
 	m_Components = 4;
 	m_Depth = 1;
-	unsigned char* pPixels = nullptr;
 	stbi_io_callbacks callbacks;
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
 	if (pPixels == nullptr)
 		return false;
 	m_Pixels.resize(m_Width * m_Height * m_Components);
@@ -90,12 +89,11 @@ bool Image::LoadLUT(InputStream& inputStream)
 {
 	AUTOPROFILE(Image_Load);
 	m_Components = 4;
-	unsigned char* pPixels = nullptr;
 	stbi_io_callbacks callbacks;
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	unsigned char*  pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
 	if (pPixels == nullptr)
 		return false;
 
