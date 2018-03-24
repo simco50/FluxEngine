@@ -9,6 +9,11 @@
 #include "Core/Graphics.h"
 #include "IO/InputStream.h"
 
+#include <assimp\Importer.hpp>
+#include <assimp\scene.h>
+#include <assimp\postprocess.h>
+#pragma comment(lib, "assimp-vc140-mt.lib")
+
 Mesh::Mesh(Context* pContext):
 	Resource(pContext)
 {
@@ -24,18 +29,28 @@ bool Mesh::Load(InputStream& inputStream)
 	AUTOPROFILE_DESC(Mesh_Load, Paths::GetFileName(fileName));
 
 	m_Geometries.clear();
-
-	std::string extension = Paths::GetFileExtenstion(fileName);
-	if (extension != "flux")
-	{
-		std::stringstream stream;
-		stream << "MeshLoader::LoadContent() -> '" << fileName << "' has a wrong file extension";
-		FLUX_LOG(Error, stream.str());
-		return false;
-	}
-
 	m_MeshName = Paths::GetFileName(fileName);
 
+	std::string extension = Paths::GetFileExtenstion(fileName);
+	if (extension == "flux")
+	{
+		return LoadFlux(inputStream);
+	}
+	FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using Assimp", fileName.c_str());
+	return LoadAssimp(inputStream);
+}
+
+void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
+{
+	AUTOPROFILE_DESC(Mesh_CreateBuffers, m_MeshName);
+	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
+	{
+		CreateBuffersForGeometry(elementDesc, pGeometry.get());
+	}
+}
+
+bool Mesh::LoadFlux(InputStream& inputStream)
+{
 	const std::string magic = inputStream.ReadSizedString();
 	const char minVersion = inputStream.ReadByte();
 	const char maxVersion = inputStream.ReadByte();
@@ -44,8 +59,9 @@ bool Mesh::Load(InputStream& inputStream)
 	if (minVersion != MESH_VERSION)
 	{
 		std::stringstream stream;
-		stream << "MeshLoader::LoadContent() File '" << fileName << "' version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
-		FLUX_LOG(Error, stream.str());
+		stream << "MeshLoader::LoadContent() File version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
+		FLUX_LOG(Warning, stream.str());
+		return false;
 	}
 
 	inputStream.Read((char*)&m_BoundingBox, sizeof(BoundingBox));
@@ -78,13 +94,96 @@ bool Mesh::Load(InputStream& inputStream)
 	return true;
 }
 
-void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
+bool Mesh::LoadAssimp(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(Mesh_CreateBuffers, m_MeshName);
-	for (std::unique_ptr<Geometry>& pGeometry : m_Geometries)
+	std::vector<unsigned char> buffer;
+	inputStream.ReadAllBytes(buffer);
+
+	Assimp::Importer importer;
+	const aiScene* pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
+		aiProcess_Triangulate |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_GenSmoothNormals
+	);
+
+	if (pScene == nullptr)
+		return false;
+	return ProcessAssimpMeshes(pScene);
+}
+
+bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
+{
+	if (pScene == nullptr)
+		return false;
+
+	m_GeometryCount = pScene->mNumMeshes;
+	for (unsigned int i = 0; i < pScene->mNumMeshes; i++)
 	{
-		CreateBuffersForGeometry(elementDesc, pGeometry.get());
+		aiMesh* pMesh = pScene->mMeshes[i];
+		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
+		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pMesh->mNumVertices, pMesh->mNumFaces * 3);
+
+		if(pMesh->HasPositions())
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("POSITION");
+			data.Count = pMesh->mNumVertices;
+			data.Stride = sizeof(aiVector3D);
+			data.CreateBuffer();
+			memcpy(data.pData, pMesh->mVertices, data.ByteSize());
+		}
+		if(pMesh->HasNormals())
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("NORMAL");
+			data.Count = pMesh->mNumVertices;
+			data.Stride = sizeof(aiVector3D);
+			data.CreateBuffer();
+			memcpy(data.pData, pMesh->mNormals, data.ByteSize());
+		}
+		if(pMesh->HasTextureCoords(0))
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TEXCOORD");
+			data.Count = pMesh->mNumVertices;
+			data.Stride = sizeof(aiVector2D);
+			data.CreateBuffer();
+			Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
+			for (int j = 0; j < data.Count; j++)
+				pCurrent[j] = Vector2{ pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y };
+		}
+		if (pMesh->HasFaces())
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("INDEX");
+			data.Count = pMesh->mNumFaces * 3;
+			data.Stride = sizeof(unsigned int);
+			data.CreateBuffer();
+			unsigned int* pCurrent = reinterpret_cast<unsigned int*>(data.pData);
+			for (unsigned int j = 0; j < pMesh->mNumFaces; j++)
+				memcpy(pCurrent + j * 3, pMesh->mFaces[j].mIndices, sizeof(unsigned int) * 3);
+		}
+
+		if (pMesh->HasBones())
+		{
+			m_BoneIndices.resize(pMesh->mNumVertices);
+			m_BoneWeights.resize(pMesh->mNumVertices);
+			for (unsigned int boneIndex = 0; boneIndex < pMesh->mNumBones; boneIndex++)
+			{
+				aiBone* pBone = pMesh->mBones[boneIndex];
+				for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
+				{
+					const aiVertexWeight& pWeight = pBone->mWeights[weightIndex];
+					AddWeight(pWeight.mVertexId, boneIndex, pWeight.mWeight);
+				}
+				m_Skeleton.Bones.push_back(Bone{ (int)boneIndex, pBone->mName.C_Str(), *reinterpret_cast<Matrix*>(&pBone->mOffsetMatrix) });
+			}
+		}
+		m_Geometries.push_back(std::move(pGeometry));
 	}
+	return true;
+}
+
+bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
+{
+	UNREFERENCED_PARAMETER(pScene);
+	return true;
 }
 
 void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry)

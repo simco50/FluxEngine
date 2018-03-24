@@ -20,7 +20,16 @@ public:
 	{
 		int Stride = 0;
 		int Count = 0;
-		void* pData;
+		void* pData = nullptr;
+
+		void CreateBuffer()
+		{
+			if (pData)
+				delete[] pData;
+			pData = new char[Stride * Count];
+		}
+
+		int ByteSize() const { return Stride * Count; }
 	};
 
 	//Return the vertex data of the given semantic

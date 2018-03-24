@@ -106,7 +106,7 @@ void FluxCore::InitGame()
 
 	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/SimpleAnimation.DAE");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),

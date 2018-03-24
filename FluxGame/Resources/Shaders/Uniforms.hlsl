@@ -18,4 +18,8 @@ cbuffer cPerObject : register(b2)
 {
 	float4x4 cWorld;
 	float4x4 cWorldViewProj;
+
+#ifdef SKINNED
+	float4x4 cBoneMatrices[100];
+#endif
 }
