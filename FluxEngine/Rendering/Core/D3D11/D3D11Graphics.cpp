@@ -793,7 +793,8 @@ void Graphics::TakeScreenshot()
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)
 {
-	auto pIt = m_ConstantBuffers.find(name);
+	std::string hash = name + std::to_string(size);
+	auto pIt = m_ConstantBuffers.find(hash);
 	if (pIt != m_ConstantBuffers.end())
 	{
 		if ((unsigned int)pIt->second->GetSize() != size)
@@ -805,6 +806,6 @@ ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, uns
 	}
 	std::unique_ptr<ConstantBuffer> pBuffer = std::make_unique<ConstantBuffer>(this);
 	pBuffer->SetSize(size);
-	m_ConstantBuffers[name] = std::move(pBuffer);
-	return m_ConstantBuffers[name].get();
+	m_ConstantBuffers[hash] = std::move(pBuffer);
+	return m_ConstantBuffers[hash].get();
 }

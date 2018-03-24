@@ -8,8 +8,8 @@ struct VS_INPUT
 	float3 normal : NORMAL;
 
 #ifdef SKINNED
-	int4 boneIndex : BLENDINDICES
-	float4 vertexWeight : BLENDWEIGHTS;
+	int4 boneIndex : BLENDINDEX;
+	float4 vertexWeight : BLENDWEIGHT;
 #endif
 };
 
@@ -35,18 +35,21 @@ PS_INPUT VSMain(VS_INPUT input)
 		int boneIndex = input.boneIndex[i];
 		if(boneIndex > -1)
 		{
-			transformedPosition += input.vertexWeight[i] * mul(originalPosition, cSkinMatrices[boneIdx]);
-			transformedNormal += input.vertexWeight[i] * mul(input.normal, (float3x3)cSkinMatrices[boneIdx]);
+			transformedPosition += input.vertexWeight[i] * mul(originalPosition, cSkinMatrices[boneIndex]);
+			transformedNormal += input.vertexWeight[i] * mul(input.normal, (float3x3)cSkinMatrices[boneIndex]);
 			transformedPosition.w = 1;
 		}
 	}
-	output.position = mul(float4(transformedPosition, 1.0f), cWorldViewProj);
+	output.position = mul(transformedPosition, cWorldViewProj);
 	output.normal = normalize(mul(transformedNormal, (float3x3)cWorld));
 
 #else
+
 	output.position = mul(float4(input.position, 1.0f), cWorldViewProj);
 	output.normal = normalize(mul(input.normal, (float3x3)cWorld));
+
 #endif
+
 	output.texCoord = input.texCoord;
 	return output;
 }

@@ -15,6 +15,8 @@ public:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
+	std::vector<Matrix> GetBoneMatrices() const;
+
 	void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);

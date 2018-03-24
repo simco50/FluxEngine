@@ -104,45 +104,25 @@ void FluxCore::InitGame()
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
-	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
-
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/SimpleAnimation.DAE");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/SimpleAnimation.dae");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 	};
 	pMesh->CreateBuffers(desc);
 
-	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
 
 	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
 	Model* pModel = new Model(m_pContext);
 	pModel->SetMesh(pMesh);
 	pModel->SetMaterial(pMaterial);
 	pObject->AddComponent(pModel);
-	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-	pRigidbody->SetBodyType(Rigidbody::Dynamic);
-	pObject->AddComponent(pRigidbody);
-	Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
-	pObject->AddComponent(pBoxCollider);
 	m_pScene->AddChild(pObject);
-
-	SceneNode* pParticles = new SceneNode(m_pContext, "Particles");
-	pParticles->GetTransform()->Translate(4, 0, 0);
-	ParticleSystem* pParticleSystem = m_pResourceManager->Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pContext, pParticleSystem);
-	pParticles->AddComponent(pEmitter);
-	pBoxCollider = new BoxCollider(m_pContext, pEmitter->GetBoundingBox());
-	pParticles->AddComponent(pBoxCollider);
-	m_pScene->AddChild(pParticles);
-
-	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
-	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
-	pFloor->AddComponent(pPlaneCollider);
-	m_pScene->AddChild(pFloor);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 

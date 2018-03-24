@@ -10,6 +10,7 @@
 #include "Core/BlendState.h"
 #include "Core/RasterizerState.h"
 #include "Core/DepthStencilState.h"
+#include "Model.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext) 
@@ -53,6 +54,12 @@ void Renderer::Draw()
 				SetPerBatchParameters(batch, pCamera);
 				SetPerFrameParameters();
 				SetPerCameraParameters(pCamera);
+
+				if (pDrawable->IsTypeOf<Model>())
+				{
+					m_pGraphics->SetShaderParameter("cSkinMatrices", DynamicCast<Model>(pDrawable)->GetBoneMatrices().data());
+				}
+
 				batch.pGeometry->Draw(m_pGraphics);
 			}
 		}

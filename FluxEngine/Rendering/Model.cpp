@@ -36,6 +36,13 @@ void Model::OnMarkedDirty(const Transform* pTransform)
 		batch.pModelMatrix = &pTransform->GetWorldMatrix();
 }
 
+std::vector<DirectX::SimpleMath::Matrix> Model::GetBoneMatrices() const
+{
+	if (m_pMesh)
+		return m_pMesh->GetBoneMatrices();
+	return std::vector<Matrix>();
+}
+
 void Model::SetMesh(Mesh* pMesh)
 {
 	if (pMesh)
