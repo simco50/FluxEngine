@@ -14,6 +14,33 @@
 #include <assimp\postprocess.h>
 #pragma comment(lib, "assimp-vc140-mt.lib")
 
+Matrix ToDXMatrix(const aiMatrix4x4& mat)
+{
+	Matrix m;
+	m._11 = mat.a1;
+	m._21 = mat.a2;
+	m._31 = mat.a3;
+	m._41 = mat.a4;
+
+	m._12 = mat.b1;
+	m._22 = mat.b2;
+	m._32 = mat.b3;
+	m._42 = mat.b4;
+
+	m._13 = mat.c1;
+	m._23 = mat.c2;
+	m._33 = mat.c3;
+	m._43 = mat.c4;
+
+	m._14 = mat.d1;
+	m._24 = mat.d2;
+	m._34 = mat.d3;
+	m._44 = mat.d4;
+
+	return m;
+}
+
+
 aiQuaternion GetRotation(const aiNodeAnim* pNode, const float time)
 {
 	if (pNode->mNumRotationKeys == 0)
@@ -162,6 +189,8 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 		return false;
 	if (!ProcessAssimpMeshes(pScene))
 		return false;
+	if (!ProcessSkeleton(pScene))
+		return false;
 	if (!ProcessAssimpAnimations(pScene))
 		return false;
 	return true;
@@ -250,7 +279,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 				Matrix a = Matrix::CreateTranslation(Vector3(2, 4, 6));
 				aiMatrix4x4 b;
 				aiMatrix4x4t<float>::Translation(aiVector3D(2, 4, 6), b);
-				m_Skeleton.AddBone(Bone{ (int)boneIndex, pBone->mName.C_Str(), *reinterpret_cast<Matrix*>(&pBone->mOffsetMatrix) });
+				m_Skeleton.AddBone(Bone{ (int)boneIndex, pBone->mName.C_Str(), ToDXMatrix(pBone->mOffsetMatrix) });
 			}
 		}
 		m_Geometries.push_back(std::move(pGeometry));
@@ -277,31 +306,26 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 				animNode.Name = pAnimNode->mNodeName.C_Str();
 				animNode.BoneIndex = pBone->Index;
 
-				std::map<float, aiMatrix4x4> keys;
+				std::map<float, Matrix> keys;
 				for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
-					keys[(float)pAnimNode->mPositionKeys[k].mTime] = aiMatrix4x4();
+					keys[(float)pAnimNode->mPositionKeys[k].mTime] = Matrix();
 				for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
-					keys[(float)pAnimNode->mScalingKeys[k].mTime] = aiMatrix4x4();
+					keys[(float)pAnimNode->mScalingKeys[k].mTime] = Matrix();
 				for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
-					keys[(float)pAnimNode->mRotationKeys[k].mTime] = aiMatrix4x4();
+					keys[(float)pAnimNode->mRotationKeys[k].mTime] = Matrix();
 
 				for (auto& key : keys)
 				{
 					aiQuaternion quat = GetRotation(pAnimNode, key.first);
 					aiVector3D scale = GetScale(pAnimNode, key.first);
 					aiVector3D position = GetPosition(pAnimNode, key.first);
-					key.second = *reinterpret_cast<const aiMatrix4x4*>(&pBone->OffsetMatrix) * aiMatrix4x4(scale, quat, position);
+					key.second = ToDXMatrix(aiMatrix4x4(scale, quat, position)) * pBone->FinalMatrix;
 				}
 
-				for (const auto& key : keys)
+				for (auto& key : keys)
 				{
-					aiVector3D scaling, translation;
-					aiQuaternion rotation;
-					key.second.Decompose(scaling, rotation, translation);
 					AnimationKey animationKey;
-					animationKey.Position = *reinterpret_cast<Vector3*>(&translation);
-					animationKey.Scale = *reinterpret_cast<Vector3*>(&scaling);
-					animationKey.Rotation = *reinterpret_cast<Quaternion*>(&rotation);
+					key.second.Decompose(animationKey.Scale, animationKey.Rotation, animationKey.Position);
 					animNode.Keys.push_back(std::pair<float, AnimationKey>(key.first, animationKey));
 				}
 				animation.SetNode(pBone->Index, animNode);
@@ -310,6 +334,32 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		}
 	}
 	return true;
+}
+
+bool Mesh::ProcessSkeleton(const aiScene* pScene)
+{
+	Matrix Identity = Matrix::CreateTranslation(0, 0, 0);
+	m_GlobalTransform = ToDXMatrix(pScene->mRootNode->mTransformation);
+	m_GlobalTransform.Invert(m_InverseGlobalTransform);
+	ProcessNode(pScene->mRootNode, Identity);
+	return true;
+}
+
+void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix)
+{
+	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
+	Matrix nodeTransform = ToDXMatrix(pNode->mTransformation);
+	Matrix globalTransform = nodeTransform * parentMatrix;
+	if (pBone)
+	{
+		pBone->AbsoluteMatrix = globalTransform;
+		pBone->FinalMatrix = m_InverseGlobalTransform * pBone->OffsetMatrix * globalTransform;
+	}
+	
+	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+	{
+		ProcessNode(pNode->mChildren[i], globalTransform);
+	}
 }
 
 void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry)

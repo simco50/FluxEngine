@@ -2,6 +2,7 @@
 #include "Rendering/Drawable.h"
 
 class Mesh;
+class Skeleton;
 
 class Model : public Drawable
 {
@@ -16,6 +17,7 @@ public:
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
 	std::vector<Matrix> GetBoneMatrices() const;
+	const Skeleton& GetSkeleton() const;
 
 	void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);

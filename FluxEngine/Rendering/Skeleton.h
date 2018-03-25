@@ -5,6 +5,8 @@ struct Bone
 	int Index;
 	std::string Name;
 	Matrix OffsetMatrix;
+	Matrix FinalMatrix;
+	Matrix AbsoluteMatrix;
 };
 
 class Skeleton
@@ -36,6 +38,8 @@ public:
 	{
 		m_Bones.push_back(bone);
 	}
+
+	const std::vector<Bone>& GetBones() const { return m_Bones; }
 
 	size_t BoneCount() const { return m_Bones.size(); }
 

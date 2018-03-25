@@ -10,6 +10,6 @@
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Rambo.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Spot.png"/>
 	</Parameters>
 </Material>

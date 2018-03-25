@@ -13,6 +13,7 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 class PostProcessing;
+class Model;
 
 class FluxCore : public Object
 {
@@ -50,6 +51,8 @@ private:
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
 	PostProcessing* m_pPostProcessing = nullptr;
+
+	Model* m_pModel = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;

@@ -10,6 +10,7 @@ class Graphics;
 struct VertexElement;
 
 struct aiScene;
+struct aiNode;
 
 class Mesh : public Resource
 {
@@ -34,12 +35,16 @@ public:
 		return m_Animations[0].GetBoneMatrices(0);
 	}
 
+	const Skeleton& GetSkeleton() const { return m_Skeleton; }
+
 private:
 	bool LoadFlux(InputStream& inputStream);
 	bool LoadAssimp(InputStream& inputStream);
 
 	bool ProcessAssimpMeshes(const aiScene* pScene);
 	bool ProcessAssimpAnimations(const aiScene* pScene);
+	bool ProcessSkeleton(const aiScene* pScene);
+	void ProcessNode(aiNode* pNode, Matrix parentMatrix);
 
 	static const int MESH_VERSION = 7;
 
@@ -54,6 +59,8 @@ private:
 	BoundingBox m_BoundingBox;
 
 	Skeleton m_Skeleton;
+	Matrix m_GlobalTransform;
+	Matrix m_InverseGlobalTransform;
 	std::vector<Animation> m_Animations;
 
 	int m_GeometryCount = 0;

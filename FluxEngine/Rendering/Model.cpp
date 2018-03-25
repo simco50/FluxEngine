@@ -43,6 +43,11 @@ std::vector<DirectX::SimpleMath::Matrix> Model::GetBoneMatrices() const
 	return std::vector<Matrix>();
 }
 
+const Skeleton& Model::GetSkeleton() const
+{
+	return m_pMesh->GetSkeleton();
+}
+
 void Model::SetMesh(Mesh* pMesh)
 {
 	if (pMesh)
