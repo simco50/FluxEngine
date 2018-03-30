@@ -231,16 +231,6 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			for (int j = 0; j < data.Count; j++)
 				pCurrent[j] = Vector2{ pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y };
 		}
-		else
-		{
-			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TEXCOORD");
-			data.Count = pMesh->mNumVertices;
-			data.Stride = sizeof(aiVector2D);
-			data.CreateBuffer();
-			Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
-			for (int j = 0; j < data.Count; j++)
-				pCurrent[j] = Vector2{ 0,0};
-		}
 		if (pMesh->HasFaces())
 		{
 			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("INDEX");
@@ -386,9 +376,22 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	int vertexStride = pVertexBuffer->GetVertexStride();
 	if (vertexStride == 0)
 	{
-		FLUX_LOG(Error, "MeshFilter::CreateBuffers() > VertexStride of the InputLayout is 0");
+		FLUX_LOG(Error, "[MeshFilter::CreateBuffers()] VertexStride of the InputLayout is 0");
 		return;
 	}
+
+	bool hasElements = true;
+	for (VertexElement& element : elementDesc)
+	{
+		const char* pSemantic = VertexElement::GetSemanticOfType(element.Semantic);
+		if (pGeometry->HasData(pSemantic) == false)
+		{
+			FLUX_LOG(Warning, "[MeshFilter::CreateBuffers()] Geometry has no %s", pSemantic);
+			hasElements = false;
+		}
+	}
+	if (hasElements == false)
+		return;
 
 	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
 	char* pVertexDataStart = pDataLocation;
