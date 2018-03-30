@@ -23,7 +23,7 @@ struct AnimationNode
 			return Matrix::CreateTranslation(0, 0, 0);
 		if(Keys.size() == 1)
 			return Matrix::CreateScale(Keys[0].second.Scale) * Matrix::CreateFromQuaternion(Keys[0].second.Rotation) * Matrix::CreateTranslation(Keys[0].second.Position);
-		for (int i = 0; i < Keys.size() ; i++)
+		for (size_t i = 0; i < Keys.size() ; i++)
 		{
 			if(time == Keys[i].first)
 				return Matrix::CreateScale(Keys[i].second.Scale) * Matrix::CreateFromQuaternion(Keys[i].second.Rotation) * Matrix::CreateTranslation(Keys[i].second.Position);
