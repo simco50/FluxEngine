@@ -30,9 +30,9 @@ public:
 	Geometry* GetGeometry(int slot) const { return m_Geometries[slot].get(); }
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 
-	std::vector<Matrix> GetBoneMatrices() const
+	std::vector<Matrix> GetBoneMatrices()
 	{
-		return m_Animations[0].GetBoneMatrices(0);
+		return m_Animations[0].GetBoneMatrices(GameTimer::GameTime(), m_Skeleton);
 	}
 
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }
@@ -44,7 +44,7 @@ private:
 	bool ProcessAssimpMeshes(const aiScene* pScene);
 	bool ProcessAssimpAnimations(const aiScene* pScene);
 	bool ProcessSkeleton(const aiScene* pScene);
-	void ProcessNode(aiNode* pNode, Matrix parentMatrix);
+	void ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone = nullptr);
 
 	static const int MESH_VERSION = 7;
 

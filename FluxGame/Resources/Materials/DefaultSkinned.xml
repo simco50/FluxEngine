@@ -10,6 +10,6 @@
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Spot.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Flash.png"/>
 	</Parameters>
 </Material>

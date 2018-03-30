@@ -231,6 +231,16 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			for (int j = 0; j < data.Count; j++)
 				pCurrent[j] = Vector2{ pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y };
 		}
+		else
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TEXCOORD");
+			data.Count = pMesh->mNumVertices;
+			data.Stride = sizeof(aiVector2D);
+			data.CreateBuffer();
+			Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
+			for (int j = 0; j < data.Count; j++)
+				pCurrent[j] = Vector2{ 0,0};
+		}
 		if (pMesh->HasFaces())
 		{
 			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("INDEX");
@@ -319,7 +329,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					aiQuaternion quat = GetRotation(pAnimNode, key.first);
 					aiVector3D scale = GetScale(pAnimNode, key.first);
 					aiVector3D position = GetPosition(pAnimNode, key.first);
-					key.second = ToDXMatrix(aiMatrix4x4(scale, quat, position)) * pBone->FinalMatrix;
+					key.second = ToDXMatrix(aiMatrix4x4(scale, quat, position));
 				}
 
 				for (auto& key : keys)
@@ -345,20 +355,26 @@ bool Mesh::ProcessSkeleton(const aiScene* pScene)
 	return true;
 }
 
-void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix)
+void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 {
 	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
 	Matrix nodeTransform = ToDXMatrix(pNode->mTransformation);
 	Matrix globalTransform = nodeTransform * parentMatrix;
 	if (pBone)
 	{
+		if (m_Skeleton.GetParentBone() == nullptr)
+			m_Skeleton.SetParentBone(pBone);
+		pBone->pParent = pParentBone;
+		if(pParentBone)
+			pParentBone->Children.push_back(pBone);
 		pBone->AbsoluteMatrix = globalTransform;
-		pBone->FinalMatrix = m_InverseGlobalTransform * pBone->OffsetMatrix * globalTransform;
+		pBone->FinalMatrix = m_InverseGlobalTransform * parentMatrix * pBone->OffsetMatrix;
+		pParentBone = pBone;
 	}
 	
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], globalTransform);
+		ProcessNode(pNode->mChildren[i], globalTransform, pParentBone);
 	}
 }
 

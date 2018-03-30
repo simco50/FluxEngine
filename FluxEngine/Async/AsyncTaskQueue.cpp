@@ -106,18 +106,19 @@ void AsyncTaskQueue::ProcessItems(int index)
 
 AsyncTask* AsyncTaskQueue::GetFreeTask()
 {
-	if (m_TaskPool.size() > 0)
+	//#todo: Fix pooling. Doesn't work!
+	/*if (m_TaskPool.size() > 0)
 	{
 		AsyncTask* pTask = m_TaskPool.back();
 		m_TaskPool.pop_back();
 		return pTask;
 	}
 	else
-	{
+	{*/
 		AsyncTask* pTask = new AsyncTask();
 		m_TaskPool.push_back(pTask);
 		return m_TaskPool[m_TaskPool.size() - 1];
-	}
+	//}
 }
 
 void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)

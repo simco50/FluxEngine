@@ -104,16 +104,18 @@ void FluxCore::InitGame()
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Bones.DAE");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Running.dae");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 	};
 	pMesh->CreateBuffers(desc);
 
-	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
 
 	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
 	m_pModel = new Model(m_pContext);
@@ -121,6 +123,7 @@ void FluxCore::InitGame()
 	m_pModel->SetMaterial(pMaterial);
 	pObject->AddComponent(m_pModel);
 	m_pScene->AddChild(pObject);
+	pObject->GetTransform()->SetScale(0.1f);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
@@ -156,8 +159,6 @@ void FluxCore::ProcessFrame()
 
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
-
-	m_pDebugRenderer->AddSkeleton(m_pModel->GetSkeleton(), Color(0, 1, 0, 1));
 
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
