@@ -29,9 +29,10 @@ struct AnimationNode
 				return Matrix::CreateScale(Keys[i].second.Scale) * Matrix::CreateFromQuaternion(Keys[i].second.Rotation) * Matrix::CreateTranslation(Keys[i].second.Position);
 			if (time < Keys[i].first)
 			{
-				Vector3 position = Vector3::Lerp(Keys[i - 1].second.Position, Keys[i].second.Position, Keys[i].first - time);
-				Vector3 scale = Vector3::Lerp(Keys[i - 1].second.Scale, Keys[i].second.Scale, Keys[i].first - time);
-				Quaternion rotation = Quaternion::Lerp(Keys[i - 1].second.Rotation, Keys[i].second.Rotation, Keys[i].first - time);
+				const float t = InverseLerp(Keys[i - 1].first, Keys[i].first, time);
+				const Vector3 position = Vector3::Lerp(Keys[i - 1].second.Position, Keys[i].second.Position, t);
+				const Vector3 scale = Vector3::Lerp(Keys[i - 1].second.Scale, Keys[i].second.Scale, t);
+				const Quaternion rotation = Quaternion::Lerp(Keys[i - 1].second.Rotation, Keys[i].second.Rotation, t);
 				return Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 			}
 		}
@@ -62,7 +63,7 @@ public:
 		Bone* pRoot = skeleton.GetParentBone();
 
 		boneMatrices.resize(/*m_AnimationNodes.size()*/ 100);
-		CalculateAnimations(fmod(time, m_Duration), pRoot, boneMatrices, Matrix::CreateTranslation(0, 0, 0));
+		CalculateAnimations(fmod(time * m_TickPerSecond, m_Duration), pRoot, boneMatrices, Matrix::CreateTranslation(0, 0, 0));
 
 		return boneMatrices;
 	}
@@ -85,6 +86,7 @@ public:
 
 private:
 	std::string m_Name;
+	//Duration in ticks
 	float m_Duration = 0.f;
 	float m_TickPerSecond = 0.f;
 	std::vector<AnimationNode> m_AnimationNodes;
