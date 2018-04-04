@@ -47,6 +47,8 @@ public:
 
 	size_t BoneCount() const { return m_Bones.size(); }
 
+	static const int MAX_BONE_COUNT = 100;
+
 private:
 	Bone * m_pParentBone = nullptr;
 	std::vector<Bone> m_Bones;

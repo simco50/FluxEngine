@@ -1,5 +1,6 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
+#include "Constants.hlsl"
 
 struct VS_INPUT
 {
@@ -26,20 +27,20 @@ PS_INPUT VSMain(VS_INPUT input)
 	PS_INPUT output = (PS_INPUT)0;
 
 #ifdef SKINNED
-	float4 originalPosition = float4(input.position, 1);
-	float4 transformedPosition = 0;
-	float3 transformedNormal = 0;
 
-	for(int i = 0; i < 4; ++i)
+	float4x4 finalMatrix;
+	for(int i = 0; i < MAX_BONES_PER_VERTEX; ++i)
 	{
-		int boneIndex = input.boneIndex[i];
-		if(boneIndex > -1)
+		if(input.boneIndex[i] == -1)
 		{
-			transformedPosition += input.vertexWeight[i] * mul(originalPosition, cSkinMatrices[boneIndex]);
-			transformedNormal += input.vertexWeight[i] * mul(input.normal, (float3x3)cSkinMatrices[boneIndex]);
-			transformedPosition.w = 1;
+			break;
 		}
+		finalMatrix += input.vertexWeight[i] * cSkinMatrices[input.boneIndex[i]];
 	}
+
+	float4 transformedPosition = mul(float4(input.position, 1.0f), finalMatrix);
+	float3 transformedNormal = mul(input.normal, (float3x3)finalMatrix);
+
 	output.position = mul(transformedPosition, cWorldViewProj);
 	output.normal = normalize(mul(transformedNormal, (float3x3)cWorld));
 

@@ -50,7 +50,7 @@ public:
 	}
 	~Animation() {}
 
-	void SetNode(const int boneIndex, const AnimationNode& node) { m_AnimationNodes[boneIndex] = node; }
+	void SetNode(const AnimationNode& node) { m_AnimationNodes[node.BoneIndex] = node; }
 
 	const std::string& GetName() const { return m_Name; }
 	float GetDuration() const { return m_Duration; }
@@ -62,7 +62,7 @@ public:
 
 		Bone* pRoot = skeleton.GetParentBone();
 
-		boneMatrices.resize(/*m_AnimationNodes.size()*/ 100);
+		boneMatrices.resize(Skeleton::MAX_BONE_COUNT);
 		CalculateAnimations(fmod(time * m_TickPerSecond, m_Duration), pRoot, boneMatrices, Matrix::CreateTranslation(0, 0, 0));
 
 		return boneMatrices;

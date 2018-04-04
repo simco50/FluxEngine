@@ -45,52 +45,53 @@ aiQuaternion GetRotation(const aiNodeAnim* pNode, const float time)
 {
 	if (pNode->mNumRotationKeys == 0)
 		return aiQuaternion();
-	aiQuaternion quat = pNode->mRotationKeys[0].mValue;
 	for (unsigned int i = 0; i < pNode->mNumRotationKeys; i++)
 	{
 		if (pNode->mRotationKeys[i].mTime == time)
 			return pNode->mRotationKeys[i].mValue;
 		if (pNode->mRotationKeys[i].mTime > time)
 		{
+			float t = InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
 			aiQuaternion output;
-			aiQuaterniont<float>::Interpolate(output, quat, pNode->mRotationKeys[i].mValue, (float)(pNode->mRotationKeys[i].mTime - time));
+			aiQuaterniont<float>::Interpolate(output, pNode->mRotationKeys[i - 1].mValue, pNode->mRotationKeys[i].mValue, t);
 			return output;
 		}
-		quat = pNode->mRotationKeys[i].mValue;
 	}
-	return quat;
+	return pNode->mRotationKeys[pNode->mNumRotationKeys - 1].mValue;
 }
 
 aiVector3D GetScale(const aiNodeAnim* pNode, const float time)
 {
 	if (pNode->mNumScalingKeys == 0)
 		return aiVector3D();
-	aiVector3D scale = pNode->mScalingKeys[0].mValue;
-	for (unsigned int i = 1; i < pNode->mNumScalingKeys; i++)
+	for (unsigned int i = 0; i < pNode->mNumScalingKeys; i++)
 	{
+		if (pNode->mScalingKeys[i].mTime == time)
+			return pNode->mScalingKeys[i].mValue;
 		if (pNode->mScalingKeys[i].mTime > time)
 		{
-			return scale + (pNode->mScalingKeys[i].mValue - scale) * (float)(pNode->mScalingKeys[i].mTime - time);
+			float t = InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
+			return pNode->mScalingKeys[i - 1].mValue + (pNode->mScalingKeys[i].mValue - pNode->mScalingKeys[i - 1].mValue) * t;
 		}
-		scale = pNode->mScalingKeys[i].mValue;
 	}
-	return scale;
+	return pNode->mScalingKeys[pNode->mNumScalingKeys - 1].mValue;
 }
 
 aiVector3D GetPosition(const aiNodeAnim* pNode, const float time)
 {
 	if (pNode->mNumPositionKeys == 0)
 		return aiVector3D();
-	aiVector3D pos = pNode->mPositionKeys[0].mValue;
-	for (unsigned int i = 1; i < pNode->mNumPositionKeys; i++)
+	for (unsigned int i = 0; i < pNode->mNumPositionKeys; i++)
 	{
+		if (pNode->mPositionKeys[i].mTime == time)
+			return pNode->mPositionKeys[i].mValue;
 		if (pNode->mPositionKeys[i].mTime > time)
 		{
-			return pos + (pNode->mPositionKeys[i].mValue - pos) * (float)(pNode->mPositionKeys[i].mTime - time);
+			float t = InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
+			return pNode->mPositionKeys[i - 1].mValue + (pNode->mPositionKeys[i].mValue - pNode->mPositionKeys[i - 1].mValue) * t;
 		}
-		pos = pNode->mPositionKeys[i].mValue;
 	}
-	return pos;
+	return pNode->mPositionKeys[pNode->mNumPositionKeys - 1].mValue;
 }
 
 Mesh::Mesh(Context* pContext):
@@ -193,13 +194,16 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 		return false;
 	if (!ProcessAssimpAnimations(pScene))
 		return false;
+	if(m_Geometries.size() > 0)
+		BoundingBox::CreateFromPoints(m_BoundingBox, (size_t)m_Geometries[0]->GetVertexCount(), (const XMFLOAT3*)m_Geometries[0]->GetVertexData("POSITION").pData, sizeof(Vector3));
 	return true;
 }
 
 bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 {
 	m_GeometryCount = pScene->mNumMeshes;
-	for (unsigned int i = 0; i < pScene->mNumMeshes; i++)
+	int boneCount = 0;
+	for (unsigned int i = 0; i < (unsigned int)m_GeometryCount; i++)
 	{
 		aiMesh* pMesh = pScene->mMeshes[i];
 		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
@@ -262,6 +266,15 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			for (unsigned int boneIndex = 0; boneIndex < pMesh->mNumBones; boneIndex++)
 			{
 				aiBone* pBone = pMesh->mBones[boneIndex];
+
+				if (m_BoneMap.find(pBone->mName.C_Str()) == m_BoneMap.end())
+				{
+					m_BoneMap[pBone->mName.C_Str()] = boneCount;
+					m_Skeleton.AddBone(Bone{ (int)boneCount, pBone->mName.C_Str(), ToDXMatrix(pBone->mOffsetMatrix) });
+					++boneCount;
+				}
+				int index = m_BoneMap[pBone->mName.C_Str()];
+
 				for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
 				{
 					const aiVertexWeight& pWeight = pBone->mWeights[weightIndex];
@@ -270,16 +283,13 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 						if (pWeights[pWeight.mVertexId * 4 + j] == 0.0f)
 						{
 							pWeights[pWeight.mVertexId * 4 + j] = pWeight.mWeight;
-							pIndices[pWeight.mVertexId * 4 + j] = boneIndex;
+							pIndices[pWeight.mVertexId * 4 + j] = index;
 							break;
 						}
 					}
 				}
 
-				Matrix a = Matrix::CreateTranslation(Vector3(2, 4, 6));
-				aiMatrix4x4 b;
-				aiMatrix4x4t<float>::Translation(aiVector3D(2, 4, 6), b);
-				m_Skeleton.AddBone(Bone{ (int)boneIndex, pBone->mName.C_Str(), ToDXMatrix(pBone->mOffsetMatrix) });
+				
 			}
 		}
 		m_Geometries.push_back(std::move(pGeometry));
@@ -294,7 +304,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		for (unsigned int i = 0; i < pScene->mNumAnimations; i++)
 		{
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
-			Animation animation(pAnimation->mName.C_Str(), pAnimation->mNumChannels, (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
+			Animation animation(pAnimation->mName.C_Str(), m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
 				AnimationNode animNode;
@@ -303,7 +313,6 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 				if (pBone == nullptr)
 					continue;
 
-				animNode.Name = pAnimNode->mNodeName.C_Str();
 				animNode.BoneIndex = pBone->Index;
 
 				std::map<float, Matrix> keys;
@@ -328,7 +337,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					key.second.Decompose(animationKey.Scale, animationKey.Rotation, animationKey.Position);
 					animNode.Keys.push_back(std::pair<float, AnimationKey>(key.first, animationKey));
 				}
-				animation.SetNode(pBone->Index, animNode);
+				animation.SetNode(animNode);
 			}
 			m_Animations.push_back(animation);
 		}

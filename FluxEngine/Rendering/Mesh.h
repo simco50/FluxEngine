@@ -58,6 +58,7 @@ private:
 	std::vector<std::unique_ptr<Geometry>> m_Geometries;
 	BoundingBox m_BoundingBox;
 
+	std::map<std::string, int> m_BoneMap;
 	Skeleton m_Skeleton;
 	Matrix m_GlobalTransform;
 	Matrix m_InverseGlobalTransform;
