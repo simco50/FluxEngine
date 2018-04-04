@@ -66,7 +66,7 @@ void Rigidbody::Update()
 	if (m_pBody)
 	{
 		PxTransform transform = m_pBody->getGlobalPose();
-		GetTransform()->MarkDirty(*reinterpret_cast<Vector3*>(&transform.p), Vector3(1, 1, 1), *reinterpret_cast<Quaternion*>(&transform.q));
+		GetTransform()->MarkDirty(*reinterpret_cast<Vector3*>(&transform.p), GetTransform()->GetWorldScale(), *reinterpret_cast<Quaternion*>(&transform.q));
 	}
 }
 

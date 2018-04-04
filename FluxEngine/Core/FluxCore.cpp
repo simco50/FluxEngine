@@ -104,7 +104,7 @@ void FluxCore::InitGame()
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/ymca.dae");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/bossdance.dae");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -124,6 +124,11 @@ void FluxCore::InitGame()
 	pObject->AddComponent(m_pModel);
 	m_pScene->AddChild(pObject);
 	pObject->GetTransform()->SetScale(0.1f);
+
+	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+	BoxCollider* pCollider = new BoxCollider(m_pContext, m_pModel->GetWorldBoundingBox());
+	pObject->AddComponent(pRigidbody);
+	pObject->AddComponent(pCollider);
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 

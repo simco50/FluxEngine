@@ -270,7 +270,11 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 				if (m_BoneMap.find(pBone->mName.C_Str()) == m_BoneMap.end())
 				{
 					m_BoneMap[pBone->mName.C_Str()] = boneCount;
-					m_Skeleton.AddBone(Bone{ (int)boneCount, pBone->mName.C_Str(), ToDXMatrix(pBone->mOffsetMatrix) });
+					Bone newBone;
+					newBone.Index = boneCount;
+					newBone.Name = pBone->mName.C_Str();
+					newBone.OffsetMatrix = ToDXMatrix(pBone->mOffsetMatrix);
+					m_Skeleton.AddBone(newBone);
 					++boneCount;
 				}
 				int index = m_BoneMap[pBone->mName.C_Str()];
@@ -304,7 +308,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		for (unsigned int i = 0; i < pScene->mNumAnimations; i++)
 		{
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
-			Animation animation(pAnimation->mName.C_Str(), m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
+			Animation animation(pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
 				AnimationNode animNode;
