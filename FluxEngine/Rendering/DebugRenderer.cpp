@@ -381,3 +381,39 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color&
 		}
 	}
 }
+
+void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
+{
+	AddBoneRecursive(skeleton.GetParentBone(), pBoneMatrices, worldMatrix, color);
+}
+
+void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Color& color)
+{
+	float boneSize = 2;
+	Vector3 start = Vector3::Transform(Vector3(0, 0, 0), matrix);
+	Vector3 a = Vector3::Transform(Vector3(-boneSize, boneSize, boneSize), matrix);
+	Vector3 b = Vector3::Transform(Vector3(boneSize, boneSize, boneSize), matrix);
+	Vector3 c = Vector3::Transform(Vector3(boneSize, -boneSize, boneSize), matrix);
+	Vector3 d = Vector3::Transform(Vector3(-boneSize, -boneSize, boneSize), matrix);
+	Vector3 tip = Vector3::Transform(Vector3(0, 0, -boneSize * length), matrix);
+
+	AddTriangle(start, d, c, color, color, color, false);
+	AddTriangle(start, a, d, color, color, color, false);
+	AddTriangle(start, b, a, color, color, color, false);
+	AddTriangle(start, c, b, color, color, color, false);
+	AddTriangle(d, tip, c, color, color, color, false);
+	AddTriangle(a, tip, d, color, color, color, false);
+	AddTriangle(b, tip, a, color, color, color, false);
+	AddTriangle(c, tip, b, color, color, color, false);
+}
+
+void DebugRenderer::AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
+{
+	Matrix boneMatrix = pBone->OffsetMatrix.Invert() * pBoneMatrices[pBone->Index] * worldMatrix;
+	AddBone(boneMatrix, 5.0f, color);
+	for (const Bone* pChild : pBone->Children)
+	{
+		AddBoneRecursive(pChild, pBoneMatrices, worldMatrix, color);
+		AddLine(boneMatrix.Translation(), (pChild->OffsetMatrix.Invert() * pBoneMatrices[pChild->Index] * worldMatrix).Translation(), color);
+	}
+}

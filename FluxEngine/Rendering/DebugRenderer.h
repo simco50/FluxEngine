@@ -101,8 +101,12 @@ public:
 	void AddPhysicsScene(PhysicsScene* pScene);
 	void AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid = false);
 	void AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid = false);
+	void AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);
+	void AddBone(const Matrix& matrix, const float length, const Color& color);
 
 private:
+	void AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);
+
 	Graphics* m_pGraphics;
 	Camera* m_pCamera = nullptr;
 	std::unique_ptr<VertexBuffer> m_pVertexBuffer;

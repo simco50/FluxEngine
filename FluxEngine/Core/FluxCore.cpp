@@ -104,7 +104,7 @@ void FluxCore::InitGame()
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Guard.dae");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Drunk.dae");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -118,15 +118,15 @@ void FluxCore::InitGame()
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
 
 	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
-	m_pModel = new Model(m_pContext);
-	m_pModel->SetMesh(pMesh);
-	m_pModel->SetMaterial(pMaterial);
-	pObject->AddComponent(m_pModel);
+	Model* pModel = new Model(m_pContext);
+	pModel->SetMesh(pMesh);
+	pModel->SetMaterial(pMaterial);
+	pObject->AddComponent(pModel);
 	m_pScene->AddChild(pObject);
 	pObject->GetTransform()->SetScale(0.1f);
 
 	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-	BoxCollider* pCollider = new BoxCollider(m_pContext, m_pModel->GetWorldBoundingBox());
+	BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
 	pObject->AddComponent(pRigidbody);
 	pObject->AddComponent(pCollider);
 
@@ -164,6 +164,12 @@ void FluxCore::ProcessFrame()
 
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
+
+	if (m_pSelectedNode)
+	{
+		Model* pModel = m_pSelectedNode->GetComponent<Model>();
+		m_pDebugRenderer->AddSkeleton(pModel->GetSkeleton(), pModel->GetBoneMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+	}
 
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();

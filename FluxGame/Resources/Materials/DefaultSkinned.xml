@@ -7,9 +7,10 @@
 	<Properties>
 		<CullMode value="Back"/>
 		<BlendMode value="Replace"/>
+		<FillMode value="Wireframe"/>
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Guard.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Man.png"/>
 	</Parameters>
 </Material>

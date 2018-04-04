@@ -125,8 +125,20 @@ bool Material::Load(InputStream& inputStream)
 					else
 						FLUX_LOG(Warning, "[Material::Load()] > %s : Blend mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 				}
+				else if (propertyType == "FillMode")
+				{
+					std::string value = pProperty->Attribute("value");
+					if (value == "Solid")
+						m_FillMode = FillMode::SOLID;
+					else if (value == "Wireframe")
+						m_FillMode = FillMode::WIREFRAME;
+					else
+						FLUX_LOG(Warning, "[Material::Load()] > %s : Fill mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
+				}
 				else
+				{
 					FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
+				}
 
 				pProperty = pProperty->NextSiblingElement();
 			}

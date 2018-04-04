@@ -81,7 +81,7 @@ public:
 		{
 			m = node.GetTransform(time);
 		}
-		matrices[pBone->Index] = pBone->OffsetMatrix * m *  parentMatrix;
+		matrices[pBone->Index] = pBone->OffsetMatrix * m * parentMatrix;
 
 		for (Bone* pChild : pBone->Children)
 			CalculateAnimations(time, pChild, matrices, m * parentMatrix);
