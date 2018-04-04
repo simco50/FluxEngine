@@ -370,8 +370,6 @@ void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 		pBone->pParent = pParentBone;
 		if(pParentBone)
 			pParentBone->Children.push_back(pBone);
-		pBone->AbsoluteMatrix = globalTransform;
-		pBone->FinalMatrix = m_InverseGlobalTransform * parentMatrix * pBone->OffsetMatrix;
 		pParentBone = pBone;
 	}
 	

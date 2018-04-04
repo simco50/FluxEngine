@@ -30,9 +30,9 @@ public:
 	Geometry* GetGeometry(int slot) const { return m_Geometries[slot].get(); }
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 
-	std::vector<Matrix> GetBoneMatrices()
+	void GetBoneMatrices(const int animationIndex, const float time, std::vector<Matrix>& matrices)
 	{
-		return m_Animations[0].GetBoneMatrices(GameTimer::GameTime(), m_Skeleton);
+		m_Animations[animationIndex].GetBoneMatrices(time, m_Skeleton, matrices);
 	}
 
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }

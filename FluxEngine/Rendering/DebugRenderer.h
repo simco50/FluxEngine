@@ -101,8 +101,6 @@ public:
 	void AddPhysicsScene(PhysicsScene* pScene);
 	void AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid = false);
 	void AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid = false);
-	void AddSkeleton(const Skeleton& skeleton, const Color& color);
-	void AddBone(const Bone& bone, const Color& color);
 
 private:
 	Graphics* m_pGraphics;

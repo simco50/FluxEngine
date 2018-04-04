@@ -36,11 +36,16 @@ void Model::OnMarkedDirty(const Transform* pTransform)
 		batch.pModelMatrix = &pTransform->GetWorldMatrix();
 }
 
-std::vector<DirectX::SimpleMath::Matrix> Model::GetBoneMatrices() const
+DirectX::SimpleMath::Matrix* Model::GetBoneMatrices()
 {
-	if (m_pMesh)
-		return m_pMesh->GetBoneMatrices();
-	return std::vector<Matrix>();
+	float time = GameTimer::GameTime();
+	if (time != m_AnimationTime)
+	{
+		if (m_pMesh)
+			m_pMesh->GetBoneMatrices(0, GameTimer::GameTime(), m_SkinMatrices);
+		m_AnimationTime = time;
+	}
+	return m_SkinMatrices.data();
 }
 
 const Skeleton& Model::GetSkeleton() const
@@ -63,6 +68,7 @@ void Model::SetMesh(Mesh* pMesh)
 		m_BoundingBox = BoundingBox();
 	}
 	m_pMesh = pMesh;
+	m_SkinMatrices.resize(Skeleton::MAX_BONE_COUNT);
 }
 
 void Model::SetMaterial(Material* pMaterial)

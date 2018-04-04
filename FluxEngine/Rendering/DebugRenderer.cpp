@@ -381,33 +381,3 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color&
 		}
 	}
 }
-
-void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Color& color)
-{
-	const std::vector<Bone>& bones = skeleton.GetBones();
-	for (const Bone& bone : bones)
-	{
-		AddBone(bone, color);
-	}
-}
-
-void DebugRenderer::AddBone(const Bone& bone, const Color& color)
-{
-	float boneSize = 2;
-	float boneLength = 10;
-	Vector3 start = Vector3::Transform(Vector3(0, 0, 0), bone.AbsoluteMatrix);
-	Vector3 a = Vector3::Transform(Vector3(boneSize, boneSize, -boneSize), bone.AbsoluteMatrix);
-	Vector3 b = Vector3::Transform(Vector3(boneSize, boneSize, boneSize), bone.AbsoluteMatrix);
-	Vector3 c = Vector3::Transform(Vector3(boneSize, -boneSize, boneSize), bone.AbsoluteMatrix);
-	Vector3 d = Vector3::Transform(Vector3(boneSize, -boneSize, -boneSize), bone.AbsoluteMatrix);
-	Vector3 tip = Vector3::Transform(Vector3(boneSize * boneLength, 0, 0), bone.AbsoluteMatrix);
-
-	AddTriangle(start, d, c, color, color, color, true);
-	AddTriangle(start, a, d, color, color, color, true);
-	AddTriangle(start, b, a, color, color, color, true);
-	AddTriangle(start, c, b, color, color, color, true);
-	AddTriangle(d, tip, c, color, color, color, true);
-	AddTriangle(a, tip, d, color, color, color, true);
-	AddTriangle(b, tip, a, color, color, color, true);
-	AddTriangle(c, tip, b, color, color, color, true);
-}

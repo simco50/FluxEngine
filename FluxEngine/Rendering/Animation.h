@@ -15,28 +15,37 @@ struct AnimationNode
 	using KeyPair = std::pair<float, AnimationKey>;
 	std::vector<KeyPair> Keys;
 
-	Matrix GetTransform(float time) const
+	int FrameIndex = 0;
+
+	void GetFrameIndex(float time, int& index) const 
 	{
-		if (time < 0)
-			time = 0;
-		if (Keys.size() == 0)
-			return Matrix::CreateTranslation(0, 0, 0);
-		if(Keys.size() == 1)
-			return Matrix::CreateScale(Keys[0].second.Scale) * Matrix::CreateFromQuaternion(Keys[0].second.Rotation) * Matrix::CreateTranslation(Keys[0].second.Position);
-		for (size_t i = 0; i < Keys.size() ; i++)
-		{
-			if(time == Keys[i].first)
-				return Matrix::CreateScale(Keys[i].second.Scale) * Matrix::CreateFromQuaternion(Keys[i].second.Rotation) * Matrix::CreateTranslation(Keys[i].second.Position);
-			if (time < Keys[i].first)
-			{
-				const float t = InverseLerp(Keys[i - 1].first, Keys[i].first, time);
-				const Vector3 position = Vector3::Lerp(Keys[i - 1].second.Position, Keys[i].second.Position, t);
-				const Vector3 scale = Vector3::Lerp(Keys[i - 1].second.Scale, Keys[i].second.Scale, t);
-				const Quaternion rotation = Quaternion::Lerp(Keys[i - 1].second.Rotation, Keys[i].second.Rotation, t);
-				return Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-			}
-		}
-		return Matrix::CreateScale(Keys.back().second.Scale) * Matrix::CreateFromQuaternion(Keys.back().second.Rotation) * Matrix::CreateTranslation(Keys.back().second.Position);
+		if (time < 0.0f)
+			time = 0.0f;
+		if (index >= (int)Keys.size())
+			index = (int)Keys.size() - 1;
+
+		while (index && time < Keys[index].first)
+			--index;
+		while (index < (int)Keys.size() - 1 && time >= Keys[index + 1].first)
+			++index;
+	}
+
+	Matrix GetTransform(float time)
+	{
+		GetFrameIndex(time, FrameIndex);
+		int nextFrame = FrameIndex + 1;
+		if (nextFrame >= (int)Keys.size())
+			nextFrame = 0;
+
+		const AnimationKey& key = Keys[FrameIndex].second;
+		const AnimationKey& nextKey = Keys[nextFrame].second;
+
+		float t = time > 0.0f ? (time - Keys[FrameIndex].first) / (Keys[nextFrame].first - Keys[FrameIndex].first) : 1.0f;
+
+		const Vector3 position = Vector3::Lerp(key.Position, nextKey.Position, t);
+		//const Vector3 scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
+		const Quaternion rotation = Quaternion::Lerp(key.Rotation, nextKey.Rotation, t);
+		return Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 	}
 };
 
@@ -44,7 +53,7 @@ class Animation
 {
 public:
 	Animation(const std::string& name, int numNodes, const float duration, const float ticksPerSecond) :
-		m_Name(name), m_Duration(duration), m_TickPerSecond(ticksPerSecond)
+		m_Name(name), m_DurationInTicks(duration), m_TickPerSecond(ticksPerSecond)
 	{
 		m_AnimationNodes.resize(numNodes);
 	}
@@ -53,19 +62,13 @@ public:
 	void SetNode(const AnimationNode& node) { m_AnimationNodes[node.BoneIndex] = node; }
 
 	const std::string& GetName() const { return m_Name; }
-	float GetDuration() const { return m_Duration; }
+	float GetDurationInTicks() const { return m_DurationInTicks; }
 	float GetTicksPerSecond() const { return m_TickPerSecond; }
 
-	std::vector<Matrix> GetBoneMatrices(const float time, Skeleton& skeleton)
+	void GetBoneMatrices(const float time, Skeleton& skeleton, std::vector<Matrix>& matrices)
 	{
-		std::vector<Matrix> boneMatrices;
-
 		Bone* pRoot = skeleton.GetParentBone();
-
-		boneMatrices.resize(Skeleton::MAX_BONE_COUNT);
-		CalculateAnimations(fmod(time * m_TickPerSecond, m_Duration), pRoot, boneMatrices, Matrix::CreateTranslation(0, 0, 0));
-
-		return boneMatrices;
+		CalculateAnimations(fmod(time * m_TickPerSecond, m_DurationInTicks), pRoot, matrices, Matrix::CreateTranslation(0, 0, 0));
 	}
 
 	void CalculateAnimations(const float time, Bone* pBone, std::vector<Matrix>& matrices, Matrix parentMatrix)
@@ -78,7 +81,7 @@ public:
 		{
 			m = node.GetTransform(time);
 		}
-		matrices[pBone->Index] = pBone->OffsetMatrix *m *  parentMatrix;
+		matrices[pBone->Index] = pBone->OffsetMatrix * m *  parentMatrix;
 
 		for (Bone* pChild : pBone->Children)
 			CalculateAnimations(time, pChild, matrices, m * parentMatrix);
@@ -86,8 +89,7 @@ public:
 
 private:
 	std::string m_Name;
-	//Duration in ticks
-	float m_Duration = 0.f;
+	float m_DurationInTicks = 0.f;
 	float m_TickPerSecond = 0.f;
 	std::vector<AnimationNode> m_AnimationNodes;
 };

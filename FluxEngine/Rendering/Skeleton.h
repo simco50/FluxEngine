@@ -5,8 +5,6 @@ struct Bone
 	int Index;
 	std::string Name;
 	Matrix OffsetMatrix;
-	Matrix FinalMatrix;
-	Matrix AbsoluteMatrix;
 	Bone* pParent = nullptr;
 	std::vector<Bone*> Children;
 };

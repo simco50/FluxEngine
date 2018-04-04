@@ -104,7 +104,7 @@ void FluxCore::InitGame()
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/bossdance.dae");
+	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Guard.dae");
 	std::vector<VertexElement> desc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),

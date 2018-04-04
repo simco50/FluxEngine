@@ -57,7 +57,7 @@ void Renderer::Draw()
 
 				if (pDrawable->IsTypeOf<Model>())
 				{
-					m_pGraphics->SetShaderParameter("cSkinMatrices", DynamicCast<Model>(pDrawable)->GetBoneMatrices().data());
+					m_pGraphics->SetShaderParameter("cSkinMatrices", DynamicCast<Model>(pDrawable)->GetBoneMatrices());
 				}
 
 				batch.pGeometry->Draw(m_pGraphics);

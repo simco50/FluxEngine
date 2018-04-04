@@ -10,6 +10,6 @@
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Boss_diffuse.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Guard.png"/>
 	</Parameters>
 </Material>
