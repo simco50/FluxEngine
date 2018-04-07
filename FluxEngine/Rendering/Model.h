@@ -16,14 +16,10 @@ public:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
-	Matrix* GetBoneMatrices();
-	const Skeleton& GetSkeleton() const;
-
-	void SetMesh(Mesh* pMesh);
+	virtual void SetMesh(Mesh* pMesh);
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
-private:
+
+protected:
 	Mesh* m_pMesh = nullptr;
-	std::vector<Matrix> m_SkinMatrices;
-	float m_AnimationTime = 0.0f;
 };

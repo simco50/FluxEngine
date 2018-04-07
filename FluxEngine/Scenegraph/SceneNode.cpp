@@ -26,8 +26,6 @@ SceneNode::~SceneNode()
 
 void SceneNode::Update()
 {
-	for (Component* pComponent : m_Components)
-		pComponent->Update();
 }
 
 void SceneNode::OnSceneSet(Scene* pScene)

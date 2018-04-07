@@ -10,7 +10,6 @@
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Mesh.h"
-#include "Rendering/Model.h"
 #include "Rendering/Material.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
@@ -27,6 +26,7 @@
 #include "Rendering/PostProcessing.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 #include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Rendering/AnimatedModel.h"
 
 bool FluxCore::m_Exiting;
 
@@ -101,7 +101,7 @@ void FluxCore::InitGame()
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
-
+	m_pCamera->GetCamera()->SetFarPlane(1000);
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 
 	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Drunk.dae");
@@ -118,12 +118,11 @@ void FluxCore::InitGame()
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
 
 	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
-	Model* pModel = new Model(m_pContext);
+	AnimatedModel* pModel = new AnimatedModel(m_pContext);
 	pModel->SetMesh(pMesh);
 	pModel->SetMaterial(pMaterial);
 	pObject->AddComponent(pModel);
 	m_pScene->AddChild(pObject);
-	pObject->GetTransform()->SetScale(0.1f);
 
 	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 	BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
@@ -167,8 +166,8 @@ void FluxCore::ProcessFrame()
 
 	if (m_pSelectedNode)
 	{
-		Model* pModel = m_pSelectedNode->GetComponent<Model>();
-		m_pDebugRenderer->AddSkeleton(pModel->GetSkeleton(), pModel->GetBoneMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+		AnimatedModel* pModel = m_pSelectedNode->GetComponent<AnimatedModel>();
+		m_pDebugRenderer->AddSkeleton(pModel->GetSkeleton(), pModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
 	}
 
 	m_pDebugRenderer->Render();

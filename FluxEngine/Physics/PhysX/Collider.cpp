@@ -10,7 +10,8 @@ using namespace physx;
 
 Collider::Collider(Context* pContext, PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags) :
 	Component(pContext),
-	m_ShapeFlags(shapeFlags)
+	m_ShapeFlags(shapeFlags),
+	m_LocalPose(physx::PxTransform(PxIdentity))
 {
 	m_pPhysicsSystem = pContext->GetSubsystem<PhysicsSystem>();
 	m_pMaterial = pMaterial ? pMaterial : m_pPhysicsSystem->GetDefaultMaterial();
@@ -25,6 +26,7 @@ void Collider::CreateShape()
 {
 	CreateGeometry();
 	m_pShape = m_pPhysicsSystem->GetPhysics()->createShape(*m_pGeometry, *m_pMaterial, true, m_ShapeFlags);
+	m_pShape->setLocalPose(m_LocalPose);
 	m_pShape->userData = this;
 	SetCollisionGroup(m_CollisionGroup, m_ListenForCollisionGroups);
 }
@@ -122,7 +124,9 @@ BoxCollider::BoxCollider(Context* pContext, const Vector3& extents, PxMaterial* 
 BoxCollider::BoxCollider(Context* pContext, const BoundingBox& boundingBox, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/):
 	Collider(pContext, pMaterial, shapeFlags),
 	m_Extents(boundingBox.Extents.x, boundingBox.Extents.y, boundingBox.Extents.z)
-{}
+{
+	m_LocalPose = PxTransform(PxVec3(boundingBox.Center.x, boundingBox.Center.y, boundingBox.Center.z), PxQuat(PxIdentity));
+}
 
 void BoxCollider::CreateGeometry()
 {

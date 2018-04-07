@@ -42,7 +42,8 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnSceneRemoved() override;
-	virtual void Update() override;
+
+	void Update();
 
 	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
 
@@ -54,6 +55,9 @@ public:
 	) const;
 
 	void SetGravity(const float x, const float y, const float z);
+
+	void AddRigidbody(Rigidbody* pRigidbody);
+	void RemoveRigidbody(Rigidbody* pRigidbody);
 
 private:
 	static const float FIXED_TIME_STEP;
@@ -68,4 +72,6 @@ private:
 	float m_TimeAccumulator = 0.0;
 	physx::PxScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pPhysicsSystem = nullptr;
+
+	std::vector<Rigidbody*> m_Rigidbodies;
 };

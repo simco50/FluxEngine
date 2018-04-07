@@ -23,7 +23,7 @@ void Rigidbody::OnSceneSet(Scene* pScene)
 	Component::OnSceneSet(pScene);
 
 	m_pPhysicsScene = pScene->GetOrCreateComponent<PhysicsScene>();
-	m_pPhysicsScene->GetScene()->addActor(*m_pBody);
+	m_pPhysicsScene->AddRigidbody(this);
 }
 
 void Rigidbody::OnSceneRemoved()
@@ -32,7 +32,7 @@ void Rigidbody::OnSceneRemoved()
 
 	if (m_pPhysicsScene && m_pBody)
 	{
-		m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
+		m_pPhysicsScene->RemoveRigidbody(this);
 		m_pBody = nullptr;
 	}
 }
@@ -61,7 +61,7 @@ void Rigidbody::OnMarkedDirty(const Transform* pTransform)
 		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&pTransform->GetWorldMatrix())), true);
 }
 
-void Rigidbody::Update()
+void Rigidbody::UpdateBody()
 {
 	if (m_pBody)
 	{

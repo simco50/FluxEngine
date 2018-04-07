@@ -28,6 +28,9 @@ void Renderer::Draw()
 	m_pCurrentMaterial = nullptr;
 	m_pCurrentCamera = nullptr;
 
+	for (Drawable* pDrawable : m_Drawables)
+		pDrawable->Update();
+
 	for (Camera* pCamera : m_Cameras)
 	{
 		if (pCamera == nullptr)
@@ -55,11 +58,6 @@ void Renderer::Draw()
 				SetPerFrameParameters();
 				SetPerCameraParameters(pCamera);
 
-				if (pDrawable->IsTypeOf<Model>())
-				{
-					m_pGraphics->SetShaderParameter("cSkinMatrices", DynamicCast<Model>(pDrawable)->GetBoneMatrices());
-				}
-
 				batch.pGeometry->Draw(m_pGraphics);
 			}
 		}
@@ -68,54 +66,22 @@ void Renderer::Draw()
 
 void Renderer::AddDrawable(Drawable* pDrawable)
 {
-	for (Drawable*& pD : m_Drawables)
-	{
-		if (pD == nullptr)
-		{
-			pD = pDrawable;
-			return;
-		}
-	}
 	m_Drawables.push_back(pDrawable);
 }
 
-bool Renderer::RemoveDrawable(Drawable* pDrawable)
+void Renderer::RemoveDrawable(Drawable* pDrawable)
 {
-	for (Drawable*& pD : m_Drawables)
-	{
-		if (pD == pDrawable)
-		{
-			pD = nullptr;
-			return true;
-		}
-	}
-	return false;
+	m_Drawables.erase(std::remove(m_Drawables.begin(), m_Drawables.end(), pDrawable), m_Drawables.end());
 }
 
 void Renderer::AddCamera(Camera* pCamera)
 {
-	for (Camera*& pC : m_Cameras)
-	{
-		if (pC == nullptr)
-		{
-			pC = pCamera;
-			return;
-		}
-	}
 	m_Cameras.push_back(pCamera);
 }
 
-bool Renderer::RemoveCamera(Camera* pCamera)
+void Renderer::RemoveCamera(Camera* pCamera)
 {
-	for (Camera*& pC : m_Cameras)
-	{
-		if (pC == pCamera)
-		{
-			pC = nullptr;
-			return true;
-		}
-	}
-	return false;
+	m_Cameras.erase(std::remove(m_Cameras.begin(), m_Cameras.end(), pCamera), m_Cameras.end());
 }
 
 void Renderer::SetPerFrameParameters()
@@ -184,6 +150,10 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
+	if (batch.NumSkinMatrices > 1)
+	{
+		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices);
+	}
 	m_pGraphics->SetShaderParameter("cWorld", batch.pModelMatrix);
 	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
 	m_pGraphics->SetShaderParameter("cWorldViewProj", &wvp);

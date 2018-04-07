@@ -24,6 +24,7 @@ PhysicsScene::~PhysicsScene()
 void PhysicsScene::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
+	pScene->OnSceneUpdate().AddRaw(this, &PhysicsScene::Update);
 
 	PxCudaContextManager* pCudaContextManager = m_pPhysicsSystem->GetCudaContextManager();
 
@@ -78,6 +79,9 @@ void PhysicsScene::Update()
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetUp()),
 		*reinterpret_cast<const PxVec3*>(&pTransform->GetForward()));*/
 #endif
+
+	for (Rigidbody* pRigidbody : m_Rigidbodies)
+		pRigidbody->UpdateBody();
 }
 
 bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, RaycastResult& outResult, const float length) const
@@ -113,6 +117,23 @@ void PhysicsScene::SetGravity(const float x, const float y, const float z)
 		m_pPhysicsScene->setGravity(PxVec3(x, y, z));
 }
 
+void PhysicsScene::AddRigidbody(Rigidbody* pRigidbody)
+{
+	if (pRigidbody)
+	{
+		m_Rigidbodies.push_back(pRigidbody);
+		m_pPhysicsScene->addActor(*pRigidbody->GetBody());
+	}
+}
+
+void PhysicsScene::RemoveRigidbody(Rigidbody* pRigidbody)
+{
+	if (pRigidbody)
+	{
+		m_Rigidbodies.erase(std::remove(m_Rigidbodies.begin(), m_Rigidbodies.end(), pRigidbody), m_Rigidbodies.end());
+		m_pPhysicsScene->removeActor(*pRigidbody->GetBody());
+	}
+}
 
 void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 {

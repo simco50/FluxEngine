@@ -19,9 +19,9 @@ public:
 	void Draw();
 
 	void AddDrawable(Drawable* pDrawable);
-	bool RemoveDrawable(Drawable* pDrawable);
+	void RemoveDrawable(Drawable* pDrawable);
 	void AddCamera(Camera* pCamera);
-	bool RemoveCamera(Camera* pCamera);
+	void RemoveCamera(Camera* pCamera);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 

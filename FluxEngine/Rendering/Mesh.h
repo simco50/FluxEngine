@@ -51,7 +51,6 @@ private:
 	void CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry);
 
 	std::string m_MeshName;
-	bool m_BuffersInitialized = false;
 	std::vector<std::unique_ptr<VertexBuffer>> m_VertexBuffers;
 	std::vector<std::unique_ptr<IndexBuffer>> m_IndexBuffers;
 
@@ -60,9 +59,6 @@ private:
 
 	std::map<std::string, int> m_BoneMap;
 	Skeleton m_Skeleton;
-	Matrix m_GlobalTransform;
-	Matrix m_InverseGlobalTransform;
 	std::vector<Animation> m_Animations;
-
 	int m_GeometryCount = 0;
 };

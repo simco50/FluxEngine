@@ -27,6 +27,7 @@ void Model::OnNodeSet(SceneNode* pNode)
 	for (Batch& batch : m_Batches)
 	{
 		batch.pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		batch.NumSkinMatrices = 1;
 	}
 }
 
@@ -34,23 +35,6 @@ void Model::OnMarkedDirty(const Transform* pTransform)
 {
 	for (Batch& batch : m_Batches)
 		batch.pModelMatrix = &pTransform->GetWorldMatrix();
-}
-
-DirectX::SimpleMath::Matrix* Model::GetBoneMatrices()
-{
-	float time = GameTimer::GameTime();
-	if (time != m_AnimationTime)
-	{
-		if (m_pMesh)
-			m_pMesh->GetBoneMatrices(0, GameTimer::GameTime(), m_SkinMatrices);
-		m_AnimationTime = time;
-	}
-	return m_SkinMatrices.data();
-}
-
-const Skeleton& Model::GetSkeleton() const
-{
-	return m_pMesh->GetSkeleton();
 }
 
 void Model::SetMesh(Mesh* pMesh)
@@ -68,7 +52,6 @@ void Model::SetMesh(Mesh* pMesh)
 		m_BoundingBox = BoundingBox();
 	}
 	m_pMesh = pMesh;
-	m_SkinMatrices.resize(Skeleton::MAX_BONE_COUNT);
 }
 
 void Model::SetMaterial(Material* pMaterial)

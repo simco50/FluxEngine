@@ -89,6 +89,7 @@ void DebugRenderer::Render()
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
 
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
+	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
 
 	Matrix projectionMatrix = m_pCamera->GetViewProjection();
 	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);

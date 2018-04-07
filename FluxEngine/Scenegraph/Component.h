@@ -18,7 +18,6 @@ public:
 	virtual void OnSceneRemoved();
 	//Broadcast transform change to all components
 	virtual void OnMarkedDirty(const Transform* transform) { UNREFERENCED_PARAMETER(transform); }
-	virtual void Update() {}
 
 	virtual bool CanHaveMultiple() const { return false; }
 

@@ -352,8 +352,6 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 bool Mesh::ProcessSkeleton(const aiScene* pScene)
 {
 	Matrix Identity = Matrix::CreateTranslation(0, 0, 0);
-	m_GlobalTransform = ToDXMatrix(pScene->mRootNode->mTransformation);
-	m_GlobalTransform.Invert(m_InverseGlobalTransform);
 	ProcessNode(pScene->mRootNode, Identity);
 	return true;
 }
@@ -478,6 +476,5 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	pGeometry->SetVertexBuffer(pVertexBuffer.get());
 	m_VertexBuffers.push_back(std::move(pVertexBuffer));
 
-	m_BuffersInitialized = true;
 	delete[] pVertexDataStart;
 }

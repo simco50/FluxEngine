@@ -89,6 +89,18 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 	direction.Normalize();
 }
 
+void Camera::SetNearPlane(const float nearPlane)
+{
+	m_NearPlane = nearPlane;
+	OnMarkedDirty(GetTransform());
+}
+
+void Camera::SetFarPlane(const float farPlane)
+{
+	m_FarPlane = farPlane;
+	OnMarkedDirty(GetTransform());
+}
+
 bool Camera::Raycast(RaycastResult& result) const
 {
 	result = RaycastResult();

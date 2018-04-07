@@ -26,6 +26,8 @@ void Scene::Update()
 {
 	SceneNode::Update();
 
+	m_OnSceneUpdate.Broadcast();
+
 	for (SceneNode* pNode : m_pNodes)
 		pNode->Update();
 
