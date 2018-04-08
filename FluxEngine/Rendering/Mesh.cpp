@@ -207,7 +207,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 	{
 		aiMesh* pMesh = pScene->mMeshes[i];
 		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
-		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pMesh->mNumVertices, pMesh->mNumFaces * 3);
+		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pMesh->mNumFaces * 3, pMesh->mNumVertices);
 
 		if(pMesh->HasPositions())
 		{
@@ -308,7 +308,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		for (unsigned int i = 0; i < pScene->mNumAnimations; i++)
 		{
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
-			Animation animation(pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
+			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
 				AnimationNode animNode;
@@ -341,9 +341,9 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					key.second.Decompose(animationKey.Scale, animationKey.Rotation, animationKey.Position);
 					animNode.Keys.push_back(std::pair<float, AnimationKey>(key.first, animationKey));
 				}
-				animation.SetNode(animNode);
+				pNewAnimation->SetNode(animNode);
 			}
-			m_Animations.push_back(animation);
+			m_Animations.push_back(std::move(pNewAnimation));
 		}
 	}
 	return true;

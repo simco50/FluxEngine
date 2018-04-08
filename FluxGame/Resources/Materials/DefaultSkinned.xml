@@ -7,7 +7,7 @@
 	<Properties>
 		<CullMode value="Back"/>
 		<BlendMode value="Replace"/>
-		<FillMode value="Wireframe"/>
+		<FillMode value="Solid"/>
 	</Properties>
 
 	<Parameters>

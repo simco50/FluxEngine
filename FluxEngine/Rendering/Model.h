@@ -16,7 +16,8 @@ public:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
-	virtual void SetMesh(Mesh* pMesh);
+	void SetMesh(Mesh* pMesh);
+	Mesh* GetMesh() const { return m_pMesh; }
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
 

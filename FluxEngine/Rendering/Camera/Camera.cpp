@@ -20,6 +20,7 @@ Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
 	m_ViewInverse = XMMatrixIdentity();
 	m_ViewProjection = XMMatrixIdentity();
 	m_ViewProjectionInverse = XMMatrixIdentity();
+
 }
 
 Camera::~Camera()
@@ -30,6 +31,7 @@ void Camera::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 	pScene->GetRenderer()->AddCamera(this);
+	OnMarkedDirty(GetTransform());
 }
 
 void Camera::OnMarkedDirty(const Transform* transform)

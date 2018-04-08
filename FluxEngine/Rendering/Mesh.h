@@ -1,7 +1,7 @@
 #pragma once
 #include "Content/Resource.h"
-#include "Skeleton.h"
-#include "Animation.h"
+#include "Animation/Skeleton.h"
+#include "Animation/Animation.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -30,12 +30,8 @@ public:
 	Geometry* GetGeometry(int slot) const { return m_Geometries[slot].get(); }
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 
-	void GetBoneMatrices(const int animationIndex, const float time, std::vector<Matrix>& matrices)
-	{
-		m_Animations[animationIndex].GetBoneMatrices(time, m_Skeleton, matrices);
-	}
-
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }
+	Animation* GetAnimation(const int index) { return m_Animations[index].get(); }
 
 private:
 	bool LoadFlux(InputStream& inputStream);
@@ -59,6 +55,6 @@ private:
 
 	std::map<std::string, int> m_BoneMap;
 	Skeleton m_Skeleton;
-	std::vector<Animation> m_Animations;
+	std::vector<std::unique_ptr<Animation>> m_Animations;
 	int m_GeometryCount = 0;
 };

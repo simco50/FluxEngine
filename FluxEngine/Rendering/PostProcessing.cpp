@@ -45,6 +45,10 @@ void PostProcessing::Draw()
 		{
 			m_pGraphics->SetTexture(texture.first, texture.second);
 		}
+		for (auto& parameter : pMaterial->GetShaderParameters())
+		{
+			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.pData);
+		}
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetRenderTexture());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
 		std::swap(pCurrentSource, pCurrentTarget);

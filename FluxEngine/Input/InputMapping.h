@@ -245,6 +245,7 @@ enum class KeyboardKey
 	KEY_APP2 = SDL_SCANCODE_APP2,
 
 	MAX = SDL_NUM_SCANCODES,
+	NONE = -1
 };
 
 enum class MouseKey
@@ -252,4 +253,5 @@ enum class MouseKey
 	LEFT_BUTTON = SDL_BUTTON_LEFT,
 	MIDDLE_BUTTON = SDL_BUTTON_MIDDLE,
 	RIGHT_BUTTON = SDL_BUTTON_RIGHT,
+	NONE = -1
 };

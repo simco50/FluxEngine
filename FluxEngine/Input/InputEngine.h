@@ -16,11 +16,11 @@ struct InputAction
 	InputAction():
 		ActionID(-1),
 		TriggerState(InputTriggerState::Pressed), 
-		KeyboardCode(-1), 
-		MouseButtonCode(-1)
+		KeyboardCode(KeyboardKey::NONE),
+		MouseButtonCode(MouseKey::NONE)
 		{}
 
-	InputAction(int actionID, InputTriggerState triggerState = InputTriggerState::Pressed, int keyboardCode = -1, int mouseButtonCode = -1):
+	InputAction(int actionID, InputTriggerState triggerState = InputTriggerState::Pressed, KeyboardKey keyboardCode = KeyboardKey::NONE, MouseKey mouseButtonCode = MouseKey::NONE):
 		ActionID(actionID),
 		TriggerState(triggerState), 
 		KeyboardCode(keyboardCode), 
@@ -29,8 +29,8 @@ struct InputAction
 
 	int ActionID;
 	InputTriggerState TriggerState;
-	int KeyboardCode; //VK_... (Range 0x07 <> 0xFE)
-	int MouseButtonCode; //VK_... (Range 0x00 <> 0x06)
+	KeyboardKey KeyboardCode; //VK_... (Range 0x07 <> 0xFE)
+	MouseKey MouseButtonCode; //VK_... (Range 0x00 <> 0x06)
 	bool Pressed = false;
 	bool Released = false;
 	bool Down = false;
@@ -48,7 +48,6 @@ public:
 
 	void Update();
 	bool AddInputAction(InputAction action);
-	bool IsActionTriggered(int actionID);
 	void ForceMouseToCenter(bool force);
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 

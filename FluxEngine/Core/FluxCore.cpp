@@ -24,9 +24,8 @@
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/PostProcessing.h"
-#include "Rendering/ParticleSystem/ParticleSystem.h"
-#include "Rendering/ParticleSystem/ParticleEmitter.h"
-#include "Rendering/AnimatedModel.h"
+#include "Rendering/Animation/AnimatedModel.h"
+#include "Rendering/Animation/Animator.h"
 
 bool FluxCore::m_Exiting;
 
@@ -103,35 +102,55 @@ void FluxCore::InitGame()
 	m_pScene->AddChild(m_pCamera);
 	m_pCamera->GetCamera()->SetFarPlane(1000);
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Drunk.dae");
-	std::vector<VertexElement> desc =
+	std::vector<std::string> meshPaths;
+	meshPaths.push_back("Resources/Meshes/obj/Gangnam Style.fbx");
+	meshPaths.push_back("Resources/Meshes/obj/Man_Drunk.dae");
+	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
+	meshPaths.push_back("Resources/Meshes/obj/Man_Idle.dae");
+	meshPaths.push_back("Resources/Meshes/obj/Man_LookAround.dae");
+	meshPaths.push_back("Resources/Meshes/obj/Bellydancing.dae");
+	meshPaths.push_back("Resources/Meshes/obj/Jumping.dae");
+
+	std::vector<Mesh*> meshes;
+	for (std::string& path : meshPaths)
 	{
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
-		VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
-		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
-	};
-	pMesh->CreateBuffers(desc);
+		Mesh* pMesh = m_pResourceManager->Load<Mesh>(path);
+		std::vector<VertexElement> desc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
+		};
+		pMesh->CreateBuffers(desc);
+		meshes.push_back(pMesh);
+	}
 
 	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
 
-	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
-	AnimatedModel* pModel = new AnimatedModel(m_pContext);
-	pModel->SetMesh(pMesh);
-	pModel->SetMaterial(pMaterial);
-	pObject->AddComponent(pModel);
-	m_pScene->AddChild(pObject);
-
-	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-	BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
-	pObject->AddComponent(pRigidbody);
-	pObject->AddComponent(pCollider);
+	for (size_t x = 0; x < meshes.size(); x++)
+	{
+			SceneNode* pObject = new SceneNode(m_pContext, "Cube");
+			pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
+			AnimatedModel* pModel = new AnimatedModel(m_pContext);
+			pModel->SetMesh(meshes[x]);
+			pModel->SetMaterial(pMaterial);
+			pObject->AddComponent(pModel);
+			Animator* pAnimator = new Animator(m_pContext);
+			pObject->AddComponent(pAnimator);
+			Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+			BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
+			pObject->AddComponent(pRigidbody);
+			pObject->AddComponent(pCollider);
+			m_pScene->AddChild(pObject);
+			pAnimator->Play();
+	}
+	
 
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
-
-	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
 void FluxCore::ProcessFrame()
