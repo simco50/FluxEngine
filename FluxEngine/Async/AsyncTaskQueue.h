@@ -32,9 +32,12 @@ private:
 	void CreateThreads(const size_t count);
 
 	std::vector<WorkerThread*> m_pThreads;
-	std::deque<AsyncTask*> m_Queue;
-	std::vector<AsyncTask*> m_Tasks;
+
+	std::vector<std::unique_ptr<AsyncTask>> m_Tasks;
+	std::vector<AsyncTask*> m_RunningTasks;
 	std::vector<AsyncTask*> m_TaskPool;
+	std::deque<AsyncTask*> m_Queue;
+
 	Mutex m_QueueMutex;
 	bool m_Shutdown = false;
 	bool m_Paused = true;

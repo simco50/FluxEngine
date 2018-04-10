@@ -1,6 +1,6 @@
 #pragma once
 #include "Rendering/Model.h"
-#include "Animator.h"
+#include "AnimationState.h"
 
 class Mesh;
 

@@ -30,7 +30,7 @@ void AnimatedModel::OnNodeSet(SceneNode* pNode)
 
 void AnimatedModel::Update()
 {
-
+	m_AnimationStates[0].Apply(m_SkinMatrices);
 }
 
 const Skeleton& AnimatedModel::GetSkeleton() const

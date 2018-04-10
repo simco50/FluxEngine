@@ -1,5 +1,6 @@
 #pragma once
 #include "Content/Resource.h"
+#include "GraphicsDefines.h"
 
 class Graphics;
 class Image;
@@ -23,6 +24,8 @@ public:
 	DELETE_COPY(Texture)
 
 	virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
+
+	void SetAddressMode(const TextureAddressMode addressMode);
 
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }
@@ -59,6 +62,7 @@ protected:
 
 	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
+	TextureAddressMode m_AddressMode = TextureAddressMode::WRAP;
 	Graphics* m_pGraphics = nullptr;
 };
 
