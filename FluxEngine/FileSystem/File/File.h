@@ -21,7 +21,9 @@ class File : public IOStream
 public:
 	File(const std::string& fileName) :
 		m_FileName(fileName)
-	{}
+	{
+		m_Source = fileName;
+	}
 	virtual ~File() {}
 
 	virtual bool Open(const FileMode mode) = 0;

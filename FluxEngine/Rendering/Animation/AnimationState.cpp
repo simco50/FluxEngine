@@ -35,43 +35,63 @@ void AnimationKeyState::GetMatrix(const float time, Matrix& matrix)
 }
 
 AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel) :
-	pAnimation(pAnimation), pModel(pModel)
+	m_pAnimation(pAnimation), m_pModel(pModel)
 {
 	const Skeleton& skeleton = pModel->GetSkeleton();
-	pRootBone = skeleton.GetParentBone();
+	m_pRootBone = skeleton.GetParentBone();
 	for (const AnimationNode& node : pAnimation->GetNodes())
 	{
 		AnimationKeyState state;
 		state.KeyFrame = 0;
 		state.pBone = skeleton.GetBone(node.BoneIndex);
 		state.pNode = &node;
-		KeyStates.push_back(state);
+		m_KeyStates.push_back(state);
 	}
 }
 
 void AnimationState::AddTime(const float time)
 {
-	Time += time;
-	IsDirty = true;
+	float duration = GetDuration();
+	if (duration == 0.0f || time == 0.0f)
+		return;
+
+	if (m_Looped)
+		m_Time = fmodf(m_Time + time, duration / GetAnimation()->GetTicksPerSecond());
+	else if (m_Time > duration)
+		return;
+	else
+		m_Time += time;
+	m_IsDirty = true;
+}
+
+void AnimationState::SetTime(const float time)
+{
+	m_Time = time;
+	m_IsDirty = false;
 }
 
 void AnimationState::Apply(std::vector<Matrix>& skinMatrices)
 {
-	if (IsDirty)
+	if (m_IsDirty)
 	{
-		CalculateAnimations(pRootBone, Matrix(), skinMatrices);
-		IsDirty = false;
+		CalculateAnimations(m_pRootBone, Matrix(), skinMatrices);
+		m_IsDirty = false;
 	}
+}
+
+float AnimationState::GetDuration() const
+{
+	return m_pAnimation ? m_pAnimation->GetDurationInTicks() : 0.0f;
 }
 
 void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices)
 {
-	if (pRootBone == nullptr)
+	if (m_pRootBone == nullptr)
 		return;
-	float time = fmod(Time * pAnimation->GetTicksPerSecond(), pAnimation->GetDurationInTicks());
-	AnimationKeyState& state = KeyStates[pBone->Index];
+	float time = m_Time * m_pAnimation->GetTicksPerSecond();
+	AnimationKeyState& state = m_KeyStates[pBone->Index];
 	Matrix m;
-	if (KeyStates.size() != 0)
+	if (m_KeyStates.size() != 0)
 	{
 		state.GetMatrix(time, m);
 	}

@@ -1,11 +1,9 @@
 #pragma once
-#include "Content\Resource.h"
-
-enum class ShaderType;
+#include "Content/Resource.h"
+#include "GraphicsDefines.h"
 
 class Graphics;
 class ShaderVariation;
-class File;
 
 class Shader : public Resource
 {
@@ -18,23 +16,20 @@ public:
 	DELETE_COPY(Shader)
 
 	virtual bool Load(InputStream& inputStream) override;
-	bool Reload();
-	ShaderVariation* GetVariation(const ShaderType type, const std::string& defines = std::string(""));
+
+	ShaderVariation* GetOrCreateVariation(const ShaderType type, const std::string& defines = std::string(""));
+
+	bool ReloadVariations();
+
 	const std::string& GetSource() { return m_ShaderSource; }
-
 	static std::string GetEntryPoint(const ShaderType type);
-
-	const std::string& GetName() const { return m_ShaderName; }
+	const std::string& GetShaderName() const { return m_ShaderName; }
 
 private:
-	std::string MakeSearchHash(const ShaderType type, const std::string& defines);
-	bool ProcessSource(InputStream* pInputStream, std::stringstream& output);
+	bool ProcessSource(InputStream* pInputStream, std::stringstream& output, std::vector<size_t>& processedIncludes);
 
-	std::string m_FileDir;
 	std::string m_ShaderName;
 	std::string m_ShaderSource;
 
-	std::map<size_t, std::unique_ptr<ShaderVariation>> m_ShaderCache;
-
-	Graphics* m_pGraphics;
+	std::array<std::map<size_t, std::unique_ptr<ShaderVariation>>, (size_t)ShaderType::MAX> m_ShaderCache;
 };

@@ -129,8 +129,32 @@ void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
 	}
 }
 
+Animation* Mesh::GetAnimation(const std::string name) const
+{
+	StringHash hash = std::hash<std::string>{}(name);
+	return GetAnimation(hash);
+}
+
+Animation* Mesh::GetAnimation(const int index) const
+{
+	assert(index < (int)m_Animations.size());
+	return m_Animations[index].get();
+}
+
+Animation* Mesh::GetAnimation(const StringHash hash) const
+{
+	for (const std::unique_ptr<Animation>& pAnimation : m_Animations)
+	{
+		if(pAnimation->GetNameHash() == hash)
+			return pAnimation.get();
+	}
+	return nullptr;
+}
+
 bool Mesh::LoadFlux(InputStream& inputStream)
 {
+	AUTOPROFILE(Mesh_Load_Flux);
+
 	const std::string magic = inputStream.ReadSizedString();
 	const char minVersion = inputStream.ReadByte();
 	const char maxVersion = inputStream.ReadByte();
@@ -176,31 +200,42 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 
 bool Mesh::LoadAssimp(InputStream& inputStream)
 {
+	AUTOPROFILE(Mesh_Load_Assimp);
+
 	std::vector<unsigned char> buffer;
 	inputStream.ReadAllBytes(buffer);
 
 	Assimp::Importer importer;
-	const aiScene* pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
-		aiProcess_Triangulate |
-		aiProcess_ConvertToLeftHanded |
-		aiProcess_GenSmoothNormals
-	);
+	const aiScene* pScene;
+
+	{
+		AUTOPROFILE(Mesh_ImportAssimp);
+		pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
+			aiProcess_Triangulate |
+			aiProcess_ConvertToLeftHanded |
+			aiProcess_GenSmoothNormals |
+			aiProcess_CalcTangentSpace
+		);
+	}
 
 	if (pScene == nullptr)
 		return false;
 	if (!ProcessAssimpMeshes(pScene))
 		return false;
+	std::map<std::string, int> boneMap;
 	if (!ProcessSkeleton(pScene))
 		return false;
 	if (!ProcessAssimpAnimations(pScene))
 		return false;
 	if(m_Geometries.size() > 0)
-		BoundingBox::CreateFromPoints(m_BoundingBox, (size_t)m_Geometries[0]->GetVertexCount(), (const XMFLOAT3*)m_Geometries[0]->GetVertexData("POSITION").pData, sizeof(Vector3));
+		CalculateBoundingBox();
 	return true;
 }
 
 bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 {
+	AUTOPROFILE(Mesh_Load_Meshes);
+
 	m_GeometryCount = pScene->mNumMeshes;
 	int boneCount = 0;
 	for (unsigned int i = 0; i < (unsigned int)m_GeometryCount; i++)
@@ -224,6 +259,14 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.Stride = sizeof(aiVector3D);
 			data.CreateBuffer();
 			memcpy(data.pData, pMesh->mNormals, data.ByteSize());
+		}
+		if (pMesh->HasTangentsAndBitangents())
+		{
+			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TANGENT");
+			data.Count = pMesh->mNumVertices;
+			data.Stride = sizeof(aiVector3D);
+			data.CreateBuffer();
+			memcpy(data.pData, pMesh->mTangents, data.ByteSize());
 		}
 		if(pMesh->HasTextureCoords(0))
 		{
@@ -303,6 +346,8 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 
 bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 {
+	AUTOPROFILE(Mesh_Load_Animations);
+
 	if (pScene->HasAnimations())
 	{
 		for (unsigned int i = 0; i < pScene->mNumAnimations; i++)
@@ -311,13 +356,17 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
+				const aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
 				AnimationNode animNode;
-				aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
-				const Bone* pBone = m_Skeleton.GetBone(pAnimNode->mNodeName.C_Str());
-				if (pBone == nullptr)
-					continue;
 
-				animNode.BoneIndex = pBone->Index;
+				animNode.Name = pAnimNode->mNodeName.C_Str();
+				auto pIt = m_BoneMap.find(animNode.Name);
+				if (pIt == m_BoneMap.end())
+				{
+					FLUX_LOG(Warning, "[Mesh::ProcessAssimpAnimations] > There is no bone that matches the animation node '%s'", animNode.Name.c_str());
+					continue;
+				}
+				animNode.BoneIndex = pIt->second;
 
 				std::map<float, Matrix> keys;
 				for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
@@ -351,9 +400,23 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 
 bool Mesh::ProcessSkeleton(const aiScene* pScene)
 {
+	AUTOPROFILE(Mesh_Load_Hierarchy);
+
 	Matrix Identity = Matrix::CreateTranslation(0, 0, 0);
 	ProcessNode(pScene->mRootNode, Identity);
 	return true;
+}
+
+void Mesh::CalculateBoundingBox()
+{
+	AUTOPROFILE(Mesh_CalculateBoundingBox);
+
+	for (auto& pGeometry : m_Geometries)
+	{
+		BoundingBox bb;
+		BoundingBox::CreateFromPoints(bb, pGeometry->GetVertexCount(), (const XMFLOAT3*)pGeometry->GetVertexData("POSITION").pData, (int)sizeof(Vector3));
+		m_BoundingBox.CreateMerged(m_BoundingBox, m_BoundingBox, bb);
+	}
 }
 
 void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
@@ -366,7 +429,7 @@ void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 		if (m_Skeleton.GetParentBone() == nullptr)
 			m_Skeleton.SetParentBone(pBone);
 		pBone->pParent = pParentBone;
-		if(pParentBone)
+		if (pParentBone)
 			pParentBone->Children.push_back(pBone);
 		pParentBone = pBone;
 	}
@@ -379,6 +442,8 @@ void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 
 void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry)
 {
+	AUTOPROFILE(Mesh_CreateGeometryBuffers);
+
 	std::unique_ptr<VertexBuffer> pVertexBuffer = std::make_unique<VertexBuffer>(GetSubsystem<Graphics>());
 	pVertexBuffer->Create(pGeometry->GetVertexCount(), elementDesc, false);
 

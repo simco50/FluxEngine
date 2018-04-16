@@ -27,16 +27,18 @@ public:
 
 	virtual bool Load(InputStream& inputStream) override;
 
-	void SetNode(const AnimationNode& node) { m_AnimationNodes[node.BoneIndex] = node; }
-	AnimationNode& GetNode(const int index) { return m_AnimationNodes[index]; }
+	void SetNode(const AnimationNode& node);
+	AnimationNode& GetNode(const int boneIndex);
 	const std::vector<AnimationNode>& GetNodes() { return m_AnimationNodes; }
 
 	const std::string& GetName() const { return m_Name; }
+	StringHash GetNameHash() const { return m_NameHash; }
 	float GetDurationInTicks() const { return m_DurationInTicks; }
 	float GetTicksPerSecond() const { return m_TickPerSecond; }
 
 private:
 	std::string m_Name;
+	StringHash m_NameHash;
 	float m_DurationInTicks = 0.f;
 	float m_TickPerSecond = 0.f;
 	std::vector<AnimationNode> m_AnimationNodes;

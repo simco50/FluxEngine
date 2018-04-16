@@ -28,8 +28,9 @@ void ResourceManager::Update()
 		std::string resource;
 		while (m_pResourceWatcher->GetNextChange(resource))
 		{
-			std::string filePath = std::string("Resources/") + resource;
+			std::string filePath = Paths::Normalize("Resources/" + resource);
 			Reload(filePath);
+			ReloadDependencies(filePath);
 		}
 	}
 }
@@ -55,21 +56,23 @@ bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 	auto pIt = resourceGroup.find(pResource->GetName());
 	if(pIt != resourceGroup.end())
 		resourceGroup.erase(pIt);
-	resourceGroup[filePath] = pResource;
-	return LoadResourcePrivate(pResource, filePath);
+	std::string path = Paths::Normalize(filePath);
+	resourceGroup[path] = pResource;
+	return LoadResourcePrivate(pResource, path);
 }
 
 bool ResourceManager::Reload(const std::string& filePath)
 {
+	std::string path = Paths::Normalize(filePath);
 	for (auto& groupPair : m_Resources)
 	{
 		for (auto& resourcePair : groupPair.second)
 		{
-			if (resourcePair.first == filePath)
+			if (resourcePair.first == path)
 			{
 				if (Reload(resourcePair.second))
 				{
-					FLUX_LOG(Info, "[ResourceManager::Reload] > Reloaded %s", filePath.c_str());
+					FLUX_LOG(Info, "[ResourceManager::Reload] > Reloaded %s", resourcePair.first.c_str());
 					return true;
 				}
 				return false;
@@ -90,6 +93,40 @@ void ResourceManager::Unload(Resource*& pResource)
 		resourceGroup.erase(pIt);
 	delete pResource;
 	pResource = nullptr;
+}
+
+bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
+{
+	bool success = true;
+	auto pIt = m_ResourceDependencies.find(Paths::Normalize(resourcePath));
+	if (pIt != m_ResourceDependencies.end())
+	{
+		std::vector<std::string> dependants = pIt->second;
+		for (const std::string& path : dependants)
+		{
+			if (!Reload(path))
+				success = false;
+		}
+	}
+	return success;
+}
+
+void ResourceManager::AddResourceDependency(Resource* pResource, const std::string& filePath)
+{
+	std::string name = pResource->GetName();
+	m_ResourceDependencies[Paths::Normalize(filePath)].push_back(name);
+}
+
+void ResourceManager::ResetDependencies(Resource* pResource)
+{
+	std::string path = Paths::Normalize(pResource->GetName());
+	for (auto pIt = m_ResourceDependencies.begin(); pIt != m_ResourceDependencies.end(); ++pIt)
+	{
+		auto it = std::remove_if(pIt->second.begin(), pIt->second.end(), [path](const std::string& name) {return name == path; });
+		int distance = (int)std::distance(pIt->second.begin(), it);
+		if (distance < pIt->second.size())
+			pIt->second.resize(distance);
+	}
 }
 
 std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)

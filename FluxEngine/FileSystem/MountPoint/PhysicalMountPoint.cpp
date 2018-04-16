@@ -21,8 +21,7 @@ bool PhysicalMountPoint::OnMount()
 
 bool PhysicalMountPoint::HasFile(const std::string& filePath) const
 {
-	const std::string resolvedPath = m_PhysicalPath + "\\" + ToLower(filePath);
-
+	const std::string resolvedPath = Paths::Normalize(m_PhysicalPath + "/" + filePath);
 	return std::find_if(m_FileEntries.begin(), m_FileEntries.end(), [&resolvedPath](const PhysicalFileEntry& entry)
 	{
 		return entry.FilePath == resolvedPath;
@@ -31,8 +30,7 @@ bool PhysicalMountPoint::HasFile(const std::string& filePath) const
 
 std::unique_ptr<File> PhysicalMountPoint::GetFile(const std::string& filePath)
 {
-	const std::string resolvedPath = m_PhysicalPath + "\\" + filePath;
-
+	const std::string resolvedPath = Paths::Normalize(m_PhysicalPath + "/" + filePath);
 	auto pIt = std::find_if(m_FileEntries.begin(), m_FileEntries.end(), [&resolvedPath](const PhysicalFileEntry& entry)
 	{
 		return strcmp(entry.FilePath.c_str(), resolvedPath.c_str()) == 0;
@@ -57,7 +55,7 @@ bool PhysicalMountPoint::RegisterDirectory(const std::string& path)
 		{
 			if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
 				continue;
-			if (!RegisterDirectory(path + "\\" + find_data.cFileName))
+			if (!RegisterDirectory(path + "/" + find_data.cFileName))
 			{
 				FindClose(handle);
 				return false;
@@ -65,7 +63,7 @@ bool PhysicalMountPoint::RegisterDirectory(const std::string& path)
 		}
 		else
 		{
-			m_FileEntries.push_back(PhysicalFileEntry(ToLower(path + "\\" + find_data.cFileName)));
+			m_FileEntries.push_back(PhysicalFileEntry(Paths::Normalize(path + "/" + find_data.cFileName)));
 		}
 	} while (FindNextFileA(handle, &find_data) != 0);
 

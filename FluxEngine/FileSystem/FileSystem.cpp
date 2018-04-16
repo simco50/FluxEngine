@@ -60,7 +60,7 @@ void FileSystem::AddPakLocation(const std::string& path, const std::string& virt
 
 std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 {
-	const std::string path = FixPath(fileName);
+	const std::string path = Paths::Normalize(fileName);
 	//Search through all the mount points
 	//The points that got mounted first get prioritized
 	for (const auto& pMp : m_MountPoints)
@@ -70,7 +70,6 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 		if (pMp.first == searchPath)
 		{
 			std::unique_ptr<File> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
-
 			//If we didn't find the file, continue looking in the other mount points
 			if(pFile == nullptr)
 				continue;
@@ -104,11 +103,11 @@ std::vector<std::string> FileSystem::GetPakFilesInDirectory(const std::string& d
 std::string FileSystem::FixPath(const std::string& path)
 {
 	std::string output;
-	if (path.substr(0, 2) == "./")
+	if (path.substr(0, 2) == "./" || path.substr(0, 2) == ".\\")
 		output = std::string(path.begin() + 2, path.end());
 	else
 		output = path;
-	replace(output.begin(), output.end(), '/', '\\');
+	replace(output.begin(), output.end(), '\\', '/');
 	ToLower(output);
 		
 	return output;

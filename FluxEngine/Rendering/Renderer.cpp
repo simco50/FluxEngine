@@ -10,7 +10,6 @@
 #include "Core/BlendState.h"
 #include "Core/RasterizerState.h"
 #include "Core/DepthStencilState.h"
-#include "Model.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext) 
@@ -94,6 +93,8 @@ void Renderer::SetPerFrameParameters()
 		float elapsedTime = GameTimer::GameTime();
 		m_pGraphics->SetShaderParameter("cDeltaTime", &deltaTime);
 		m_pGraphics->SetShaderParameter("cElapsedTime", &elapsedTime);
+		m_LightPosition.Normalize(m_LightDirection);
+		m_LightDirection *= -1;
 		m_pGraphics->SetShaderParameter("cLightDirection", &m_LightDirection);
 	}
 }
@@ -126,7 +127,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	const auto& pParameters = m_pCurrentMaterial->GetShaderParameters();
 	for (const auto& pParameter : pParameters)
 	{
-		m_pGraphics->SetShaderParameter(pParameter.first, pParameter.second.pData);
+		m_pGraphics->SetShaderParameter(pParameter.first, pParameter.second.GetData());
 	}
 
 	const auto& pTextures = m_pCurrentMaterial->GetTextures();

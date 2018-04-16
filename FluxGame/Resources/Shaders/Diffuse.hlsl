@@ -1,12 +1,16 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 #include "Constants.hlsl"
+#include "Lighting.hlsl"
 
 struct VS_INPUT
 {
 	float3 position : POSITION;
 	float2 texCoord : TEXCOORD0;
 	float3 normal : NORMAL;
+#ifdef NORMALMAP
+	float3 tangent : TANGENT;
+#endif
 
 #ifdef SKINNED
 	int4 boneIndex : BLENDINDEX;
@@ -17,14 +21,23 @@ struct VS_INPUT
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
-	float2 texCoord : TEXCOORD;
+	float4 worldPosition : TEXCOORD1;
+	float2 texCoord : TEXCOORD0;
 	float3 normal : NORMAL;
+
+#ifdef NORMALMAP
+	float3 tangent : TANGENT;
+#endif
 };
 
 #ifdef COMPILE_VS
 PS_INPUT VSMain(VS_INPUT input)
 {
 	PS_INPUT output = (PS_INPUT)0;
+
+#ifdef NORMALMAP
+	output.tangent = input.tangent;
+#endif
 
 #ifdef SKINNED
 
@@ -42,11 +55,13 @@ PS_INPUT VSMain(VS_INPUT input)
 	float3 transformedNormal = mul(input.normal, (float3x3)finalMatrix);
 
 	output.position = mul(transformedPosition, cWorldViewProj);
+	output.worldPosition = mul(transformedPosition, cWorld);
 	output.normal = normalize(mul(transformedNormal, (float3x3)cWorld));
 
 #else
 
 	output.position = mul(float4(input.position, 1.0f), cWorldViewProj);
+	output.worldPosition = mul(float4(input.position, 1.0f), cWorld);
 	output.normal = normalize(mul(input.normal, (float3x3)cWorld));
 
 #endif
@@ -58,12 +73,30 @@ PS_INPUT VSMain(VS_INPUT input)
 
 #ifdef COMPILE_PS
 
+
+
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
 	float3 normal = normalize(input.normal);
-	float diffuseStrength = saturate(dot(normal, -cLightDirection));
 
-	float4 sample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
-	return float4(sample.rgb * diffuseStrength, 1.0f);
+#ifdef NORMALMAP
+	normal = CalculateNormal(normal, normalize(input.tangent), input.texCoord, false);
+#endif
+
+	float3 output = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float diffuseStrength = saturate(dot(normal, -cLightDirection));
+	output *= diffuseStrength;
+
+#ifdef DIFFUSEMAP
+	float4 diffuseSample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
+	output *= diffuseSample.rgb;
+#endif
+
+#ifdef SPECULARMAP
+	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
+	output += GetSpecularBlinnPhong(viewDirection, normal, input.texCoord);
+#endif
+
+	return float4(output, 1.0f);
 }
 #endif

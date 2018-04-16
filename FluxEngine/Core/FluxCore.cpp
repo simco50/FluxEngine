@@ -26,6 +26,7 @@
 #include "Rendering/PostProcessing.h"
 #include "Rendering/Animation/AnimatedModel.h"
 #include "Rendering/Animation/Animator.h"
+#include "Rendering/Renderer.h"
 
 bool FluxCore::m_Exiting;
 
@@ -106,12 +107,6 @@ void FluxCore::InitGame()
 
 	std::vector<std::string> meshPaths;
 	meshPaths.push_back("Resources/Meshes/obj/Gangnam Style.fbx");
-	meshPaths.push_back("Resources/Meshes/obj/Man_Drunk.dae");
-	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
-	meshPaths.push_back("Resources/Meshes/obj/Man_Idle.dae");
-	meshPaths.push_back("Resources/Meshes/obj/Man_LookAround.dae");
-	meshPaths.push_back("Resources/Meshes/obj/Bellydancing.dae");
-	meshPaths.push_back("Resources/Meshes/obj/Jumping.dae");
 
 	std::vector<Mesh*> meshes;
 	for (std::string& path : meshPaths)
@@ -122,34 +117,36 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
 			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
 			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 		};
-		pMesh->CreateBuffers(desc);
+		if(pMesh)
+			pMesh->CreateBuffers(desc);
 		meshes.push_back(pMesh);
 	}
 
-	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/DefaultSkinned.xml");
+	std::vector<Material*> pMaterials;
+
+	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
-			SceneNode* pObject = new SceneNode(m_pContext, "Cube");
-			pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
-			AnimatedModel* pModel = new AnimatedModel(m_pContext);
-			pModel->SetMesh(meshes[x]);
-			pModel->SetMaterial(pMaterial);
-			pObject->AddComponent(pModel);
-			Animator* pAnimator = new Animator(m_pContext);
-			pObject->AddComponent(pAnimator);
-			Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-			BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
-			pObject->AddComponent(pRigidbody);
-			pObject->AddComponent(pCollider);
-			m_pScene->AddChild(pObject);
-			pAnimator->Play();
+		SceneNode* pObject = new SceneNode(m_pContext, "Cube");
+		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
+		Model* pModel = new AnimatedModel(m_pContext);
+		pModel->SetMesh(meshes[x]);
+		pModel->SetMaterial(pMaterials[x]);
+		pObject->AddComponent(pModel);
+		Animator* pAnimator = new Animator(m_pContext);
+		pObject->AddComponent(pAnimator);
+		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
+		pObject->AddComponent(pRigidbody);
+		pObject->AddComponent(pCollider);
+		m_pScene->AddChild(pObject);
+		pAnimator->Play();
 	}
-	
-
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 }
 
@@ -220,6 +217,8 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
+	ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
+	ImGui::InputFloat3("Light Direction", &m_pScene->GetRenderer()->GetLightDirection()->x);
 	ImGui::End();
 
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))

@@ -3,6 +3,6 @@
 		<Shader type="Pixel" source="Resources/Shaders/ChromaticAberration"/>
 	</Shaders>
 	<Parameters>
-		<Value name="cAberrationAmount" value="0.001"/>
+		<Value name="cAberrationAmount" value="0.0005"/>
 	</Parameters>
 </Material>

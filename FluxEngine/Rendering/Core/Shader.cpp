@@ -1,13 +1,12 @@
 #include "FluxEngine.h"
 #include "Shader.h"
 #include "ShaderVariation.h"
-#include "Graphics.h"
 #include "IO\InputStream.h"
+#include "Content\ResourceManager.h"
 
 Shader::Shader(Context* pContext) :
 	Resource(pContext)
 {
-	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 Shader::~Shader()
@@ -16,57 +15,60 @@ Shader::~Shader()
 
 bool Shader::Load(InputStream& inputStream)
 {
+	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
+	GetSubsystem<ResourceManager>()->ResetDependencies(this);
+
 	std::string fileName = inputStream.GetSource();
 	m_ShaderName = Paths::GetFileNameWithoutExtension(fileName);
-	m_FileDir = Paths::GetDirectoryPath(fileName);
 
-	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
-		if (!ProcessSource(&inputStream, codeStream))
+		std::vector<size_t> processedIncludes;
+		if (!ProcessSource(&inputStream, codeStream, processedIncludes))
 			return false;
 
 		m_ShaderSource = codeStream.str();
 	}
 
-	Reload();
+	ReloadVariations();
 
 	return true;
 }
 
-bool Shader::Reload()
+bool Shader::ReloadVariations()
 {
-	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
+	AUTOPROFILE_DESC(ReloadVariations, m_ShaderName);
 	//Reload all shaders in the cache
-	for (auto& p : m_ShaderCache)
+	for (auto& map : m_ShaderCache)
 	{
-		if (p.second == nullptr)
-			continue;
-		p.second->Create(m_pGraphics);
+		for (auto& p : map)
+		{
+			if (p.second == nullptr)
+				continue;
+			p.second->Create();
+		}
 	}
 	return true;
 }
 
-ShaderVariation* Shader::GetVariation(const ShaderType type, const std::string& defines)
+ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::string& defines)
 {
-	std::hash<std::string> hasher;
-	size_t hash = hasher(defines + (char)type);
-
-	auto pIt = m_ShaderCache.find(hash);
-	if (pIt != m_ShaderCache.end())
+	size_t hash = std::hash<std::string>{}(defines);
+	auto pIt = m_ShaderCache[(size_t)type].find(hash);
+	if (pIt != m_ShaderCache[(size_t)type].end())
 		return pIt->second.get();
 
-	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(this, type);
+	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(m_pContext, this, type);
 	pVariation->SetDefines(defines);
-	if (!pVariation->Create(m_pGraphics))
+	if (!pVariation->Create())
 	{
 		FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
 		return nullptr;
 	}
 
-	m_ShaderCache[hash] = std::move(pVariation);
-	return m_ShaderCache[hash].get();
+	m_ShaderCache[(size_t)type][hash] = std::move(pVariation);
+	return m_ShaderCache[(size_t)type][hash].get();
 }
 
 std::string Shader::GetEntryPoint(const ShaderType type)
@@ -86,35 +88,34 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 	}
 }
 
-std::string Shader::MakeSearchHash(const ShaderType type, const std::string& defines)
+bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
 {
-	return Printf("TYPE_%i%s", type, defines.c_str());
-}
+	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
+	if(GetName() != pInputStream->GetSource())
+		pResourceManager->AddResourceDependency(this, pInputStream->GetSource());
 
-bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output)
-{
 	std::string line;
 	while (pInputStream->GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
-			std::string includeFilePath = line.substr(9);
-			includeFilePath.erase(includeFilePath.begin());
-			includeFilePath.pop_back();
-
-			std::unique_ptr<File> newFile = FileSystem::GetFile(m_FileDir + includeFilePath);
+			std::string includeFilePath = std::string(line.begin() + 10, line.end() - 1);
+			size_t includeHash = std::hash<std::string>{}(includeFilePath);
+			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) != processedIncludes.end())
+				continue;
+			processedIncludes.push_back(includeHash);
+			std::string basePath = Paths::GetDirectoryPath(pInputStream->GetSource());
+			std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
 			if (newFile == nullptr)
 				return false;
 			if (!newFile->Open(FileMode::Read))
 				return false;
-
-			if (!ProcessSource(newFile.get(), output))
+			if (!ProcessSource(newFile.get(), output, processedIncludes))
 				return false;
 		}
 		else
 		{
-			output << line;
-			output << '\n';
+			output << line << '\n';
 		}
 	}
 	output << '\n';

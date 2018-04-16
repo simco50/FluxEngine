@@ -24,7 +24,8 @@ public:
 	virtual void OnSceneSet(Scene* pScene) override;
 
 private:
-	AnimationState * GetAnimationState(const int index);
+	AnimationState * GetAnimationState(const StringHash hash);
 
 	AnimatedModel* m_pModel = nullptr;
+	Animation* m_pAnimation = nullptr;
 };

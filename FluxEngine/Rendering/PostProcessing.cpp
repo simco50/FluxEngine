@@ -11,6 +11,8 @@
 PostProcessing::PostProcessing(Context* pContext) :
 	Subsystem(pContext)
 {
+	AUTOPROFILE(PostProcessing_Create);
+
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
 	m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(pContext);
 	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
@@ -47,7 +49,7 @@ void PostProcessing::Draw()
 		}
 		for (auto& parameter : pMaterial->GetShaderParameters())
 		{
-			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.pData);
+			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
 		}
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetRenderTexture());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
@@ -56,6 +58,8 @@ void PostProcessing::Draw()
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
 	m_pGraphics->PrepareDraw();
 	m_pGraphics->SetRenderTarget(0, nullptr);
+
+	//Do an extra blit if the shader count is odd
 	if (m_Materials.size() % 2 == 1)
 	{
 		m_pGraphics->SetShader(ShaderType::PixelShader, m_pBlitPixelShader);
@@ -77,5 +81,5 @@ void PostProcessing::OnResize(const int width, const int height)
 	renderTargetDesc.Width = width;
 	renderTargetDesc.Height = height;
 	if (!m_pIntermediateRenderTarget->Create(renderTargetDesc))
-		FLUX_LOG(Error, "[PostProcessing::PostProcessing] > Failed to create render target");
+		FLUX_LOG(Error, "[PostProcessing::OnResize] > Failed to create render target");
 }

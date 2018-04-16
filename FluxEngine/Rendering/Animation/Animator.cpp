@@ -20,10 +20,14 @@ Animator::~Animator()
 
 void Animator::Play()
 {
+	m_pAnimation = m_pModel->GetMesh()->GetAnimation(0);
+
 	AnimatedModel* pModel = GetComponent<AnimatedModel>();
 	if (pModel)
 	{
-		pModel->AddAnimationState(m_pModel->GetMesh()->GetAnimation(0));
+		AnimationState* pState = pModel->GetAnimationState(m_pAnimation->GetNameHash());
+		if (pState == nullptr)
+			pModel->AddAnimationState(m_pAnimation);
 	}
 }
 
@@ -37,7 +41,7 @@ void Animator::Reset()
 
 void Animator::Update()
 {
-	AnimationState* pState = GetAnimationState(0);
+	AnimationState* pState = GetAnimationState(m_pAnimation->GetNameHash());
 	if (pState)
 	{
 		pState->AddTime(GameTimer::DeltaTime());
@@ -52,12 +56,12 @@ void Animator::OnSceneSet(Scene* pScene)
 	pScene->OnSceneUpdate().AddRaw(this, &Animator::Update);
 }
 
-AnimationState * Animator::GetAnimationState(const int index)
+AnimationState * Animator::GetAnimationState(const StringHash hash)
 {
 	AnimatedModel* pModel = GetComponent<AnimatedModel>();
 	if (pModel)
 	{
-		return pModel->GetAnimationState(index);
+		return pModel->GetAnimationState(hash);
 	}
 	return nullptr;
 }

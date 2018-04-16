@@ -34,7 +34,7 @@ ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderTy
 {
 	Shader* pShader = GetShader(filePath);
 	if (pShader)
-		return pShader->GetVariation(type, defines);
+		return pShader->GetOrCreateVariation(type, defines);
 	return nullptr;
 }
 

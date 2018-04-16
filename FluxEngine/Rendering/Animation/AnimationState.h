@@ -19,18 +19,23 @@ class AnimationState
 public:
 	AnimationState(Animation* pAnimation, AnimatedModel* pModel);
 
-	Animation* pAnimation = nullptr;
-	AnimatedModel* pModel = nullptr;
-	Bone* pRootBone = nullptr;
-	std::vector<AnimationKeyState> KeyStates;
-	bool IsDirty = true;
-
-	float Time = 0.0f;
-
 	void AddTime(const float time);
+	void SetTime(const float time);
 
 	void Apply(std::vector<Matrix>& skinMatrices);
 
+	Animation* GetAnimation() const { return m_pAnimation; }
+	bool IsLooped() const { return m_Looped; }
+	float GetDuration() const;
+
 private:
 	void CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
+	
+	float m_Time = 0.0f;
+	bool m_IsDirty = true;
+	bool m_Looped = true;
+	Animation* m_pAnimation = nullptr;
+	AnimatedModel* m_pModel = nullptr;
+	Bone* m_pRootBone = nullptr;
+	std::vector<AnimationKeyState> m_KeyStates;
 };

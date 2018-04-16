@@ -20,7 +20,7 @@ public:
 
 	AnimationState* AddAnimationState(Animation* pAnimation);
 	void RemoveAnimationState(AnimationState* pAnimation);
-	AnimationState* GetAnimationState(const int index) { return &m_AnimationStates[index]; }
+	AnimationState* GetAnimationState(const StringHash hash);
 
 private:
 	std::vector<Matrix> m_SkinMatrices;

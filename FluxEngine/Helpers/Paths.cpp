@@ -61,3 +61,22 @@ std::string Paths::GetDirectoryPath(const std::string& filePath)
 
 	return filePath.substr(0, it.base() - filePath.begin());
 }
+
+std::string Paths::Normalize(const std::string& filePath)
+{
+	std::string output = std::string(filePath.begin(), filePath.end());
+	NormalizeInline(output);
+	return output;
+}
+
+void Paths::NormalizeInline(std::string& filePath)
+{
+	for (char& c : filePath)
+	{
+		if (c == '\\')
+			c = '/';
+		c = (char)tolower(c);
+	}
+	if (filePath.find("./") == 0)
+		filePath = std::string(filePath.begin() + 2, filePath.end());
+}

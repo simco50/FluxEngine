@@ -50,7 +50,7 @@ public:
 		{
 			if (required)
 			{
-				FLUX_LOG(Error, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic().c_str());
+				FLUX_LOG(Warning, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic().c_str());
 			}
 			return nullptr;
 		}
@@ -63,7 +63,7 @@ public:
 		auto pIt = m_Systems.find(T::GetTypeStatic());
 		if (pIt != m_Systems.end())
 		{
-			FLUX_LOG(Error, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic().c_str());
+			FLUX_LOG(Warning, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic().c_str());
 			return nullptr;
 		}
 		m_SystemCache.push_back(std::make_unique<T>(this, args...));

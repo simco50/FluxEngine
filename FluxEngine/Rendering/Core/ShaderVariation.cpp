@@ -4,7 +4,8 @@
 #include "Graphics.h"
 #include "ConstantBuffer.h"
 
-ShaderVariation::ShaderVariation(Shader* pShader, const ShaderType type) :
+ShaderVariation::ShaderVariation(Context* pContext, Shader* pShader, const ShaderType type) :
+	Object(pContext),
 	m_pParentShader(pShader),
 	m_ShaderType(type)
 {
@@ -20,6 +21,11 @@ ShaderVariation::~ShaderVariation()
 void ShaderVariation::Release()
 {
 	SafeRelease(m_pShaderObject);
+}
+
+void ShaderVariation::AddDefine(const std::string& define)
+{
+	m_Defines.push_back(define);
 }
 
 void ShaderVariation::SetDefines(const std::string& defines)

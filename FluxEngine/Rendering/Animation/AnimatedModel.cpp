@@ -49,3 +49,13 @@ void AnimatedModel::RemoveAnimationState(AnimationState* pAnimation)
 {
 	m_AnimationStates.erase(std::remove_if(m_AnimationStates.begin(), m_AnimationStates.end(), [pAnimation](const AnimationState& a) {return &a == pAnimation; }), m_AnimationStates.end());
 }
+
+AnimationState* AnimatedModel::GetAnimationState(const StringHash hash)
+{
+	for (AnimationState& state : m_AnimationStates)
+	{
+		if (state.GetAnimation()->GetNameHash() == hash)
+			return &state;
+	}
+	return nullptr;
+}

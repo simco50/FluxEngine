@@ -7,6 +7,11 @@ class ShaderVariation;
 class Graphics;
 class Texture;
 
+namespace tinyxml2
+{
+	class XMLElement;
+}
+
 class Material : public Resource
 {
 	FLUX_OBJECT(Material, Resource)
@@ -15,22 +20,59 @@ public:
 	Material(Context* pContext);
 	~Material();
 
-	struct ParameterEntry
+	class ParameterEntry
 	{
-		ParameterEntry()
+	public:
+		ParameterEntry() :
+			m_Size(0)
 		{}
-		ParameterEntry(const size_t size, void* pData) :
-			Size(size), pData(pData)
-		{}
-		size_t Size;
-		void* pData;
+		ParameterEntry(const size_t size, void* pInData, std::vector<char>& dataPool) :
+			m_Size(size), m_pDataPool(&dataPool)
+		{
+			m_DataOffset = (int)dataPool.size();
+			dataPool.resize(dataPool.size() + size);
+			if (pInData)
+				memcpy(dataPool.data() + m_DataOffset, pInData, size);
+		}
+		void SetData(const void* pInData, const size_t size)
+		{
+			assert(size == m_Size);
+			memcpy(m_pDataPool->data(), pInData, size);
+		}
+		void* GetData() const { return m_pDataPool->data(); }
+		size_t GetSize() const { return m_Size; }
+	private:
+		size_t m_Size;
+		std::vector<char>* m_pDataPool;
+		int m_DataOffset = 0;
 	};
 
+private:
+	class ParameterCache
+	{
+	public:
+		ParameterEntry& GetParameter(const std::string name, const size_t size)
+		{
+			ParameterEntry& entry = m_Parameters[name];
+			if (entry.GetSize() != size)
+			{
+				entry = ParameterEntry(size, nullptr, m_ParameterPool);
+			}
+			return entry;
+		}
+		const std::unordered_map<std::string, ParameterEntry>& GetParameters() const { return m_Parameters; }
+
+	private:
+		std::vector<char> m_ParameterPool;
+		std::unordered_map<std::string, ParameterEntry> m_Parameters;
+	};
+
+public:
 	virtual bool Load(InputStream& inputStream) override;
 
 	ShaderVariation* GetShader(const ShaderType type) const;
 	const std::unordered_map<TextureSlot, Texture*> GetTextures() const { return m_Textures; }
-	const std::unordered_map<std::string, ParameterEntry>& GetShaderParameters() const { return m_Parameters; }
+	const std::unordered_map<std::string, ParameterEntry>& GetShaderParameters() const { return m_ParameterCache.GetParameters(); }
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);
 
@@ -42,7 +84,6 @@ public:
 	void SetDepthEnabled(bool enabled) { m_DepthEnabled = enabled; }
 	void SetDepthWrite(bool enabled) { m_DepthWrite = enabled; }
 
-
 	CullMode GetCullMode() const { return m_CullMode; }
 	BlendMode GetBlendMode() const { return m_BlendMode; }
 	CompareMode GetDepthTestMode() const { return m_DepthTestMode; }
@@ -53,6 +94,9 @@ public:
 
 private:
 	Graphics* m_pGraphics;
+	bool ParseShaders(tinyxml2::XMLElement* pElement);
+	bool ParseProperties(tinyxml2::XMLElement* pElement);
+	bool ParseParameters(tinyxml2::XMLElement* pElement);
 
 	void ParseValue(const std::string& name, const std::string& valueString);
 
@@ -69,7 +113,6 @@ private:
 	FillMode m_FillMode = FillMode::SOLID;
 
 	std::unordered_map<TextureSlot, Texture*> m_Textures;
-
-	std::unordered_map<std::string, ParameterEntry> m_Parameters;
+	ParameterCache m_ParameterCache;
 	int m_BufferOffset = 0;
 };

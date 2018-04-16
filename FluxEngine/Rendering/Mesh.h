@@ -7,6 +7,7 @@ class VertexBuffer;
 class IndexBuffer;
 class Geometry;
 class Graphics;
+class Texture;
 struct VertexElement;
 
 struct aiScene;
@@ -31,7 +32,10 @@ public:
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }
-	Animation* GetAnimation(const int index) { return m_Animations[index].get(); }
+
+	Animation* GetAnimation(const std::string name) const;
+	Animation* GetAnimation(const StringHash hash) const;
+	Animation* GetAnimation(const int index) const;
 
 private:
 	bool LoadFlux(InputStream& inputStream);
@@ -40,6 +44,7 @@ private:
 	bool ProcessAssimpMeshes(const aiScene* pScene);
 	bool ProcessAssimpAnimations(const aiScene* pScene);
 	bool ProcessSkeleton(const aiScene* pScene);
+	void CalculateBoundingBox();
 	void ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone = nullptr);
 
 	static const int MESH_VERSION = 7;

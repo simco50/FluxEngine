@@ -9,6 +9,9 @@ struct Paths
 	static std::string GetFileExtenstion(const std::string& filePath);
 	static std::string GetDirectoryPath(const std::string& filePath);
 
+	static std::string Normalize(const std::string& filePath);
+	static void NormalizeInline(std::string& filePath);
+
 	static const std::string LogsFolder;
 	static const std::string ProfilingFolder;
 	static const std::string ScreenshotFolder;
