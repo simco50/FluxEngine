@@ -123,7 +123,7 @@ void ResourceManager::ResetDependencies(Resource* pResource)
 	for (auto pIt = m_ResourceDependencies.begin(); pIt != m_ResourceDependencies.end(); ++pIt)
 	{
 		auto it = std::remove_if(pIt->second.begin(), pIt->second.end(), [path](const std::string& name) {return name == path; });
-		int distance = (int)std::distance(pIt->second.begin(), it);
+		size_t distance = std::distance(pIt->second.begin(), it);
 		if (distance < pIt->second.size())
 			pIt->second.resize(distance);
 	}
