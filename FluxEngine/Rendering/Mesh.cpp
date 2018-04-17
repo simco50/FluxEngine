@@ -14,6 +14,21 @@
 #include <assimp\postprocess.h>
 #pragma comment(lib, "assimp-vc140-mt.lib")
 
+Vector3 ToDXVector3(const aiVector3D& vec)
+{
+	return *reinterpret_cast<const Vector3*>(&vec);
+}
+
+Quaternion TxDXQuaternion(const aiQuaternion& quat)
+{
+	Quaternion out;
+	out.x = quat.x;
+	out.y = quat.y;
+	out.z = quat.z;
+	out.w = quat.w;
+	return out;
+}
+
 Matrix ToDXMatrix(const aiMatrix4x4& mat)
 {
 	Matrix m;
@@ -335,8 +350,6 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 						}
 					}
 				}
-
-				
 			}
 		}
 		m_Geometries.push_back(std::move(pGeometry));
@@ -354,44 +367,50 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		{
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
 			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
+			
+			AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
+				AsyncTask* pTask = pQueue->GetFreeTask();
+
 				const aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
-				AnimationNode animNode;
-
-				animNode.Name = pAnimNode->mNodeName.C_Str();
-				auto pIt = m_BoneMap.find(animNode.Name);
-				if (pIt == m_BoneMap.end())
+				pTask->Action.BindLambda([this, &pNewAnimation, pAnimNode](AsyncTask*, int)
 				{
-					FLUX_LOG(Warning, "[Mesh::ProcessAssimpAnimations] > There is no bone that matches the animation node '%s'", animNode.Name.c_str());
-					continue;
-				}
-				animNode.BoneIndex = pIt->second;
+					AnimationNode animNode;
 
-				std::map<float, Matrix> keys;
-				for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
-					keys[(float)pAnimNode->mPositionKeys[k].mTime] = Matrix();
-				for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
-					keys[(float)pAnimNode->mScalingKeys[k].mTime] = Matrix();
-				for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
-					keys[(float)pAnimNode->mRotationKeys[k].mTime] = Matrix();
+					animNode.Name = pAnimNode->mNodeName.C_Str();
+					auto pIt = m_BoneMap.find(animNode.Name);
+					if (pIt == m_BoneMap.end())
+					{
+						FLUX_LOG(Warning, "[Mesh::ProcessAssimpAnimations] > There is no bone that matches the animation node '%s'", animNode.Name.c_str());
+						return;
+					}
+					animNode.BoneIndex = pIt->second;
 
-				for (auto& key : keys)
-				{
-					aiQuaternion quat = GetRotation(pAnimNode, key.first);
-					aiVector3D scale = GetScale(pAnimNode, key.first);
-					aiVector3D position = GetPosition(pAnimNode, key.first);
-					key.second = ToDXMatrix(aiMatrix4x4(scale, quat, position));
-				}
+					std::vector<float> keyTimes;
+					for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
+						keyTimes.push_back((float)pAnimNode->mPositionKeys[k].mTime);
+					for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
+						keyTimes.push_back((float)pAnimNode->mScalingKeys[k].mTime);
+					for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
+						keyTimes.push_back((float)pAnimNode->mRotationKeys[k].mTime);
+					std::sort(keyTimes.begin(), keyTimes.end());
+					keyTimes.erase(std::unique(keyTimes.begin(), keyTimes.end()), keyTimes.end());
 
-				for (auto& key : keys)
-				{
-					AnimationKey animationKey;
-					key.second.Decompose(animationKey.Scale, animationKey.Rotation, animationKey.Position);
-					animNode.Keys.push_back(std::pair<float, AnimationKey>(key.first, animationKey));
-				}
-				pNewAnimation->SetNode(animNode);
+					for (float time : keyTimes)
+					{
+						AnimationKey key;
+						key.Rotation = TxDXQuaternion(GetRotation(pAnimNode, time));
+						key.Scale = ToDXVector3(GetScale(pAnimNode, time));
+						key.Position = ToDXVector3(GetPosition(pAnimNode, time));
+						animNode.Keys.push_back(std::pair<float, AnimationKey>(time, key));
+					}
+					pNewAnimation->SetNode(animNode);
+				});
+
+				pQueue->AddWorkItem(pTask);
 			}
+			pQueue->JoinAll();
 			m_Animations.push_back(std::move(pNewAnimation));
 		}
 	}

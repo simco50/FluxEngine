@@ -83,7 +83,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 	normal = CalculateNormal(normal, normalize(input.tangent), input.texCoord, false);
 #endif
 
-	float3 output = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float3 output = float3(1.0f, 1.0f, 1.0f);
 	float diffuseStrength = saturate(dot(normal, -cLightDirection));
 	output *= diffuseStrength;
 
@@ -94,7 +94,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 
 #ifdef SPECULARMAP
 	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
-	output += GetSpecularBlinnPhong(viewDirection, normal, input.texCoord);
+	output += GetSpecularPhong(viewDirection, normal, input.texCoord);
 #endif
 
 	return float4(output, 1.0f);
