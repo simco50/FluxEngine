@@ -35,6 +35,8 @@ private:
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
+	Scene* pScene;
+
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
 

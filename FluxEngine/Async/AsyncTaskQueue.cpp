@@ -23,14 +23,6 @@ AsyncTaskQueue::~AsyncTaskQueue()
 		delete pThread;
 		pThread = nullptr;
 	}
-	for (AsyncTask*& pTask : m_Tasks)
-	{
-		SafeDelete(pTask);
-	}
-	for (AsyncTask*& pTask : m_TaskPool)
-	{
-		SafeDelete(pTask);
-	}
 }
 
 void AsyncTaskQueue::CreateThreads(const size_t count)
@@ -61,14 +53,14 @@ void AsyncTaskQueue::JoinAll()
 	m_Queue.clear();
 #endif
 
-	for (auto& pTask : m_Tasks)
+	for (auto& pTask : m_RunningTasks)
 	{
 		pTask->Action.Clear();
 		pTask->IsCompleted = false;
 		pTask->Priority = 0;
-		m_TaskPool.push_back(std::move(pTask));
+		m_TaskPool.push_back(pTask);
 	}
-	m_Tasks.clear();
+	m_RunningTasks.clear();
 }
 
 void AsyncTaskQueue::ProcessItems(int index)
@@ -114,9 +106,9 @@ AsyncTask* AsyncTaskQueue::GetFreeTask()
 	}
 	else
 	{
-		AsyncTask* pTask = new AsyncTask();
-		m_TaskPool.push_back(pTask);
-		return m_TaskPool[m_TaskPool.size() - 1];
+		std::unique_ptr<AsyncTask> pTask = std::make_unique<AsyncTask>();
+		m_Tasks.push_back(std::move(pTask));
+		return m_Tasks.back().get();
 	}
 }
 
@@ -126,15 +118,14 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 		return;
 
 	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](AsyncTask* pOther) {return pOther == pItem; });
-	if (pIt == m_TaskPool.end())
+	if (pIt != m_TaskPool.end())
 	{
-		FLUX_LOG(Warning, "[AsyncTaskQueue::AddWorkItem] > Task is not in the pool");
+		FLUX_LOG(Warning, "[AsyncTaskQueue::AddWorkItem] > Task is still in the pool");
 		return;
 	}
-	m_Tasks.push_back(std::move(*pIt));
-	m_TaskPool.erase(pIt);
+	m_RunningTasks.push_back(pItem);
 
-	m_QueueMutex.Lock();
+	ScopeLock lock(m_QueueMutex);
 	if (m_Queue.empty())
 	{
 		m_Queue.push_back(pItem);
@@ -154,7 +145,6 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 		if(isInserted == false)
 			m_Queue.push_back(pItem);
 	}
-	m_QueueMutex.Unlock();
 }
 
 void AsyncTaskQueue::Stop()
@@ -164,7 +154,7 @@ void AsyncTaskQueue::Stop()
 
 bool AsyncTaskQueue::IsCompleted() const
 {
-	for (auto& pItem : m_Tasks)
+	for (auto& pItem : m_RunningTasks)
 	{
 		if (pItem->IsCompleted == false)
 			return false;

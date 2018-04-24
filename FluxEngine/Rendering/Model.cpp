@@ -27,6 +27,7 @@ void Model::OnNodeSet(SceneNode* pNode)
 	for (Batch& batch : m_Batches)
 	{
 		batch.pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		batch.NumSkinMatrices = 1;
 	}
 }
 

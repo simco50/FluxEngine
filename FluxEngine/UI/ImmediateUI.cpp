@@ -151,6 +151,7 @@ void ImmediateUI::Render()
 	m_pGraphics->GetBlendState()->SetColorWrite(ColorWrite::ALL);
 	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::ALPHA, false);
 
+	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));

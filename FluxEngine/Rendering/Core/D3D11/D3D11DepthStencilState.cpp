@@ -21,7 +21,7 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 	if (state != m_DepthStencilStates.end())
 		return state->second;
 
-	AUTOPROFILE_DESC(DepthStencilState_Create, ToHex(stateHash));
+	AUTOPROFILE_DESC(DepthStencilState_Create, Math::ToHex(stateHash));
 
 	m_DepthStencilStates[stateHash] = nullptr;
 	void*& pState = m_DepthStencilStates[stateHash];

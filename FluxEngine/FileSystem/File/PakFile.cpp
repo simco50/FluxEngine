@@ -7,6 +7,7 @@
 
 bool PakFile::Open(const FileMode mode)
 {
+	m_Size = m_pTableEntry->UncompressedSize;
 	UNREFERENCED_PARAMETER(mode); 
 	return true;
 }
@@ -70,12 +71,6 @@ bool PakFile::IsOpen() const
 	if (m_pMountPoint->GetPakFile() == nullptr)
 		return false;
 	return true;
-}
-
-size_t PakFile::GetSize() const
-{
-	assert(m_pTableEntry);
-	return m_pTableEntry->UncompressedSize;
 }
 
 bool PakFile::CacheUncompressedData()

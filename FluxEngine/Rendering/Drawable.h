@@ -11,6 +11,8 @@ struct Batch
 	const Material* pMaterial = nullptr;
 	const Geometry* pGeometry = nullptr;
 	const Matrix* pModelMatrix = nullptr;
+	const Matrix* pSkinMatrices = nullptr;
+	int NumSkinMatrices = 1;
 };
 
 class Drawable : public Component
@@ -20,6 +22,7 @@ class Drawable : public Component
 public:
 	Drawable(Context* pContext) : Component(pContext) {}
 	virtual ~Drawable() {}
+	virtual void Update() {}
 
 	virtual void OnSceneSet(Scene* pScene) override;
 

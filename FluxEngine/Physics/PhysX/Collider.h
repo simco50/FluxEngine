@@ -54,6 +54,7 @@ protected:
 	physx::PxMaterial* m_pMaterial = nullptr;
 	physx::PxShape* m_pShape = nullptr;
 	physx::PxShapeFlags m_ShapeFlags;
+	physx::PxTransform m_LocalPose;
 };
 
 class SphereCollider : public Collider

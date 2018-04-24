@@ -32,7 +32,7 @@ private:
 	static std::string GetTime();
 
 	char* m_ConvertBuffer;
-	const size_t m_ConvertBufferSize = 2048;
+	const size_t m_ConvertBufferSize = 4096;
 
 	struct QueuedMessage
 	{

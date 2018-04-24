@@ -35,6 +35,21 @@ std::string InputStream::ReadSizedString()
 	return str;
 }
 
+std::string InputStream::ReadString()
+{
+	std::stringstream str;
+	while (!IsEoF())
+	{
+		char c = ReadByte();
+		if (c == '\0')
+		{
+			return str.str();
+		}
+		str << c;
+	}
+	return str.str();
+}
+
 int InputStream::ReadInt()
 {
 	int out;

@@ -10,7 +10,6 @@
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/Texture.h"
 #include "Rendering/Mesh.h"
-#include "Rendering/Model.h"
 #include "Rendering/Material.h"
 #include "Rendering/Camera/FreeCamera.h"
 #include "Rendering/Camera/Camera.h"
@@ -25,8 +24,9 @@
 #include "Input/InputEngine.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/PostProcessing.h"
-#include "Rendering/ParticleSystem/ParticleSystem.h"
-#include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Rendering/Animation/AnimatedModel.h"
+#include "Rendering/Animation/Animator.h"
+#include "Rendering/Renderer.h"
 
 bool FluxCore::m_Exiting;
 
@@ -101,52 +101,53 @@ void FluxCore::InitGame()
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
-
+	m_pCamera->GetCamera()->SetFarPlane(1000);
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
-	physx::PxMaterial* pPhysMaterial = m_pPhysics->GetPhysics()->createMaterial(0.6f, 0.6f, 0.1f);
+	std::vector<std::string> meshPaths;
+	meshPaths.push_back("Resources/Meshes/obj/Gangnam Style.fbx");
 
-	Mesh* pMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Spot.flux");
-	std::vector<VertexElement> desc =
+	std::vector<Mesh*> meshes;
+	for (std::string& path : meshPaths)
 	{
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
-	};
-	pMesh->CreateBuffers(desc);
+		Mesh* pMesh = m_pResourceManager->Load<Mesh>(path);
+		std::vector<VertexElement> desc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
+			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
+		};
+		if(pMesh)
+			pMesh->CreateBuffers(desc);
+		meshes.push_back(pMesh);
+	}
 
-	Material* pMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	std::vector<Material*> pMaterials;
 
-	SceneNode* pObject = new SceneNode(m_pContext, "Cube");
-	Model* pModel = new Model(m_pContext);
-	pModel->SetMesh(pMesh);
-	pModel->SetMaterial(pMaterial);
-	pObject->AddComponent(pModel);
-	Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-	pRigidbody->SetBodyType(Rigidbody::Dynamic);
-	pObject->AddComponent(pRigidbody);
-	Collider* pBoxCollider = new BoxCollider(m_pContext, pMesh->GetBoundingBox());
-	pObject->AddComponent(pBoxCollider);
-	m_pScene->AddChild(pObject);
+	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
 
-	SceneNode* pParticles = new SceneNode(m_pContext, "Particles");
-	pParticles->GetTransform()->Translate(4, 0, 0);
-	ParticleSystem* pParticleSystem = m_pResourceManager->Load<ParticleSystem>("Resources/ParticleSystems/Lava.json");
-	ParticleEmitter* pEmitter = new ParticleEmitter(m_pContext, pParticleSystem);
-	pParticles->AddComponent(pEmitter);
-	pBoxCollider = new BoxCollider(m_pContext, pEmitter->GetBoundingBox());
-	pParticles->AddComponent(pBoxCollider);
-	m_pScene->AddChild(pParticles);
-
-	SceneNode* pFloor = new SceneNode(m_pContext, "Floor");
-	pFloor->GetTransform()->Rotate(0, 0, 90, Space::WORLD);
-	Collider* pPlaneCollider = new PlaneCollider(m_pContext, pPhysMaterial);
-	pFloor->AddComponent(pPlaneCollider);
-	m_pScene->AddChild(pFloor);
-
+	for (size_t x = 0; x < meshes.size(); x++)
+	{
+		SceneNode* pObject = new SceneNode(m_pContext, "Cube");
+		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
+		Model* pModel = new AnimatedModel(m_pContext);
+		pModel->SetMesh(meshes[x]);
+		pModel->SetMaterial(pMaterials[x]);
+		pObject->AddComponent(pModel);
+		Animator* pAnimator = new Animator(m_pContext);
+		pObject->AddComponent(pAnimator);
+		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
+		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
+		pObject->AddComponent(pRigidbody);
+		pObject->AddComponent(pCollider);
+		m_pScene->AddChild(pObject);
+		pAnimator->Play();
+	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
-
-	m_pInput->AddInputAction(InputAction(0, Pressed, -1, VK_LBUTTON));
 }
 
 void FluxCore::ProcessFrame()
@@ -179,6 +180,12 @@ void FluxCore::ProcessFrame()
 	if (m_DebugPhysics)
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 
+	if (m_pSelectedNode)
+	{
+		AnimatedModel* pModel = m_pSelectedNode->GetComponent<AnimatedModel>();
+		m_pDebugRenderer->AddSkeleton(pModel->GetSkeleton(), pModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+	}
+
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
 
@@ -210,6 +217,8 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
+	ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
+	ImGui::InputFloat3("Light Direction", &m_pScene->GetRenderer()->GetLightDirection()->x);
 	ImGui::End();
 
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
@@ -248,7 +257,9 @@ void FluxCore::RenderUI()
 		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
 		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
 		if (pModel)
+		{
 			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+		}
 		ImGui::TreePop();
 	}
 

@@ -16,7 +16,7 @@ void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 	if (state != m_RasterizerStates.end())
 		return state->second;
 
-	AUTOPROFILE_DESC(RasterizerState_Create, ToHex(stateHash));
+	AUTOPROFILE_DESC(RasterizerState_Create, Math::ToHex(stateHash));
 
 	m_RasterizerStates[stateHash] = nullptr;
 	void*& pState = m_RasterizerStates[stateHash];

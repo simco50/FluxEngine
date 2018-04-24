@@ -36,8 +36,8 @@ bool PakMountPoint::OnMount()
 	//Set all characters to lower case
 	for (PakFileEntry& entry : m_FileEntries)
 	{
-		for (char& c : entry.FilePath)
-			c = (char)tolower(c);
+		std::string normalized = Paths::Normalize(entry.FilePath);
+		memcpy(entry.FilePath, normalized.data(), normalized.size());
 	}
 
 	//Sort the files so searching is faster

@@ -11,6 +11,7 @@ public:
 	bool WriteByte(const char value) { return Write(&value, sizeof(char)) == sizeof(char); }
 	bool WriteUByte(const unsigned char value) { return Write(&value, sizeof(unsigned char)) == sizeof(unsigned char); }
 	bool WriteString(const std::string& string);
+	bool WriteSizedString(const std::string& string);
 
 	bool WriteLine(const std::string& line);
 };

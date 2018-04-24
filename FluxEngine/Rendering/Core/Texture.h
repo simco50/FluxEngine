@@ -1,5 +1,6 @@
 #pragma once
 #include "Content/Resource.h"
+#include "GraphicsDefines.h"
 
 class Graphics;
 class Image;
@@ -35,6 +36,9 @@ public:
 
 	virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
 
+	void SetAddressMode(const TextureAddressMode addressMode);
+	void UpdateParameters();
+
 	void* GetRenderTargetView() const { return m_pRenderTargetView; }
 	void* GetResource() const { return m_pResource; }
 	void* GetResourceView() const { return m_pShaderResourceView; }
@@ -43,10 +47,6 @@ public:
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
-
-	void SetAddressMode(const TextureAddressMode addressMode);
-
-	void UpdateParameters();
 
 protected:
 	void Release();
@@ -73,6 +73,7 @@ protected:
 	TextureAddressMode m_TextureAddressMode = TextureAddressMode::WRAP;
 	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
+	TextureAddressMode m_AddressMode = TextureAddressMode::WRAP;
 	Graphics* m_pGraphics = nullptr;
 };
 

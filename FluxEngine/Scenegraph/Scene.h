@@ -27,7 +27,11 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 
+	MulticastDelegate<>& OnSceneUpdate() { return m_OnSceneUpdate; }
+	
 private:
 	std::unique_ptr<Renderer> m_pRenderer;
 	std::vector<SceneNode*> m_pNodes;
+
+	MulticastDelegate<> m_OnSceneUpdate;
 };

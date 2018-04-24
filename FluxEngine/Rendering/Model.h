@@ -2,6 +2,7 @@
 #include "Rendering/Drawable.h"
 
 class Mesh;
+class Skeleton;
 
 class Model : public Drawable
 {
@@ -16,8 +17,10 @@ public:
 	virtual void OnMarkedDirty(const Transform* pTransform) override;
 
 	void SetMesh(Mesh* pMesh);
+	Mesh* GetMesh() const { return m_pMesh; }
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
-private:
+
+protected:
 	Mesh* m_pMesh = nullptr;
 };

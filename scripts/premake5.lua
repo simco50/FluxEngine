@@ -59,6 +59,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
 			"../Libraries/PhysX 3.4/PxShared/include",
 			"../Libraries/SDL2-2.0.7/include",
+			"../Libraries/Assimp/include",
 		}
 
 		libdirs
@@ -69,6 +70,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
+			"../Libraries/Assimp/lib/%{cfg.platform}",
 		}
 
 	project "FluxGame"
@@ -100,6 +102,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
 			"../Libraries/PhysX 3.4/PxShared/include",
 			"../Libraries/SDL2-2.0.7/include",
+			"../Libraries/Assimp/include",
 		}
 
 		libdirs
@@ -110,11 +113,13 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
+			"../Libraries/Assimp/lib/%{cfg.platform}",
 		}
 
 		postbuildcommands
 		{ 
 			"xcopy \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\" /Y /D",
+			"xcopy \"$(SolutionDir)Libraries\\Assimp\\bin\\%{cfg.platform}\\assimp-vc140-mt.dll\" \"$(OutDir)\" /Y /D",
 		}
 
 		filter { "configurations:Debug" }

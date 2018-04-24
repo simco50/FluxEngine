@@ -19,11 +19,13 @@ public:
 	void Draw();
 
 	void AddDrawable(Drawable* pDrawable);
-	bool RemoveDrawable(Drawable* pDrawable);
+	void RemoveDrawable(Drawable* pDrawable);
 	void AddCamera(Camera* pCamera);
-	bool RemoveCamera(Camera* pCamera);
+	void RemoveCamera(Camera* pCamera);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
+	Vector3* GetLightPosition() { return &m_LightPosition; }
+	Vector3* GetLightDirection() { return &m_LightDirection; }
 
 private:
 	void SetPerFrameParameters();
@@ -37,6 +39,7 @@ private:
 	std::vector<Drawable*> m_Drawables;
 	std::vector<Camera*> m_Cameras;
 	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
+	Vector3 m_LightPosition = Vector3(1, 1, -1);
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;

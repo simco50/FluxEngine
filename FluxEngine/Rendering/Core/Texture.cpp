@@ -18,9 +18,9 @@ Texture::~Texture()
 
 void Texture::SetAddressMode(const TextureAddressMode addressMode)
 {
-	if (m_TextureAddressMode != addressMode)
+	if (m_AddressMode != addressMode)
 	{
-		m_TextureAddressMode = addressMode;
+		m_AddressMode = addressMode;
 		m_ParametersDirty = true;
 	}
 }

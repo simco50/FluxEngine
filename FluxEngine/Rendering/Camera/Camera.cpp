@@ -20,6 +20,7 @@ Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
 	m_ViewInverse = XMMatrixIdentity();
 	m_ViewProjection = XMMatrixIdentity();
 	m_ViewProjectionInverse = XMMatrixIdentity();
+
 }
 
 Camera::~Camera()
@@ -30,6 +31,7 @@ void Camera::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 	pScene->GetRenderer()->AddCamera(this);
+	OnMarkedDirty(GetTransform());
 }
 
 void Camera::OnMarkedDirty(const Transform* transform)
@@ -87,6 +89,18 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 
 	direction = farPoint - nearPoint;
 	direction.Normalize();
+}
+
+void Camera::SetNearPlane(const float nearPlane)
+{
+	m_NearPlane = nearPlane;
+	OnMarkedDirty(GetTransform());
+}
+
+void Camera::SetFarPlane(const float farPlane)
+{
+	m_FarPlane = farPlane;
+	OnMarkedDirty(GetTransform());
 }
 
 bool Camera::Raycast(RaycastResult& result) const

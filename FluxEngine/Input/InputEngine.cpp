@@ -25,31 +25,6 @@ bool InputEngine::AddInputAction(InputAction action)
 	return true;
 }
 
-bool InputEngine::IsActionTriggered(int actionID)
-{
-	for(const InputAction& action : m_InputActions[actionID])
-	{
-		switch (action.TriggerState)
-		{
-		case Pressed: 
-			if (action.Pressed)
-				return true;
-			break;
-		case Released:
-			if (action.Released)
-				return true;
-			break;
-		case Down:
-			if (action.Down)
-				return true;
-			break;
-		default:
-			break;
-		}
-	}
-	return false;
-}
-
 void InputEngine::Update()
 {
 	ZeroMemory(m_KeyPressed.data(), m_KeyPressed.size() * sizeof(bool));

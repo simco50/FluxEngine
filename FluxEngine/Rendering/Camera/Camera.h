@@ -32,6 +32,9 @@ public:
 	float GetNearPlane() const { return m_NearPlane; }
 	float GetFarPlane() const { return m_FarPlane; }
 
+	void SetNearPlane(const float nearPlane);
+	void SetFarPlane(const float farPlane);
+
 	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
 
 	bool Raycast(RaycastResult& result) const;

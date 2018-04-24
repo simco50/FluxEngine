@@ -19,6 +19,7 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "Content/Image.h"
+#include "Input/InputEngine.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
@@ -791,20 +792,19 @@ void Graphics::TakeScreenshot()
 	destinationImage.Save(file);
 }
 
-ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const std::string& name, unsigned int size)
+ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)
 {
-	auto pIt = m_ConstantBuffers.find(name);
+	size_t hash = (size_t)shaderType
+		| index << 2
+		| size << 4;
+
+	auto pIt = m_ConstantBuffers.find(hash);
 	if (pIt != m_ConstantBuffers.end())
 	{
-		if ((unsigned int)pIt->second->GetSize() != size)
-		{
-			FLUX_LOG(Error, "[Graphics::GetOrCreateConstantBuffer] > Constant buffer with name '%s' already exists but with a different size", name.c_str());
-			return nullptr;
-		}
 		return pIt->second.get();
 	}
 	std::unique_ptr<ConstantBuffer> pBuffer = std::make_unique<ConstantBuffer>(this);
 	pBuffer->SetSize(size);
-	m_ConstantBuffers[name] = std::move(pBuffer);
-	return m_ConstantBuffers[name].get();
+	m_ConstantBuffers[hash] = std::move(pBuffer);
+	return m_ConstantBuffers[hash].get();
 }

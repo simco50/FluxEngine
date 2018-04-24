@@ -11,6 +11,8 @@ enum class VertexElementType : unsigned char
 	FLOAT4,
 	UBYTE4,
 	UBYTE4_NORM,
+	UINT4,
+	INT4,
 	MAX_VERTEX_ELEMENT_TYPES
 };
 
@@ -104,6 +106,10 @@ struct VertexElement
 			return DXGI_FORMAT_R32G32B32_FLOAT;
 		case VertexElementType::FLOAT4:
 			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		case VertexElementType::UINT4:
+			return DXGI_FORMAT_R32G32B32A32_UINT;
+		case VertexElementType::INT4:
+			return DXGI_FORMAT_R32G32B32A32_SINT;
 		}
 		FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
 		return (DXGI_FORMAT)0;
@@ -123,6 +129,8 @@ struct VertexElement
 		case VertexElementType::FLOAT3:
 			return 12;
 		case VertexElementType::FLOAT4:
+		case VertexElementType::UINT4:
+		case VertexElementType::INT4:
 			return 16;
 		}
 		FLUX_LOG(Warning, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
