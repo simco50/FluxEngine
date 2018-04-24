@@ -13,7 +13,6 @@ public:
 
 	virtual size_t Read(void* pDestination, const size_t size) = 0;
 	virtual bool SetPointer(const size_t position);
-	virtual size_t GetSize() const { return m_Size; }
 
 	size_t ReadFrom(void* pDestination, const size_t from, const size_t size);
 	bool ReadAllBytes(std::vector<unsigned char>& buffer);
@@ -21,6 +20,7 @@ public:
 	bool MovePointer(const int delta);
 
 	std::string ReadSizedString();
+	std::string ReadString();
 	int ReadInt();
 	unsigned int ReadUInt();
 	float ReadFloat();
@@ -30,6 +30,8 @@ public:
 
 	bool GetLine(std::string& outLine, const char delimiter = '\n');
 
+	bool IsEoF() const { return m_FilePointer >= m_Size; }
+	size_t GetSize() const { return m_Size; }
 	size_t TellG() const { return m_FilePointer; }
 	size_t GetPointer() const { return m_FilePointer; }
 	const std::string& GetSource() const { return m_Source; }

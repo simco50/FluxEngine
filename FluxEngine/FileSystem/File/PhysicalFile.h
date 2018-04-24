@@ -27,7 +27,6 @@ public:
 	virtual bool IsOpen() const override;
 
 	virtual bool SetPointer(const size_t position) override;
-	virtual size_t GetSize() const override;
 
 private:
 	void CreateDirectoryTree(const std::string& path);

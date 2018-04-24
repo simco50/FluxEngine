@@ -1,7 +1,6 @@
 #include "FluxEngine.h"
 #include "Paths.h"
 
-
 const std::string Paths::LogsFolder =			"Saved\\Logs";
 const std::string Paths::ProfilingFolder =		"Saved\\Profiling";
 const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
@@ -9,6 +8,7 @@ const std::string Paths::GameIniFile =			"Saved\\Config\\Game.ini";
 const std::string Paths::EngineIniFile =		"Saved\\Config\\Engine.ini";
 const std::string Paths::ResourcesFolder =		".\\Resources";
 const std::string Paths::PakFilesFolder =		".";
+const std::string Paths::ShaderCacheFolder =	"Saved\\ShaderCache";
 
 bool Paths::IsSlash(const char c)
 {
@@ -79,4 +79,59 @@ void Paths::NormalizeInline(std::string& filePath)
 	}
 	if (filePath.find("./") == 0)
 		filePath = std::string(filePath.begin() + 2, filePath.end());
+}
+
+std::string Paths::ChangeExtension(const std::string& filePath, const std::string& newExtension)
+{
+	size_t extensionStart = filePath.rfind('.');
+	if (extensionStart == std::string::npos)
+		return filePath;
+	size_t lastSlash = filePath.rfind('/');
+	if (extensionStart < lastSlash)
+		return filePath;
+	return filePath.substr(0, extensionStart + 1) + newExtension;
+}
+
+std::string Paths::MakeRelativePath(const std::string& basePath, const std::string& filePath)
+{
+	size_t matchLength = 0;
+	for (size_t i = 0; i < basePath.size(); i++)
+	{
+		if (basePath[i] != filePath[i])
+			break;
+		++matchLength;
+	}
+	return filePath.substr(matchLength);
+}
+
+void Paths::Combine(const std::vector<std::string>& elements, std::string& output)
+{
+	std::stringstream stream;
+	for (size_t i = 0; i < elements.size() ; i++)
+	{
+		stream << elements[i];
+		if (i != elements.size() - 1)
+			stream << "/";
+	}
+	output = stream.str();
+}
+
+bool Paths::FileExists(const std::string& filePath)
+{
+#ifdef PLATFORM_WINDOWS
+	DWORD attributes = GetFileAttributes(filePath.c_str());
+	return (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY));
+#else
+	return false;
+#endif
+}
+
+bool Paths::DirectoryExists(const std::string& filePath)
+{
+#ifdef PLATFORM_WINDOWS
+	DWORD attributes = GetFileAttributes(filePath.c_str());
+	return (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY));
+#else
+	return false;
+#endif
 }

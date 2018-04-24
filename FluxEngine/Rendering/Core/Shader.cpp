@@ -3,6 +3,7 @@
 #include "ShaderVariation.h"
 #include "IO\InputStream.h"
 #include "Content\ResourceManager.h"
+#include "Graphics.h"
 
 Shader::Shader(Context* pContext) :
 	Resource(pContext)
@@ -54,17 +55,35 @@ bool Shader::ReloadVariations()
 
 ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::string& defines)
 {
+	AUTOPROFILE(Shader_GetOrCreateVariation);
+
 	size_t hash = std::hash<std::string>{}(defines);
 	auto pIt = m_ShaderCache[(size_t)type].find(hash);
 	if (pIt != m_ShaderCache[(size_t)type].end())
 		return pIt->second.get();
 
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(m_pContext, this, type);
-	pVariation->SetDefines(defines);
-	if (!pVariation->Create())
+	
+	std::stringstream cacheName;
+	cacheName << m_ShaderName + Shader::GetEntryPoint(type) << "_" << hash;
+	if (pVariation->LoadFromCache(cacheName.str()))
 	{
-		FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
-		return nullptr;
+		if (!pVariation->CreateShader(GetSubsystem<Graphics>(), type))
+		{
+			return nullptr;
+		}
+		m_ShaderCache[(size_t)type][hash] = std::move(pVariation);
+		return m_ShaderCache[(size_t)type][hash].get();
+	}
+	else
+	{
+		pVariation->SetDefines(defines);
+		if (!pVariation->Create())
+		{
+			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
+			return nullptr;
+		}
+		pVariation->SaveToCache(cacheName.str());
 	}
 
 	m_ShaderCache[(size_t)type][hash] = std::move(pVariation);

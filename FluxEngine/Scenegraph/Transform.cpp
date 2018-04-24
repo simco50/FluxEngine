@@ -112,7 +112,7 @@ void Transform::Rotate(const Vector3& eulerAngles, const Space space)
 
 void Transform::Rotate(const float x, const float y, const float z, const Space space)
 {	
-	Rotate(Quaternion::CreateFromYawPitchRoll(DegToRad(y), DegToRad(x), DegToRad(z)), space);
+	Rotate(Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z)), space);
 }
 
 void Transform::Rotate(const Quaternion& quaternion, const Space space)
@@ -192,12 +192,12 @@ void Transform::SetRotation(const float x, const float y, const float z, const S
 {
 	if (space == Space::WORLD)
 	{
-		m_WorldRotation = Quaternion::CreateFromYawPitchRoll(DegToRad(y), DegToRad(x), DegToRad(z));
+		m_WorldRotation = Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z));
 		OnWorldChange();
 	}
 	else
 	{
-		m_Rotation = Quaternion::CreateFromYawPitchRoll(DegToRad(y), DegToRad(x), DegToRad(z));
+		m_Rotation = Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z));
 		OnLocalChange();
 	}
 	m_pNode->OnTransformDirty(this);

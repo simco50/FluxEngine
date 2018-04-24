@@ -66,7 +66,7 @@ aiQuaternion GetRotation(const aiNodeAnim* pNode, const float time)
 			return pNode->mRotationKeys[i].mValue;
 		if (pNode->mRotationKeys[i].mTime > time)
 		{
-			float t = InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
+			float t = Math::InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
 			aiQuaternion output;
 			aiQuaterniont<float>::Interpolate(output, pNode->mRotationKeys[i - 1].mValue, pNode->mRotationKeys[i].mValue, t);
 			return output;
@@ -85,7 +85,7 @@ aiVector3D GetScale(const aiNodeAnim* pNode, const float time)
 			return pNode->mScalingKeys[i].mValue;
 		if (pNode->mScalingKeys[i].mTime > time)
 		{
-			float t = InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
+			float t = Math::InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
 			return pNode->mScalingKeys[i - 1].mValue + (pNode->mScalingKeys[i].mValue - pNode->mScalingKeys[i - 1].mValue) * t;
 		}
 	}
@@ -102,7 +102,7 @@ aiVector3D GetPosition(const aiNodeAnim* pNode, const float time)
 			return pNode->mPositionKeys[i].mValue;
 		if (pNode->mPositionKeys[i].mTime > time)
 		{
-			float t = InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
+			float t = Math::InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
 			return pNode->mPositionKeys[i - 1].mValue + (pNode->mPositionKeys[i].mValue - pNode->mPositionKeys[i - 1].mValue) * t;
 		}
 	}

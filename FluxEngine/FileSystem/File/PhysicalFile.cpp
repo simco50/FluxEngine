@@ -45,7 +45,21 @@ bool PhysicalFile::Open(const FileMode mode)
 		nullptr
 	);
 
-	return m_Handle != FILE_HANDLE_INVALID;
+	if (m_Handle == FILE_HANDLE_INVALID)
+	{
+		m_Size = 0;
+		return false;
+	}
+	else
+	{
+		LARGE_INTEGER fileSize;
+		if (GetFileSizeEx(m_Handle, &fileSize) != 1)
+		{
+			m_Size = 0;
+		}
+		m_Size = (unsigned int)fileSize.QuadPart;
+	}
+	return true;
 }
 
 bool PhysicalFile::Close()
@@ -87,6 +101,7 @@ size_t PhysicalFile::Write(const void* pBuffer, const size_t size)
 			return 0;
 		bytesToWrite -= written;
 		m_FilePointer += written;
+		m_Size += written;
 	}
 	return size - bytesToWrite;
 }
@@ -128,13 +143,4 @@ bool PhysicalFile::SetPointer(const size_t position)
 		return false;
 	m_FilePointer = position;
 	return true;
-}
-
-size_t PhysicalFile::GetSize() const
-{
-	assert(IsOpen());
-	LARGE_INTEGER fileSize;
-	if (GetFileSizeEx(m_Handle, &fileSize) != 1)
-		return 0;
-	return (unsigned int)fileSize.QuadPart;
 }

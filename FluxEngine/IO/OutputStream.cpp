@@ -17,3 +17,16 @@ bool OutputStream::WriteString(const std::string& string)
 {
 	return Write(string.data(), string.size() + 1) == string.size() + 1;
 }
+
+bool OutputStream::WriteSizedString(const std::string& string)
+{
+	if (!WriteUByte((unsigned char)string.size()))
+	{
+		return false;
+	}
+	if(!Write(string.data(), string.size()))
+	{
+		return false;
+	}
+	return true;
+}

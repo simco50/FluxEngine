@@ -20,7 +20,6 @@ public:
 	bool virtual Flush() override;
 	virtual bool Close() override { return true; }
 	virtual bool IsOpen() const override;
-	virtual size_t GetSize() const override;
 
 	virtual bool SetPointer(const size_t position) override;
 

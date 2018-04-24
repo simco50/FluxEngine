@@ -313,7 +313,7 @@ void DebugRenderer::AddPhysicsScene(PhysicsScene* pScene)
 	const PxRenderBuffer& pBuffer = pScene->GetScene()->getRenderBuffer();
 	const PxDebugLine* pLines = pBuffer.getLines();
 
-	HexColorConverter converter;
+	Math::HexColorConverter converter;
 	for (unsigned int i = 0; i < pBuffer.getNbLines(); ++i)
 	{
 		AddLine(

@@ -27,23 +27,11 @@ bool ShaderVariation::Create()
 
 	SafeRelease(m_pShaderObject);
 
-	switch (m_ShaderType)
+	if (!CreateShader(pGraphics, m_ShaderType))
 	{
-	case ShaderType::VertexShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject))
-		break;
-	case ShaderType::PixelShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
-		break;
-	case ShaderType::GeometryShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pShaderObject))
-		break;
-	case ShaderType::ComputeShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pShaderObject))
-		break;
-	default:
-		break;
+		return false;
 	}
+
 	return true;
 }
 
@@ -180,6 +168,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 
 		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(m_ShaderType, cbRegister, bufferDesc.Size);
 		m_ConstantBuffers[cbRegister] = pConstantBuffer;
+		m_ConstantBufferSizes[cbRegister] = bufferDesc.Size;
 
 		for (unsigned v = 0; v < bufferDesc.Variables; ++v)
 		{
@@ -197,4 +186,30 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			m_ShaderParameters[parameter.Name] = parameter;
 		}
 	}
+}
+
+bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
+{
+	AUTOPROFILE_DESC(ShaderVariation_CreateShader, m_Name);
+
+	if (m_ShaderByteCode.size() <= 0)
+	{
+		return false;
+	}
+	switch (type)
+	{
+	case ShaderType::VertexShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject))
+		break;
+	case ShaderType::PixelShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
+		break;
+	case ShaderType::GeometryShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pShaderObject))
+		break;
+	case ShaderType::ComputeShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pShaderObject))
+		break;
+	}
+	return true;
 }
