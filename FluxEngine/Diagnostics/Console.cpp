@@ -13,11 +13,16 @@ Console::Console()
 	consoleInstance = this;
 	m_ConvertBuffer = new char[m_ConvertBufferSize];
 
-	time_t timer;
-	time(&timer);
-	tm localTime;
-	localtime_s(&localTime, &timer);
-	std::string filePath = Printf("%s\\%s.log", Paths::LogsDir().c_str(), GetTimeStamp().c_str());
+	DateTime now = DateTime::Now();
+	std::string filePath = Printf("%s\\%02d-%02d-%02d-%02d-%02d-%02d.log", 
+		Paths::LogsDir().c_str(), 
+		now.GetYear(), 
+		now.GetMonth(), 
+		now.GetDay(), 
+		now.GetHours(), 
+		now.GetMinutes(), 
+		now.GetSeconds());
+
 	m_pFileLog = new PhysicalFile(filePath);
 
 	if (!m_pFileLog->Open(FileMode::Write))
@@ -27,8 +32,8 @@ Console::Console()
 
 	std::stringstream stream;
 	stream << "-------------FLUX ENGINE LOG START--------------" << std::endl;
-	stream << "Date: " << localTime.tm_mday << "-" << localTime.tm_mon + 1 << "-" << 1900 + localTime.tm_year << "\n";
-	stream << "Time: " << GetTime() << "\n";
+	stream << "Date: " << now.GetDay() << "-" << now.GetMonth() << "-" << now.GetYear() << std::endl;
+	stream << "Time: " << now.GetHours() << ":" << now.GetMinutes() << ":" << now.GetSeconds() << std::endl;
 	std::string output = stream.str();
 	m_pFileLog->Write(output.c_str(), output.size());
 
@@ -122,7 +127,8 @@ void Console::Log(const std::string &message, LogType type)
 	else
 	{
 		stringstream stream;
-		stream << "[" << GetTime() << "]";
+		DateTime now = DateTime::Now();
+		stream << "[" << now.GetHours() << ":" << now.GetMinutes() << ":" << now.GetSeconds() << "]";
 		switch (type)
 		{
 		case LogType::Info:
@@ -226,13 +232,4 @@ void Console::InitializeConsoleWindow()
 				DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
 		}
 	}
-}
-
-std::string Console::GetTime()
-{
-	time_t timer;
-	time(&timer);
-	tm localTime;
-	localtime_s(&localTime, &timer);
-	return Printf("%02d:%02d:%02d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec);
 }

@@ -87,8 +87,15 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	AUTOPROFILE_DESC(ShaderVariation_LoadFromCache, cacheName);
 
 	std::stringstream filePathStream;
-	filePathStream << Paths::ShaderCacheDir() << "\\" << cacheName << ".bin";
+	filePathStream << Paths::ShaderCacheDir() << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
+	
+	DateTime timeStamp = FileSystem::GetLastModifiedTime(filePathStream.str());
+	if (timeStamp.Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
+	{
+		return false;
+	}
+	
 	if (pFile->Open(FileMode::Read) == false)
 	{
 		//Shader is not cached, we have to compile from scratch

@@ -79,24 +79,85 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 	return nullptr;
 }
 
-//#todo: Make abstraction for directory
-std::vector<std::string> FileSystem::GetPakFilesInDirectory(const std::string& directory)
+DateTime FileSystem::GetLastModifiedTime(const std::string& fileName)
 {
-	std::vector<std::string> results;
+	DateTime creationTime, accessTime, modifiedTime;
+	FileAttributes attibutes;
+	if (!GetFileAttributes(fileName, attibutes))
+	{
+		return DateTime(0);
+	}
+	return attibutes.ModifiedTime;
+}
+
+bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& attributes)
+{
+	WIN32_FILE_ATTRIBUTE_DATA info;
+	if (GetFileAttributesEx(filePath.c_str(), GetFileExInfoStandard, &info) == false)
+	{
+		return false;
+	}
+	SYSTEMTIME systemTime;
+	FileTimeToSystemTime(&info.ftCreationTime, &systemTime);
+	attributes.CreationTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
+	FileTimeToSystemTime(&info.ftLastWriteTime, &systemTime);
+	attributes.ModifiedTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
+	FileTimeToSystemTime(&info.ftLastAccessTime, &systemTime);
+	attributes.AccessTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
+	attributes.IsDirectory = info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+	if (!attributes.IsDirectory)
+	{
+		LARGE_INTEGER size;
+		size.HighPart = info.nFileSizeHigh;
+		size.LowPart = info.nFileSizeLow;
+		attributes.Size = (long long)size.QuadPart;
+	}
+	attributes.IsReadOnly = info.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+	return true;
+}
+
+void FileSystem::GetFilesInDirectory(const std::string& directory, std::vector<std::string>& files, const bool recursive)
+{
 	WIN32_FIND_DATAA find_data;
 	auto handle = FindFirstFileA((directory + "\\*").c_str(), &find_data);
 	if (handle == INVALID_HANDLE_VALUE)
 	{
-		return results;
+		return;
 	}
 	do
 	{
+		std::string path = find_data.cFileName;
 		if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (Paths::GetFileExtenstion(find_data.cFileName) == "pak")
-				results.push_back(find_data.cFileName);
+			if (path != "." && path != "..")
+			{
+				files.push_back(path);
+			}
+		}
+		else
+		{
+			if (recursive)
+			{
+				GetFilesInDirectory(path, files, true);
+			}
 		}
 	} while (FindNextFileA(handle, &find_data) != 0);
+}
+
+std::vector<std::string> FileSystem::GetPakFilesInDirectory(const std::string& directory)
+{
+	std::vector<std::string> results;
+	GetFilesInDirectory(directory, results, false);
+	int hits = 0;
+	for (size_t i = 0; i < results.size() ; i++)
+	{
+		if (Paths::GetFileExtenstion(results[i]) == "pak")
+		{
+			std::swap(results[i], results[hits]);
+			++hits;
+		}
+	}
+	results.resize(hits);
 	return results;
 }
 

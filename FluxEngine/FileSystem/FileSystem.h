@@ -14,6 +14,16 @@ enum class ArchiveType
 
 using MountPointPair = std::pair<std::string, std::unique_ptr<IMountPoint>>;
 
+struct FileAttributes
+{
+	DateTime CreationTime;
+	DateTime AccessTime;
+	DateTime ModifiedTime;
+	long long Size = -1;
+	bool IsReadOnly = false;
+	bool IsDirectory = false;
+};
+
 class FileSystem
 {
 public:
@@ -26,8 +36,13 @@ public:
 	static void AddPakLocation(const std::string& path, const std::string& virtualPath);
 
 	static std::unique_ptr<File> GetFile(const std::string& fileName);
+	static DateTime GetLastModifiedTime(const std::string& fileName);
 
 private:
+	static bool GetFileAttributes(const std::string filePath, FileAttributes& attributes);
+
+	static void GetFilesInDirectory(const std::string& directory, std::vector<std::string>& files, const bool recursive);
+
 	static std::vector<std::string> GetPakFilesInDirectory(const std::string& directory);
 
 	static std::string FixPath(const std::string& path);

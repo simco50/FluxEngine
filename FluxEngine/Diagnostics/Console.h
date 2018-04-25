@@ -29,7 +29,6 @@ public:
 
 private:
 	void InitializeConsoleWindow();
-	static std::string GetTime();
 
 	char* m_ConvertBuffer;
 	const size_t m_ConvertBufferSize = 4096;

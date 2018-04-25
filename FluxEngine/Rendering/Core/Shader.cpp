@@ -19,9 +19,11 @@ bool Shader::Load(InputStream& inputStream)
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 	GetSubsystem<ResourceManager>()->ResetDependencies(this);
 
+
 	std::string fileName = inputStream.GetSource();
 	m_ShaderName = Paths::GetFileNameWithoutExtension(fileName);
 
+	m_LastModifiedTimestamp = 0;
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
@@ -112,6 +114,12 @@ bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output,
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if(GetName() != pInputStream->GetSource())
 		pResourceManager->AddResourceDependency(this, pInputStream->GetSource());
+
+	DateTime timestamp = FileSystem::GetLastModifiedTime(pInputStream->GetSource());
+	if (timestamp > m_LastModifiedTimestamp)
+	{
+		m_LastModifiedTimestamp = timestamp;
+	}
 
 	std::string line;
 	while (pInputStream->GetLine(line))

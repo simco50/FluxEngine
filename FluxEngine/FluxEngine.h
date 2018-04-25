@@ -107,6 +107,7 @@ using namespace DirectX::SimpleMath;
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
 #include "Helpers/Utility.h"
+#include "Helpers/Time.h"
 
 #include "Diagnostics/Console.h"
 #include "Diagnostics/Profiler.h"
