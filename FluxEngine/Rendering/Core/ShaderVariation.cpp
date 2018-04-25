@@ -44,7 +44,7 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	AUTOPROFILE_DESC(ShaderVariation_SaveToCache, cacheName);
 
 	std::stringstream filePathStream;
-	filePathStream << Paths::ShaderCacheFolder << "\\" << cacheName << ".bin";
+	filePathStream << Paths::ShaderCacheDir() << "\\" << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
 	if (pFile->Open(FileMode::Write) == false)
 	{
@@ -87,7 +87,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	AUTOPROFILE_DESC(ShaderVariation_LoadFromCache, cacheName);
 
 	std::stringstream filePathStream;
-	filePathStream << Paths::ShaderCacheFolder << "\\" << cacheName << ".bin";
+	filePathStream << Paths::ShaderCacheDir() << "\\" << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
 	if (pFile->Open(FileMode::Read) == false)
 	{

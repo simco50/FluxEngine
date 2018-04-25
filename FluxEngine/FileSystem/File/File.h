@@ -31,9 +31,6 @@ public:
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;
 
-	File& operator<<(const std::string& text);
-	File& operator>>(std::string& text);
-
 	std::string GetDirectoryPath() const;
 	std::string GetFileName() const;
 

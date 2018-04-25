@@ -721,7 +721,7 @@ void Graphics::OnResize(const int width, const int height)
 void Graphics::TakeScreenshot()
 {
 	std::stringstream str;
-	str << Paths::ScreenshotFolder << "\\" << GetTimeStamp() << ".png";
+	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
 	PhysicalFile file(str.str());
 	if (!file.Open(FileMode::Write))
 		return;

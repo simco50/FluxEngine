@@ -28,13 +28,19 @@ struct Paths
 	static bool FileExists(const std::string& filePath);
 	static bool DirectoryExists(const std::string& filePath);
 
-	static const std::string LogsFolder;
-	static const std::string ProfilingFolder;
-	static const std::string ScreenshotFolder;
-	static const std::string GameIniFile;
-	static const std::string EngineIniFile;
-	static const std::string ResourcesFolder;
-	static const std::string PakFilesFolder;
-	static const std::string ShaderCacheFolder;
-};
+	static std::string GameDir();
+	static std::string EngineDir();
 
+	static std::string SavedDir();
+
+	static std::string ScreenshotDir();
+	static std::string LogsDir();
+	static std::string ProfilingDir();
+	static std::string PakFilesDir();
+	static std::string ResourcesDir();
+	static std::string ConfigDir();
+	static std::string ShaderCacheDir();
+
+	static std::string GameIniFile();
+	static std::string EngineIniFile();
+};

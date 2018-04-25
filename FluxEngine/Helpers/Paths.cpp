@@ -1,15 +1,6 @@
 #include "FluxEngine.h"
 #include "Paths.h"
 
-const std::string Paths::LogsFolder =			"Saved\\Logs";
-const std::string Paths::ProfilingFolder =		"Saved\\Profiling";
-const std::string Paths::ScreenshotFolder =		"Saved\\Screenshots";
-const std::string Paths::GameIniFile =			"Saved\\Config\\Game.ini";
-const std::string Paths::EngineIniFile =		"Saved\\Config\\Engine.ini";
-const std::string Paths::ResourcesFolder =		".\\Resources";
-const std::string Paths::PakFilesFolder =		".";
-const std::string Paths::ShaderCacheFolder =	"Saved\\ShaderCache";
-
 bool Paths::IsSlash(const char c)
 {
 	if (c == '\\')
@@ -134,4 +125,64 @@ bool Paths::DirectoryExists(const std::string& filePath)
 #else
 	return false;
 #endif
+}
+
+std::string Paths::GameDir()
+{
+	return ".\\";
+}
+
+std::string Paths::EngineDir()
+{
+	return "..\\";
+}
+
+std::string Paths::SavedDir()
+{
+	return GameDir() + "Saved\\";
+}
+
+std::string Paths::ScreenshotDir()
+{
+	return SavedDir() + "Screenshots\\";
+}
+
+std::string Paths::LogsDir()
+{
+	return SavedDir() + "Logs\\";
+}
+
+std::string Paths::ProfilingDir()
+{
+	return SavedDir() + "Profiling\\";
+}
+
+std::string Paths::PakFilesDir()
+{
+	return GameDir();
+}
+
+std::string Paths::ResourcesDir()
+{
+	return GameDir() + "Resources\\";
+}
+
+std::string Paths::ConfigDir()
+{
+	return SavedDir() + "Config\\";
+}
+
+std::string Paths::ShaderCacheDir()
+{
+	return SavedDir() + "ShaderCache\\";
+}
+
+std::string Paths::GameIniFile()
+{
+	return SavedDir() + "Game.ini";
+}
+
+std::string Paths::EngineIniFile()
+{
+	return SavedDir() + "Engine.ini";
 }

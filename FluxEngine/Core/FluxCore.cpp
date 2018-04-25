@@ -53,10 +53,10 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pConsole = std::make_unique<Console>();
 
 		//Register resource locations
-		FileSystem::AddPakLocation(Paths::PakFilesFolder, "Resources");
-		if (!FileSystem::Mount(Paths::ResourcesFolder, "Resources", ArchiveType::Physical))
+		FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
+		if (!FileSystem::Mount(Paths::ResourcesDir(), "Resources", ArchiveType::Physical))
 		{
-			FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesFolder.c_str());
+			FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesDir().c_str());
 		}
 
 		Config::Initialize();

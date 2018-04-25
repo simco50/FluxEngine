@@ -93,10 +93,10 @@ bool Config::PopulateConfigValues(const Type t)
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile());
 		break;
 	case Type::GameIni:
-		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile());
 		break;
 	default:
 		return false;
@@ -134,10 +134,10 @@ bool Config::FlushConfigValues(const Type t)
 	switch (t)
 	{
 	case Type::EngineIni:
-		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::EngineIniFile());
 		break;
 	case Type::GameIni:
-		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile);
+		pFile = std::make_unique<PhysicalFile>(Paths::GameIniFile());
 		break;
 	case Type::MAX_TYPES:
 	default:

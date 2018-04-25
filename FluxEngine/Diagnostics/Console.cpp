@@ -17,7 +17,7 @@ Console::Console()
 	time(&timer);
 	tm localTime;
 	localtime_s(&localTime, &timer);
-	std::string filePath = Printf("%s\\%s.log", Paths::LogsFolder.c_str(), GetTimeStamp().c_str());
+	std::string filePath = Printf("%s\\%s.log", Paths::LogsDir().c_str(), GetTimeStamp().c_str());
 	m_pFileLog = new PhysicalFile(filePath);
 
 	if (!m_pFileLog->Open(FileMode::Write))
