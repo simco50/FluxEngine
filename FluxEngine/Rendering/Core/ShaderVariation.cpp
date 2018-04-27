@@ -46,7 +46,7 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	std::stringstream filePathStream;
 	filePathStream << Paths::ShaderCacheDir() << "\\" << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
-	if (pFile->Open(FileMode::Write) == false)
+	if (pFile->OpenWrite() == false)
 	{
 		return false;
 	}
@@ -96,7 +96,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		return false;
 	}
 	
-	if (pFile->Open(FileMode::Read) == false)
+	if (pFile->OpenRead() == false)
 	{
 		//Shader is not cached, we have to compile from scratch
 		return false;

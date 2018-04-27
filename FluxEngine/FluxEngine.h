@@ -102,6 +102,7 @@ using namespace DirectX::SimpleMath;
 
 #pragma region
 //Engine core include
+#include "Core/Types.h"
 #include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"
 #include "Helpers/LogMacros.h"

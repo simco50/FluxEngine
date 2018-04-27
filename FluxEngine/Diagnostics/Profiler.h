@@ -21,18 +21,20 @@ public:
 		std::string Description;
 		AutoProfilerBlock* pParent;
 		int Frame = -1;
-		__int64 BeginTime;
-		std::queue<std::unique_ptr<AutoProfilerBlock>> Children;
+		int64 BeginTime;
+		std::deque<std::unique_ptr<AutoProfilerBlock>> Children;
 		double Time = 0.0;
 	};
 
 	void BeginBlock(const std::string& name, const std::string& description = "");
-
 	void EndBlock();
+
+private:
+	bool IsFinalized(std::string& lastBlock);
 
 	std::unique_ptr<AutoProfilerBlock> m_pRootBlock;
 	AutoProfilerBlock* m_pCurrentBlock = nullptr;
-	__int64 m_Frequency;
+	int64 m_Frequency;
 };
 
 class AutoProfiler
@@ -51,3 +53,6 @@ public:
 #define AUTOPROFILE(name) AutoProfiler Profiler_##name(#name)
 
 #define AUTOPROFILE_DESC(name, desc) AutoProfiler Profiler_##name(#name, desc)
+
+#define PROFILE_START(name) Profiler::Instance()->BeginBlock(#name, "")
+#define PROFILE_END() Profiler::Instance()->EndBlock()

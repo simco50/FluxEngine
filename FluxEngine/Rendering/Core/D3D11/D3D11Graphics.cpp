@@ -723,7 +723,7 @@ void Graphics::TakeScreenshot()
 	std::stringstream str;
 	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
 	PhysicalFile file(str.str());
-	if (!file.Open(FileMode::Write))
+	if (!file.OpenWrite())
 		return;
 
 	AUTOPROFILE(Graphics_TakeScreenshot);

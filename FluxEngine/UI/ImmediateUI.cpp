@@ -66,7 +66,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
 	std::unique_ptr<File> pFile = FileSystem::GetFile("Resources/OpenSans-Regular.ttf");
-	if (pFile && pFile->Open(FileMode::Read))
+	if (pFile && pFile->OpenRead())
 	{
 		size_t size = pFile->GetSize();
 		unsigned char* pBuffer = new unsigned char[size];

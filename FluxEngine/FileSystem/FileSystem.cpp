@@ -29,7 +29,7 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 	m_MountPoints.push_back(MountPointPair(FixPath(virtualPath), std::move(pPtr)));
 
 	//Sort the mountpoints depending on their priority
-	sort(m_MountPoints.begin(), m_MountPoints.end(), 
+	std::sort(m_MountPoints.begin(), m_MountPoints.end(), 
 		[](const MountPointPair& a, const MountPointPair& b)
 	{
 		return a.second->GetOrder() > b.second->GetOrder();
@@ -47,12 +47,13 @@ bool FileSystem::Mount(const std::string& path, const ArchiveType type /*= Archi
 
 void FileSystem::AddPakLocation(const std::string& path, const std::string& virtualPath)
 {
-	if (find(m_PakLocations.begin(), m_PakLocations.end(), path) != m_PakLocations.end())
+	if (std::find(m_PakLocations.begin(), m_PakLocations.end(), path) != m_PakLocations.end())
 		return;
 	m_PakLocations.push_back(path);
 	for (const std::string& location : m_PakLocations)
 	{
-		const std::vector<std::string>& pakFiles = GetPakFilesInDirectory(location);
+		std::vector<std::string> pakFiles;
+		GetFilesWithExtension(location, pakFiles, "pak", false);
 		for (const std::string& pakFile : pakFiles)
 			Mount(pakFile, virtualPath, ArchiveType::Pak);
 	}
@@ -81,13 +82,94 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 
 DateTime FileSystem::GetLastModifiedTime(const std::string& fileName)
 {
-	DateTime creationTime, accessTime, modifiedTime;
 	FileAttributes attibutes;
 	if (!GetFileAttributes(fileName, attibutes))
 	{
 		return DateTime(0);
 	}
 	return attibutes.ModifiedTime;
+}
+
+DateTime FileSystem::GetLastAccessTime(const std::string& fileName)
+{
+	FileAttributes attibutes;
+	if (!GetFileAttributes(fileName, attibutes))
+	{
+		return DateTime(0);
+	}
+	return attibutes.AccessTime;
+}
+
+DateTime FileSystem::GetCreationTime(const std::string& fileName)
+{
+	FileAttributes attibutes;
+	if (!GetFileAttributes(fileName, attibutes))
+	{
+		return DateTime(0);
+	}
+	return attibutes.CreationTime;
+}
+
+int64 FileSystem::GetFileSize(const std::string& fileName)
+{
+	DateTime creationTime, accessTime, modifiedTime;
+	FileAttributes attibutes;
+	if (!GetFileAttributes(fileName, attibutes))
+	{
+		return -1;
+	}
+	return attibutes.Size;
+}
+
+bool FileSystem::Delete(const std::string& fileName)
+{
+	return DeleteFile(fileName.c_str()) == TRUE;
+}
+
+bool FileSystem::Move(const std::string& fileName, const std::string& newFileName, const bool overWrite /*= true*/)
+{
+	return MoveFileEx(fileName.c_str(), newFileName.c_str(), overWrite ? MOVEFILE_REPLACE_EXISTING : 0) == TRUE;
+}
+
+bool FileSystem::Copy(const std::string& fileName, const std::string& newFileName, const bool overWrite /*= true*/)
+{
+	return CopyFileEx(fileName.c_str(), newFileName.c_str(), nullptr, nullptr, nullptr, overWrite ? MOVEFILE_REPLACE_EXISTING : 0) == TRUE;
+}
+
+bool FileSystem::IterateDirectory(const std::string& path, FileVisitor& visitor)
+{
+	WIN32_FIND_DATAA find_data;
+	auto handle = FindFirstFileA((path + "\\*").c_str(), &find_data);
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+	do
+	{
+		std::string filePath = find_data.cFileName;
+		if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (filePath != "." && filePath != "..")
+			{
+				if (visitor.Visit(filePath, false) == false)
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			if (visitor.Visit(filePath, true) == false)
+			{
+				return true;
+			}
+			if (visitor.IsRecursive())
+			{
+				IterateDirectory(filePath, visitor);
+			}
+		}
+	} while (FindNextFileA(handle, &find_data) != 0);
+	return true;
 }
 
 bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& attributes)
@@ -98,11 +180,15 @@ bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& a
 		return false;
 	}
 	SYSTEMTIME systemTime;
-	FileTimeToSystemTime(&info.ftCreationTime, &systemTime);
+	FILETIME localTime;
+	FileTimeToLocalFileTime(&info.ftCreationTime, &localTime);
+	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.CreationTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
-	FileTimeToSystemTime(&info.ftLastWriteTime, &systemTime);
+	FileTimeToLocalFileTime(&info.ftCreationTime, &localTime);
+	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.ModifiedTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
-	FileTimeToSystemTime(&info.ftLastAccessTime, &systemTime);
+	FileTimeToLocalFileTime(&info.ftLastWriteTime, &localTime);
+	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.AccessTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
 	attributes.IsDirectory = info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 	if (!attributes.IsDirectory)
@@ -118,47 +204,51 @@ bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& a
 
 void FileSystem::GetFilesInDirectory(const std::string& directory, std::vector<std::string>& files, const bool recursive)
 {
-	WIN32_FIND_DATAA find_data;
-	auto handle = FindFirstFileA((directory + "\\*").c_str(), &find_data);
-	if (handle == INVALID_HANDLE_VALUE)
+	struct SimpleVisitor : public FileVisitor
 	{
-		return;
-	}
-	do
-	{
-		std::string path = find_data.cFileName;
-		if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+		SimpleVisitor(std::vector<std::string>& files, const bool recursive) :
+			Files(files), Recursive(recursive)
+		{}
+		virtual bool Visit(const std::string& fileName, const bool isDirectory) override
 		{
-			if (path != "." && path != "..")
-			{
-				files.push_back(path);
-			}
+			if(isDirectory == false)
+				Files.push_back(fileName);
+			return true;
 		}
-		else
+		virtual bool IsRecursive() const override
 		{
-			if (recursive)
-			{
-				GetFilesInDirectory(path, files, true);
-			}
+			return Recursive;
 		}
-	} while (FindNextFileA(handle, &find_data) != 0);
+		std::vector<std::string>& Files;
+		bool Recursive;
+	};
+	SimpleVisitor visitor(files, recursive);
+	IterateDirectory(directory, visitor);
 }
 
-std::vector<std::string> FileSystem::GetPakFilesInDirectory(const std::string& directory)
+void FileSystem::GetFilesWithExtension(const std::string& directory, std::vector<std::string>& files, const std::string& extension, const bool recursive)
 {
-	std::vector<std::string> results;
-	GetFilesInDirectory(directory, results, false);
-	int hits = 0;
-	for (size_t i = 0; i < results.size() ; i++)
+	struct SimpleVisitor : public FileVisitor
 	{
-		if (Paths::GetFileExtenstion(results[i]) == "pak")
+		SimpleVisitor(std::vector<std::string>& files, const std::string& extension, const bool recursive) :
+			Files(files), Extension(extension), Recursive(recursive)
+		{}
+		virtual bool Visit(const std::string& fileName, const bool isDirectory) override
 		{
-			std::swap(results[i], results[hits]);
-			++hits;
+			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == Extension)
+				Files.push_back(fileName);
+			return true;
 		}
-	}
-	results.resize(hits);
-	return results;
+		virtual bool IsRecursive() const override
+		{
+			return Recursive;
+		}
+		std::vector<std::string>& Files;
+		const std::string& Extension;
+		bool Recursive;
+	};
+	SimpleVisitor visitor(files, extension, recursive);
+	IterateDirectory(directory, visitor);
 }
 
 std::string FileSystem::FixPath(const std::string& path)
@@ -168,7 +258,7 @@ std::string FileSystem::FixPath(const std::string& path)
 		output = std::string(path.begin() + 2, path.end());
 	else
 		output = path;
-	replace(output.begin(), output.end(), '\\', '/');
+	std::replace(output.begin(), output.end(), '\\', '/');
 	ToLower(output);
 		
 	return output;

@@ -12,11 +12,12 @@ public:
 	virtual ~InputStream() {}
 
 	virtual size_t Read(void* pDestination, const size_t size) = 0;
-	virtual bool SetPointer(const size_t position);
 
 	size_t ReadFrom(void* pDestination, const size_t from, const size_t size);
 	bool ReadAllBytes(std::vector<unsigned char>& buffer);
 
+	virtual bool SetPointer(const size_t position);
+	virtual bool SetPointerFromEnd(const size_t position);
 	bool MovePointer(const int delta);
 
 	std::string ReadSizedString();

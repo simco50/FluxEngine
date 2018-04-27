@@ -27,6 +27,8 @@ public:
 	static void LogFormat(LogType type, const char* format, ...);
 	static void LogFormat(LogType type, const std::string& format, ...);
 
+	static bool CleanupLogs(const TimeSpan& age);
+
 private:
 	void InitializeConsoleWindow();
 

@@ -26,7 +26,9 @@ public:
 	}
 	virtual ~File() {}
 
-	virtual bool Open(const FileMode mode) = 0;
+	virtual bool OpenRead(bool allowWrite = false) = 0;
+	virtual bool OpenWrite(bool append = false, bool allowRead = false) = 0;
+
 	bool virtual Flush() = 0;
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;

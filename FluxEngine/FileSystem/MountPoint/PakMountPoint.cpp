@@ -13,7 +13,7 @@ bool PakMountPoint::OnMount()
 {
 	//A pak file is a regular file so load that first
 	m_pPakFile = std::make_unique<PhysicalFile>(m_PhysicalPath);
-	if (!m_pPakFile->Open(FileMode::Read))
+	if (!m_pPakFile->OpenRead())
 		return false;
 
 	//Read in the header

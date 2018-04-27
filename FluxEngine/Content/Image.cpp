@@ -71,7 +71,7 @@ bool Image::Save(const std::string& filePath)
 {
 	std::string extension = Paths::GetFileExtenstion(filePath);
 	PhysicalFile file(filePath);
-	if (file.Open(FileMode::Write) == false)
+	if (file.OpenWrite() == false)
 		return false;
 	if (extension == "png")
 		return SavePng(file);

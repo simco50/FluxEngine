@@ -5,11 +5,19 @@
 
 #include "Helpers/Compression.h"
 
-bool PakFile::Open(const FileMode mode)
+bool PakFile::OpenRead(bool allowWrite)
 {
+	if (allowWrite)
+	{
+		return false;
+	}
 	m_Size = m_pTableEntry->UncompressedSize;
-	UNREFERENCED_PARAMETER(mode); 
 	return true;
+}
+
+bool PakFile::OpenWrite(bool /*append*/, bool /*allowRead*/)
+{
+	return false;
 }
 
 size_t PakFile::Read(void* pBuffer, const size_t size)

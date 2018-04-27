@@ -20,6 +20,16 @@ bool InputStream::SetPointer(const size_t position)
 	return true;
 }
 
+bool InputStream::SetPointerFromEnd(const size_t position)
+{
+	if (position > m_Size)
+	{
+		return false;
+	}
+	m_FilePointer = m_Size - position;
+	return true;
+}
+
 bool InputStream::MovePointer(const int delta)
 {
 	return SetPointer(m_FilePointer + delta);

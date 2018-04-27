@@ -6,34 +6,14 @@ PhysicalFile::~PhysicalFile()
 	PhysicalFile::Close();
 }
 
-bool PhysicalFile::Open(const FileMode mode)
+bool PhysicalFile::OpenRead(bool allowWrite)
 {
-	DWORD access;
-	DWORD creation_disposition;
-
-	switch (mode)
+	DWORD access = GENERIC_READ;
+	if (allowWrite)
 	{
-	case FileMode::Read:
-		access = GENERIC_READ;
-		creation_disposition = OPEN_EXISTING;
-		break;
-	case FileMode::Write:
-	{
-		access = GENERIC_WRITE;
-		creation_disposition = CREATE_ALWAYS;
-
-		CreateDirectoryTree(m_FileName);
-		break;
+		access |= GENERIC_WRITE;
 	}
-	case FileMode::ReadWrite:
-		access = GENERIC_READ | GENERIC_WRITE;
-		creation_disposition = CREATE_NEW;
-
-		CreateDirectoryTree(m_FileName);
-		break;
-	default:
-		return false;
-	}
+	DWORD creation_disposition = allowWrite ? CREATE_NEW : OPEN_EXISTING;
 
 	m_Handle = CreateFile(
 		m_FileName.c_str(),
@@ -52,6 +32,49 @@ bool PhysicalFile::Open(const FileMode mode)
 	}
 	else
 	{
+		LARGE_INTEGER fileSize;
+		if (GetFileSizeEx(m_Handle, &fileSize) != 1)
+		{
+			m_Size = 0;
+		}
+		m_Size = (unsigned int)fileSize.QuadPart;
+	}
+	return true;
+}
+
+bool PhysicalFile::OpenWrite(bool append, bool allowRead)
+{
+	DWORD access = GENERIC_WRITE;
+	if (allowRead)
+	{
+		access = GENERIC_READ;
+	}
+	DWORD creation_disposition = allowRead ? CREATE_ALWAYS : CREATE_NEW;
+
+	m_Handle = CreateFile(
+		m_FileName.c_str(),
+		access,
+		0,
+		nullptr,
+		creation_disposition,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr
+	);
+
+	if (m_Handle == FILE_HANDLE_INVALID)
+	{
+		m_Size = 0;
+		return false;
+	}
+	else
+	{
+		if (append)
+		{
+			if (SetPointerFromEnd(0) == false)
+			{
+				return false;
+			}
+		}
 		LARGE_INTEGER fileSize;
 		if (GetFileSizeEx(m_Handle, &fileSize) != 1)
 		{
@@ -140,6 +163,16 @@ bool PhysicalFile::SetPointer(const size_t position)
 	if (m_Handle == INVALID_HANDLE_VALUE)
 		return false;
 	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+		return false;
+	m_FilePointer = position;
+	return true;
+}
+
+bool PhysicalFile::SetPointerFromEnd(const size_t position)
+{
+	if (m_Handle == INVALID_HANDLE_VALUE)
+		return false;
+	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_END) == INVALID_SET_FILE_POINTER)
 		return false;
 	m_FilePointer = position;
 	return true;

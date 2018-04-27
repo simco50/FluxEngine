@@ -102,7 +102,7 @@ bool Config::PopulateConfigValues(const Type t)
 		return false;
 	}
 
-	if (pFile->Open(FileMode::Read))
+	if (pFile->OpenRead())
 	{
 		std::string line;
 		std::string currentSection = "";
@@ -143,7 +143,7 @@ bool Config::FlushConfigValues(const Type t)
 	default:
 		return false;
 	}
-	if (!pFile->Open(FileMode::Write))
+	if (!pFile->OpenRead())
 		return false;
 
 	auto valueMap = m_Configs.find(t);

@@ -155,7 +155,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'. File not found", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
-	if (pFile->Open(FileMode::Read) == false)
+	if (pFile->OpenRead() == false)
 	{
 		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to open file '%s'", filePath.c_str());
 		return false;

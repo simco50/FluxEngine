@@ -14,6 +14,17 @@ namespace Time
 	const int DaysToMonth[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 }
 
+struct TimeStamp
+{
+	int Year = 0;
+	int Month = 0;
+	int Day = 0;
+	int Hour = 0;
+	int Minute = 0;
+	int Second = 0;
+	int Millisecond = 0;
+};
+
 struct TimeSpan
 {
 	TimeSpan() :
@@ -97,6 +108,15 @@ struct DateTime
 			+ millisecond * Time::TicksPerMillisecond;
 	}
 
+	void Split(TimeStamp& timestamp)
+	{
+		GetDate(timestamp.Year, timestamp.Month, timestamp.Day);
+		timestamp.Hour = GetHours();
+		timestamp.Minute = GetMinutes();
+		timestamp.Second = GetSeconds();
+		timestamp.Millisecond = GetMilliSeconds();
+	}
+
 	void GetDate(int& year, int& month, int& day) const
 	{
 		// Based on FORTRAN code in:
@@ -120,7 +140,7 @@ struct DateTime
 		month = j;
 		day = k;
 	}
-
+	
 	static DateTime Now()
 	{
 		SYSTEMTIME st;

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include "FileSystem\File\PhysicalFile.h"
 #include "Async\Thread.h"
+#include "Core\Config.h"
 
 using namespace std;
 
@@ -13,27 +14,34 @@ Console::Console()
 	consoleInstance = this;
 	m_ConvertBuffer = new char[m_ConvertBufferSize];
 
-	DateTime now = DateTime::Now();
-	std::string filePath = Printf("%s\\%02d-%02d-%02d-%02d-%02d-%02d.log", 
-		Paths::LogsDir().c_str(), 
-		now.GetYear(), 
-		now.GetMonth(), 
-		now.GetDay(), 
-		now.GetHours(), 
-		now.GetMinutes(), 
-		now.GetSeconds());
+	if (Config::GetBool("CleanupLogs", "Console", true))
+	{
+		CleanupLogs(TimeSpan(Config::GetInt("LogRetention", "Console", 1) * Time::TicksPerDay));
+	}
+
+	TimeStamp time;
+	DateTime::Now().Split(time);
+
+	std::string filePath = Printf("%s\\%02d-%02d-%02d-%02d-%02d-%02d.log",
+		Paths::LogsDir().c_str(),
+		time.Year,
+		time.Month,
+		time.Day,
+		time.Hour,
+		time.Minute,
+		time.Second);
 
 	m_pFileLog = new PhysicalFile(filePath);
 
-	if (!m_pFileLog->Open(FileMode::Write))
+	if (!m_pFileLog->OpenWrite())
 	{
 		FLUX_LOG(Error, "Failed to open console log");
 	}
 
 	std::stringstream stream;
 	stream << "-------------FLUX ENGINE LOG START--------------" << std::endl;
-	stream << "Date: " << now.GetDay() << "-" << now.GetMonth() << "-" << now.GetYear() << std::endl;
-	stream << "Time: " << now.GetHours() << ":" << now.GetMinutes() << ":" << now.GetSeconds() << std::endl;
+	stream << "Date: " << time.Day << "-" << time.Month << "-" << time.Year << std::endl;
+	stream << "Time: " << time.Hour << ":" << time.Minute << ":" << time.Second << std::endl;
 	std::string output = stream.str();
 	m_pFileLog->Write(output.c_str(), output.size());
 
@@ -196,6 +204,40 @@ void Console::LogFormat(LogType type, const std::string& format, ...)
 	_vsnprintf_s(&consoleInstance->m_ConvertBuffer[0], consoleInstance->m_ConvertBufferSize, consoleInstance->m_ConvertBufferSize, f, ap);
 	va_end(ap);
 	Log(&consoleInstance->m_ConvertBuffer[0], type);
+}
+
+bool Console::CleanupLogs(const TimeSpan& age)
+{
+	struct LogCleaner : public FileVisitor
+	{
+		LogCleaner(const TimeSpan& maxAge) :
+			MaxAge(maxAge), Now(DateTime::Now())
+		{
+		}
+		TimeSpan MaxAge;
+		DateTime Now;
+
+		virtual bool Visit(const std::string& fileName, const bool isDirectory) override
+		{
+			const std::string path = Paths::LogsDir() + fileName;
+			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == "log")
+			{
+				const TimeSpan age = Now - FileSystem::GetCreationTime(path);
+				if (age > MaxAge)
+				{
+					FileSystem::Delete(path);
+				}
+			}
+			return true;
+		}
+
+		virtual bool IsRecursive() const override
+		{
+			return false;
+		}
+	};
+	LogCleaner cleaner(age);
+	return FileSystem::IterateDirectory(Paths::LogsDir(), cleaner);
 }
 
 void Console::InitializeConsoleWindow()
