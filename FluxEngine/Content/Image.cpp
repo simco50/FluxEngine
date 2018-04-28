@@ -59,6 +59,9 @@ bool Image::Load(InputStream& inputStream)
 	m_Pixels.resize(m_Width * m_Height * m_Components);
 	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
 	stbi_image_free(pPixels);
+
+	SetMemoryUsage((unsigned int)m_Pixels.size());
+
 	return true;
 }
 
@@ -109,8 +112,10 @@ bool Image::LoadLUT(InputStream& inputStream)
 				c3D[x + y * dim + z * dim * dim]
 				= c2D[x + y * dim * dim + z * dim];
 
-
 	stbi_image_free(pPixels);
+
+	SetMemoryUsage((unsigned int)m_Pixels.size());
+
 	return true;
 }
 
@@ -168,6 +173,9 @@ bool Image::SetSize(const int x, const int y, const int components)
 	m_Components = components;
 	m_Pixels.clear();
 	m_Pixels.resize(x * y * components);
+
+	SetMemoryUsage((unsigned int)m_Pixels.size());
+
 	return true;
 }
 

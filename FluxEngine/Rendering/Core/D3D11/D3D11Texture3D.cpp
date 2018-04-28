@@ -69,9 +69,15 @@ bool Texture3D::SetData(const void* pData)
 	}
 	else
 	{
-		FLUX_LOG(Error, "[Texture::SetData()] > Not yet implemented!");
-		return false;
+		D3D11_MAPPED_SUBRESOURCE subResource = {};
+		HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource));
+		void* pTarget = subResource.pData;
+		memcpy(pTarget, pData, m_Width * m_Height * m_Depth * 4);
+		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);
 	}
+
+	SetMemoryUsage(m_Height * m_Width * m_Depth * 4);
+
 	return true;
 }
 

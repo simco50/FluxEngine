@@ -87,6 +87,11 @@ struct KeyframeValue
 		return Values;
 	}
 
+	size_t ByteSize() const
+	{
+		return Values.size() * sizeof(T);
+	}
+
 	T ConstantValue;
 private:
 	std::map<float, T> Values;

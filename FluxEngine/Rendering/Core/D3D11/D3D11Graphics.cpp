@@ -808,3 +808,20 @@ ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType,
 	m_ConstantBuffers[hash] = std::move(pBuffer);
 	return m_ConstantBuffers[hash].get();
 }
+
+bool Graphics::GetAdapterInfo(AdapterInfo& adapterInfo)
+{
+	if (m_pImpl && m_pImpl->m_pAdapter)
+	{
+		DXGI_ADAPTER_DESC desc;
+		m_pImpl->m_pAdapter->GetDesc(&desc);
+		std::wstring name = desc.Description;
+		adapterInfo.Name = std::string(name.begin(), name.end());
+		adapterInfo.VideoMemory = desc.DedicatedVideoMemory;
+		adapterInfo.SystemMemory = desc.DedicatedSystemMemory;
+		adapterInfo.DeviceId = desc.DeviceId;
+		adapterInfo.VendorId = desc.VendorId;
+		return true;
+	}
+	return false;
+}

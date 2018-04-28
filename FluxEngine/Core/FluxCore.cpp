@@ -27,6 +27,9 @@
 #include "Rendering/Animation/AnimatedModel.h"
 #include "Rendering/Animation/Animator.h"
 #include "Rendering/Renderer.h"
+#include "Rendering/Core/Texture2D.h"
+#include "Rendering/Core/Texture3D.h"
+#include "Content/Image.h"
 
 bool FluxCore::m_Exiting;
 
@@ -63,7 +66,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		//ResourceManager
 		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
-		m_pResourceManager->EnableAutoReload();
+		m_pResourceManager->EnableAutoReload(Config::GetBool("AutoReload", "Resources", true));
 
 		//Graphics
 		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
@@ -79,6 +82,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		{
 			FLUX_LOG(Error, "[FluxCore::Run] > Failed to initialize graphics");
 		}
+
 		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
 		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
@@ -102,8 +106,8 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
 	m_pCamera->GetCamera()->SetFarPlane(1000);
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
 	std::vector<std::string> meshPaths;
 	meshPaths.push_back("Resources/Meshes/obj/Gangnam Style.fbx");
@@ -218,7 +222,6 @@ void FluxCore::RenderUI()
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
-	ImGui::InputFloat3("Light Direction", &m_pScene->GetRenderer()->GetLightDirection()->x);
 	ImGui::End();
 
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
@@ -228,21 +231,14 @@ void FluxCore::RenderUI()
 	}
 	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::Button("Reload shaders", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-		{
-			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Shader::GetTypeStatic()))
-				m_pResourceManager->Reload(pResource);
-		}
-		if (ImGui::Button("Reload materials", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-		{
-			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Material::GetTypeStatic()))
-				m_pResourceManager->Reload(pResource);
-		}
-		if (ImGui::Button("Reload textures", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-		{
-			for (Resource* pResource : m_pResourceManager->GetResourcesOfType(Texture::GetTypeStatic()))
-				m_pResourceManager->Reload(pResource);
-		}
+		ImGui::Text("Resources: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Resource::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\tModels: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Mesh::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\tMaterials: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Material::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\tShaders: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Shader::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\tImages: %f", m_pResourceManager->GetMemoryUsageOfType(Image::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\tTextures: %f", m_pResourceManager->GetMemoryUsageOfType(Texture::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\t\tTexture2D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture2D::GetTypeStatic()) / 1000000.0f);
+		ImGui::Text("\t\tTexture3D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture3D::GetTypeStatic()) / 1000000.0f);
 		ImGui::TreePop();
 	}
 	if (m_pSelectedNode && ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))

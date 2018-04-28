@@ -35,4 +35,5 @@ private:
 	DateTime m_LastModifiedTimestamp;
 
 	std::array<std::map<size_t, std::unique_ptr<ShaderVariation>>, (size_t)ShaderType::MAX> m_ShaderCache;
+	void RefreshMemoryUsage();
 };

@@ -129,10 +129,23 @@ bool Mesh::Load(InputStream& inputStream)
 	std::string extension = Paths::GetFileExtenstion(fileName);
 	if (extension == "flux")
 	{
-		return LoadFlux(inputStream);
+		if (!LoadFlux(inputStream))
+		{
+			return false;
+		}
 	}
-	FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using Assimp", fileName.c_str());
-	return LoadAssimp(inputStream);
+	else
+	{
+		FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using Assimp", fileName.c_str());
+		if (!LoadAssimp(inputStream))
+		{
+			return false;
+		}
+	}
+
+	RefreshMemoryUsage();
+
+	return true;
 }
 
 void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
@@ -561,4 +574,27 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	m_VertexBuffers.push_back(std::move(pVertexBuffer));
 
 	delete[] pVertexDataStart;
+}
+
+void Mesh::RefreshMemoryUsage()
+{
+	unsigned int memoryUsage = 0;
+	for (int i = 0; i < m_Geometries.size(); i++)
+	{
+		for (const auto& item : m_Geometries[i]->GetRawData())
+		{
+			memoryUsage += item.second.ByteSize();
+		}
+	}
+	memoryUsage += (unsigned int)m_Skeleton.BoneCount() * sizeof(Bone);
+
+	for (const auto& pAnimation : m_Animations)
+	{
+		for (const auto node : pAnimation->GetNodes())
+		{
+			memoryUsage += (unsigned int)node.Keys.size() * sizeof(AnimationKey);
+		}
+	}
+
+	SetMemoryUsage(memoryUsage);
 }

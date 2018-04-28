@@ -104,5 +104,20 @@ bool ParticleSystem::Load(InputStream& inputStream)
 		FLUX_LOG(Warning, "Particle loading failed!\nJson Parser: %s", std::wstring(error.begin(), error.end()).c_str());
 		return false;
 	}
+
+	RefreshMemoryUsage();
+
 	return true;
+}
+
+void ParticleSystem::RefreshMemoryUsage()
+{
+	unsigned int memoryUsage = sizeof(ParticleSystem);
+	memoryUsage += (unsigned int)Size.ByteSize();
+	memoryUsage += (unsigned int)Velocity.ByteSize();
+	memoryUsage += (unsigned int)LocalVelocity.ByteSize();
+	memoryUsage += (unsigned int)Color.ByteSize();
+	memoryUsage += (unsigned int)Transparancy.ByteSize();
+	memoryUsage += (unsigned int)Rotation.ByteSize();
+	SetMemoryUsage(memoryUsage);
 }

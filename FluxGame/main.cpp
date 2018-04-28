@@ -3,13 +3,6 @@
 #include "Core/Context.h"
 #include "Core/CommandLine.h"
 
-#undef main
-
-int main()
-{
-	WinMain(nullptr, nullptr, nullptr, 0);
-}
-
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
 #ifdef _DEBUG

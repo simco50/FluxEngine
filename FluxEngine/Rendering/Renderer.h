@@ -25,7 +25,6 @@ public:
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 	Vector3* GetLightPosition() { return &m_LightPosition; }
-	Vector3* GetLightDirection() { return &m_LightDirection; }
 
 private:
 	void SetPerFrameParameters();

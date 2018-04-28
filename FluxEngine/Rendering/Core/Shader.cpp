@@ -19,7 +19,6 @@ bool Shader::Load(InputStream& inputStream)
 	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
 	GetSubsystem<ResourceManager>()->ResetDependencies(this);
 
-
 	std::string fileName = inputStream.GetSource();
 	m_ShaderName = Paths::GetFileNameWithoutExtension(fileName);
 
@@ -35,6 +34,8 @@ bool Shader::Load(InputStream& inputStream)
 	}
 
 	ReloadVariations();
+
+	RefreshMemoryUsage();
 
 	return true;
 }
@@ -147,4 +148,13 @@ bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output,
 	}
 	output << '\n';
 	return true;
+}
+
+void Shader::RefreshMemoryUsage()
+{
+	unsigned int memoryUsage = 0;
+	memoryUsage += sizeof(Shader);
+	memoryUsage += (unsigned int)m_ShaderCache.size() * sizeof(ShaderVariation);
+	memoryUsage += (unsigned int)m_ShaderSource.size();
+	SetMemoryUsage(memoryUsage);
 }

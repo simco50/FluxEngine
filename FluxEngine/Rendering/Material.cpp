@@ -218,6 +218,9 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 
 		pParameter = pParameter->NextSiblingElement();
 	}
+
+	RefreshMemoryUsage();
+
 	return true;
 }
 
@@ -236,4 +239,13 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 	size_t byteSize = values.size() * sizeof(float);
 	ParameterEntry& entry = m_ParameterCache.GetParameter(name, byteSize);
 	entry.SetData(values.data(), byteSize);
+}
+
+void Material::RefreshMemoryUsage()
+{
+	unsigned int memoryUsage = sizeof(Material);
+	memoryUsage += (unsigned int)m_ParameterCache.ByteSize();
+	memoryUsage += (unsigned int)m_ShaderVariations.size() * sizeof(ShaderVariation);
+	memoryUsage += (unsigned int)m_Textures.size() * sizeof(Texture);
+	SetMemoryUsage(memoryUsage);
 }

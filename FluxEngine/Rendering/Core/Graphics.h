@@ -17,6 +17,15 @@ class ShaderProgram;
 
 class GraphicsImpl;
 
+struct AdapterInfo
+{
+	std::string Name;
+	size_t VideoMemory = 0;
+	size_t SystemMemory = 0;
+	unsigned int DeviceId = 0;
+	unsigned int VendorId = 0;
+};
+
 class Graphics : public Subsystem
 {
 	FLUX_OBJECT(Graphics, Subsystem)
@@ -74,6 +83,8 @@ public:
 	int GetWindowWidth() const { return m_WindowWidth; }
 	int GetWindowHeight() const { return m_WindowHeight; }
 	int GetMultisample() const { return m_Multisample; }
+
+	bool GetAdapterInfo(AdapterInfo& adapterInfo);
 
 	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }

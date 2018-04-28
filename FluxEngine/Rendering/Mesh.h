@@ -50,6 +50,7 @@ private:
 	static const int MESH_VERSION = 7;
 
 	void CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geometry* pGeometry);
+	void RefreshMemoryUsage();
 
 	std::string m_MeshName;
 	std::vector<std::unique_ptr<VertexBuffer>> m_VertexBuffers;

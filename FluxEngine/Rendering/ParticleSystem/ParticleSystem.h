@@ -87,4 +87,7 @@ public:
 	std::string ImagePath = "";
 
 	static const int VERSION = 2;
+
+private:
+	void RefreshMemoryUsage();
 };

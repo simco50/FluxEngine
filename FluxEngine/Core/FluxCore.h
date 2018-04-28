@@ -16,6 +16,8 @@ class PostProcessing;
 
 class FluxCore : public Object
 {
+	FLUX_OBJECT(FluxCore, Object)
+	
 public:
 	FluxCore(Context* pContext);
 	virtual ~FluxCore();

@@ -4,6 +4,8 @@
 
 class Image : public Resource
 {
+	FLUX_OBJECT(Image, Resource)
+
 public:
 	Image(Context* pContext);
 	virtual ~Image();

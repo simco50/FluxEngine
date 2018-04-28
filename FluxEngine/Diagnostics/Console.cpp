@@ -39,9 +39,15 @@ Console::Console()
 	}
 
 	std::stringstream stream;
-	stream << "-------------FLUX ENGINE LOG START--------------" << std::endl;
 	stream << "Date: " << time.Day << "-" << time.Month << "-" << time.Year << std::endl;
-	stream << "Time: " << time.Hour << ":" << time.Minute << ":" << time.Second << std::endl;
+	stream << "Time: " << time.Hour << ":" << time.Minute << ":" << time.Second << std::endl << std::endl;
+
+	stream << "Configuration: " << BuildConfiguration::ToString(BuildConfiguration::Configuration) << std::endl;
+	stream << "Platform: " << BuildPlatform::ToString(BuildPlatform::Platform) << std::endl;
+	Misc::CpuId cpuId;
+	Misc::GetCpuId(&cpuId);
+	stream << cpuId.Brand << std::endl << std::endl;
+
 	std::string output = stream.str();
 	m_pFileLog->Write(output.c_str(), output.size());
 
@@ -52,7 +58,6 @@ Console::Console()
 
 Console::~Console()
 {
-	m_pFileLog->WriteLine("--------------FLUX ENGINE LOG END---------------");
 	delete m_pFileLog;
 	delete[] m_ConvertBuffer;
 }

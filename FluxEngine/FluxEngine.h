@@ -103,12 +103,14 @@ using namespace DirectX::SimpleMath;
 #pragma region
 //Engine core include
 #include "Core/Types.h"
+#include "Misc/Misc.h"
 #include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
 #include "Helpers/Utility.h"
-#include "Helpers/Time.h"
+#include "Misc/TimeSpan.h"
+#include "Misc/DateTime.h"
 
 #include "Diagnostics/Console.h"
 #include "Diagnostics/Profiler.h"

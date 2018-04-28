@@ -62,6 +62,12 @@ private:
 		}
 		const std::unordered_map<std::string, ParameterEntry>& GetParameters() const { return m_Parameters; }
 
+		size_t ByteSize() const
+		{
+			return m_Parameters.size() * sizeof(ParameterEntry) +
+				m_ParameterPool.size();
+		}
+
 	private:
 		std::vector<char> m_ParameterPool;
 		std::unordered_map<std::string, ParameterEntry> m_Parameters;
@@ -99,6 +105,8 @@ private:
 	bool ParseParameters(tinyxml2::XMLElement* pElement);
 
 	void ParseValue(const std::string& name, const std::string& valueString);
+
+	void RefreshMemoryUsage();
 
 	std::string m_Name;
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};

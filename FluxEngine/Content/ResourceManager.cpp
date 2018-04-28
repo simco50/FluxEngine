@@ -35,10 +35,17 @@ void ResourceManager::Update()
 	}
 }
 
-void ResourceManager::EnableAutoReload()
+void ResourceManager::EnableAutoReload(bool enable)
 {
-	m_pResourceWatcher = std::make_unique<FileWatcher>();
-	m_pResourceWatcher->StartWatching("Resources", true);
+	if (enable && m_pResourceWatcher == nullptr)
+	{
+		m_pResourceWatcher = std::make_unique<FileWatcher>();
+		m_pResourceWatcher->StartWatching(Paths::ResourcesDir(), true);
+	}
+	else
+	{
+		m_pResourceWatcher.reset();
+	}
 }
 
 bool ResourceManager::Reload(Resource* pResource)
@@ -144,6 +151,23 @@ std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
 		}
 	}
 	return resources;
+}
+
+unsigned int ResourceManager::GetMemoryUsageOfType(StringHash type)
+{
+	unsigned int size = 0;
+
+	for (const auto& resourceGroup : m_Resources)
+	{
+		if (resourceGroup.second.size() > 0 && resourceGroup.second.begin()->second->IsTypeOf(type))
+		{
+			for (auto& resourcePair : resourceGroup.second)
+			{
+				size += resourcePair.second->GetMemoryUsage();
+			}
+		}
+	}
+	return size;
 }
 
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)

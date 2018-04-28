@@ -36,7 +36,7 @@ public:
 		return (T*)pResource;
 	}
 
-	void EnableAutoReload();
+	void EnableAutoReload(bool enable);
 
 	//Reload the resource
 	bool Reload(Resource* pResource);
@@ -51,6 +51,7 @@ public:
 	void ResetDependencies(Resource* pResource);
 
 	std::vector<Resource*> GetResourcesOfType(StringHash type);
+	unsigned int GetMemoryUsageOfType(StringHash type);
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
 	Resource* FindResource(const std::string& filePath, const StringHash type);

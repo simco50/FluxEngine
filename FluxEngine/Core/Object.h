@@ -14,6 +14,7 @@ class Subsystem;
         static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
         static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic(#typeName, baseTypeName::GetTypeInfoStatic()); return &typeInfoStatic; } \
 	private: \
+		virtual void NOTYPEINFO() {} \
 
 class Object
 {
@@ -37,7 +38,11 @@ public:
 	template<typename T>
 	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
 
+	//This enforces the FLUX_OBJECT on all classes that inherit from Object
+
 protected:
+	virtual void NOTYPEINFO() = 0;
+
 	Context* m_pContext = nullptr;
 };
 
