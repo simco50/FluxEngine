@@ -3,6 +3,8 @@
 
 enum class LogType
 {
+	VeryVerbose,
+	Verbose,
 	Info,
 	Warning,
 	Error,
@@ -27,6 +29,8 @@ public:
 	static void LogFormat(LogType type, const char* format, ...);
 	static void LogFormat(LogType type, const std::string& format, ...);
 
+	static void SetVerbosity(LogType type);
+
 	static bool CleanupLogs(const TimeSpan& age);
 
 private:
@@ -45,7 +49,7 @@ private:
 	};
 	std::queue<QueuedMessage> m_MessageQueue;
 	Mutex m_QueueMutex;
-
+	LogType m_Verbosity = LogType::Info;
 	File* m_pFileLog;
 	HANDLE m_ConsoleHandle;
 };

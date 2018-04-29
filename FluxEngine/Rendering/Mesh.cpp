@@ -579,7 +579,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 void Mesh::RefreshMemoryUsage()
 {
 	unsigned int memoryUsage = 0;
-	for (int i = 0; i < m_Geometries.size(); i++)
+	for (size_t i = 0; i < m_Geometries.size(); i++)
 	{
 		for (const auto& item : m_Geometries[i]->GetRawData())
 		{

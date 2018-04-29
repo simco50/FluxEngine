@@ -53,4 +53,15 @@ struct Misc
 	};
 
 	static void GetCpuId(CpuId* pCpuId);
+
+	static bool MessageBox(const std::string& title, const std::string& description);
+	static bool OsExecute(const std::string& command, const std::string commandLine, const std::string& operation = "open");
+
+	static int GetLastErrorCode();
+	static int GetLastErrorCodeHR();
+	static std::string GetErrorStringFromCode(int errorCode);
+
+	static uint32 GetProcessId();
+	static std::string GetComputerName();
+	static std::string GetUserName();
 };

@@ -80,14 +80,14 @@ int FluxCore::Run(HINSTANCE hInstance)
 			Config::GetInt("MSAA", "Window", 1),
 			Config::GetInt("RefreshRate", "Window", 60)))
 		{
-			FLUX_LOG(Error, "[FluxCore::Run] > Failed to initialize graphics");
+			FLUX_LOG(Error, "[FluxCore::Run] Failed to initialize graphics");
 		}
 
 		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
 		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
 		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
-		m_pContext->RegisterSubsystem<AsyncTaskQueue>(4);
+		m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount());
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 		m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
 
@@ -136,7 +136,7 @@ void FluxCore::InitGame()
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
-		SceneNode* pObject = new SceneNode(m_pContext, "Cube");
+		SceneNode* pObject = new SceneNode(m_pContext, "DancingMan");
 		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
 		Model* pModel = new AnimatedModel(m_pContext);
 		pModel->SetMesh(meshes[x]);
@@ -186,8 +186,14 @@ void FluxCore::ProcessFrame()
 
 	if (m_pSelectedNode)
 	{
-		AnimatedModel* pModel = m_pSelectedNode->GetComponent<AnimatedModel>();
-		m_pDebugRenderer->AddSkeleton(pModel->GetSkeleton(), pModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+		AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
+		m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
+		if (pModel)
+		{
+			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+		}
 	}
 
 	m_pDebugRenderer->Render();
@@ -221,15 +227,15 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
-	ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
 	ImGui::End();
 
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
+		ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
+	/*if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("Resources: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Resource::GetTypeStatic()) / 1000000.0f);
 		ImGui::Text("\tModels: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Mesh::GetTypeStatic()) / 1000000.0f);
@@ -240,25 +246,17 @@ void FluxCore::RenderUI()
 		ImGui::Text("\t\tTexture2D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture2D::GetTypeStatic()) / 1000000.0f);
 		ImGui::Text("\t\tTexture3D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture3D::GetTypeStatic()) / 1000000.0f);
 		ImGui::TreePop();
-	}
+	}*/
 	if (m_pSelectedNode && ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Text(m_pSelectedNode->GetName().c_str());
+		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
 		ImGui::Text("Components:");
 		for (const Component* pComponent : m_pSelectedNode->GetComponents())
 		{
 			std::string t = std::string("- ") + pComponent->GetTypeName();
 			ImGui::Text(t.c_str());
 		}
-		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
-		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
-		if (pModel)
-		{
-			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
-		}
 		ImGui::TreePop();
 	}
-
-
 	m_pImmediateUI->Render();
 }

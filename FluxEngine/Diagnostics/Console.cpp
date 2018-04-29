@@ -12,6 +12,10 @@ Console::Console()
 {
 	AUTOPROFILE(Console_Initialize);
 	consoleInstance = this;
+#ifdef _DEBUG
+	InitializeConsoleWindow();
+#endif
+
 	m_ConvertBuffer = new char[m_ConvertBufferSize];
 
 	if (Config::GetBool("CleanupLogs", "Console", true))
@@ -39,21 +43,19 @@ Console::Console()
 	}
 
 	std::stringstream stream;
-	stream << "Date: " << time.Day << "-" << time.Month << "-" << time.Year << std::endl;
-	stream << "Time: " << time.Hour << ":" << time.Minute << ":" << time.Second << std::endl << std::endl;
 
-	stream << "Configuration: " << BuildConfiguration::ToString(BuildConfiguration::Configuration) << std::endl;
-	stream << "Platform: " << BuildPlatform::ToString(BuildPlatform::Platform) << std::endl;
+	FLUX_LOG(Info, "Date: %02d-%02d-%02d", time.Day, time.Month, time.Year);
+	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
+	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());
+
+	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration).c_str());
+	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform).c_str());
 	Misc::CpuId cpuId;
 	Misc::GetCpuId(&cpuId);
-	stream << cpuId.Brand << std::endl << std::endl;
+	FLUX_LOG(Info, "Cpu: %s", cpuId.Brand.c_str());
+	FLUX_LOG(Info, "Memory: %f MB", (float)Misc::GetTotalPhysicalMemory() / 1000.0f);
 
-	std::string output = stream.str();
-	m_pFileLog->Write(output.c_str(), output.size());
-
-#ifdef _DEBUG
-		InitializeConsoleWindow();
-#endif
+	//Log(stream.str(), LogType::Info);
 }
 
 Console::~Console()
@@ -102,21 +104,7 @@ bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 			ss << "\n";
 		}
 		ss << "Message: ";
-
-		TCHAR* errorMsg;
-		if (FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-			nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&errorMsg, 0, nullptr) != 0)
-		{
-			ss << errorMsg;
-		}
-		else
-		{
-			ss << "Could not find a description for error: '";
-			ss << hr;
-			ss << "'.";
-		}
+		ss << Misc::GetErrorStringFromCode(hr);
 
 		Log(ss.str(), LogType::Error);
 		return true;
@@ -132,6 +120,11 @@ bool Console::LogHRESULT(char* source, HRESULT hr)
 
 void Console::Log(const std::string &message, LogType type)
 {
+	if ((int)type < (int)consoleInstance->m_Verbosity)
+	{
+		return;
+	}
+
 	if (!Thread::IsMainThread())
 	{
 		ScopeLock lock(consoleInstance->m_QueueMutex);
@@ -172,7 +165,7 @@ void Console::Log(const std::string &message, LogType type)
 
 		if (type == LogType::Error)
 		{
-			MessageBox(nullptr, message.c_str(), "Fatal Error", MB_ICONINFORMATION);
+			Misc::MessageBox("Fatal Error", message);
 			//PostQuitMessage(-1);
 			//__debugbreak();
 			abort();
@@ -209,6 +202,11 @@ void Console::LogFormat(LogType type, const std::string& format, ...)
 	_vsnprintf_s(&consoleInstance->m_ConvertBuffer[0], consoleInstance->m_ConvertBufferSize, consoleInstance->m_ConvertBufferSize, f, ap);
 	va_end(ap);
 	Log(&consoleInstance->m_ConvertBuffer[0], type);
+}
+
+void Console::SetVerbosity(LogType type)
+{
+	consoleInstance->m_Verbosity = type;
 }
 
 bool Console::CleanupLogs(const TimeSpan& age)

@@ -1,5 +1,6 @@
 #include "FluxEngine.h"
 #include "Misc.h"
+#include <shellapi.h>
 
 namespace BuildConfiguration
 {
@@ -169,4 +170,70 @@ void Misc::GetCpuId(CpuId* pCpuId)
 
 	__cpuid(cpuId.data(), 0x80000006);
 	pCpuId->CacheLineSize = cpuId[2] & 0xFF;
+}
+
+bool Misc::MessageBox(const std::string& title, const std::string& description)
+{
+	::MessageBox(nullptr,description.c_str(), title.c_str(), MB_OK | MB_SYSTEMMODAL);
+	return true;
+}
+
+bool Misc::OsExecute(const std::string& command, const std::string commandLine, const std::string& operation /*= ""*/)
+{
+	HINSTANCE process = ShellExecute(0,
+		operation.c_str(),
+		command.c_str(),
+		commandLine.c_str(),
+		0,
+		SW_SHOWNORMAL);
+	return process > (HINSTANCE)32;
+}
+
+int Misc::GetLastErrorCode()
+{
+	return ::GetLastError();
+}
+
+int Misc::GetLastErrorCodeHR()
+{
+	return HRESULT_FROM_WIN32(GetLastErrorCode());
+}
+
+std::string Misc::GetErrorStringFromCode(int errorCode)
+{
+	TCHAR* errorMsg;
+	std::string output;
+	if (FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		nullptr, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&errorMsg, 0, nullptr) != 0)
+	{
+		output = errorMsg;
+	}
+	else
+	{
+		output = "Unknown Error";
+	}
+	return output;
+}
+
+uint32 Misc::GetProcessId()
+{
+	return ::GetCurrentProcessId();
+}
+
+std::string Misc::GetComputerName()
+{
+	char buffer[256];
+	uint32 size = sizeof(buffer);
+	::GetComputerName(buffer, (DWORD*)&size);
+	return buffer;
+}
+
+std::string Misc::GetUserName()
+{
+	char buffer[256];
+	uint32 size = sizeof(buffer);
+	::GetUserName(buffer, (DWORD*)&size);
+	return buffer;
 }
