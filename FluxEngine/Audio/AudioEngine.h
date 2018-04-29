@@ -15,6 +15,5 @@ public:
 	void Update();
 
 private:
-	std::map<std::string, FMOD::Sound*> m_Sounds;
 	FMOD::System* m_pSystem = nullptr;
 };

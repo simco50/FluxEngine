@@ -2,6 +2,7 @@
 #include "Scenegraph/Component.h"
 
 class AudioEngine;
+class Sound;
 
 class AudioSource : public Component
 {
@@ -9,17 +10,17 @@ class AudioSource : public Component
 
 public:
 	AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode);
-	AudioSource(Context* pContext, FMOD::Sound* pSound);
+	AudioSource(Context* pContext, Sound* pSound);
 	~AudioSource();
 
 	void Play();
-	void PlayOneShot(FMOD::Sound* pSound);
+	void PlayOneShot(Sound* pSound);
 	void Stop();
 	void Pause(const bool paused);
 	void SetLoop(const bool loop);
 
 	FMOD::Channel* GetChannel() const { return m_pChannel; }
-	FMOD::Sound* GetSound() const { return m_pSound; }
+	Sound* GetSound() const { return m_pSound; }
 
 private:
 	virtual void OnNodeSet(SceneNode* pNode) override;
@@ -27,7 +28,7 @@ private:
 
 	FMOD_MODE m_Mode;
 	std::string m_FilePath;
-	FMOD::Sound* m_pSound = nullptr;
+	Sound* m_pSound = nullptr;
 	FMOD::Channel* m_pChannel = nullptr;
 
 	FMOD::System* m_pFmodSystem = nullptr;

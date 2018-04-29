@@ -3,17 +3,19 @@
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
 #include "AudioEngine.h"
+#include "Sound.h"
 
 AudioSource::AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode):
 	Component(pContext), m_Mode(mode), m_FilePath(filePath)
 {
-	AudioEngine* pAudioEngine = pContext->GetSubsystem<AudioEngine>();
+	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if (m_pSound == nullptr)
-		m_pSound = pAudioEngine->LoadSound(m_FilePath, m_Mode, nullptr);
+		m_pSound = pResourceManager->Load<Sound>(filePath);
+	AudioEngine* pAudioEngine = pContext->GetSubsystem<AudioEngine>();
 	m_pFmodSystem = pAudioEngine->GetSystem();
 }
 
-AudioSource::AudioSource(Context* pContext, FMOD::Sound* pSound): 
+AudioSource::AudioSource(Context* pContext, Sound* pSound): 
 	Component(pContext), m_Mode(0), m_pSound(pSound)
 {
 }
@@ -30,18 +32,18 @@ void AudioSource::Play()
 		return;
 	}
 
-	m_pFmodSystem->playSound(m_pSound, nullptr, false, &m_pChannel);
+	m_pFmodSystem->playSound(m_pSound->GetSound(), nullptr, false, &m_pChannel);
 }
 
-void AudioSource::PlayOneShot(FMOD::Sound* pSound)
+void AudioSource::PlayOneShot(Sound* pSound)
 {
-	if (m_pSound == nullptr)
+	if (pSound == nullptr)
 	{
 		FLUX_LOG(Info, "AudioSource::PlayOneShot() -> Sound is nullptr");
 		return;
 	}
 
-	m_pFmodSystem->playSound(pSound, nullptr, false, nullptr);
+	m_pFmodSystem->playSound(pSound->GetSound(), nullptr, false, nullptr);
 }
 
 void AudioSource::Stop()
