@@ -243,6 +243,16 @@ bool Console::CleanupLogs(const TimeSpan& age)
 	return FileSystem::IterateDirectory(Paths::LogsDir(), cleaner);
 }
 
+bool Console::Flush()
+{
+	checkf(Thread::IsMainThread(), "[Console::Flush()] Flush must be called from the main thread!");
+	if (consoleInstance->m_pFileLog == nullptr)
+	{
+		return false;
+	}
+	return consoleInstance->m_pFileLog->Flush();
+}
+
 void Console::InitializeConsoleWindow()
 {
 	if (AllocConsole())

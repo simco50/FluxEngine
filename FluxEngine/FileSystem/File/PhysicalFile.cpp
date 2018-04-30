@@ -49,6 +49,13 @@ bool PhysicalFile::OpenWrite(bool append, bool allowRead)
 	{
 		access = GENERIC_READ;
 	}
+	else
+	{
+		if (!CreateDirectoryTree(m_FileName))
+		{
+			return false;
+		}
+	}
 	DWORD creation_disposition = allowRead ? CREATE_ALWAYS : CREATE_NEW;
 
 	m_Handle = CreateFile(
@@ -100,15 +107,25 @@ bool PhysicalFile::IsOpen() const
 	return m_Handle != INVALID_HANDLE_VALUE;
 }
 
-void PhysicalFile::CreateDirectoryTree(const std::string& path)
+bool PhysicalFile::CreateDirectoryTree(const std::string& path)
 {
 	size_t slash = path.find('\\', 0);
 	while (slash != std::string::npos)
 	{
-		std::string dirToCreate = path.substr(0, slash);
-		CreateDirectory(dirToCreate.c_str(), nullptr);
+		if (slash > 1)
+		{
+			std::string dirToCreate = path.substr(0, slash);
+			BOOL success = CreateDirectory(dirToCreate.c_str(), nullptr);
+			int errorCode = Misc::GetLastErrorCode();
+			if(!success && errorCode != ERROR_ALREADY_EXISTS)
+			{
+				std::cout << Misc::GetErrorStringFromCode(errorCode) << std::endl;
+				return false;
+			}
+		}
 		slash = path.find('\\', slash + 1);
 	}
+	return true;
 }
 
 size_t PhysicalFile::Write(const void* pBuffer, const size_t size)

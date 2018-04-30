@@ -9,6 +9,16 @@ Console::LogHRESULT(description, hr)
 #define FLUX_LOG(type, description, ...) \
 Console::LogFormat(LogType::type, description, __VA_ARGS__);
 
+#define FLUX_LOG_INFO(isVerbose, type, description, ...) \
+if(isVerbose) \
+{ \
+	Console::LogFormat(LogType::Info, description, __VA_ARGS__); \
+} \
+else \
+{ \
+	Console::LogFormat(LogType::VeryVerbose, description, __VA_ARGS__); \
+}
+
 #ifdef _DEBUG
 
 #define HR(command)\

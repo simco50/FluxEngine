@@ -29,7 +29,7 @@ public:
 	virtual bool SetPointerFromEnd(const size_t position) override;
 
 private:
-	void CreateDirectoryTree(const std::string& path);
+	bool CreateDirectoryTree(const std::string& path);
 
 	FileHandle m_Handle = FILE_HANDLE_INVALID;
 };

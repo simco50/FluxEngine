@@ -28,10 +28,9 @@ public:
 	static void LogError(const std::string &message);
 	static void LogFormat(LogType type, const char* format, ...);
 	static void LogFormat(LogType type, const std::string& format, ...);
-
 	static void SetVerbosity(LogType type);
-
 	static bool CleanupLogs(const TimeSpan& age);
+	static bool Flush();
 
 private:
 	void InitializeConsoleWindow();
