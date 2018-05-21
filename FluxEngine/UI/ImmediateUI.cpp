@@ -18,6 +18,8 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
 
+	ImGui::CreateContext();
+
 	m_pInput = pContext->GetSubsystem<InputEngine>();
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	m_SDLEventHandle = m_pInput->OnHandleSDL().AddRaw(this, &ImmediateUI::HandleSDLEvent);
@@ -37,6 +39,8 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	io.KeyMap[ImGuiKey_Backspace] = (int)KeyboardKey::KEY_BACKSPACE;
 	io.KeyMap[ImGuiKey_Enter] = (int)KeyboardKey::KEY_RETURN;
 	io.KeyMap[ImGuiKey_Escape] = (int)KeyboardKey::KEY_ESCAPE;
+	io.KeyMap[ImGuiKey_Space] = (int)KeyboardKey::KEY_SPACE;
+	io.KeyMap[ImGuiKey_Insert] = (int)KeyboardKey::KEY_INSERT;
 	io.KeyMap[ImGuiKey_A] = (int)KeyboardKey::KEY_A;
 	io.KeyMap[ImGuiKey_C] = (int)KeyboardKey::KEY_C;
 	io.KeyMap[ImGuiKey_V] = (int)KeyboardKey::KEY_V;
@@ -65,7 +69,8 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	m_pIndexBuffer = std::make_unique<IndexBuffer>(m_pGraphics);
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
-	std::unique_ptr<File> pFile = FileSystem::GetFile("Resources/OpenSans-Regular.ttf");
+	const char fontPath[] = "Resources/OpenSans-Regular.ttf";
+	std::unique_ptr<File> pFile = FileSystem::GetFile(fontPath);
 	if (pFile && pFile->OpenRead())
 	{
 		size_t size = pFile->GetSize();
@@ -73,6 +78,10 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 		pFile->Read(pBuffer, size);
 		pFile->Close();
 		io.Fonts->AddFontFromMemoryTTF(pBuffer, (int)size, 18.0f);
+	}
+	else
+	{
+		FLUX_LOG(Warning, "[ImmediadeUI::ImmediateUI() > Font not found '%s']", fontPath);
 	}
 	unsigned char *pixels;
 	int width, height;
@@ -85,7 +94,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 
 ImmediateUI::~ImmediateUI()
 {
-	ImGui::Shutdown();
+	ImGui::DestroyContext();
 }
 
 void ImmediateUI::NewFrame()
@@ -138,9 +147,9 @@ void ImmediateUI::Render()
 	m_pVertexBuffer->Unmap();
 	m_pIndexBuffer->Unmap();
 
+	m_pGraphics->InvalidateShaders();
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
-	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
@@ -253,7 +262,6 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 0.80f);
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.49f, 0.49f, 0.49f, 0.80f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
-	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.86f, 0.86f, 0.86f, 0.99f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
@@ -269,9 +277,6 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
 	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
-	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
 	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);

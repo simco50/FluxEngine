@@ -11,9 +11,12 @@ public:
 	~ShaderProgram();
 
 	bool SetParameter(const std::string& name, const void* pData);
+	bool SetParameter(StringHash hash, const void* pData);
+
+	const ShaderParameter* GetShaderParameter(const std::string& name) const;
+	const ShaderParameter* GetShaderParameter(StringHash hash) const;
 
 private:
-	std::map<std::string, const ShaderParameter*> m_ShaderParameters;
-
+	std::map<StringHash, const ShaderParameter*> m_ShaderParameters;
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_CurrentShaders = {};
 };

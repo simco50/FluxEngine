@@ -4,36 +4,18 @@
 
 class Graphics;
 
-enum InputTriggerState
+struct JoystickState
 {
-	Pressed,
-	Released,
-	Down
-};
+	std::string Name;
+	int Index = -1;
+	SDL_Joystick* pJoystick = nullptr;
+	SDL_GameController* pController = nullptr;
+	SDL_Haptic* pHaptic = nullptr;
 
-struct InputAction
-{
-	InputAction():
-		ActionID(-1),
-		TriggerState(InputTriggerState::Pressed), 
-		KeyboardCode(KeyboardKey::NONE),
-		MouseButtonCode(MouseKey::NONE)
-		{}
-
-	InputAction(int actionID, InputTriggerState triggerState = InputTriggerState::Pressed, KeyboardKey keyboardCode = KeyboardKey::NONE, MouseKey mouseButtonCode = MouseKey::NONE):
-		ActionID(actionID),
-		TriggerState(triggerState), 
-		KeyboardCode(keyboardCode), 
-		MouseButtonCode(mouseButtonCode)
-		{}
-
-	int ActionID;
-	InputTriggerState TriggerState;
-	KeyboardKey KeyboardCode; //VK_... (Range 0x07 <> 0xFE)
-	MouseKey MouseButtonCode; //VK_... (Range 0x00 <> 0x06)
-	bool Pressed = false;
-	bool Released = false;
-	bool Down = false;
+	std::vector<bool> Buttons;
+	std::vector<bool> ButtonsPressed;
+	std::vector<float> Axes;
+	std::vector<int> Hats;
 };
 
 class InputEngine : public Subsystem
@@ -47,7 +29,6 @@ public:
 	DELETE_COPY(InputEngine)
 
 	void Update();
-	bool AddInputAction(InputAction action);
 	void ForceMouseToCenter(bool force);
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 
@@ -66,17 +47,26 @@ public:
 	MulticastDelegate<SDL_Event*>& OnHandleSDL() { return m_OnHandleSDLEvent; }
 	MulticastDelegate<int, int>& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
 
+	const JoystickState* GetJoystickStateFromIndex(int index) const;
+
+	void Rumble(int index);
+
+	static void DrawDebugJoystick(const JoystickState& state);
+
 private:
 	void SetKey(int keyCode, bool down);
 	void SetMouseButton(int mouseButton, bool down);
+
+	const JoystickState& GetJoystickState(SDL_JoystickID index) const;
+	void ResetGamepads();
+	bool OpenGamepad(int index);
+	bool CloseGamepad(int index);
 
 	MulticastDelegate<SDL_Event*> m_OnHandleSDLEvent;
 	MulticastDelegate<int, int> m_OnWindowSizeChangedEvent;
 
 	Graphics * m_pGraphics = nullptr;
 
-	std::map<int, std::vector<InputAction>> m_InputActions;
-	
 	Vector2 m_CurrMousePosition = {};
 	Vector2 m_OldMousePosition = {};
 	bool m_MouseMove = false;
@@ -88,6 +78,8 @@ private:
 
 	std::array<bool, (size_t)KeyboardKey::MAX> m_KeyDown = {};
 	std::array<bool, (size_t)KeyboardKey::MAX> m_KeyPressed = {};
+
+	std::unordered_map<SDL_JoystickID, JoystickState> m_Joysticks;
 
 	bool m_Enabled;
 	bool m_ForceToCenter;

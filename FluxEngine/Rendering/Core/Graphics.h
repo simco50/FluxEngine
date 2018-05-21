@@ -53,6 +53,7 @@ public:
 
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
+	void InvalidateShaders();
 	bool SetShader(const ShaderType type, ShaderVariation* pShader);
 
 	void SetViewport(const FloatRect& rect, bool relative = false);
@@ -69,13 +70,23 @@ public:
 	ConstantBuffer* GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size);
 	Shader* GetShader(const std::string& filePath);
 	ShaderVariation* GetShader(const std::string& filePath, const ShaderType type, const std::string& defines = "");
+	
 	bool SetShaderParameter(const std::string& name, const void* pData);
+	bool SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count);
+	bool SetShaderParameter(const std::string& name, const float value);
+	bool SetShaderParameter(const std::string& name, const int value);
+	bool SetShaderParameter(const std::string& name, const Vector2& value);
+	bool SetShaderParameter(const std::string& name, const Vector3& value);
+	bool SetShaderParameter(const std::string& name, const Vector4& value);
+	bool SetShaderParameter(const std::string& name, const Color& value);
+	bool SetShaderParameter(const std::string& name, const Matrix& value);
 
 	void OnResize(const int width, const int height);
 	void BeginFrame();
 	void EndFrame();
 
 	void TakeScreenshot();
+	void TakeScreenshot(OutputStream& outputStream);
 
 	//Getters
 	HWND GetWindow() const;
@@ -102,6 +113,8 @@ private:
 	bool EnumerateAdapters();
 	bool CreateDevice(const int windowWidth, const int windowHeight);
 	void UpdateSwapchain(int windowWidth, int windowHeight);
+
+	void UpdateShaderProgram();
 
 	DelegateHandle m_WindowSizeChangedHandle;
 	SDL_Window* m_pWindow = nullptr;

@@ -12,8 +12,8 @@ public:
 	AnimatedModel(Context* pContext);
 	virtual ~AnimatedModel();
 
-	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void Update() override;
+	virtual void SetMesh(Mesh* pMesh) override;
 
 	Matrix* GetSkinMatrices() { return m_SkinMatrices.data(); }
 	const Skeleton& GetSkeleton() const;

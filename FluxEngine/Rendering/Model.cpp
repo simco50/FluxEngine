@@ -20,17 +20,6 @@ void Model::OnSceneSet(Scene* pScene)
 	Drawable::OnSceneSet(pScene);
 }
 
-void Model::OnNodeSet(SceneNode* pNode)
-{	
-	Drawable::OnNodeSet(pNode);
-
-	for (Batch& batch : m_Batches)
-	{
-		batch.pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
-		batch.NumSkinMatrices = 1;
-	}
-}
-
 void Model::OnMarkedDirty(const Transform* pTransform)
 {
 	for (Batch& batch : m_Batches)
@@ -39,18 +28,22 @@ void Model::OnMarkedDirty(const Transform* pTransform)
 
 void Model::SetMesh(Mesh* pMesh)
 {
-	if (pMesh)
+	if (m_pNode == nullptr)
 	{
-		int geometries = pMesh->GetGeometryCount();
-		m_Batches.resize(geometries);
-		for (int i = 0; i < geometries; ++i)
-			m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_BoundingBox = pMesh->GetBoundingBox();
+		FLUX_LOG(Warning, "[Model::SetMesh] Cannot set mesh when component is not attached to a node");
+		return;
 	}
-	else
+
+	int geometries = pMesh->GetGeometryCount();
+	m_Batches.resize(geometries);
+	for (int i = 0; i < geometries; ++i)
 	{
-		m_BoundingBox = BoundingBox();
+		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
+		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		m_Batches[i].NumSkinMatrices = 1;
 	}
+	m_BoundingBox = pMesh->GetBoundingBox();
+
 	m_pMesh = pMesh;
 }
 

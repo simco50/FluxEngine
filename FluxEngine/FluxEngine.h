@@ -59,12 +59,7 @@
 #endif
 
 #pragma region
-#include <imgui.h>
-#ifdef _DEBUG
-#pragma comment(lib, "imgui_Debug.lib")
-#else
-#pragma comment(lib, "imgui_Release.lib")
-#endif
+#include "External/Imgui/imgui.h"
 #pragma endregion IMGUI
 
 #pragma region

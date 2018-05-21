@@ -9,28 +9,38 @@
 AnimatedModel::AnimatedModel(Context* pContext):
 	Model(pContext)
 {
-	m_SkinMatrices.resize(Skeleton::MAX_BONE_COUNT);
 }
 
 AnimatedModel::~AnimatedModel()
 {
 }
 
-void AnimatedModel::OnNodeSet(SceneNode* pNode)
-{	
-	Drawable::OnNodeSet(pNode);
-
-	for (Batch& batch : m_Batches)
-	{
-		batch.pSkinMatrices = m_SkinMatrices.data();
-		batch.NumSkinMatrices = (int)m_SkinMatrices.size();
-		batch.pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
-	}
-}
-
 void AnimatedModel::Update()
 {
 	m_AnimationStates[0].Apply(m_SkinMatrices);
+}
+
+void AnimatedModel::SetMesh(Mesh* pMesh)
+{
+	if (m_pNode == nullptr)
+	{
+		FLUX_LOG(Warning, "[AnimatedModel::SetMesh] Cannot set mesh when component is not attached to a node");
+		return;
+	}
+
+	int geometries = pMesh->GetGeometryCount();
+	m_Batches.resize(geometries);
+	m_SkinMatrices.resize(pMesh->GetSkeleton().BoneCount());
+	for (int i = 0; i < geometries; ++i)
+	{
+		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
+		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		m_Batches[i].pSkinMatrices = m_SkinMatrices.data();
+		m_Batches[i].NumSkinMatrices = (int)m_SkinMatrices.size();
+	}
+	m_BoundingBox = pMesh->GetBoundingBox();
+
+	m_pMesh = pMesh;
 }
 
 const Skeleton& AnimatedModel::GetSkeleton() const

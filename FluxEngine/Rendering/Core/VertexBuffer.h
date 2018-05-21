@@ -61,61 +61,11 @@ struct VertexElement
 		return other.GetHash() == GetHash();
 	}
 
-	static char* GetSemanticOfType(VertexElementSemantic semantic)
-	{
-		switch (semantic)
-		{
-		case VertexElementSemantic::POSITION:
-			return "POSITION";
-		case VertexElementSemantic::NORMAL:
-			return "NORMAL";
-		case VertexElementSemantic::BINORMAL:
-			return "BINORMAL";
-		case VertexElementSemantic::TANGENT:
-			return "TANGENT";
-		case VertexElementSemantic::TEXCOORD:
-			return "TEXCOORD";
-		case VertexElementSemantic::COLOR:
-			return "COLOR";
-		case VertexElementSemantic::BLENDWEIGHTS:
-			return "BLENDWEIGHT";
-		case VertexElementSemantic::BLENDINDICES:
-			return "BLENDINDEX";
-		case VertexElementSemantic::OBJECTINDEX:
-			return "OBJECTINDEX";
-		}
-		FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
-		return "INVALID";
-	}
+	static char* GetSemanticOfType(VertexElementSemantic semantic);
 
-	static DXGI_FORMAT GetFormatOfType(VertexElementType type)
-	{
-		switch (type)
-		{
-		case VertexElementType::FLOAT:
-			return DXGI_FORMAT_R32_FLOAT;
-		case VertexElementType::UBYTE4:
-			return DXGI_FORMAT_R8G8B8A8_UINT;
-		case VertexElementType::UBYTE4_NORM:
-			return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case VertexElementType::INT:
-			return DXGI_FORMAT_R32_SINT;
-		case VertexElementType::FLOAT2:
-			return DXGI_FORMAT_R32G32_FLOAT;
-		case VertexElementType::FLOAT3:
-			return DXGI_FORMAT_R32G32B32_FLOAT;
-		case VertexElementType::FLOAT4:
-			return DXGI_FORMAT_R32G32B32A32_FLOAT;
-		case VertexElementType::UINT4:
-			return DXGI_FORMAT_R32G32B32A32_UINT;
-		case VertexElementType::INT4:
-			return DXGI_FORMAT_R32G32B32A32_SINT;
-		}
-		FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
-		return (DXGI_FORMAT)0;
-	}
+	static DXGI_FORMAT GetFormatOfType(VertexElementType type);
 
-	static unsigned int GetSizeOfType(VertexElementType type)
+	static constexpr unsigned int GetSizeOfType(const VertexElementType type)
 	{
 		switch (type)
 		{
@@ -123,17 +73,16 @@ struct VertexElement
 		case VertexElementType::UBYTE4:
 		case VertexElementType::UBYTE4_NORM:
 		case VertexElementType::INT:
-			return 4;
+			return sizeof(float);
 		case VertexElementType::FLOAT2:
-			return 8;
+			return 2 * sizeof(float);
 		case VertexElementType::FLOAT3:
-			return 12;
+			return 3 * sizeof(float);
 		case VertexElementType::FLOAT4:
 		case VertexElementType::UINT4:
 		case VertexElementType::INT4:
-			return 16;
+			return 4 * sizeof(float);
 		}
-		FLUX_LOG(Warning, "[VertexElement::GetSizeOfType()] Invalid vertex type!");
 		return 0;
 	}
 };

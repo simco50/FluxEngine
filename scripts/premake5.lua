@@ -53,7 +53,6 @@ workspace "FluxEngine"
 		includedirs 
 		{ 
 			"$(ProjectDir)",
-			"../Libraries/ImgUI/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
@@ -64,7 +63,6 @@ workspace "FluxEngine"
 
 		libdirs
 		{
-			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
@@ -72,6 +70,9 @@ workspace "FluxEngine"
 			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
 			"../Libraries/Assimp/lib/%{cfg.platform}",
 		}
+
+		filter "files:**/External/**.*"
+			flags "NoPCH"
 
 	project "FluxGame"
 		filename "FluxGame_%{_ACTION}"
@@ -96,7 +97,6 @@ workspace "FluxEngine"
 		includedirs 
 		{ 
 			"../FluxEngine",
-			"../Libraries/ImgUI/include",
 			"../Libraries/Fmod/inc",
 			"../Libraries/Zlib/include",
 			"../Libraries/PhysX 3.4/PhysX_3.4/include",
@@ -107,7 +107,6 @@ workspace "FluxEngine"
 
 		libdirs
 		{
-			"../Libraries/Imgui/lib/%{cfg.platform}",
 			"../Libraries/Fmod/lib/%{cfg.platform}",
 			"../Libraries/Zlib/lib/%{cfg.platform}",
 			"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",

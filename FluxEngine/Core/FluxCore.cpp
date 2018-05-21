@@ -137,18 +137,18 @@ void FluxCore::InitGame()
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
 		SceneNode* pObject = new SceneNode(m_pContext, "DancingMan");
+		m_pScene->AddChild(pObject);
 		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
 		Model* pModel = new AnimatedModel(m_pContext);
+		pObject->AddComponent(pModel);
 		pModel->SetMesh(meshes[x]);
 		pModel->SetMaterial(pMaterials[x]);
-		pObject->AddComponent(pModel);
 		Animator* pAnimator = new Animator(m_pContext);
 		pObject->AddComponent(pAnimator);
 		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
 		pObject->AddComponent(pRigidbody);
 		pObject->AddComponent(pCollider);
-		m_pScene->AddChild(pObject);
 		pAnimator->Play();
 	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
@@ -156,6 +156,7 @@ void FluxCore::InitGame()
 
 void FluxCore::ProcessFrame()
 {
+
 	GameTimer::Tick();
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
@@ -229,6 +230,10 @@ void FluxCore::RenderUI()
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::End();
 
+	InputEngine::DrawDebugJoystick(*m_pInput->GetJoystickStateFromIndex(0));
+	ImGui::Begin("Test");
+
+
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
@@ -258,5 +263,6 @@ void FluxCore::RenderUI()
 		}
 		ImGui::TreePop();
 	}
+	ImGui::End();
 	m_pImmediateUI->Render();
 }

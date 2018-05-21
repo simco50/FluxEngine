@@ -288,7 +288,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 	return true;
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+void Graphics::UpdateShaderProgram()
 {
 	if (m_pImpl->m_ShaderProgramDirty)
 	{
@@ -302,7 +302,9 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
+		{
 			m_pImpl->m_pCurrentShaderProgram = pIt->second.get();
+		}
 		else
 		{
 			AUTOPROFILE(Graphics_SetShaderParameter_CreateShaderProgram);
@@ -312,7 +314,110 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
 		}
 		m_pImpl->m_ShaderProgramDirty = false;
 	}
-	return m_pImpl->m_pCurrentShaderProgram->SetParameter(name, pData);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, pParameter->Size, pData);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	if (stride * count > pParameter->Size)
+	{
+		FLUX_LOG(Warning, "[Graphics::SetShaderParameter] Parameter input too large");
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const float value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(float), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const int value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(int), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const Vector2& value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector2), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const Vector3& value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector3), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const Vector4& value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector4), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const Color& value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Color), &value);
+}
+
+bool Graphics::SetShaderParameter(const std::string& name, const Matrix& value)
+{
+	UpdateShaderProgram();
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	if (pParameter == nullptr)
+	{
+		return false;
+	}
+	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Matrix), &value);
 }
 
 void Graphics::SetViewport(const FloatRect& rect, bool relative)
@@ -725,7 +830,11 @@ void Graphics::TakeScreenshot()
 	PhysicalFile file(str.str());
 	if (!file.OpenWrite())
 		return;
+	TakeScreenshot(file);
+}
 
+void Graphics::TakeScreenshot(OutputStream& outputStream)
+{
 	AUTOPROFILE(Graphics_TakeScreenshot);
 
 	D3D11_TEXTURE2D_DESC desc = {};
@@ -789,7 +898,7 @@ void Graphics::TakeScreenshot()
 	}
 	m_pImpl->GetDeviceContext()->Unmap(pStagingTexture.Get(), 0);
 
-	destinationImage.Save(file);
+	destinationImage.Save(outputStream);
 }
 
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)

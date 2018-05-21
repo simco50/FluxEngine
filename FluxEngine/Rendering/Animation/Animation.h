@@ -29,6 +29,7 @@ public:
 
 	void SetNode(const AnimationNode& node);
 	AnimationNode& GetNode(const int boneIndex);
+	size_t GetNodeCount() const { return m_AnimationNodes.size(); }
 	const std::vector<AnimationNode>& GetNodes() { return m_AnimationNodes; }
 
 	const std::string& GetName() const { return m_Name; }

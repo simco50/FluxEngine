@@ -44,16 +44,6 @@ struct Math
 	}
 
 	template<typename T>
-	inline static void Clamp(T& value, const T hi, const T lo)
-	{
-		if (value > hi)
-			value = hi;
-
-		else if (value < lo)
-			value = lo;
-	}
-
-	template<typename T>
 	inline static T Clamp(const T value, const T hi, const T lo)
 	{
 		if (value > hi)

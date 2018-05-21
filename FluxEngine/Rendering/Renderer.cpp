@@ -89,30 +89,22 @@ void Renderer::SetPerFrameParameters()
 	if (frame != m_CurrentFrame)
 	{
 		m_CurrentFrame = frame;
-		float deltaTime = GameTimer::DeltaTime();
-		float elapsedTime = GameTimer::GameTime();
-		m_pGraphics->SetShaderParameter("cDeltaTime", &deltaTime);
-		m_pGraphics->SetShaderParameter("cElapsedTime", &elapsedTime);
+		m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
+		m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
 		m_LightPosition.Normalize(m_LightDirection);
 		m_LightDirection *= -1;
-		m_pGraphics->SetShaderParameter("cLightDirection", &m_LightDirection);
+		m_pGraphics->SetShaderParameter("cLightDirection", m_LightDirection);
 	}
 }
 
 void Renderer::SetPerCameraParameters(Camera* pCamera)
 {
 	m_pCurrentCamera = pCamera;
-	Matrix viewProj = pCamera->GetViewProjection();
-	Matrix view = pCamera->GetView();
-	Matrix viewInv = pCamera->GetViewInverse();
-	float nearPlane = pCamera->GetNearPlane();
-	float farPlane = pCamera->GetFarPlane();
-
-	m_pGraphics->SetShaderParameter("cViewProj", &viewProj);
-	m_pGraphics->SetShaderParameter("cView", &view);
-	m_pGraphics->SetShaderParameter("cViewInverse", &viewInv);
-	m_pGraphics->SetShaderParameter("cNearClip", &nearPlane);
-	m_pGraphics->SetShaderParameter("cFarClip", &farPlane);
+	m_pGraphics->SetShaderParameter("cViewProj", pCamera->GetViewProjection());
+	m_pGraphics->SetShaderParameter("cView", pCamera->GetView());
+	m_pGraphics->SetShaderParameter("cViewInverse", pCamera->GetViewInverse());
+	m_pGraphics->SetShaderParameter("cNearClip", pCamera->GetNearPlane());
+	m_pGraphics->SetShaderParameter("cFarClip", pCamera->GetFarPlane());
 }
 
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
@@ -153,9 +145,9 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
 	if (batch.NumSkinMatrices > 1)
 	{
-		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices);
+		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
 	}
 	m_pGraphics->SetShaderParameter("cWorld", batch.pModelMatrix);
 	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cWorldViewProj", &wvp);
+	m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
 }

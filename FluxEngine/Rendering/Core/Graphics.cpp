@@ -14,6 +14,14 @@
 #include "UI/ImmediateUI.h"
 #include "ShaderProgram.h"
 
+void Graphics::InvalidateShaders()
+{
+	for (int i = 0; i < (int)ShaderType::MAX; i++)
+	{
+		SetShader((ShaderType)i, nullptr);
+	}
+}
+
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
 	m_pRasterizerState->SetScissorEnabled(enabled);
