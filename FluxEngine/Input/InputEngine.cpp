@@ -86,7 +86,7 @@ void InputEngine::Update()
 			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
-				if (button < state.Buttons.size())
+				if (button < (int)state.Buttons.size())
 				{
 					state.Buttons[button] = true;
 					state.ButtonsPressed[button] = true;
@@ -101,7 +101,7 @@ void InputEngine::Update()
 			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
-				if (button < state.Buttons.size())
+				if (button < (int)state.Buttons.size())
 				{
 					state.Buttons[button] = false;
 				}
@@ -115,7 +115,7 @@ void InputEngine::Update()
 
 			if (!state.pController)
 			{
-				if (event.jaxis.axis < state.Axes.size())
+				if (event.jaxis.axis < (int)state.Axes.size())
 				{
 					state.Axes[event.jaxis.axis] = Math::Clamp((float)event.jaxis.value / 32767.0f, 1.0f, -1.0f);
 				}
@@ -129,7 +129,7 @@ void InputEngine::Update()
 
 			if (!state.pController)
 			{
-				if (event.jhat.which < state.Hats.size())
+				if (event.jhat.which < (int)state.Hats.size())
 				{
 					state.Hats[event.jhat.which] = event.jhat.value;
 				}
@@ -141,7 +141,7 @@ void InputEngine::Update()
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
 			JoystickState& state = m_Joysticks[joystickId];
-			if (button < state.Buttons.size())
+			if (button < (int)state.Buttons.size())
 			{
 				state.Buttons[button] = true;
 				state.ButtonsPressed[button] = true;
@@ -153,7 +153,7 @@ void InputEngine::Update()
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
 			JoystickState& state = m_Joysticks[joystickId];
-			if (button < state.Buttons.size())
+			if (button < (int)state.Buttons.size())
 			{
 				state.Buttons[button] = false;
 			}
@@ -164,7 +164,7 @@ void InputEngine::Update()
 			SDL_JoystickID joystickId = event.caxis.which;
 			JoystickState& state = m_Joysticks[joystickId];
 
-			if (event.caxis.axis < state.Axes.size())
+			if (event.caxis.axis < (int)state.Axes.size())
 			{
 				state.Axes[event.caxis.axis] = Math::Clamp((float)event.caxis.value / 32767.0f, 1.0f, -1.0f);
 			}
