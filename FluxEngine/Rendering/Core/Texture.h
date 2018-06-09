@@ -52,12 +52,18 @@ protected:
 	void Release();
 	virtual bool Create() { return true; }
 
+	int GetLevelWidth(unsigned int mipLevel);
+	int GetLevelHeight(unsigned int mipLevel);
+	int GetLevelDepth(unsigned int mipLevel);
+	int GetRowDataSize(unsigned int width);
+
 	unsigned int GetSRVFormat(const unsigned int format);
 	unsigned int GetDSVFormat(const unsigned int format);
 
 	unsigned int m_Width = 0;
 	unsigned int m_Height = 0;
 	unsigned int m_Depth = 0;
+	unsigned int m_MipLevels = 1;
 
 	void* m_pResource = nullptr;
 	void* m_pShaderResourceView = nullptr;

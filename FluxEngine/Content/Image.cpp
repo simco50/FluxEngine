@@ -7,6 +7,8 @@
 #include "External/Stb/stb_image_write.h"
 #include "FileSystem/File/PhysicalFile.h"
 
+#include "DDSLoader.h"
+
 namespace STBI
 {
 	int ReadCallback(void* pUser, char* pData, int size)
@@ -47,22 +49,19 @@ Image::~Image()
 bool Image::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Image_Load);
-	m_Components = 4;
-	m_Depth = 1;
-	stbi_io_callbacks callbacks;
-	callbacks.read = STBI::ReadCallback;
-	callbacks.skip = STBI::SkipCallback;
-	callbacks.eof = STBI::EofCallback;
-	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
-	if (pPixels == nullptr)
-		return false;
-	m_Pixels.resize(m_Width * m_Height * m_Components);
-	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
-	stbi_image_free(pPixels);
 
+	std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
+	bool success = false;
+	if (extenstion == "dds")
+	{
+		success = LoadDds(inputStream);
+	}
+	else
+	{
+		success = LoadStbi(inputStream);
+	}
 	SetMemoryUsage((unsigned int)m_Pixels.size());
-
-	return true;
+	return success;
 }
 
 bool Image::Save(OutputStream& outputStream)
@@ -257,4 +256,180 @@ SDL_Surface* Image::GetSDLSurface()
 	SDL_UnlockSurface(surface);
 
 	return surface;
+}
+
+bool Image::LoadDds(InputStream& inputStream)
+{
+	using namespace DDS;
+
+#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
+
+	char magic[5];
+	magic[4] = '\0';
+	inputStream.Read(magic, 4);
+
+	if (strcmp(magic, "DDS ") != 0)
+	{
+		return false;
+	}
+
+	DDSFileHeader header;
+	inputStream.Read(&header, sizeof(DDSFileHeader));
+
+	if (header.dwSize == sizeof(DDSFileHeader) &&
+		header.ddpf.dwSize == sizeof(DDSPixelFormatHeader))
+	{
+		bool hasDxgi = header.ddpf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0');
+		DDS10FileHeader dds10Header;
+		if (hasDxgi)
+		{
+			inputStream.Read(&dds10Header, sizeof(DDS10FileHeader));
+		}
+
+		uint32 fourCC = header.ddpf.dwFourCC;
+
+		if (hasDxgi)
+		{
+			switch (dds10Header.dxgiFormat)
+			{
+			case DDS_DXGI_FORMAT_BC1_UNORM:
+			case DDS_DXGI_FORMAT_BC1_UNORM_SRGB:
+				fourCC = MAKEFOURCC('D', 'X', 'T', '1');
+				break;
+			case DDS_DXGI_FORMAT_BC2_UNORM:
+			case DDS_DXGI_FORMAT_BC2_UNORM_SRGB:
+				fourCC = MAKEFOURCC('D', 'X', 'T', '3');
+				break;
+			case DDS_DXGI_FORMAT_BC3_UNORM:
+			case DDS_DXGI_FORMAT_BC3_UNORM_SRGB:
+				fourCC = MAKEFOURCC('D', 'X', 'T', '5');
+				break;
+			case DDS_DXGI_FORMAT_R8G8B8A8_UNORM:
+			case DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+				fourCC = 0;
+				break;
+			default:
+				FLUX_LOG(Warning, "[] Invalid DXGI Format '%d'", dds10Header.dxgiFormat);
+				return false;
+			}
+
+			// Check the internal sRGB formats
+			if (dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC1_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC2_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC3_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+			{
+				m_sRgb = true;
+			}
+		}
+
+		switch (fourCC)
+		{
+		case MAKEFOURCC('D', 'X', 'T', '1'):
+			m_CompressionFormat = ImageCompressionFormat::DXT1;
+			m_Components = 3;
+			break;
+
+		case MAKEFOURCC('D', 'X', 'T', '3'):
+			m_CompressionFormat = ImageCompressionFormat::DXT3;
+			m_Components = 4;
+			break;
+
+		case MAKEFOURCC('D', 'X', 'T', '5'):
+			m_CompressionFormat = ImageCompressionFormat::DXT5;
+			m_Components = 4;
+			break;
+
+		case 0:
+			if (header.ddpf.dwRGBBitCount != 32 && header.ddpf.dwRGBBitCount != 24 &&
+				header.ddpf.dwRGBBitCount != 16)
+			{
+				return false;
+			}
+			m_CompressionFormat = ImageCompressionFormat::RGBA;
+			m_Components = 4;
+			break;
+
+		default:
+			FLUX_LOG(Warning, "[] Unrecognized DDS image format");
+			return false;
+		}
+
+		// Is it a cube map or texture array? If so determine the size of the image chain.
+		bool isCubemap = (header.dwCaps2 & DDSCAPS2_CUBEMAP_ALL_FACES) != 0 || (hasDxgi && (dds10Header.miscFlag & 0x4) != 0);
+		unsigned imageChainCount = 1;
+		if (isCubemap)
+			imageChainCount = 6;
+		else if (hasDxgi && dds10Header.arraySize > 1)
+		{
+			imageChainCount = dds10Header.arraySize;
+			m_IsArray = true;
+		}
+
+		unsigned int dataSize = 0;
+		if (m_CompressionFormat != ImageCompressionFormat::RGBA)
+		{
+			const unsigned blockSize = m_CompressionFormat == ImageCompressionFormat::DXT1 ? 8 : 16; 
+			
+			unsigned blocksWide = (header.dwWidth + 3) / 4;
+			unsigned blocksHeight = (header.dwHeight + 3) / 4;
+			dataSize = blocksWide * blocksHeight * blockSize;
+
+			// Calculate mip data size
+			unsigned x = header.dwWidth / 2;
+			unsigned y = header.dwHeight / 2;
+			unsigned z = header.dwDepth / 2;
+			for (unsigned level = header.dwMipMapCount; level > 1; x /= 2, y /= 2, z /= 2, --level)
+			{
+				blocksWide = (Math::Max(x, 1U) + 3) / 4;
+				blocksHeight = (Math::Max(y, 1U) + 3) / 4;
+				dataSize += blockSize * blocksWide * blocksHeight * Math::Max(z, 1U);
+			}
+		}
+		else
+		{
+			dataSize = (header.ddpf.dwRGBBitCount / 8) * header.dwWidth * header.dwHeight * Math::Max(header.dwDepth, 1U);
+			// Calculate mip data size
+			unsigned x = header.dwWidth / 2;
+			unsigned y = header.dwHeight / 2;
+			unsigned z = header.dwDepth / 2;
+			for (unsigned level = header.dwMipMapCount; level > 1; x /= 2, y /= 2, z /= 2, --level)
+				dataSize += (header.ddpf.dwRGBBitCount / 8) * Math::Max(x, 1U) *  Math::Max(y, 1U) *  Math::Max(z, 1U);
+		}
+
+		m_Pixels.resize(dataSize);
+		m_Width = header.dwWidth;
+		m_Height = header.dwHeight;
+		m_Depth = header.dwDepth;
+		m_MipLevels = header.dwMipMapCount;
+		if (m_MipLevels < 1)
+			m_MipLevels = 1;
+		
+		inputStream.Read(m_Pixels.data(), m_Pixels.size());
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
+
+bool Image::LoadStbi(InputStream& inputStream)
+{
+	m_Components = 4;
+	m_Depth = 1;
+	stbi_io_callbacks callbacks;
+	callbacks.read = STBI::ReadCallback;
+	callbacks.skip = STBI::SkipCallback;
+	callbacks.eof = STBI::EofCallback;
+	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	if (pPixels == nullptr)
+	{
+		return false;
+	}
+	m_Pixels.resize(m_Width * m_Height * m_Components);
+	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+	stbi_image_free(pPixels);
+
+	return true;
 }

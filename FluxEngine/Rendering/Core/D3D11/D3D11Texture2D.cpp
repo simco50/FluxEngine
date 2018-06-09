@@ -12,10 +12,12 @@ bool Texture2D::Load(InputStream& inputStream)
 	m_pImage = std::make_unique<Image>(m_pContext);
 	if (!m_pImage->Load(inputStream))
 		return false;
-	//m_pImage->ConvertToRGBA();
-	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr))
+
+	ImageCompressionFormat compressionFormat = m_pImage->GetCompressionFormat();
+	m_MipLevels = m_pImage->GetMipLevels();
+	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
 		return false;
-	if (!SetData(m_pImage->GetData()))
+	if (!SetData(0, 0, 0, m_Width, m_Height, m_pImage->GetData()))
 		return false;
 
 	return true;
@@ -46,28 +48,51 @@ bool Texture2D::SetSize(const int width, const int height, const unsigned int fo
 	return true;
 }
 
-bool Texture2D::SetData(const void* pData)
+bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, int height, const void* pData)
 {
 	AUTOPROFILE(Texture2D_SetData);
+
+	int levelWidth = GetLevelWidth(mipLevel);
+	int levelHeight = GetLevelHeight(mipLevel);
+	if (x < 0 || x + width > levelWidth || y < 0 || y + height > levelHeight || width <= 0 || height <= 0)
+	{
+		FLUX_LOG(Warning, "[Texture2D::SetData] Illegal dimensions for setting data");
+		return false;
+	}
+
+	if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM || m_TextureFormat == DXGI_FORMAT_BC2_UNORM || m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+	{
+		x &= ~3;
+		y &= ~3;
+		width += 3;
+		width &= 0xfffffffc;
+		height += 3;
+		height &= 0xfffffffc;
+	}
+
+	unsigned int rowSize = GetRowDataSize(width);
+	//unsigned int rowStart = GetRowDataSize(x);
+	unsigned int subResource = D3D11CalcSubresource(mipLevel, 0, m_MipLevels);
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
 		D3D11_BOX box;
-		box.back = 1;
+		box.left = (UINT)x;
+		box.right = (UINT)(x + width);
+		box.top = (UINT)y;
+		box.bottom = (UINT)(y + height);
 		box.front = 0;
-		box.left = 0;
-		box.top = 0;
-		box.right = m_Width;
-		box.bottom = m_Height;
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &box, pData, m_Width * 4, 0);
+		box.back = 1;
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, 0);
 	}
 	else
 	{
-		D3D11_MAPPED_SUBRESOURCE subResource = {};
+		FLUX_LOG(Error, "[Texture2D::SetData] Dynamic Textures not implemented!");
+		/*D3D11_MAPPED_SUBRESOURCE subResource = {};
 		HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource));
 		void* pTarget = subResource.pData;
 		memcpy(pTarget, pData, m_Width * m_Height * 4);
-		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);
+		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);*/
 	}
 
 	SetMemoryUsage(m_Height * m_Width * 4);
@@ -98,7 +123,7 @@ bool Texture2D::Create()
 	desc.Format = (DXGI_FORMAT)m_TextureFormat;
 	desc.Height = m_Height;
 	desc.Width = m_Width;
-	desc.MipLevels = 1; //#todo mip levels
+	desc.MipLevels = m_MipLevels;
 	desc.MiscFlags = 0; //#todo D3D11_RESOURCE_MISC_GENERATE_MIPS
 	desc.SampleDesc.Count = m_MultiSample;
 	desc.SampleDesc.Quality = m_pGraphics->GetImpl()->GetMultisampleQuality((DXGI_FORMAT)m_TextureFormat, m_MultiSample);
@@ -113,7 +138,7 @@ bool Texture2D::Create()
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = 1;
+		srvDesc.Texture2D.MipLevels = m_MipLevels;
 		srvDesc.Format = (DXGI_FORMAT)GetSRVFormat(m_TextureFormat);
 
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Texture2D*)m_pResource, &srvDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
@@ -134,4 +159,21 @@ bool Texture2D::Create()
 	}
 
 	return true;
+}
+
+unsigned int Texture2D::TextureFormatFromCompressionFormat(const ImageCompressionFormat& format)
+{
+	switch (format)
+	{
+	case ImageCompressionFormat::NONE:
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case ImageCompressionFormat::DXT1:
+		return DXGI_FORMAT_BC1_UNORM;
+	case ImageCompressionFormat::DXT3:
+		return DXGI_FORMAT_BC2_UNORM;
+	case ImageCompressionFormat::DXT5:
+		return DXGI_FORMAT_BC3_UNORM;
+	default:
+		return 0;	
+	}
 }

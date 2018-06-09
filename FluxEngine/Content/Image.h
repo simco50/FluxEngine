@@ -2,6 +2,20 @@
 
 #include "Resource.h"
 
+enum class ImageCompressionFormat
+{
+	NONE = 0,
+	RGBA,
+	DXT1,
+	DXT3,
+	DXT5,
+	ETC1,
+	PVRTC_RGB_2BPP,
+	PVRTC_RGBA_2BPP,
+	PVRTC_RGB_4BPP,
+	PVRTC_RGBA_4BPP,
+};
+
 class Image : public Resource
 {
 	FLUX_OBJECT(Image, Resource)
@@ -36,15 +50,25 @@ public:
 	int GetDepth() const { return m_Depth; }
 	int GetComponents() const { return m_Components; }
 	int GetActualComponents() const { return m_ActualComponents; }
+	int GetMipLevels() const { return m_MipLevels; }
 	unsigned char* GetData() { return m_Pixels.data(); }
-	
+	bool IsCompressed() const { return m_CompressionFormat != ImageCompressionFormat::NONE; }
+	bool IsSRGB() const { return m_sRgb; }
+	ImageCompressionFormat GetCompressionFormat() const { return m_CompressionFormat; }
 	SDL_Surface* GetSDLSurface();
 
 private:
+	bool LoadDds(InputStream& inputStream);
+	bool LoadStbi(InputStream& inputStream);
+
 	int m_Width = 0;
 	int m_Height = 0;
 	int m_Components = 0;
 	int m_ActualComponents = 0;
 	int m_Depth = 1;
+	int m_MipLevels = 1;
+	bool m_sRgb = false;
+	bool m_IsArray = false;
+	ImageCompressionFormat m_CompressionFormat = ImageCompressionFormat::NONE;
 	std::vector<unsigned char> m_Pixels;
 };

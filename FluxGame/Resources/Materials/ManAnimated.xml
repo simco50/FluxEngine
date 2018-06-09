@@ -11,7 +11,7 @@
 	</Properties>
 
 	<Parameters>
-		<Texture slot="Diffuse" value="Resources/Textures/Peasant_Man_diffuse.png"/>
+		<Texture slot="Diffuse" value="Resources/Textures/Peasant_Man_diffuse.dds"/>
 		<Texture slot="Normal" value="Resources/Textures/Peasant_Man_normal.png"/>
 		<Texture slot="Specular" value="Resources/Textures/Peasant_Man_specular.png"/>
 	</Parameters>

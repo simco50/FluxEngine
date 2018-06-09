@@ -5,13 +5,13 @@ struct Math
 	template<typename T>
 	inline static T Max(const T& a, const T& b)
 	{
-		return a < b ? a : b;
+		return a < b ? b : a;
 	}
 
 	template<typename T>
 	inline static T Min(const T& a, const T& b)
 	{
-		return a < b ? b : a;
+		return a < b ? a : b;
 	}
 
 	template<typename T>

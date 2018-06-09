@@ -88,7 +88,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	m_pFontTexture = std::make_unique<Texture2D>(m_pContext);
 	m_pFontTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::STATIC, 1, nullptr);
-	m_pFontTexture->SetData(pixels);
+	m_pFontTexture->SetData(0, 0, 0, width, height, pixels);
 	io.Fonts->TexID = m_pFontTexture.get();
 }
 
