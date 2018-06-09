@@ -48,7 +48,7 @@ Image::~Image()
 
 bool Image::Load(InputStream& inputStream)
 {
-	AUTOPROFILE(Image_Load);
+	AUTOPROFILE_DESC(Image_Load, inputStream.GetSource().c_str());
 
 	std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
 	bool success = false;
@@ -258,11 +258,29 @@ SDL_Surface* Image::GetSDLSurface()
 	return surface;
 }
 
+bool Image::LoadStbi(InputStream& inputStream)
+{
+	m_Components = 4;
+	m_Depth = 1;
+	stbi_io_callbacks callbacks;
+	callbacks.read = STBI::ReadCallback;
+	callbacks.skip = STBI::SkipCallback;
+	callbacks.eof = STBI::EofCallback;
+	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	if (pPixels == nullptr)
+	{
+		return false;
+	}
+	m_Pixels.resize(m_Width * m_Height * m_Components);
+	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+	stbi_image_free(pPixels);
+
+	return true;
+}
+
 bool Image::LoadDds(InputStream& inputStream)
 {
 	using namespace DDS;
-
-#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
 
 	char magic[5];
 	magic[4] = '\0';
@@ -280,7 +298,7 @@ bool Image::LoadDds(InputStream& inputStream)
 		header.ddpf.dwSize == sizeof(DDSPixelFormatHeader))
 	{
 		bool hasDxgi = header.ddpf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0');
-		DDS10FileHeader dds10Header;
+		DDS10FileHeader dds10Header = {};
 		if (hasDxgi)
 		{
 			inputStream.Read(&dds10Header, sizeof(DDS10FileHeader));
@@ -369,8 +387,8 @@ bool Image::LoadDds(InputStream& inputStream)
 		unsigned int dataSize = 0;
 		if (m_CompressionFormat != ImageCompressionFormat::RGBA)
 		{
-			const unsigned blockSize = m_CompressionFormat == ImageCompressionFormat::DXT1 ? 8 : 16; 
-			
+			const unsigned blockSize = m_CompressionFormat == ImageCompressionFormat::DXT1 ? 8 : 16;
+
 			unsigned blocksWide = (header.dwWidth + 3) / 4;
 			unsigned blocksHeight = (header.dwHeight + 3) / 4;
 			dataSize = blocksWide * blocksHeight * blockSize;
@@ -401,10 +419,10 @@ bool Image::LoadDds(InputStream& inputStream)
 		m_Width = header.dwWidth;
 		m_Height = header.dwHeight;
 		m_Depth = header.dwDepth;
-		m_MipLevels = header.dwMipMapCount;
-		if (m_MipLevels < 1)
-			m_MipLevels = 1;
-		
+		m_CompressedMipLevels = header.dwMipMapCount;
+		if (m_CompressedMipLevels < 1)
+			m_CompressedMipLevels = 1;
+
 		inputStream.Read(m_Pixels.data(), m_Pixels.size());
 	}
 	else
@@ -414,22 +432,82 @@ bool Image::LoadDds(InputStream& inputStream)
 	return true;
 }
 
-bool Image::LoadStbi(InputStream& inputStream)
+CompressedLevel Image::GetCompressedLevel(const int level) const
 {
-	m_Components = 4;
-	m_Depth = 1;
-	stbi_io_callbacks callbacks;
-	callbacks.read = STBI::ReadCallback;
-	callbacks.skip = STBI::SkipCallback;
-	callbacks.eof = STBI::EofCallback;
-	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
-	if (pPixels == nullptr)
+	CompressedLevel compressedLevel;
+	if (m_CompressionFormat == ImageCompressionFormat::NONE)
+	{
+		FLUX_LOG(Warning, "[Image::GetCompressedLevel] Image is not compressed");
+		return CompressedLevel();
+	}
+	if (level >= m_CompressedMipLevels)
+	{
+		FLUX_LOG(Warning, "[Image::GetCompressedLevel] Requested level '%d' is greater than the amount of levels '%d'", level, m_CompressedMipLevels);
+		return CompressedLevel();
+	}
+	compressedLevel.Width = m_Width;
+	compressedLevel.Height = m_Height;
+	compressedLevel.Depth = m_Depth;
+	compressedLevel.Format = m_CompressionFormat;
+	compressedLevel.DataSize = 0;
+	compressedLevel.pData = (char*)m_Pixels.data();
+	compressedLevel.CalculateSize();
+
+	for (int i = 0; i < level; ++i)
+	{
+		compressedLevel.MoveNext();
+	}
+	return compressedLevel;
+}
+
+void CompressedLevel::CalculateSize()
+{
+	uint32 originalSize = DataSize;
+
+	Width = Math::Max(1, Width);
+	Height = Math::Max(1, Height);
+	Depth = Math::Max(1, Depth);
+
+	if (Format == ImageCompressionFormat::RGBA)
+	{
+		BlockSize = 4;
+		RowSize = Width * BlockSize;
+		NumRow = Height;
+		DataSize = Depth * NumRow * RowSize;
+	}
+	else if (Format == ImageCompressionFormat::DXT1 ||
+		Format == ImageCompressionFormat::DXT3 ||
+		Format == ImageCompressionFormat::DXT5 ||
+		Format == ImageCompressionFormat::ETC1)
+	{
+		BlockSize = (Format == ImageCompressionFormat::DXT1 || Format == ImageCompressionFormat::ETC1) ? 8 : 16;
+		RowSize = ((Width + 3) / 4) * BlockSize;
+		NumRow = (Height + 3) / 4;
+		DataSize = Depth * NumRow * RowSize;
+	}
+	else
+	{
+		BlockSize = (Format == ImageCompressionFormat::PVRTC_RGB_4BPP) ? 2 : 4;
+		int dataWidth = Math::Max(Width, BlockSize == 2 ? 16 : 8);
+		int dataHeight = Math::Max(Height, 8);
+		DataSize = (dataWidth * dataHeight * BlockSize + 7) >> 3;
+		NumRow = dataHeight;
+		RowSize = DataSize / NumRow;
+	}
+	pData += originalSize;
+}
+
+bool CompressedLevel::MoveNext()
+{
+	Width /= 2;
+	Height /= 2;
+	Depth /= 2;
+
+	if (Width == 0 && Height == 0 && Depth == 0)
 	{
 		return false;
 	}
-	m_Pixels.resize(m_Width * m_Height * m_Components);
-	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
-	stbi_image_free(pPixels);
 
+	CalculateSize();
 	return true;
 }

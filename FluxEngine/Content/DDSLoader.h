@@ -1,5 +1,7 @@
 #pragma once
 
+#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
+
 namespace DDS
 {
 	// .DDS subheader.

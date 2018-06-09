@@ -16,6 +16,22 @@ enum class ImageCompressionFormat
 	PVRTC_RGBA_4BPP,
 };
 
+struct CompressedLevel
+{
+	int Width = 0;
+	int Height = 0;
+	int Depth = 0;
+	int BlockSize = 0;
+	int RowSize = 0;
+	int NumRow = 0;
+	int DataSize = 0;
+	ImageCompressionFormat Format = ImageCompressionFormat::NONE;
+	char* pData = nullptr;
+
+	bool MoveNext();
+	void CalculateSize();
+};
+
 class Image : public Resource
 {
 	FLUX_OBJECT(Image, Resource)
@@ -41,7 +57,7 @@ public:
 	bool SetPixelInt(const int x, const int y, const unsigned int color);
 
 	//void ConvertToRGBA();
-
+	CompressedLevel GetCompressedLevel(const int level) const;
 	Color GetPixel(const int x, const int y) const;
 	unsigned int GetPixelInt(const int x, const int y) const;
 
@@ -50,12 +66,14 @@ public:
 	int GetDepth() const { return m_Depth; }
 	int GetComponents() const { return m_Components; }
 	int GetActualComponents() const { return m_ActualComponents; }
-	int GetMipLevels() const { return m_MipLevels; }
+	int GetCompressedMipLevels() const { return m_CompressedMipLevels; }
 	unsigned char* GetData() { return m_Pixels.data(); }
+	const unsigned char* GetData() const { return m_Pixels.data(); }
 	bool IsCompressed() const { return m_CompressionFormat != ImageCompressionFormat::NONE; }
 	bool IsSRGB() const { return m_sRgb; }
 	ImageCompressionFormat GetCompressionFormat() const { return m_CompressionFormat; }
 	SDL_Surface* GetSDLSurface();
+
 
 private:
 	bool LoadDds(InputStream& inputStream);
@@ -66,7 +84,7 @@ private:
 	int m_Components = 0;
 	int m_ActualComponents = 0;
 	int m_Depth = 1;
-	int m_MipLevels = 1;
+	int m_CompressedMipLevels = 1;
 	bool m_sRgb = false;
 	bool m_IsArray = false;
 	ImageCompressionFormat m_CompressionFormat = ImageCompressionFormat::NONE;

@@ -22,7 +22,7 @@ Profiler::~Profiler()
 		FLUX_LOG(Error, "[Profiler::~Profiler()] > Profiler is not properly closed. Ended with '%s'", lastBlock.c_str());
 	}
 
-	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(Paths::ProfilingDir() + "\\Profiler.log");
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(Paths::ProfilingDir() + "Profiler.log");
 	pFile->OpenWrite();
 	OutputLog(pFile.get());
 	pFile->Close();

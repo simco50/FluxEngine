@@ -1,7 +1,6 @@
 #include "FluxEngine.h"
-#include "../Texture2D.h"
-#include "../Graphics.h"
-
+#include "Rendering/Core/Texture2D.h"
+#include "Rendering/Core/Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
 
@@ -11,15 +10,52 @@ bool Texture2D::Load(InputStream& inputStream)
 
 	m_pImage = std::make_unique<Image>(m_pContext);
 	if (!m_pImage->Load(inputStream))
+	{
 		return false;
+	}
+
+	if (SetImage(*m_pImage) == false)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Texture2D::SetImage(const Image& image)
+{
+	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetName().c_str());
 
 	ImageCompressionFormat compressionFormat = m_pImage->GetCompressionFormat();
-	m_MipLevels = m_pImage->GetMipLevels();
-	if (!SetSize(m_pImage->GetWidth(), m_pImage->GetHeight(), TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
+	m_MipLevels = m_pImage->GetCompressedMipLevels();
+	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
+	{
 		return false;
-	if (!SetData(0, 0, 0, m_Width, m_Height, m_pImage->GetData()))
-		return false;
+	}
 
+	//#todo: Mip map support for non compressed imaged
+	if(image.GetCompressionFormat() == ImageCompressionFormat::NONE)
+	{ 
+		AUTOPROFILE_DESC(Texture2D_SetImage_Uncompressed, "Not compressed load");
+		if (!SetData(0, 0, 0, m_Width, m_Height, image.GetData()))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		AUTOPROFILE_DESC(Texture2D_SetImage_Compressed, "Compressed load");
+		CompressedLevel mipLevelData = image.GetCompressedLevel(0);
+		for (int mipLevel = 0; mipLevel < image.GetCompressedMipLevels(); ++mipLevel)
+		{
+			if (!SetData(mipLevel, 0, 0, mipLevelData.Width, mipLevelData.Height, mipLevelData.pData))
+			{
+				return false;
+			}
+			mipLevelData.MoveNext();
+		}
+	}
+	
 	return true;
 }
 

@@ -56,7 +56,7 @@ bool PhysicalFile::OpenWrite(bool append, bool allowRead)
 			return false;
 		}
 	}
-	DWORD creation_disposition = allowRead ? CREATE_ALWAYS : CREATE_NEW;
+	DWORD creation_disposition = allowRead ? CREATE_NEW : CREATE_ALWAYS;
 
 	m_Handle = CreateFile(
 		m_FileName.c_str(),

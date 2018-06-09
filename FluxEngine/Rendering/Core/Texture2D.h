@@ -17,7 +17,7 @@ public:
 	bool Load(InputStream& inputStream);
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const unsigned int mipLevel, int x, int y, int width, int height, const void* pData);
-
+	bool SetImage(const Image& image);
 
 private:
 	static unsigned int TextureFormatFromCompressionFormat(const ImageCompressionFormat& format);
