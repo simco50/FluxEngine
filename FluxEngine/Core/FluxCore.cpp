@@ -240,6 +240,7 @@ void FluxCore::RenderUI()
 		ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
 		ImGui::TreePop();
 	}
+
 	/*if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("Resources: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Resource::GetTypeStatic()) / 1000000.0f);

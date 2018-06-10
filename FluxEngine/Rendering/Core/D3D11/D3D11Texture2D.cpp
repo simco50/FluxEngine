@@ -26,36 +26,61 @@ bool Texture2D::SetImage(const Image& image)
 {
 	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetName().c_str());
 
+	uint32 memoryUsage = 0;
+
 	ImageCompressionFormat compressionFormat = m_pImage->GetCompressionFormat();
 	m_MipLevels = m_pImage->GetCompressedMipLevels();
-	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
+
+	int width = image.GetWidth();
+	int height = image.GetHeight();
+	int mipLevelsToSkip = 0;
+
+#if 0
+	std::array<int, 4> skipMips;
+	skipMips[0] = 4;
+	skipMips[1] = 1;
+	skipMips[2] = 0;
+	mipLevelsToSkip = skipMips[qualityLevel];
+
+	if (image.IsCompressed())
+	{
+		width /= (1 << mipLevelsToSkip);
+		height /= (1 << mipLevelsToSkip);
+		m_MipLevels -= mipLevelsToSkip;
+	}
+#endif
+
+	if (!SetSize(width, height, TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
 	{
 		return false;
 	}
 
 	//#todo: Mip map support for non compressed imaged
-	if(image.GetCompressionFormat() == ImageCompressionFormat::NONE)
+	if(image.IsCompressed() == false)
 	{ 
 		AUTOPROFILE_DESC(Texture2D_SetImage_Uncompressed, "Not compressed load");
-		if (!SetData(0, 0, 0, m_Width, m_Height, image.GetData()))
+		if (!SetData(0, 0, 0, width, height, image.GetData()))
 		{
 			return false;
 		}
+		memoryUsage += m_Width * m_Height * 4;
 	}
 	else
 	{
 		AUTOPROFILE_DESC(Texture2D_SetImage_Compressed, "Compressed load");
-		CompressedLevel mipLevelData = image.GetCompressedLevel(0);
-		for (int mipLevel = 0; mipLevel < image.GetCompressedMipLevels(); ++mipLevel)
+		CompressedLevel mipLevelData = image.GetCompressedLevel(mipLevelsToSkip);
+		for (int mipLevel = 0; mipLevel < image.GetCompressedMipLevels() - mipLevelsToSkip; ++mipLevel)
 		{
 			if (!SetData(mipLevel, 0, 0, mipLevelData.Width, mipLevelData.Height, mipLevelData.pData))
 			{
 				return false;
 			}
+			memoryUsage += mipLevelData.RowSize * mipLevelData.NumRow;
 			mipLevelData.MoveNext();
 		}
 	}
-	
+
+	SetMemoryUsage(memoryUsage);
 	return true;
 }
 
@@ -96,7 +121,9 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 		return false;
 	}
 
-	if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM || m_TextureFormat == DXGI_FORMAT_BC2_UNORM || m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+	if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM || 
+		m_TextureFormat == DXGI_FORMAT_BC2_UNORM || 
+		m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
 	{
 		x &= ~3;
 		y &= ~3;
@@ -130,8 +157,6 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 		memcpy(pTarget, pData, m_Width * m_Height * 4);
 		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);*/
 	}
-
-	SetMemoryUsage(m_Height * m_Width * 4);
 
 	return true;
 }

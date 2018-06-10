@@ -28,7 +28,10 @@ struct CompressedLevel
 	ImageCompressionFormat Format = ImageCompressionFormat::NONE;
 	char* pData = nullptr;
 
+	//Calculates the next CompressionLevel
 	bool MoveNext();
+
+	//Calculate the properties of the current compression level
 	void CalculateSize();
 };
 
@@ -58,6 +61,7 @@ public:
 
 	//void ConvertToRGBA();
 	CompressedLevel GetCompressedLevel(const int level) const;
+
 	Color GetPixel(const int x, const int y) const;
 	unsigned int GetPixelInt(const int x, const int y) const;
 
@@ -73,7 +77,6 @@ public:
 	bool IsSRGB() const { return m_sRgb; }
 	ImageCompressionFormat GetCompressionFormat() const { return m_CompressionFormat; }
 	SDL_Surface* GetSDLSurface();
-
 
 private:
 	bool LoadDds(InputStream& inputStream);
