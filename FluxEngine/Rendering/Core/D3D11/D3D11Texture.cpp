@@ -5,6 +5,7 @@
 #include "D3D11GraphicsImpl.h"
 
 #include "External/Stb/stb_image_write.h"
+#include "Content/Image.h"
 
 void Texture::UpdateParameters()
 {
@@ -109,4 +110,21 @@ unsigned int Texture::GetDSVFormat(const unsigned int format)
 		return DXGI_FORMAT_D32_FLOAT;
 	else
 		return format;
+}
+
+unsigned int Texture::TextureFormatFromCompressionFormat(const ImageCompressionFormat& format)
+{
+	switch (format)
+	{
+	case ImageCompressionFormat::NONE:
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case ImageCompressionFormat::DXT1:
+		return DXGI_FORMAT_BC1_UNORM;
+	case ImageCompressionFormat::DXT3:
+		return DXGI_FORMAT_BC2_UNORM;
+	case ImageCompressionFormat::DXT5:
+		return DXGI_FORMAT_BC3_UNORM;
+	default:
+		return 0;
+	}
 }

@@ -5,6 +5,8 @@
 class Graphics;
 class Image;
 
+enum class ImageCompressionFormat;
+
 enum class TextureUsage
 {
 	STATIC,
@@ -59,6 +61,8 @@ protected:
 
 	unsigned int GetSRVFormat(const unsigned int format);
 	unsigned int GetDSVFormat(const unsigned int format);
+
+	static unsigned int TextureFormatFromCompressionFormat(const ImageCompressionFormat& format);
 
 	unsigned int m_Width = 0;
 	unsigned int m_Height = 0;

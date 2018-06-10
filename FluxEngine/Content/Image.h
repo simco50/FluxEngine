@@ -23,7 +23,7 @@ struct CompressedLevel
 	int Depth = 0;
 	int BlockSize = 0;
 	int RowSize = 0;
-	int NumRow = 0;
+	int Rows = 0;
 	int DataSize = 0;
 	ImageCompressionFormat Format = ImageCompressionFormat::NONE;
 	char* pData = nullptr;
@@ -60,6 +60,7 @@ public:
 	bool SetPixelInt(const int x, const int y, const unsigned int color);
 
 	//void ConvertToRGBA();
+	//Returns the sub-image info of a specific mip level
 	CompressedLevel GetCompressedLevel(const int level) const;
 
 	Color GetPixel(const int x, const int y) const;

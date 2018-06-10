@@ -106,7 +106,7 @@ void FluxCore::InitGame()
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
 	m_pCamera->GetCamera()->SetFarPlane(1000);
-	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
 	std::vector<std::string> meshPaths;

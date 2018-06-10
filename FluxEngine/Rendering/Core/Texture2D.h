@@ -20,6 +20,5 @@ public:
 	bool SetImage(const Image& image);
 
 private:
-	static unsigned int TextureFormatFromCompressionFormat(const ImageCompressionFormat& format);
 	virtual bool Create() override;
 };

@@ -56,6 +56,7 @@ bool Image::Load(InputStream& inputStream)
 	{
 		success = LoadDds(inputStream);
 	}
+	//If not one of the above, load with Stbi by default (jpg, png, tga, bmp, ...)
 	else
 	{
 		success = LoadStbi(inputStream);
@@ -280,62 +281,58 @@ bool Image::LoadStbi(InputStream& inputStream)
 
 bool Image::LoadDds(InputStream& inputStream)
 {
-	using namespace DDS;
-
 	char magic[5];
 	magic[4] = '\0';
 	inputStream.Read(magic, 4);
 
 	if (strcmp(magic, "DDS ") != 0)
 	{
+		FLUX_LOG(Warning, "[Image::LoadDds] Invalid DDS file magic: %s", magic);
 		return false;
 	}
 
-	DDSFileHeader header;
-	inputStream.Read(&header, sizeof(DDSFileHeader));
+	DDS::FileHeader header;
+	inputStream.Read(&header, sizeof(DDS::FileHeader));
 
-	if (header.dwSize == sizeof(DDSFileHeader) &&
-		header.ddpf.dwSize == sizeof(DDSPixelFormatHeader))
+	if (header.dwSize == sizeof(DDS::FileHeader) &&
+		header.ddpf.dwSize == sizeof(DDS::PixelFormatHeader))
 	{
-		bool hasDxgi = header.ddpf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0');
-		DDS10FileHeader dds10Header = {};
-		if (hasDxgi)
-		{
-			inputStream.Read(&dds10Header, sizeof(DDS10FileHeader));
-		}
-
 		uint32 fourCC = header.ddpf.dwFourCC;
+		bool hasDxgi = fourCC == MAKEFOURCC('D', 'X', '1', '0');
+		DDS::DX10FileHeader* pDx10Header = nullptr;
 
 		if (hasDxgi)
 		{
+			DDS::DX10FileHeader dds10Header = {};
+			pDx10Header = &dds10Header;
+			inputStream.Read(&dds10Header, sizeof(DDS::DX10FileHeader));
+
 			switch (dds10Header.dxgiFormat)
 			{
-			case DDS_DXGI_FORMAT_BC1_UNORM:
-			case DDS_DXGI_FORMAT_BC1_UNORM_SRGB:
+			case DDS::IMAGE_FORMAT::BC1_UNORM:
+			case DDS::IMAGE_FORMAT::BC1_UNORM_SRGB:
 				fourCC = MAKEFOURCC('D', 'X', 'T', '1');
 				break;
-			case DDS_DXGI_FORMAT_BC2_UNORM:
-			case DDS_DXGI_FORMAT_BC2_UNORM_SRGB:
+			case DDS::IMAGE_FORMAT::BC2_UNORM:
+			case DDS::IMAGE_FORMAT::BC2_UNORM_SRGB:
 				fourCC = MAKEFOURCC('D', 'X', 'T', '3');
 				break;
-			case DDS_DXGI_FORMAT_BC3_UNORM:
-			case DDS_DXGI_FORMAT_BC3_UNORM_SRGB:
+			case DDS::IMAGE_FORMAT::BC3_UNORM:
+			case DDS::IMAGE_FORMAT::BC3_UNORM_SRGB:
 				fourCC = MAKEFOURCC('D', 'X', 'T', '5');
 				break;
-			case DDS_DXGI_FORMAT_R8G8B8A8_UNORM:
-			case DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			case DDS::IMAGE_FORMAT::R8G8B8A8_UNORM:
+			case DDS::IMAGE_FORMAT::R8G8B8A8_UNORM_SRGB:
 				fourCC = 0;
 				break;
 			default:
-				FLUX_LOG(Warning, "[] Invalid DXGI Format '%d'", dds10Header.dxgiFormat);
+				FLUX_LOG(Warning, "[Image::LoadDds] Invalid DXGI Format '%d'", dds10Header.dxgiFormat);
 				return false;
 			}
-
-			// Check the internal sRGB formats
-			if (dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC1_UNORM_SRGB ||
-				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC2_UNORM_SRGB ||
-				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_BC3_UNORM_SRGB ||
-				dds10Header.dxgiFormat == DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+			if (dds10Header.dxgiFormat == DDS::IMAGE_FORMAT::BC1_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS::IMAGE_FORMAT::BC2_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS::IMAGE_FORMAT::BC3_UNORM_SRGB ||
+				dds10Header.dxgiFormat == DDS::IMAGE_FORMAT::R8G8B8A8_UNORM_SRGB)
 			{
 				m_sRgb = true;
 			}
@@ -369,18 +366,18 @@ bool Image::LoadDds(InputStream& inputStream)
 			break;
 
 		default:
-			FLUX_LOG(Warning, "[] Unrecognized DDS image format");
+			FLUX_LOG(Warning, "[Image::LoadDds] Unrecognized DDS image format");
 			return false;
 		}
 
 		// Is it a cube map or texture array? If so determine the size of the image chain.
-		bool isCubemap = (header.dwCaps2 & DDSCAPS2_CUBEMAP_ALL_FACES) != 0 || (hasDxgi && (dds10Header.miscFlag & 0x4) != 0);
+		bool isCubemap = (header.dwCaps2 & DDS::CUBEMAP_ATTRIBUTE::DDSCAPS2_ALL_FACES) != 0 || (hasDxgi && (pDx10Header->miscFlag & 0x4) != 0);
 		unsigned imageChainCount = 1;
 		if (isCubemap)
 			imageChainCount = 6;
-		else if (hasDxgi && dds10Header.arraySize > 1)
+		else if (hasDxgi && pDx10Header->arraySize > 1)
 		{
-			imageChainCount = dds10Header.arraySize;
+			imageChainCount = pDx10Header->arraySize;
 			m_IsArray = true;
 		}
 
@@ -419,14 +416,12 @@ bool Image::LoadDds(InputStream& inputStream)
 		m_Width = header.dwWidth;
 		m_Height = header.dwHeight;
 		m_Depth = header.dwDepth;
-		m_CompressedMipLevels = header.dwMipMapCount;
-		if (m_CompressedMipLevels < 1)
-			m_CompressedMipLevels = 1;
-
+		m_CompressedMipLevels = Math::Max(1, (int)header.dwMipMapCount);
 		inputStream.Read(m_Pixels.data(), m_Pixels.size());
 	}
 	else
 	{
+		FLUX_LOG(Warning, "[Image::LoadDds] Invalid data structure sizes");
 		return false;
 	}
 	return true;
@@ -472,8 +467,8 @@ void CompressedLevel::CalculateSize()
 	{
 		BlockSize = 4;
 		RowSize = Width * BlockSize;
-		NumRow = Height;
-		DataSize = Depth * NumRow * RowSize;
+		Rows = Height;
+		DataSize = Depth * Rows * RowSize;
 	}
 	else if (Format == ImageCompressionFormat::DXT1 ||
 		Format == ImageCompressionFormat::DXT3 ||
@@ -482,8 +477,8 @@ void CompressedLevel::CalculateSize()
 	{
 		BlockSize = (Format == ImageCompressionFormat::DXT1 || Format == ImageCompressionFormat::ETC1) ? 8 : 16;
 		RowSize = ((Width + 3) / 4) * BlockSize;
-		NumRow = (Height + 3) / 4;
-		DataSize = Depth * NumRow * RowSize;
+		Rows = (Height + 3) / 4;
+		DataSize = Depth * Rows * RowSize;
 	}
 	else
 	{
@@ -491,8 +486,8 @@ void CompressedLevel::CalculateSize()
 		int dataWidth = Math::Max(Width, BlockSize == 2 ? 16 : 8);
 		int dataHeight = Math::Max(Height, 8);
 		DataSize = (dataWidth * dataHeight * BlockSize + 7) >> 3;
-		NumRow = dataHeight;
-		RowSize = DataSize / NumRow;
+		Rows = dataHeight;
+		RowSize = DataSize / Rows;
 	}
 	pData += originalSize;
 }

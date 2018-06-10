@@ -9,7 +9,7 @@ bool Texture2D::Load(InputStream& inputStream)
 	AUTOPROFILE(Texture2D_Load);
 
 	m_pImage = std::make_unique<Image>(m_pContext);
-	if (!m_pImage->Load(inputStream))
+	if (m_pImage->Load(inputStream) == false)
 	{
 		return false;
 	}
@@ -28,8 +28,8 @@ bool Texture2D::SetImage(const Image& image)
 
 	uint32 memoryUsage = 0;
 
-	ImageCompressionFormat compressionFormat = m_pImage->GetCompressionFormat();
-	m_MipLevels = m_pImage->GetCompressedMipLevels();
+	ImageCompressionFormat compressionFormat = image.GetCompressionFormat();
+	m_MipLevels = image.GetCompressedMipLevels();
 
 	int width = image.GetWidth();
 	int height = image.GetHeight();
@@ -75,7 +75,7 @@ bool Texture2D::SetImage(const Image& image)
 			{
 				return false;
 			}
-			memoryUsage += mipLevelData.RowSize * mipLevelData.NumRow;
+			memoryUsage += mipLevelData.RowSize * mipLevelData.Rows;
 			mipLevelData.MoveNext();
 		}
 	}
@@ -134,11 +134,18 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 	}
 
 	unsigned int rowSize = GetRowDataSize(width);
-	//unsigned int rowStart = GetRowDataSize(x);
+	unsigned int rowStart = GetRowDataSize(x);
 	unsigned int subResource = D3D11CalcSubresource(mipLevel, 0, m_MipLevels);
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
+		if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM ||
+			m_TextureFormat == DXGI_FORMAT_BC2_UNORM ||
+			m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+		{
+			levelHeight = (levelHeight + 3) >> 2;
+		}
+
 		D3D11_BOX box;
 		box.left = (UINT)x;
 		box.right = (UINT)(x + width);
@@ -146,16 +153,17 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 		box.bottom = (UINT)(y + height);
 		box.front = 0;
 		box.back = 1;
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, 0);
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, levelHeight * rowSize);
 	}
 	else
 	{
-		FLUX_LOG(Error, "[Texture2D::SetData] Dynamic Textures not implemented!");
-		/*D3D11_MAPPED_SUBRESOURCE subResource = {};
-		HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource));
-		void* pTarget = subResource.pData;
-		memcpy(pTarget, pData, m_Width * m_Height * 4);
-		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);*/
+		D3D11_MAPPED_SUBRESOURCE mapData = {};
+		HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mapData));
+		for (int rowIdx = 0; rowIdx < height; ++rowIdx)
+		{
+			memcpy((char*)mapData.pData + (rowIdx + y) * mapData.RowPitch + rowStart, (char*)pData + rowIdx * rowSize, rowSize);
+		}
+		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, subResource);
 	}
 
 	return true;
@@ -169,9 +177,13 @@ bool Texture2D::Create()
 	desc.ArraySize = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
+	{
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+	}
 	else if (m_Usage == TextureUsage::RENDERTARGET)
+	{
 		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	}
 	else if (m_Usage == TextureUsage::DYNAMIC || m_Usage == TextureUsage::STATIC)
 	{
 	}
@@ -218,23 +230,5 @@ bool Texture2D::Create()
 
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Texture2D*)m_pResource, &dsvDesc, (ID3D11DepthStencilView**)&m_pRenderTargetView));
 	}
-
 	return true;
-}
-
-unsigned int Texture2D::TextureFormatFromCompressionFormat(const ImageCompressionFormat& format)
-{
-	switch (format)
-	{
-	case ImageCompressionFormat::NONE:
-		return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case ImageCompressionFormat::DXT1:
-		return DXGI_FORMAT_BC1_UNORM;
-	case ImageCompressionFormat::DXT3:
-		return DXGI_FORMAT_BC2_UNORM;
-	case ImageCompressionFormat::DXT5:
-		return DXGI_FORMAT_BC3_UNORM;
-	default:
-		return 0;	
-	}
 }

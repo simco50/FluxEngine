@@ -12,8 +12,8 @@ public:
 	virtual bool Load(InputStream& inputStream) override;
 
 	bool SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
-	bool SetData(const void* pData);
-	bool SetData(Image* pImage);
+	bool SetData(const unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData);
+	bool SetImage(const Image& image);
 
 private:
 	virtual bool Create() override;

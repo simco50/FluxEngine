@@ -6,7 +6,7 @@ namespace DDS
 {
 	// .DDS subheader.
 #pragma pack(push,1)
-	struct DDSPixelFormatHeader
+	struct PixelFormatHeader
 	{
 		uint32 dwSize;
 		uint32 dwFlags;
@@ -21,7 +21,7 @@ namespace DDS
 
 	// .DDS header.
 #pragma pack(push,1)
-	struct DDSFileHeader
+	struct FileHeader
 	{
 		uint32 dwSize;
 		uint32 dwFlags;
@@ -31,7 +31,7 @@ namespace DDS
 		uint32 dwDepth;
 		uint32 dwMipMapCount;
 		uint32 dwReserved1[11];
-		DDSPixelFormatHeader ddpf;
+		PixelFormatHeader ddpf;
 		uint32 dwCaps;
 		uint32 dwCaps2;
 		uint32 dwCaps3;
@@ -42,7 +42,7 @@ namespace DDS
 
 	// .DDS 10 header.
 #pragma pack(push,1)
-	struct DDS10FileHeader
+	struct DX10FileHeader
 	{
 		uint32 dxgiFormat;
 		uint32 resourceDimension;
@@ -52,30 +52,30 @@ namespace DDS
 	};
 #pragma pack(pop)
 
-	enum
+	enum IMAGE_FORMAT
 	{
-		DDS_DXGI_FORMAT_R8G8B8A8_UNORM = 28,
-		DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 26,
-		DDS_DXGI_FORMAT_BC1_UNORM = 71,
-		DDS_DXGI_FORMAT_BC1_UNORM_SRGB = 72,
-		DDS_DXGI_FORMAT_BC2_UNORM = 74,
-		DDS_DXGI_FORMAT_BC2_UNORM_SRGB = 75,
-		DDS_DXGI_FORMAT_BC3_UNORM = 77,
-		DDS_DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+		R8G8B8A8_UNORM = 28,
+		R8G8B8A8_UNORM_SRGB = 26,
+		BC1_UNORM = 71,
+		BC1_UNORM_SRGB = 72,
+		BC2_UNORM = 74,
+		BC2_UNORM_SRGB = 75,
+		BC3_UNORM = 77,
+		BC3_UNORM_SRGB = 78,
 	};
 
-	enum
+	enum CUBEMAP_ATTRIBUTE
 	{
-		DDSCAPS2_CUBEMAP_POSITIVEX = 0x00000400U,
-		DDSCAPS2_CUBEMAP_NEGATIVEX = 0x00000800U,
-		DDSCAPS2_CUBEMAP_POSITIVEY = 0x00001000U,
-		DDSCAPS2_CUBEMAP_NEGATIVEY = 0x00002000U,
-		DDSCAPS2_CUBEMAP_POSITIVEZ = 0x00004000U,
-		DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x00008000U,
-		DDSCAPS2_CUBEMAP_ALL_FACES = 0x0000FC00U,
+		DDSCAPS2_POSITIVEX = 0x00000400U,
+		DDSCAPS2_NEGATIVEX = 0x00000800U,
+		DDSCAPS2_POSITIVEY = 0x00001000U,
+		DDSCAPS2_NEGATIVEY = 0x00002000U,
+		DDSCAPS2_POSITIVEZ = 0x00004000U,
+		DDSCAPS2_NEGATIVEZ = 0x00008000U,
+		DDSCAPS2_ALL_FACES = 0x0000FC00U,
 	};
 
-	enum
+	enum DDS_CAP_ATTRIBUTE
 	{
 		DDSCAPS_COMPLEX = 0x00000008U,
 		DDSCAPS_TEXTURE = 0x00001000U,
