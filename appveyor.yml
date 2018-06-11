@@ -4,9 +4,7 @@ shallow_clone: true
 environment:
   matrix:
     - configuration: Debug
-      resources: .\FluxGame\Resources\
     - configuration: Release
-      resources: .\FluxGame\Resources.pak
 platform:
   - x64
   - Win32
@@ -20,10 +18,7 @@ platform:
 before_build:
   - ps: .\scripts\MakeVS2017.bat
 after_build:
-- cmd: >-
-    7z a FluxGame_%PLATFORM%_%CONFIGURATION%_%APPVEYOR_BUILD_NUMBER%.zip .\Build\FluxGame_%PLATFORM%_%CONFIGURATION%\* %resources%
-
-    .\scripts\CreatePak.bat
+- cmd: 7z a FluxGame_%PLATFORM%_%CONFIGURATION%_%APPVEYOR_BUILD_NUMBER%.zip .\Build\FluxGame_%PLATFORM%_%CONFIGURATION%\* .\FluxGame\Resources\
 build:
   project: FluxEngine.sln
   parallel: true
