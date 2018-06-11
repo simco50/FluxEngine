@@ -1,7 +1,7 @@
 #pragma once
 #include "Texture.h"
 
-enum class ImageCompressionFormat;
+enum class ImageFormat;
 
 class Texture2D : public Texture
 {

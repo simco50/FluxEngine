@@ -22,7 +22,7 @@ before_build:
 after_build:
   - cmd: 7z a FluxGame_%PLATFORM%_%CONFIGURATION%_%APPVEYOR_BUILD_NUMBER%.zip .\Build\FluxGame_%PLATFORM%_%CONFIGURATION%\* %resources%
 build:
-  project: FluxEngine_vs2017.sln
+  project: FluxEngine.sln
   parallel: true
   verbosity: minimal
 artifacts:

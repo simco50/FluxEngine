@@ -21,7 +21,7 @@ bool Texture3D::Load(InputStream& inputStream)
 	AUTOPROFILE(Texture3D_Load);
 
 	m_pImage = std::make_unique<Image>(m_pContext);
-	if (m_pImage->LoadLUT(inputStream) == false)
+	if (m_pImage->Load(inputStream) == false)
 	{
 		return false;
 	}
@@ -73,9 +73,7 @@ bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int wi
 	}
 
 	// If compressed, align the update region on a block
-	if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM ||
-		m_TextureFormat == DXGI_FORMAT_BC2_UNORM ||
-		m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+	if (IsCompressed())
 	{
 		x &= ~3;
 		y &= ~3;
@@ -91,9 +89,7 @@ bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int wi
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
-		if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM ||
-			m_TextureFormat == DXGI_FORMAT_BC2_UNORM ||
-			m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+		if (IsCompressed())
 		{
 			levelHeight = (levelHeight + 3) >> 2;
 		}
@@ -132,40 +128,22 @@ bool Texture3D::SetImage(const Image& image)
 
 	uint32 memoryUsage = 0;
 
-	ImageCompressionFormat compressionFormat = image.GetCompressionFormat();
-	m_MipLevels = image.GetCompressedMipLevels();
-
-	int width = image.GetWidth();
-	int height = image.GetHeight();
-	int depth = image.GetDepth();
-	int mipLevelsToSkip = 0;
-
-	if (!SetSize(width, height, depth, TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
+	ImageFormat compressionFormat = image.GetFormat();
+	m_MipLevels = image.GetMipLevels();
+	if (!SetSize(image.GetWidth(), image.GetHeight(), image.GetDepth(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
 	{
 		return false;
 	}
-	if (image.IsCompressed() == false)
+
+	AUTOPROFILE_DESC(Texture3D_SetImage_Compressed, "Compressed load");
+	for (int mipLevel = 0; mipLevel < image.GetMipLevels(); ++mipLevel)
 	{
-		AUTOPROFILE_DESC(Texture3D_SetImage_Uncompressed, "Not compressed load");
-		if (SetData(0, 0, 0, 0, width, height, depth, image.GetData()) == false)
+		MipLevelInfo mipData = image.GetMipInfo(mipLevel);
+		if (!SetData(mipLevel, 0, 0, 0, mipData.Width, mipData.Height, mipData.Depth, image.GetData(mipLevel)))
 		{
 			return false;
 		}
-		memoryUsage += m_Width * m_Height * m_Depth * 4;
-	}
-	else
-	{
-		AUTOPROFILE_DESC(Texture3D_SetImage_Compressed, "Compressed load");
-		CompressedLevel mipLevelData = image.GetCompressedLevel(mipLevelsToSkip);
-		for (int mipLevel = 0; mipLevel < image.GetCompressedMipLevels() - mipLevelsToSkip; ++mipLevel)
-		{
-			if (!SetData(mipLevel, 0, 0, 0, mipLevelData.Width, mipLevelData.Height, mipLevelData.Depth, mipLevelData.pData))
-			{
-				return false;
-			}
-			memoryUsage += mipLevelData.RowSize * mipLevelData.Rows * mipLevelData.Depth;
-			mipLevelData.MoveNext();
-		}
+		memoryUsage += mipData.DataSize;
 	}
 
 	SetMemoryUsage(memoryUsage);

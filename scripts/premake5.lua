@@ -1,5 +1,5 @@
 workspace "FluxEngine"
-	filename "FluxEngine_%{_ACTION}"
+	filename "FluxEngine"
 	basedir "../"
 	configurations { "Debug", "Release" }
     platforms {"x86", "x64"}
@@ -33,7 +33,7 @@ workspace "FluxEngine"
 		 	optimize "Full"
 
 	project "FluxEngine"
-		filename "FluxEngine_%{_ACTION}"
+		filename "FluxEngine"
 		location "../FluxEngine"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
@@ -75,7 +75,7 @@ workspace "FluxEngine"
 			flags "NoPCH"
 
 	project "FluxGame"
-		filename "FluxGame_%{_ACTION}"
+		filename "FluxGame"
 		location "../FluxGame"
 		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
 		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
@@ -117,72 +117,71 @@ workspace "FluxEngine"
 
 		postbuildcommands
 		{ 
-			"xcopy \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\" /Y /D",
-			"xcopy \"$(SolutionDir)Libraries\\Assimp\\bin\\%{cfg.platform}\\assimp-vc140-mt.dll\" \"$(OutDir)\" /Y /D",
+			"{COPY} \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\"",
+			"{COPY} \"$(SolutionDir)Libraries\\Assimp\\bin\\%{cfg.platform}\\assimp-vc140-mt.dll\" \"$(OutDir)\"",
 		}
 
 		filter { "configurations:Debug" }
 		 	postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "configurations:Release" }
 		 	postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\" /Y /D",
-				"dir \"$(SolutionDir)FluxGame\\Resources\\\" /s /b /a-d > \"$(SolutionDir)\\FluxPak\\ResponseFile.txt\"",
-				"\"$(SolutionDir)FluxPak\\PakFileCompression.exe\" -r \"$(SolutionDir)\\FluxPak\\ResponseFile.txt\" -p \"$(SolutionDir)FluxGame\\Resources.pak\" -b \"$(SolutionDir)FluxGame/Resources/",
+				"{COPY} \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\"",
+				"\"$(SolutionDir)Scripts\\premake5\" --file=\"$(SolutionDir)Scripts\\premake5.lua\" pak"
 			}
 
 		filter { "platforms:x64" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\nvToolsExt64_1.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\nvToolsExt64_1.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "platforms:x86" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\" /F /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\nvToolsExt32_1.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\nvToolsExt32_1.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "configurations:Debug", "platforms:x86" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3CommonDEBUG_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3DEBUG_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3CommonDEBUG_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3DEBUG_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundationDEBUG_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "configurations:Release", "platforms:x86" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3Common_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundation_x86.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDK_x86.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3Common_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxFoundation_x86.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDK_x86.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "configurations:Debug", "platforms:x64" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3CommonDEBUG_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3DEBUG_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundationDEBUG_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3CommonDEBUG_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3DEBUG_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundationDEBUG_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\"",
 			}
 
 		filter { "configurations:Release", "platforms:x64" }
 			postbuildcommands
 			{ 
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3Common_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundation_x64.dll\" \"$(OutDir)\" /Y /D",
-				"xcopy \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDK_x64.dll\" \"$(OutDir)\" /Y /D",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3Common_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundation_x64.dll\" \"$(OutDir)\"",
+				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDK_x64.dll\" \"$(OutDir)\"",
 			}
 
 newaction {
@@ -192,5 +191,16 @@ newaction {
 	execute = function()
 		os.rmdir("../Build")
 		os.rmdir("../ipch")
+	end
+}
+
+newaction {
+	trigger 	= "pak",
+	description	= "Creates a pak file",
+
+	execute = function()
+		os.execute("dir \"..\\FluxGame\\Resources\\\" /s /b /a-d > \"..\\FluxPak\\ResponseFile.txt\"")
+		filePath = os.realpath("..\\FluxGame\\Resources")
+		os.execute("..\\FluxPak\\PakFileCompression.exe -r \"../FluxPak/ResponseFile.txt\" -p \"../FluxGame/Resources.pak\" -b \"" .. filePath .. "/\"")
 	end
 }

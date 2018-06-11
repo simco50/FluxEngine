@@ -28,56 +28,23 @@ bool Texture2D::SetImage(const Image& image)
 
 	uint32 memoryUsage = 0;
 
-	ImageCompressionFormat compressionFormat = image.GetCompressionFormat();
-	m_MipLevels = image.GetCompressedMipLevels();
+	ImageFormat compressionFormat = image.GetFormat();
+	m_MipLevels = image.GetMipLevels();
 
-	int width = image.GetWidth();
-	int height = image.GetHeight();
-	int mipLevelsToSkip = 0;
-
-#if 0
-	std::array<int, 4> skipMips;
-	skipMips[0] = 4;
-	skipMips[1] = 1;
-	skipMips[2] = 0;
-	mipLevelsToSkip = skipMips[qualityLevel];
-
-	if (image.IsCompressed())
-	{
-		width /= (1 << mipLevelsToSkip);
-		height /= (1 << mipLevelsToSkip);
-		m_MipLevels -= mipLevelsToSkip;
-	}
-#endif
-
-	if (!SetSize(width, height, TextureFormatFromCompressionFormat(compressionFormat), TextureUsage::STATIC, 1, nullptr))
+	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
 	{
 		return false;
 	}
 
-	//#todo: Mip map support for non compressed imaged
-	if(image.IsCompressed() == false)
-	{ 
-		AUTOPROFILE_DESC(Texture2D_SetImage_Uncompressed, "Not compressed load");
-		if (!SetData(0, 0, 0, width, height, image.GetData()))
+	AUTOPROFILE_DESC(Texture2D_SetImage_Compressed, "Compressed load");
+	for (int mipLevel = 0; mipLevel < image.GetMipLevels(); ++mipLevel)
+	{
+		MipLevelInfo mipData = image.GetMipInfo(mipLevel);
+		if (!SetData(mipLevel, 0, 0, mipData.Width, mipData.Height, image.GetData(mipLevel)))
 		{
 			return false;
 		}
-		memoryUsage += m_Width * m_Height * 4;
-	}
-	else
-	{
-		AUTOPROFILE_DESC(Texture2D_SetImage_Compressed, "Compressed load");
-		CompressedLevel mipLevelData = image.GetCompressedLevel(mipLevelsToSkip);
-		for (int mipLevel = 0; mipLevel < image.GetCompressedMipLevels() - mipLevelsToSkip; ++mipLevel)
-		{
-			if (!SetData(mipLevel, 0, 0, mipLevelData.Width, mipLevelData.Height, mipLevelData.pData))
-			{
-				return false;
-			}
-			memoryUsage += mipLevelData.RowSize * mipLevelData.Rows;
-			mipLevelData.MoveNext();
-		}
+		memoryUsage += mipData.DataSize;
 	}
 
 	SetMemoryUsage(memoryUsage);
@@ -121,9 +88,7 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 		return false;
 	}
 
-	if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM || 
-		m_TextureFormat == DXGI_FORMAT_BC2_UNORM || 
-		m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+	if (IsCompressed())
 	{
 		x &= ~3;
 		y &= ~3;
@@ -136,12 +101,10 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 	unsigned int rowSize = GetRowDataSize(width);
 	unsigned int rowStart = GetRowDataSize(x);
 	unsigned int subResource = D3D11CalcSubresource(mipLevel, 0, m_MipLevels);
-
+	
 	if (m_Usage == TextureUsage::STATIC)
 	{
-		if (m_TextureFormat == DXGI_FORMAT_BC1_UNORM ||
-			m_TextureFormat == DXGI_FORMAT_BC2_UNORM ||
-			m_TextureFormat == DXGI_FORMAT_BC3_UNORM)
+		if (IsCompressed())
 		{
 			levelHeight = (levelHeight + 3) >> 2;
 		}

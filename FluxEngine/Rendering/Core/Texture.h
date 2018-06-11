@@ -5,7 +5,7 @@
 class Graphics;
 class Image;
 
-enum class ImageCompressionFormat;
+enum class ImageFormat;
 
 enum class TextureUsage
 {
@@ -49,6 +49,7 @@ public:
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
+	bool IsCompressed() const;
 
 protected:
 	void Release();
@@ -62,7 +63,7 @@ protected:
 	unsigned int GetSRVFormat(const unsigned int format);
 	unsigned int GetDSVFormat(const unsigned int format);
 
-	static unsigned int TextureFormatFromCompressionFormat(const ImageCompressionFormat& format);
+	static unsigned int TextureFormatFromCompressionFormat(const ImageFormat& format, bool sRgb);
 
 	unsigned int m_Width = 0;
 	unsigned int m_Height = 0;

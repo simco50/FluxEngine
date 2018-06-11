@@ -884,7 +884,7 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 
 	D3D11_MAPPED_SUBRESOURCE pData = {};
 	m_pImpl->GetDeviceContext()->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &pData);
-	unsigned char* pDest = destinationImage.GetData();
+	unsigned char* pDest = destinationImage.GetWritableData();
 	for (int y = 0; y < m_WindowHeight; ++y)
 	{
 		unsigned char* pSrc = (unsigned char*)pData.pData + y * pData.RowPitch;

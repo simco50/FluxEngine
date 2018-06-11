@@ -2,37 +2,27 @@
 
 #include "Resource.h"
 
-enum class ImageCompressionFormat
+enum class ImageFormat
 {
-	NONE = 0,
-	RGBA,
+	RGBA = 0,
+	BGRA,
 	DXT1,
 	DXT3,
 	DXT5,
-	ETC1,
-	PVRTC_RGB_2BPP,
-	PVRTC_RGBA_2BPP,
-	PVRTC_RGB_4BPP,
-	PVRTC_RGBA_4BPP,
+	BC4,
+	BC5,
+	BC6H,
+	BC7,
 };
 
-struct CompressedLevel
+struct MipLevelInfo
 {
 	int Width = 0;
 	int Height = 0;
 	int Depth = 0;
-	int BlockSize = 0;
-	int RowSize = 0;
-	int Rows = 0;
-	int DataSize = 0;
-	ImageCompressionFormat Format = ImageCompressionFormat::NONE;
-	char* pData = nullptr;
-
-	//Calculates the next CompressionLevel
-	bool MoveNext();
-
-	//Calculate the properties of the current compression level
-	void CalculateSize();
+	uint32 Rows = 0;
+	uint32 RowSize = 0;
+	uint32 DataSize = 0;
 };
 
 class Image : public Resource
@@ -59,10 +49,6 @@ public:
 	bool SetPixel(const int x, const int y, const Color& color);
 	bool SetPixelInt(const int x, const int y, const unsigned int color);
 
-	//void ConvertToRGBA();
-	//Returns the sub-image info of a specific mip level
-	CompressedLevel GetCompressedLevel(const int level) const;
-
 	Color GetPixel(const int x, const int y) const;
 	unsigned int GetPixelInt(const int x, const int y) const;
 
@@ -71,13 +57,19 @@ public:
 	int GetDepth() const { return m_Depth; }
 	int GetComponents() const { return m_Components; }
 	int GetActualComponents() const { return m_ActualComponents; }
-	int GetCompressedMipLevels() const { return m_CompressedMipLevels; }
-	unsigned char* GetData() { return m_Pixels.data(); }
-	const unsigned char* GetData() const { return m_Pixels.data(); }
-	bool IsCompressed() const { return m_CompressionFormat != ImageCompressionFormat::NONE; }
-	bool IsSRGB() const { return m_sRgb; }
-	ImageCompressionFormat GetCompressionFormat() const { return m_CompressionFormat; }
+
 	SDL_Surface* GetSDLSurface();
+	bool IsSRGB() const { return m_sRgb; }
+	unsigned char* GetWritableData() { return m_Pixels.data(); }
+	const unsigned char* GetData(int mipLevel = 0) const;
+
+	MipLevelInfo GetMipInfo(int mipLevel) const;
+	int GetMipLevels() const { return m_MipLevels; }
+	bool IsCompressed() const { return m_Format != ImageFormat::RGBA; }
+	ImageFormat GetFormat() const { return m_Format; }
+	bool GetSurfaceInfo(int width, int height, int depth, int mipLevel, MipLevelInfo& mipLevelInfo) const;
+
+	const Image* GetNextImage() const { return m_pNextImage.get(); }
 
 private:
 	bool LoadDds(InputStream& inputStream);
@@ -88,9 +80,12 @@ private:
 	int m_Components = 0;
 	int m_ActualComponents = 0;
 	int m_Depth = 1;
-	int m_CompressedMipLevels = 1;
+	int m_MipLevels = 1;
+	int m_BBP = 0;
 	bool m_sRgb = false;
 	bool m_IsArray = false;
-	ImageCompressionFormat m_CompressionFormat = ImageCompressionFormat::NONE;
+	std::unique_ptr<Image> m_pNextImage;
+	ImageFormat m_Format = ImageFormat::RGBA;
 	std::vector<unsigned char> m_Pixels;
+	std::vector<uint32> m_DataOffsets;
 };

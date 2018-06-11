@@ -76,11 +76,29 @@ int Texture::GetRowDataSize(unsigned int width)
 	case DXGI_FORMAT_R32G32B32A32_FLOAT:
 		return (unsigned)(width * 16);
 
+	case DXGI_FORMAT_BC1_TYPELESS:
 	case DXGI_FORMAT_BC1_UNORM:
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+	case DXGI_FORMAT_BC4_TYPELESS:
+	case DXGI_FORMAT_BC4_UNORM:
+	case DXGI_FORMAT_BC4_SNORM:
 		return (unsigned)(((width + 3) >> 2) * 8);
 
+	case DXGI_FORMAT_BC2_TYPELESS:
 	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+	case DXGI_FORMAT_BC3_TYPELESS:
 	case DXGI_FORMAT_BC3_UNORM:
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+	case DXGI_FORMAT_BC5_TYPELESS:
+	case DXGI_FORMAT_BC5_UNORM:
+	case DXGI_FORMAT_BC5_SNORM:
+	case DXGI_FORMAT_BC6H_TYPELESS:
+	case DXGI_FORMAT_BC6H_UF16:
+	case DXGI_FORMAT_BC6H_SF16:
+	case DXGI_FORMAT_BC7_TYPELESS:
+	case DXGI_FORMAT_BC7_UNORM:
+	case DXGI_FORMAT_BC7_UNORM_SRGB:
 		return (unsigned)(((width + 3) >> 2) * 16);
 
 	default:
@@ -112,19 +130,71 @@ unsigned int Texture::GetDSVFormat(const unsigned int format)
 		return format;
 }
 
-unsigned int Texture::TextureFormatFromCompressionFormat(const ImageCompressionFormat& format)
+unsigned int Texture::TextureFormatFromCompressionFormat(const ImageFormat& format, bool sRgb)
 {
 	switch (format)
 	{
-	case ImageCompressionFormat::NONE:
+	case ImageFormat::RGBA:
+		if (sRgb)
+			return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case ImageCompressionFormat::DXT1:
+	case ImageFormat::BGRA:
+		if (sRgb)
+			return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+		return DXGI_FORMAT_B8G8R8A8_UNORM;
+	case ImageFormat::DXT1:
+		if (sRgb)
+			return DXGI_FORMAT_BC1_UNORM_SRGB;
 		return DXGI_FORMAT_BC1_UNORM;
-	case ImageCompressionFormat::DXT3:
+	case ImageFormat::DXT3:
+		if (sRgb)
+			return DXGI_FORMAT_BC2_UNORM_SRGB;
 		return DXGI_FORMAT_BC2_UNORM;
-	case ImageCompressionFormat::DXT5:
+	case ImageFormat::DXT5:
+		if (sRgb)
+			return DXGI_FORMAT_BC3_UNORM_SRGB;
 		return DXGI_FORMAT_BC3_UNORM;
+	case ImageFormat::BC4:
+		return DXGI_FORMAT_BC4_UNORM;
+	case ImageFormat::BC5:
+		return DXGI_FORMAT_BC5_UNORM;
+	case ImageFormat::BC6H:
+		return DXGI_FORMAT_BC6H_UF16;
+	case ImageFormat::BC7:
+		if (sRgb)
+			return DXGI_FORMAT_BC7_UNORM_SRGB;
+		return DXGI_FORMAT_BC7_UNORM;
 	default:
 		return 0;
+	}
+}
+
+bool Texture::IsCompressed() const
+{
+	switch (m_TextureFormat)
+	{
+	case DXGI_FORMAT_BC1_UNORM:
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+	case DXGI_FORMAT_BC2_TYPELESS:
+	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+	case DXGI_FORMAT_BC3_TYPELESS:
+	case DXGI_FORMAT_BC3_UNORM:
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+	case DXGI_FORMAT_BC4_TYPELESS:
+	case DXGI_FORMAT_BC4_UNORM:
+	case DXGI_FORMAT_BC4_SNORM:
+	case DXGI_FORMAT_BC5_TYPELESS:
+	case DXGI_FORMAT_BC5_UNORM:
+	case DXGI_FORMAT_BC5_SNORM:
+	case DXGI_FORMAT_BC6H_TYPELESS:
+	case DXGI_FORMAT_BC6H_UF16:
+	case DXGI_FORMAT_BC6H_SF16:
+	case DXGI_FORMAT_BC7_TYPELESS:
+	case DXGI_FORMAT_BC7_UNORM:
+	case DXGI_FORMAT_BC7_UNORM_SRGB:
+		return true;
+	default:
+		return false;
 	}
 }
