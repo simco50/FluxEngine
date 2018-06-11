@@ -7,8 +7,6 @@ environment:
       resources: .\FluxGame\Resources\
     - configuration: Release
       resources: .\FluxGame\Resources.pak
-      after_build: 
-        - cmd: .\scripts\CreatePak.bat
 platform:
   - x64
   - Win32
@@ -22,7 +20,10 @@ platform:
 before_build:
   - ps: .\scripts\MakeVS2017.bat
 after_build:
-  - cmd: 7z a FluxGame_%PLATFORM%_%CONFIGURATION%_%APPVEYOR_BUILD_NUMBER%.zip .\Build\FluxGame_%PLATFORM%_%CONFIGURATION%\* %resources%
+- cmd: >-
+    7z a FluxGame_%PLATFORM%_%CONFIGURATION%_%APPVEYOR_BUILD_NUMBER%.zip .\Build\FluxGame_%PLATFORM%_%CONFIGURATION%\* %resources%
+
+    .\scripts\CreatePak.bat
 build:
   project: FluxEngine.sln
   parallel: true
