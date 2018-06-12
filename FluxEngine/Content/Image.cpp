@@ -501,7 +501,6 @@ bool Image::LoadDds(InputStream& inputStream)
 				m_Components = 3;
 				m_sRgb = false;
 				break;
-
 			case MAKEFOURCC('D', 'X', 'T', '3'):
 				m_Format = ImageFormat::DXT3;
 				m_Components = 4;

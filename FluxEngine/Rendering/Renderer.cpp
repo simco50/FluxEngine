@@ -43,7 +43,7 @@ void Renderer::Draw()
 				continue;
 			if (!pDrawable->DrawEnabled())
 				continue;
-			if(!pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
+			if(pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				continue;
 
 			const std::vector<Batch>& batches = pDrawable->GetBatches();

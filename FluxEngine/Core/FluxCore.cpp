@@ -30,6 +30,7 @@
 #include "Rendering/Core/Texture2D.h"
 #include "Rendering/Core/Texture3D.h"
 #include "Content/Image.h"
+#include "Rendering/Core/TextureCube.h"
 
 bool FluxCore::m_Exiting;
 
@@ -151,6 +152,22 @@ void FluxCore::InitGame()
 		pAnimator->Play();
 	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
+
+	SceneNode* pCubeNode = new SceneNode(m_pContext, "Skybox");
+	m_pScene->AddChild(pCubeNode);
+	Material* pSkybox = m_pResourceManager->Load<Material>("Resources/Materials/Skybox.xml");
+	Model* pCubeModel = new Model(m_pContext);
+	pCubeNode->AddComponent(pCubeModel);
+	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
+	std::vector<VertexElement> desc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+	};
+	pCubeMesh->CreateBuffers(desc);
+	pCubeModel->SetMesh(pCubeMesh);
+	pCubeModel->SetMaterial(pSkybox);
+	pCubeModel->SetCullingEnabled(false);
 }
 
 void FluxCore::ProcessFrame()

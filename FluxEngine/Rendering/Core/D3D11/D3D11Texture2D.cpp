@@ -116,7 +116,7 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 		box.bottom = (UINT)(y + height);
 		box.front = 0;
 		box.back = 1;
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, levelHeight * rowSize);
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, 0);
 	}
 	else
 	{
@@ -142,10 +142,15 @@ bool Texture2D::Create()
 	if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
 	{
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+		m_MipLevels = 1;
 	}
 	else if (m_Usage == TextureUsage::RENDERTARGET)
 	{
 		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		if (m_MipLevels != 1 && m_MultiSample == 1)
+		{
+			desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		}
 	}
 	else if (m_Usage == TextureUsage::DYNAMIC || m_Usage == TextureUsage::STATIC)
 	{
@@ -160,7 +165,6 @@ bool Texture2D::Create()
 	desc.Height = m_Height;
 	desc.Width = m_Width;
 	desc.MipLevels = m_MipLevels;
-	desc.MiscFlags = 0; //#todo D3D11_RESOURCE_MISC_GENERATE_MIPS
 	desc.SampleDesc.Count = m_MultiSample;
 	desc.SampleDesc.Quality = m_pGraphics->GetImpl()->GetMultisampleQuality((DXGI_FORMAT)m_TextureFormat, m_MultiSample);
 	desc.Usage = (m_Usage == TextureUsage::DYNAMIC) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;

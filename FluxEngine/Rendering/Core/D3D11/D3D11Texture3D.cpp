@@ -101,7 +101,7 @@ bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int wi
 		box.top = (uint32)y;
 		box.right = (uint32)(x + width);
 		box.bottom = (uint32)(y + height);
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &box, pData, m_Width * 4, m_Depth * m_Width * 4);
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, subResource, &box, pData, rowSize, levelHeight * rowSize);
 	}
 	else
 	{
@@ -162,7 +162,7 @@ bool Texture3D::Create()
 	desc.Width = m_Width;
 	desc.Depth = m_Depth;
 	desc.MipLevels = m_MipLevels;
-	desc.MiscFlags = 0; //#todo D3D11_RESOURCE_MISC_GENERATE_MIPS
+	desc.MiscFlags = 0;
 	desc.Usage = (m_Usage == TextureUsage::DYNAMIC) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 
 	if (m_pResource == nullptr)

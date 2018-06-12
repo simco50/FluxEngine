@@ -1,0 +1,15 @@
+<Material name="Default">
+	<Shaders>
+		<Shader type="Vertex" source="Resources/Shaders/Skybox"/>
+		<Shader type="Pixel" source="Resources/Shaders/Skybox"/>
+	</Shaders>
+
+	<Properties>
+		<CullMode value="None"/>
+		<BlendMode value="Replace"/>
+	</Properties>
+
+	<Parameters>
+		<TextureCube slot="Cube" value="Resources/Textures/Skybox.dds"/>
+	</Parameters>
+</Material>

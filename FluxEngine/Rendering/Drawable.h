@@ -28,6 +28,8 @@ public:
 
 	std::vector<Batch>& GetBatches() { return m_Batches; }
 
+	void SetCullingEnabled(const bool enabled) { m_Cull = enabled; }
+	bool GetCullingEnabled() const { return m_Cull; }
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 	BoundingBox GetWorldBoundingBox() const;
 
@@ -35,6 +37,7 @@ public:
 
 protected:
 	bool m_Draw = true;
+	bool m_Cull = true;
 	std::vector<Batch> m_Batches;
 	BoundingBox m_BoundingBox;
 };

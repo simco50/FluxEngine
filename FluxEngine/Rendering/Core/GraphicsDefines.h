@@ -114,6 +114,7 @@ enum class TextureSlot
 	Normal,
 	Specular,
 	Volume,
+	Cube,
 	MAX
 };
 

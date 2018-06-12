@@ -61,6 +61,7 @@ int Texture::GetRowDataSize(unsigned int width)
 	case DXGI_FORMAT_R16_TYPELESS:
 		return (unsigned)(width * 2);
 
+	case DXGI_FORMAT_B8G8R8A8_UNORM:
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
 	case DXGI_FORMAT_R16G16_UNORM:
 	case DXGI_FORMAT_R16G16_FLOAT:

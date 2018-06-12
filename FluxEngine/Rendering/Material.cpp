@@ -10,6 +10,7 @@
 #include "Core/Texture2D.h"
 #include "Core/Texture3D.h"
 #include "Content/Image.h"
+#include "Core/TextureCube.h"
 
 Material::Material(Context* pContext) :
 	Resource(pContext)
@@ -40,32 +41,24 @@ bool Material::Load(InputStream& inputStream)
 
 	const char* pName = pRootNode->Attribute("name");
 	if (pName)
-		m_Name = pName;
-
-	std::string elementOrder[] = {
-		"Properties",
-		"Parameters",
-		"Shaders"
-	};
-
-	for (const std::string& element : elementOrder)
 	{
-		XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement(element.c_str());
-		if (pCurrentElement)
-		{
-			if (strcmp(pCurrentElement->Value(), "Properties") == 0)
-			{
-				ParseProperties(pCurrentElement);
-			}
-			else if (strcmp(pCurrentElement->Value(), "Parameters") == 0)
-			{
-				ParseParameters(pCurrentElement);
-			}
-			else if (strcmp(pCurrentElement->Value(), "Shaders") == 0)
-			{
-				ParseShaders(pCurrentElement);
-			}
-		}
+		m_Name = pName;
+	}
+
+	XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement("Properties");
+	if (pCurrentElement)
+	{
+		ParseProperties(pCurrentElement);
+	}
+	pCurrentElement = pRootNode->FirstChildElement("Parameters");
+	if (pCurrentElement)
+	{
+		ParseParameters(pCurrentElement);
+	}
+	pCurrentElement = pRootNode->FirstChildElement("Shaders");
+	if (pCurrentElement)
+	{
+		ParseShaders(pCurrentElement);
 	}
 	return true;
 }
@@ -187,7 +180,7 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 	while (pParameter != nullptr)
 	{
 		std::string parameterType = pParameter->Value();
-		if (parameterType == "Texture" || parameterType == "Texture3D")
+		if (parameterType == "Texture" || parameterType == "Texture3D" || parameterType == "TextureCube")
 		{
 			std::string slot = pParameter->Attribute("slot");
 			TextureSlot slotType = TextureSlot::MAX;
@@ -199,6 +192,8 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 				slotType = TextureSlot::Specular;
 			else if (slot == "Volume")
 				slotType = TextureSlot::Volume;
+			else if (slot == "Cube")
+				slotType = TextureSlot::Cube;
 			else
 			{
 				FLUX_LOG(Warning, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
@@ -206,13 +201,22 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 			}
 
 			Texture* pTexture = nullptr;
-			if (parameterType == "Texture3D")
+			if (parameterType == "Texture")
+			{
+				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
+			}
+			else if(parameterType == "Texture3D") 
 			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
 			}
+			else if (parameterType == "TextureCube")
+			{
+				pTexture = GetSubsystem<ResourceManager>()->Load<TextureCube>(pParameter->Attribute("value"));
+			}
 			else
 			{
-				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
+				FLUX_LOG(Warning, "[Material::Load()] Texture '%s' is unknown", parameterType.c_str());
+				return false;
 			}
 			if (pTexture)
 			{
@@ -231,7 +235,7 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 		}
 		else
 		{
-			FLUX_LOG(Warning, "[Material::Load()] > %s : Parameter with name '%' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
+			FLUX_LOG(Warning, "[Material::Load()] > %s : Parameter with name '%s' is not valid, skipping", m_Name.c_str(), parameterType.c_str());
 		}
 
 		pParameter = pParameter->NextSiblingElement();
