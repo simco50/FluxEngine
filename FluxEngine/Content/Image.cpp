@@ -574,6 +574,7 @@ bool Image::LoadDds(InputStream& inputStream)
 			pCurrentImage->m_Width = header.dwWidth;
 			pCurrentImage->m_Height = header.dwHeight;
 			pCurrentImage->m_Depth = header.dwDepth;
+			pCurrentImage->m_Format = m_Format;
 			inputStream.Read(pCurrentImage->m_Pixels.data(), pCurrentImage->m_Pixels.size());
 			pCurrentImage->SetMemoryUsage(totalDataSize);
 

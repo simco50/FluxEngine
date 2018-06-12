@@ -34,14 +34,19 @@ bool TextureCube::Load(InputStream& inputStream)
 
 bool TextureCube::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
 {
-	AUTOPROFILE(TextureCube_SetSize);
-
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
 		FLUX_LOG(Error, "[Texture::SetSize()] > Multisampling is only supported for rendertarget or depth-stencil textures");
 		return false;
 	}
 
+	//If all the properties are the same, we can safely say it's not necessary to create a new texture except when there is a change in mip levels
+	if ((int)m_Width == width && (int)m_Height == height && m_TextureFormat == format && m_Usage == usage && m_MultiSample == multiSample)
+	{
+		return true;
+	}
+
+	AUTOPROFILE(TextureCube_SetSize);
 	Release();
 
 	m_Width = width;
@@ -121,16 +126,11 @@ bool TextureCube::SetImage(const CubeMapFace face, const Image& image)
 {
 	AUTOPROFILE(TextureCube_SetData_Image);
 
-	uint32 memoryUsage = 0;
-
 	ImageFormat compressionFormat = image.GetFormat();
 	m_MipLevels = image.GetMipLevels();
-	if (face == CubeMapFace::POSITIVE_X)
+	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
 	{
-		if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
-		{
-			return false;
-		}
+		return false;
 	}
 
 	AUTOPROFILE_DESC(TextureCube_SetImage_Compressed, "Compressed load");
@@ -141,44 +141,22 @@ bool TextureCube::SetImage(const CubeMapFace face, const Image& image)
 		{
 			return false;
 		}
-		memoryUsage += mipData.DataSize;
 	}
 
-	SetMemoryUsage(memoryUsage);
 	return true;
 }
 
 bool TextureCube::SetImageChain(const Image& image)
 {
-	AUTOPROFILE(TextureCube_SetData_Image);
-
-	uint32 memoryUsage = 0;
-
-	ImageFormat compressionFormat = image.GetFormat();
-	m_MipLevels = image.GetMipLevels();
-	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
-	{
-		return false;
-	}
-
-	AUTOPROFILE_DESC(TextureCube_SetImage_Compressed, "Compressed load");
+	AUTOPROFILE(TextureCube_SetImageChain);
 
 	const Image* pCurrentImage = &image;
-	for (uint32 faceIdx = 0; faceIdx < (uint32)CubeMapFace::MAX_CUBEMAP, pCurrentImage != nullptr; ++faceIdx)
+	for (uint32 faceIdx = 0; faceIdx < (uint32)CubeMapFace::MAX, pCurrentImage != nullptr; ++faceIdx)
 	{
-		for (int mipLevel = 0; mipLevel < pCurrentImage->GetMipLevels(); ++mipLevel)
-		{
-			MipLevelInfo mipData = pCurrentImage->GetMipInfo(mipLevel);
-			if (!SetData((CubeMapFace)faceIdx, mipLevel, 0, 0, mipData.Width, mipData.Height, pCurrentImage->GetData(mipLevel)))
-			{
-				return false;
-			}
-			memoryUsage += mipData.DataSize;
-		}
+		SetImage((CubeMapFace)faceIdx, *pCurrentImage);
 		pCurrentImage = pCurrentImage->GetNextImage();
 	}
 
-	SetMemoryUsage(memoryUsage);
 	return true;
 }
 
@@ -197,7 +175,7 @@ bool TextureCube::Create()
 	desc.Usage = (m_Usage == TextureUsage::DYNAMIC) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
-	desc.ArraySize = 6;
+	desc.ArraySize = (int)CubeMapFace::MAX;
 	if (m_pResource == nullptr)
 	{
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateTexture2D(&desc, nullptr, (ID3D11Texture2D**)&m_pResource));

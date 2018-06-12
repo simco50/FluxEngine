@@ -9,7 +9,7 @@ enum class CubeMapFace
 	NEGATIVE_Y,
 	POSITIVE_Z,
 	NEGATIVE_Z,
-	MAX_CUBEMAP
+	MAX
 };
 
 class TextureCube : public Texture
