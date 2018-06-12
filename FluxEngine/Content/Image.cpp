@@ -409,6 +409,7 @@ bool Image::LoadDds(InputStream& inputStream)
 		DDSCAPS2_VOLUME = 0x00200000U,
 		DDSCAPS2_CUBEMAP = 0x00000200U,
 	};
+
 #define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
 
 	char magic[5];
@@ -430,6 +431,9 @@ bool Image::LoadDds(InputStream& inputStream)
 		m_BBP = header.ddpf.dwRGBBitCount;
 
 		uint32 fourCC = header.ddpf.dwFourCC;
+		char fourCCStr[5];
+		fourCCStr[4] = '\0';
+		memcpy(fourCCStr, &fourCC, 4);
 		bool hasDxgi = fourCC == MAKEFOURCC('D', 'X', '1', '0');
 		DX10FileHeader* pDx10Header = nullptr;
 
@@ -484,7 +488,7 @@ bool Image::LoadDds(InputStream& inputStream)
 				m_Format = ImageFormat::RGBA;
 				break;
 			default:
-				FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DXGI Format '%d'", dds10Header.dxgiFormat);
+				FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DXGI Format '%d'. FourCC: %s", dds10Header.dxgiFormat, fourCCStr);
 				return false;
 			}
 		}
@@ -503,10 +507,15 @@ bool Image::LoadDds(InputStream& inputStream)
 				m_Components = 4;
 				m_sRgb = false;
 				break;
-
 			case MAKEFOURCC('D', 'X', 'T', '5'):
 				m_Format = ImageFormat::DXT5;
 				m_Components = 4;
+				m_sRgb = false;
+				break;
+			case MAKEFOURCC('B', 'C', '5', 'U'):
+			case MAKEFOURCC('A', 'T', 'I', '2'):
+				m_Format = ImageFormat::BC5;
+				m_Components = 2;
 				m_sRgb = false;
 				break;
 			case 0:
@@ -524,13 +533,13 @@ bool Image::LoadDds(InputStream& inputStream)
 					}
 					else
 					{
-						FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DXGI Format");
+						FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DDS Format %s", fourCCStr);
 						return false;
 					}
 				}
 				break;
 			default:
-				FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DXGI Format");
+				FLUX_LOG(Warning, "[Image::LoadDds] Unsupported DDS Format %s", fourCCStr);
 				return false;
 			}
 		}

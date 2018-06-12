@@ -120,6 +120,7 @@ private:
 	bool m_DepthWrite = true;
 	FillMode m_FillMode = FillMode::SOLID;
 
+	std::string m_InternalDefines;
 	std::unordered_map<TextureSlot, Texture*> m_Textures;
 	ParameterCache m_ParameterCache;
 	int m_BufferOffset = 0;

@@ -27,7 +27,7 @@ bool Shader::Load(InputStream& inputStream)
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
 		std::vector<size_t> processedIncludes;
-		if (!ProcessSource(&inputStream, codeStream, processedIncludes))
+		if (!ProcessSource(inputStream, codeStream, processedIncludes))
 			return false;
 
 		m_ShaderSource = codeStream.str();
@@ -110,20 +110,20 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 	}
 }
 
-bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
+bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-	if(GetName() != pInputStream->GetSource())
-		pResourceManager->AddResourceDependency(this, pInputStream->GetSource());
+	if(GetName() != inputStream.GetSource())
+		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
 
-	DateTime timestamp = FileSystem::GetLastModifiedTime(pInputStream->GetSource());
+	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
 	if (timestamp > m_LastModifiedTimestamp)
 	{
 		m_LastModifiedTimestamp = timestamp;
 	}
 
 	std::string line;
-	while (pInputStream->GetLine(line))
+	while (inputStream.GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
@@ -132,13 +132,13 @@ bool Shader::ProcessSource(InputStream* pInputStream, std::stringstream& output,
 			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) != processedIncludes.end())
 				continue;
 			processedIncludes.push_back(includeHash);
-			std::string basePath = Paths::GetDirectoryPath(pInputStream->GetSource());
+			std::string basePath = Paths::GetDirectoryPath(inputStream.GetSource());
 			std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
 			if (newFile == nullptr)
 				return false;
 			if (!newFile->OpenRead())
 				return false;
-			if (!ProcessSource(newFile.get(), output, processedIncludes))
+			if (!ProcessSource(*newFile, output, processedIncludes))
 				return false;
 		}
 		else

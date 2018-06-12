@@ -191,6 +191,10 @@ newaction {
 	execute = function()
 		os.rmdir("../Build")
 		os.rmdir("../ipch")
+		os.remove("../.vs")
+		os.remove("../*.sln")
+		os.remove("../FluxGame/*.vcxproj.*")
+		os.remove("../FluxEngine/*.vcxproj.*")
 	end
 }
 

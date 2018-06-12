@@ -36,7 +36,7 @@ public:
 
 	DELETE_COPY(Texture)
 
-	virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
+		virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
 
 	void SetAddressMode(const TextureAddressMode addressMode);
 	void UpdateParameters();
@@ -50,6 +50,8 @@ public:
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
 	bool IsCompressed() const;
+
+	const Image* GetImage() const { return m_pImage.get(); }
 
 protected:
 	void Release();

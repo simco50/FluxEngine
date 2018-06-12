@@ -9,6 +9,7 @@
 #include "IO/InputStream.h"
 #include "Core/Texture2D.h"
 #include "Core/Texture3D.h"
+#include "Content/Image.h"
 
 Material::Material(Context* pContext) :
 	Resource(pContext)
@@ -41,23 +42,30 @@ bool Material::Load(InputStream& inputStream)
 	if (pName)
 		m_Name = pName;
 
-	XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement();
-	while (pCurrentElement != nullptr)
-	{
-		if (strcmp(pCurrentElement->Value(), "Shaders") == 0)
-		{
-			ParseShaders(pCurrentElement);
-		}
-		else if (strcmp(pCurrentElement->Value(), "Properties") == 0)
-		{
-			ParseProperties(pCurrentElement);
-		}
-		else if (strcmp(pCurrentElement->Value(), "Parameters") == 0)
-		{
-			ParseParameters(pCurrentElement);
-		}
+	std::string elementOrder[] = {
+		"Properties",
+		"Parameters",
+		"Shaders"
+	};
 
-		pCurrentElement = pCurrentElement->NextSiblingElement();
+	for (const std::string& element : elementOrder)
+	{
+		XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement(element.c_str());
+		if (pCurrentElement)
+		{
+			if (strcmp(pCurrentElement->Value(), "Properties") == 0)
+			{
+				ParseProperties(pCurrentElement);
+			}
+			else if (strcmp(pCurrentElement->Value(), "Parameters") == 0)
+			{
+				ParseParameters(pCurrentElement);
+			}
+			else if (strcmp(pCurrentElement->Value(), "Shaders") == 0)
+			{
+				ParseShaders(pCurrentElement);
+			}
+		}
 	}
 	return true;
 }
@@ -106,7 +114,7 @@ bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 		if (pAttribute)
 			defines = pAttribute;
 		std::string source = pShader->Attribute("source");
-		ShaderVariation* pShaderVariation = m_pGraphics->GetShader(source, type, defines);
+		ShaderVariation* pShaderVariation = m_pGraphics->GetShader(source, type, defines + m_InternalDefines);
 		if (pShaderVariation == nullptr)
 		{
 			FLUX_LOG(Warning, "[Material::Load] > Shader '%s' for slot '%s' could not be loaded", source.c_str(), shaderType.c_str());
@@ -199,11 +207,21 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 
 			Texture* pTexture = nullptr;
 			if (parameterType == "Texture3D")
+			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
+			}
 			else
+			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
+			}
 			if (pTexture)
+			{
+				if (slotType == TextureSlot::Normal && pTexture->GetImage()->GetFormat() == ImageFormat::BC5)
+				{
+					m_InternalDefines += ",NORMALMAP_BC5";
+				}
 				m_Textures[slotType] = pTexture;
+			}
 		}
 		else if (parameterType == "Value")
 		{

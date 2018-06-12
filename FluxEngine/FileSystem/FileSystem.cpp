@@ -184,10 +184,10 @@ bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& a
 	FileTimeToLocalFileTime(&info.ftCreationTime, &localTime);
 	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.CreationTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
-	FileTimeToLocalFileTime(&info.ftCreationTime, &localTime);
+	FileTimeToLocalFileTime(&info.ftLastWriteTime, &localTime);
 	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.ModifiedTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
-	FileTimeToLocalFileTime(&info.ftLastWriteTime, &localTime);
+	FileTimeToLocalFileTime(&info.ftLastAccessTime, &localTime);
 	FileTimeToSystemTime(&localTime, &systemTime);
 	attributes.AccessTime = DateTime(systemTime.wYear, systemTime.wMonth, systemTime.wDay, systemTime.wHour, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds);
 	attributes.IsDirectory = info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;

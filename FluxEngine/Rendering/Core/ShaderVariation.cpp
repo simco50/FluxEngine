@@ -95,7 +95,6 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	{
 		return false;
 	}
-	
 	if (pFile->OpenRead() == false)
 	{
 		//Shader is not cached, we have to compile from scratch

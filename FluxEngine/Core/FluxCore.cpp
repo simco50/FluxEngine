@@ -110,8 +110,7 @@ void FluxCore::InitGame()
 	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
 	std::vector<std::string> meshPaths;
-	meshPaths.push_back("Resources/Meshes/obj/Gangnam Style.fbx");
-
+	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
 	std::vector<Mesh*> meshes;
 	for (std::string& path : meshPaths)
 	{
