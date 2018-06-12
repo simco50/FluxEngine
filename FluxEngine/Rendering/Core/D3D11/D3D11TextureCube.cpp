@@ -41,7 +41,7 @@ bool TextureCube::SetSize(const int width, const int height, const unsigned int 
 	}
 
 	//If all the properties are the same, we can safely say it's not necessary to create a new texture except when there is a change in mip levels
-	if ((int)m_Width == width && (int)m_Height == height && m_TextureFormat == format && m_Usage == usage && m_MultiSample == multiSample)
+	if (m_Width == (uint32)width && m_Height == (uint32)height && m_TextureFormat == format && m_Usage == usage && m_MultiSample == (uint32)multiSample)
 	{
 		return true;
 	}
