@@ -20,5 +20,5 @@ void VSMain(uint vertexId : SV_VertexID, out PS_OUTPUT output)
 
 void PSMain(PS_OUTPUT input, out float4 output : SV_TARGET)
 {
-	output = float4(tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord).rgb, 1.0f);
+	output = float4(Sample2D(Diffuse, input.texCoord).rgb, 1.0f);
 }

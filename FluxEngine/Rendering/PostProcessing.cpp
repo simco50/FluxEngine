@@ -43,7 +43,7 @@ void PostProcessing::Draw()
 	{
 		m_pGraphics->SetShader(ShaderType::PixelShader, pMaterial->GetShader(ShaderType::PixelShader));
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-		m_pGraphics->PrepareDraw();
+		m_pGraphics->FlushSRVChanges(false);
 		m_pGraphics->SetRenderTarget(0, pCurrentTarget);
 		for (const auto& texture : pMaterial->GetTextures())
 		{
@@ -59,7 +59,7 @@ void PostProcessing::Draw()
 		std::swap(pCurrentSource, pCurrentTarget);
 	}
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-	m_pGraphics->PrepareDraw();
+	m_pGraphics->FlushSRVChanges(false);
 	m_pGraphics->SetRenderTarget(0, nullptr);
 
 	//Do an extra blit if the shader count is odd

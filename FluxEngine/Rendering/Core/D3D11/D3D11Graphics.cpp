@@ -560,9 +560,9 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 	}
 }
 
-void Graphics::PrepareDraw()
+void Graphics::FlushRenderTargetChanges(bool force)
 {
-	if (m_pImpl->m_RenderTargetsDirty)
+	if (m_pImpl->m_RenderTargetsDirty || force)
 	{
 		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
 			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTexture()->GetRenderTargetView() : nullptr;
@@ -570,8 +570,11 @@ void Graphics::PrepareDraw()
 		m_pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, m_pImpl->m_RenderTargetViews.data(), m_pImpl->m_pDepthStencilView);
 		m_pImpl->m_RenderTargetsDirty = false;
 	}
+}
 
-	if (m_pImpl->m_TexturesDirty)
+void Graphics::FlushSRVChanges(bool force)
+{
+	if (m_pImpl->m_TexturesDirty || force)
 	{
 		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
@@ -582,6 +585,13 @@ void Graphics::PrepareDraw()
 		m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
 		m_pImpl->m_LastDirtyTexture = 0;
 	}
+}
+
+
+void Graphics::PrepareDraw()
+{
+	FlushRenderTargetChanges(false);
+	FlushSRVChanges(false);
 
 	if (m_pDepthStencilState->IsDirty())
 	{

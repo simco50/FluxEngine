@@ -107,8 +107,10 @@ public:
 
 	void GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount);
 
-	void PrepareDraw();
+	void FlushRenderTargetChanges(bool force);
+	void FlushSRVChanges(bool force);
 private:
+	void PrepareDraw();
 
 	bool OpenWindow();
 	bool EnumerateAdapters();

@@ -61,7 +61,7 @@ void GSMain(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 #ifdef COMPILE_PS
 float4 PSMain(GS_DATA input) : SV_TARGET 
 {	
-	float4 result = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
+	float4 result = Sample2D(Diffuse, input.texCoord);
 	return input.color * result;
 }
 #endif

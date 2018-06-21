@@ -19,7 +19,7 @@ struct VS_OUTPUT
 
 float4 PSMain(VS_OUTPUT input) : SV_TARGET
 {
-	float4 sample1 = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord - float2(cAberrationAmount, 0));
-	float4 sample2 = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord + float2(cAberrationAmount, 0));
+	float4 sample1 = Sample2D(Diffuse, input.texCoord - float2(cAberrationAmount, 0));
+	float4 sample2 = Sample2D(Diffuse, input.texCoord + float2(cAberrationAmount, 0));
 	return float4(sample1.r, sample2.g, sample2.b, sample1.a);
 }

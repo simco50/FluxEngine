@@ -28,6 +28,6 @@ PS_INPUT VSMain(VS_INPUT input)
 #ifdef COMPILE_PS
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-	return tCubeTexture.Sample(sCubeSampler, input.texCoord);
+	return SampleCube(Cube, input.texCoord);
 }
 #endif

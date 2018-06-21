@@ -1,3 +1,7 @@
+#define Sample2D(textureName, texCoord) t##textureName##Texture.Sample(s##textureName##Sampler, texCoord)
+#define Sample3D(textureName, texCoord) t##textureName##Texture.Sample(s##textureName##Sampler, texCoord)
+#define SampleCube(textureName, texCoord) t##textureName##Texture.Sample(s##textureName##Sampler, texCoord)
+
 Texture2D tDiffuseTexture : register(t0);
 SamplerState sDiffuseSampler : register(s0);
 

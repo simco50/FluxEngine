@@ -92,9 +92,16 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 	output *= diffuseSample.rgb;
 #endif
 
-#ifdef SPECULARMAP
 	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
-	output += GetSpecularPhong(viewDirection, normal, input.texCoord);
+	float3 specular = 1.0f;
+#ifdef SPECULARMAP
+	specular = GetSpecularPhong(viewDirection, normal, input.texCoord, 1.0f);
+#endif
+
+#ifdef ENVMAP
+	float3 reflectV = reflect(viewDirection, normal);
+	float3 reflectionSample = SampleCube(Cube, reflectV);
+	output += reflectionSample * GetFresnelFalloff(normal, viewDirection, 1.0f, 0.4f, 0.0f);
 #endif
 
 	return float4(output, 1.0f);
