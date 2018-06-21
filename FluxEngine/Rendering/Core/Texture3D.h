@@ -10,6 +10,7 @@ public:
 	virtual ~Texture3D();
 
 	virtual bool Load(InputStream& inputStream) override;
+	virtual bool Resolve(bool force) override { UNREFERENCED_PARAMETER(force); return false; }
 
 	bool SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData);

@@ -14,6 +14,7 @@ class DepthStencilState;
 class ConstantBuffer;
 class Shader;
 class ShaderProgram;
+class Texture2D;
 
 class GraphicsImpl;
 

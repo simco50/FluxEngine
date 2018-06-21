@@ -179,10 +179,10 @@ std::string Paths::ShaderCacheDir()
 
 std::string Paths::GameIniFile()
 {
-	return SavedDir() + "Game.ini";
+	return ConfigDir() + "Game.ini";
 }
 
 std::string Paths::EngineIniFile()
 {
-	return SavedDir() + "Engine.ini";
+	return ConfigDir() + "Engine.ini";
 }

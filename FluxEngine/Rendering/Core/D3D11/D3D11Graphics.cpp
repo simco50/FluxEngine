@@ -160,12 +160,21 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 	if (index == 0 && pRenderTarget == nullptr)
 	{
 		m_CurrentRenderTargets[0] = m_pDefaultRenderTarget.get();
-		m_pImpl->m_RenderTargetsDirty = true;
 	}
 	else if(m_CurrentRenderTargets[index] != pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
-		m_pImpl->m_RenderTargetsDirty = true;
+	}
+	m_pImpl->m_RenderTargetsDirty = true;
+	Texture2D* pTexture = m_CurrentRenderTargets[index]->GetDepthTexture();
+	if (pTexture)
+	{
+		pTexture->SetResolveDirty(true);
+	}
+	pTexture = m_CurrentRenderTargets[index]->GetRenderTexture();
+	if (pTexture)
+	{
+		pTexture->SetResolveDirty(true);
 	}
 }
 
@@ -459,7 +468,10 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 		return;
 
 	if (pTexture)
+	{
 		pTexture->UpdateParameters();
+		pTexture->Resolve(false);
+	}
 
 	m_pImpl->m_ShaderResourceViews[(size_t)slot] = pTexture ? (ID3D11ShaderResourceView*)pTexture->GetResourceView() : nullptr;
 	m_pImpl->m_SamplerStates[(size_t)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;

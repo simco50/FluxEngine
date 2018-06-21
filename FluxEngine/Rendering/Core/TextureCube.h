@@ -21,6 +21,7 @@ public:
 	virtual ~TextureCube(); 
 
 	virtual bool Load(InputStream& inputStream) override;
+	virtual bool Resolve(bool force) override;
 
 	bool SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture);
 	bool SetData(const CubeMapFace face, const unsigned int mipLevel, int x, int y, int width, int height, const void* pData);

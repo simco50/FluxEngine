@@ -51,7 +51,7 @@ public:
 
 	void Rumble(int index);
 
-	static void DrawDebugJoystick(const JoystickState& state);
+	void DrawDebugJoysticks();
 
 private:
 	void SetKey(int keyCode, bool down);

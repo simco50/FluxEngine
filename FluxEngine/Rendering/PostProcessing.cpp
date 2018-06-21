@@ -34,8 +34,10 @@ void PostProcessing::Draw()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
+
 	RenderTarget* pCurrentSource = m_pGraphics->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pIntermediateRenderTarget.get();
+
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
 	for (Material* pMaterial : m_Materials)
 	{
@@ -51,6 +53,7 @@ void PostProcessing::Draw()
 		{
 			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
 		}
+
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetRenderTexture());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
 		std::swap(pCurrentSource, pCurrentTarget);

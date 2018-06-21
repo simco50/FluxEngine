@@ -32,6 +32,7 @@ void Texture::Release()
 	SafeRelease(m_pRenderTargetView);
 	SafeRelease(m_pReadOnlyView);
 	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
 }
 
 int Texture::GetLevelWidth(unsigned int mipLevel)

@@ -106,9 +106,10 @@ void FluxCore::InitGame()
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 	m_pCamera = new FreeCamera(m_pContext);
 	m_pScene->AddChild(m_pCamera);
-	m_pCamera->GetCamera()->SetFarPlane(1000);
+	m_pCamera->GetCamera()->SetNearPlane(10);
+	m_pCamera->GetCamera()->SetFarPlane(10000);
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
 	std::vector<std::string> meshPaths;
 	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
@@ -122,8 +123,8 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
-			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
-			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
+			//VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+			//VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 		};
 		if(pMesh)
 			pMesh->CreateBuffers(desc);
@@ -132,24 +133,21 @@ void FluxCore::InitGame()
 
 	std::vector<Material*> pMaterials;
 
-	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
+	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/Default.xml"));
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
-		SceneNode* pObject = new SceneNode(m_pContext, "DancingMan");
+		SceneNode* pObject = new SceneNode(m_pContext, "Amazon Bistro");
 		m_pScene->AddChild(pObject);
 		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
-		Model* pModel = new AnimatedModel(m_pContext);
+		Model* pModel = new Model(m_pContext);
 		pObject->AddComponent(pModel);
 		pModel->SetMesh(meshes[x]);
 		pModel->SetMaterial(pMaterials[x]);
-		Animator* pAnimator = new Animator(m_pContext);
-		pObject->AddComponent(pAnimator);
 		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
 		pObject->AddComponent(pRigidbody);
 		pObject->AddComponent(pCollider);
-		pAnimator->Play();
 	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
@@ -204,8 +202,11 @@ void FluxCore::ProcessFrame()
 	if (m_pSelectedNode)
 	{
 		AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
-		m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
-		m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+		if (pAnimatedModel)
+		{
+			m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+		}
 		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
 		if (pModel)
 		{
@@ -236,6 +237,7 @@ void FluxCore::RenderUI()
 	std::stringstream timeStr;
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;
 	std::string time = timeStr.str();
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
@@ -246,7 +248,7 @@ void FluxCore::RenderUI()
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::End();
 
-	InputEngine::DrawDebugJoystick(*m_pInput->GetJoystickStateFromIndex(0));
+	m_pInput->DrawDebugJoysticks();
 	ImGui::Begin("Test");
 
 
@@ -257,7 +259,7 @@ void FluxCore::RenderUI()
 		ImGui::TreePop();
 	}
 
-	/*if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("Resources: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Resource::GetTypeStatic()) / 1000000.0f);
 		ImGui::Text("\tModels: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Mesh::GetTypeStatic()) / 1000000.0f);
@@ -268,7 +270,7 @@ void FluxCore::RenderUI()
 		ImGui::Text("\t\tTexture2D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture2D::GetTypeStatic()) / 1000000.0f);
 		ImGui::Text("\t\tTexture3D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture3D::GetTypeStatic()) / 1000000.0f);
 		ImGui::TreePop();
-	}*/
+	}
 	if (m_pSelectedNode && ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
