@@ -34,17 +34,14 @@ unsigned int GraphicsImpl::GetMultisampleQuality(const DXGI_FORMAT format, const
 	AUTOPROFILE(Graphics_Impl_GetMultisampleQuality);
 
 	if (sampleCount < 2)
-		return 0; // Not multisampled, should use quality 0
-
-	if (m_pDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1)
-		return 0xffffffff; // D3D10.1+ standard level
+		return 0;
 
 	UINT numLevels = 0;
 	HRESULT hr = m_pDevice->CheckMultisampleQualityLevels(format, sampleCount, &numLevels);
 	if (hr != S_OK || !numLevels)
-		return 0; // Errored or sample count not supported
+		return 0;
 	else
-		return numLevels - 1; // D3D10.0 and below: use the best quality
+		return numLevels - 1;
 }
 
 bool GraphicsImpl::CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const

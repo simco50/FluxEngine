@@ -276,51 +276,57 @@ ImVec2 operator+(const ImVec2& a, const ImVec2& b)
 	return ImVec2(a.x + b.x, a.y + b.y);
 }
 
-void InputEngine::DrawDebugJoystick(const JoystickState& state)
+void InputEngine::DrawDebugJoysticks()
 {
+	size_t joySticks = m_Joysticks.size();
+	ImGui::SetNextWindowSize(ImVec2(500, 200.0f * joySticks));
 	ImGui::Begin("Joystick", nullptr, ImVec2(500, 200), -1.0f, ImGuiWindowFlags_NoResize);
-	ImGui::Text("Jostick: %i - %s", state.Index, state.Name.c_str());
-	ImVec2 basePos = ImGui::GetWindowPos() + ImVec2(70, 120);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
-	ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
-	ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[0] * 45, state.Axes[1] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
-
-	basePos = basePos + ImVec2(140, 0);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
-	ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
-	ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[2] * 45, state.Axes[3] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
-
-	basePos = basePos + ImVec2(80, -70);
-	ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
-	ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[4] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
-	basePos = basePos + ImVec2(40, 0);
-	ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
-	ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[5] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
-
-
-	basePos = basePos + ImVec2(100, 110);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
-	if (state.Buttons[0])
+	for (const std::pair<SDL_JoystickID, JoystickState>& statePair : m_Joysticks)
 	{
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
-	}
-	basePos = basePos + ImVec2(0, -80);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
-	if (state.Buttons[3])
-	{
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
-	}
-	basePos = basePos + ImVec2(-40, 40);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
-	if (state.Buttons[2])
-	{
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
-	}
-	basePos = basePos + ImVec2(80, 0);
-	ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
-	if (state.Buttons[1])
-	{
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+		const JoystickState& state = statePair.second;
+
+		ImGui::Text("Jostick: %i - %s", state.Index, state.Name.c_str());
+		ImVec2 basePos = ImGui::GetWindowPos() + ImVec2(70, 120);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
+		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
+		ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[0] * 45, state.Axes[1] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+
+		basePos = basePos + ImVec2(140, 0);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
+		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
+		ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[2] * 45, state.Axes[3] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+
+		basePos = basePos + ImVec2(80, -70);
+		ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
+		ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[4] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+		basePos = basePos + ImVec2(40, 0);
+		ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
+		ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[5] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+
+		basePos = basePos + ImVec2(100, 110);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		if (state.Buttons[0])
+		{
+			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+		}
+		basePos = basePos + ImVec2(0, -80);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		if (state.Buttons[3])
+		{
+			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+		}
+		basePos = basePos + ImVec2(-40, 40);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		if (state.Buttons[2])
+		{
+			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+		}
+		basePos = basePos + ImVec2(80, 0);
+		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		if (state.Buttons[1])
+		{
+			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+		}
 	}
 
 	ImGui::End();

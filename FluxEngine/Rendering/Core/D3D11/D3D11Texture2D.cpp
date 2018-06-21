@@ -137,6 +137,13 @@ bool Texture2D::Create()
 	AUTOPROFILE(Texture2D_Create);
 
 	D3D11_TEXTURE2D_DESC desc = {};
+
+	if (m_pGraphics->GetImpl()->CheckMultisampleQuality((DXGI_FORMAT)m_TextureFormat, m_MultiSample) == false)
+	{
+		FLUX_LOG(Info, "[Texture2D::Create()] Device does not support MSAA x%d. Disabling MSAA for this texture", m_MultiSample);
+		m_MultiSample = 1;
+	}
+
 	desc.ArraySize = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
@@ -174,19 +181,36 @@ bool Texture2D::Create()
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateTexture2D(&desc, nullptr, (ID3D11Texture2D**)&m_pResource));
 	}
 
+	//Create resolve texture if requested
+	if (m_MultiSample > 1)
+	{
+		desc.MipLevels = m_MipLevels;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		if (m_MipLevels != 1)
+		{
+			desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		}
+
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateTexture2D(&desc, nullptr, (ID3D11Texture2D**)&m_pResolvedResource));
+	}
+
 	if ((desc.BindFlags & D3D11_BIND_SHADER_RESOURCE) == D3D11_BIND_SHADER_RESOURCE)
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = m_MipLevels;
 		srvDesc.Format = (DXGI_FORMAT)GetSRVFormat(m_TextureFormat);
 
-		HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Texture2D*)m_pResource, &srvDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView(m_pResolvedResource ? (ID3D11Texture2D*)m_pResolvedResource : (ID3D11Texture2D*)m_pResource, &srvDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
 	}
 
 	if ((desc.BindFlags & D3D11_BIND_RENDER_TARGET) == D3D11_BIND_RENDER_TARGET)
 	{
-		HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, nullptr, (ID3D11RenderTargetView**)&m_pRenderTargetView));
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		rtvDesc.Format = (DXGI_FORMAT)m_TextureFormat;
+		rtvDesc.ViewDimension = m_MultiSample > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_pRenderTargetView));
 	}
 
 	else if ((desc.BindFlags & D3D11_BIND_DEPTH_STENCIL) == D3D11_BIND_DEPTH_STENCIL)
@@ -196,6 +220,20 @@ bool Texture2D::Create()
 		dsvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
 		HR(m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Texture2D*)m_pResource, &dsvDesc, (ID3D11DepthStencilView**)&m_pRenderTargetView));
+	}
+	return true;
+}
+
+bool Texture2D::Resolve(bool force)
+{
+	if (m_ResolveTextureDirty || force)
+	{
+		if (m_pResolvedResource == nullptr)
+		{
+			return false;
+		}
+		m_pGraphics->GetImpl()->GetDeviceContext()->ResolveSubresource((ID3D11Texture2D*)m_pResolvedResource, 0, (ID3D11Texture2D*)m_pResource, 0, (DXGI_FORMAT)m_TextureFormat);
+		m_ResolveTextureDirty = false;
 	}
 	return true;
 }

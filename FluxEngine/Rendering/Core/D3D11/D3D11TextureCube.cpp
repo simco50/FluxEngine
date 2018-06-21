@@ -190,3 +190,22 @@ bool TextureCube::Create()
 
 	return true;
 }
+
+bool TextureCube::Resolve(bool force)
+{
+	if (m_ResolveTextureDirty || force)
+	{
+		if (m_pResolvedResource == nullptr)
+		{
+			return false;
+		}
+
+		for (unsigned int i = 0; i < (unsigned int)CubeMapFace::MAX; ++i)
+		{
+			unsigned int subResource = D3D11CalcSubresource(0, i, m_MipLevels);
+			m_pGraphics->GetImpl()->GetDeviceContext()->ResolveSubresource((ID3D11Texture2D*)m_pResolvedResource, subResource, (ID3D11Texture2D*)m_pResource, subResource, (DXGI_FORMAT)m_TextureFormat);
+		}
+		m_ResolveTextureDirty = false;
+	}
+	return true;
+}

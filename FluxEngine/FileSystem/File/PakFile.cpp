@@ -70,6 +70,12 @@ bool PakFile::Flush()
 	return false;
 }
 
+bool PakFile::Close()
+{
+	m_UncompressedCache.clear();
+	return true;
+}
+
 bool PakFile::IsOpen() const
 {
 	if (m_pTableEntry == nullptr)

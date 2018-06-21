@@ -20,7 +20,7 @@ public:
 	virtual size_t Read(void* pBuffer, const size_t size) override;
 	virtual size_t Write(const void* pBuffer, const size_t size) override;
 	bool virtual Flush() override;
-	virtual bool Close() override { return true; }
+	virtual bool Close() override;
 	virtual bool IsOpen() const override;
 
 	virtual bool SetPointer(const size_t position) override;
