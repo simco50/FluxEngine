@@ -133,7 +133,7 @@ void FluxCore::InitGame()
 
 	std::vector<Material*> pMaterials;
 
-	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/Default.xml"));
+	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/Man.xml"));
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{

@@ -1,7 +1,7 @@
 <Material name="Default">
 	<Shaders>
-		<Shader type="Vertex" source="Resources/Shaders/Diffuse" defines="NORMALMAP,SPECULARMAP,DIFFUSEMAP"/>
-		<Shader type="Pixel" source="Resources/Shaders/Diffuse" defines="NORMALMAP,SPECULARMAP,DIFFUSEMAP"/>
+		<Shader type="Vertex" source="Resources/Shaders/Diffuse" defines="NORMALMAP"/>
+		<Shader type="Pixel" source="Resources/Shaders/Diffuse" defines="NORMALMAP,SPECULARMAP,DIFFUSEMAP,ENVMAP"/>
 	</Shaders>
 
 	<Properties>
@@ -14,5 +14,6 @@
 		<Texture slot="Diffuse" value="Resources/Textures/Peasant_Man_diffuse.dds"/>
 		<Texture slot="Normal" value="Resources/Textures/Peasant_Man_normal.dds"/>
 		<Texture slot="Specular" value="Resources/Textures/Peasant_Man_specular.png"/>
+		<TextureCube slot="Cube" value="Resources/Textures/Skybox.dds"/>
 	</Parameters>
 </Material>
