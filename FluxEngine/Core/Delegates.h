@@ -133,7 +133,9 @@ public:
 	RetVal Execute(Args... args)
 	{
 		if (m_pDelegate)
+		{
 			return m_pDelegate->Execute(args...);
+		}
 		return RetVal();
 	}
 
@@ -147,17 +149,7 @@ class SinglecastDelegate
 {
 public:
 	SinglecastDelegate() {}
-	~SinglecastDelegate()
-	{
-		if (m_pEvent)
-		{
-			delete m_pEvent;
-			m_pEvent = nullptr;
-		}
-	}
-
-	SinglecastDelegate(const SinglecastDelegate& other) = delete;
-	SinglecastDelegate& operator=(const SinglecastDelegate& other) = delete;
+	~SinglecastDelegate() {}
 
 	//Create a SinglecastDelegate instance bound with member function
 	template<typename T>
@@ -173,7 +165,7 @@ public:
 	void BindRaw(T* pObject, RetVal(T::*pFunction)(Args...))
 	{
 		Release();
-		m_pEvent = new DelegateWrapper<RetVal, Args...>(pObject, pFunction);
+		m_pEvent = std::make_shared<DelegateWrapper<RetVal, Args...>>(pObject, pFunction);
 	}
 
 	//Create a SinglecastDelegate instance bound with a static/global function
@@ -188,7 +180,7 @@ public:
 	void BindStatic(RetVal(*pFunction)(Args...))
 	{
 		Release();
-		m_pEvent = new DelegateWrapper<RetVal, Args...>(pFunction);
+		m_pEvent = std::make_shared<DelegateWrapper<RetVal, Args...>>(pFunction);
 	}
 
 	//Create a SinglecastDelegate instance bound with a lambda
@@ -205,7 +197,7 @@ public:
 	void BindLambda(LambdaType&& lambda)
 	{
 		Release();
-		m_pEvent = new DelegateWrapper<RetVal, Args...>(std::forward<LambdaType>(lambda));
+		m_pEvent = std::make_shared<DelegateWrapper<RetVal, Args...>>(std::forward<LambdaType>(lambda));
 	}
 
 	//Create a SinglecastDelegate instance bound with member function using a shared_ptr
@@ -222,19 +214,21 @@ public:
 	void BindSP(std::shared_ptr<T> pObject, RetVal(T::*pFunction)(Args...))
 	{
 		Release();
-		m_pEvent = new DelegateWrapper<RetVal, Args...>(pObject, pFunction);
+		m_pEvent = std::make_shared<DelegateWrapper<RetVal, Args...>>(pObject, pFunction);
 	}
 
 	//Execute the function if the delegate is bound
-	RetVal ExecuteIfBound(Args ...args)
+	RetVal ExecuteIfBound(Args ...args) const
 	{
 		if (IsBound())
+		{
 			return m_pEvent->Execute(args...);
+		}
 		return RetVal();
 	}
 
 	//Execute the function
-	RetVal Execute(Args ...args)
+	RetVal Execute(Args ...args) const
 	{
 		assert(m_pEvent != nullptr);
 		return m_pEvent->Execute(args...);
@@ -254,14 +248,10 @@ public:
 private:
 	void Release()
 	{
-		if (m_pEvent)
-		{
-			delete m_pEvent;
-			m_pEvent = nullptr;
-		}
+		m_pEvent.reset();
 	}
 
-	DelegateWrapper<RetVal, Args...>* m_pEvent = nullptr;
+	std::shared_ptr<DelegateWrapper<RetVal, Args...>> m_pEvent;
 };
 
 //A handle to a delegate used for a multicast delegate
@@ -355,7 +345,9 @@ public:
 		if (pIt != m_Events.end())
 		{
 			if (pIt->second)
+			{
 				delete pIt->second;
+			}
 			m_Events.erase(pIt);
 			return true;
 		}
@@ -368,16 +360,20 @@ public:
 		for (auto& delegatePair : m_Events)
 		{
 			if (delegatePair.second)
+			{
 				delete delegatePair.second;
+			}
 		}
 		m_Events.clear();
 	}
 
 	//Execute all functions that are bound
-	void Broadcast(Args ...args)
+	void Broadcast(Args ...args) const
 	{
 		for (auto& e : m_Events)
+		{
 			e.second->Execute(args...);
+		}
 	}
 
 private:

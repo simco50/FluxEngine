@@ -16,9 +16,12 @@ public:
 	virtual ~PostProcessing();
 
 	void Draw();
-
-	void AddEffect(Material* pMaterial);
-
+	void AddEffect(Material* pMaterial, const bool active = true);
+	uint32 GetMaterialCount() const { return (uint32)m_Materials.size(); }
+	Material* GetMaterial(const uint32 index) const { return m_Materials[index].second; }
+	void SetMaterialActive(const uint32 index, const bool active) { m_Materials[index].first = active; }
+	bool& GetMaterialActive(const uint32 index) { return m_Materials[index].first; }
+	
 private:
 	void OnResize(const int width, const int height);
 	std::unique_ptr<RenderTarget> m_pIntermediateRenderTarget;
@@ -26,5 +29,5 @@ private:
 
 	ShaderVariation* m_pBlitVertexShader;
 	ShaderVariation* m_pBlitPixelShader;
-	std::vector<Material*> m_Materials;
+	std::vector<std::pair<bool, Material*>> m_Materials;
 };

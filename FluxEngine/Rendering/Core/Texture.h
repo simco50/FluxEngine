@@ -88,7 +88,6 @@ protected:
 	unsigned int m_TextureFormat = 0;
 	unsigned int m_MultiSample = 1;
 
-	TextureAddressMode m_TextureAddressMode = TextureAddressMode::WRAP;
 	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
 	TextureAddressMode m_AddressMode = TextureAddressMode::WRAP;

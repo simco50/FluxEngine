@@ -42,7 +42,7 @@ bool Material::Load(InputStream& inputStream)
 	const char* pName = pRootNode->Attribute("name");
 	if (pName)
 	{
-		m_Name = pName;
+		m_MaterialName = pName;
 	}
 
 	XML::XMLElement* pCurrentElement = pRootNode->FirstChildElement("Properties");

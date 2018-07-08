@@ -10,7 +10,10 @@ AudioSource::AudioSource(Context* pContext, const std::string& filePath, const F
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if (m_pSound == nullptr)
+	{
 		m_pSound = pResourceManager->Load<Sound>(filePath);
+		m_pSound->SetMode(mode);
+	}
 	AudioEngine* pAudioEngine = pContext->GetSubsystem<AudioEngine>();
 	m_pFmodSystem = pAudioEngine->GetSystem();
 }
@@ -87,12 +90,15 @@ void AudioSource::OnNodeSet(SceneNode* pNode)
 
 void AudioSource::OnMarkedDirty(const Transform* transform)
 {
-	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+	if (m_Mode == FMOD_3D)
+	{
+		Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
-	m_pChannel->set3DAttributes(
-		reinterpret_cast<const FMOD_VECTOR*>(&m_pNode->GetTransform()->GetWorldPosition()),
-		reinterpret_cast<const FMOD_VECTOR*>(&velocity)
-	);
+		m_pChannel->set3DAttributes(
+			reinterpret_cast<const FMOD_VECTOR*>(&m_pNode->GetTransform()->GetWorldPosition()),
+			reinterpret_cast<const FMOD_VECTOR*>(&velocity)
+		);
 
-	m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
+		m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
+	}
 }

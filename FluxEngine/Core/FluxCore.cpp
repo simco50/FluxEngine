@@ -127,8 +127,10 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
 			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 		};
-		if(pMesh)
+		if (pMesh)
+		{
 			pMesh->CreateBuffers(desc);
+		}
 		meshes.push_back(pMesh);
 	}
 
@@ -174,7 +176,6 @@ void FluxCore::InitGame()
 
 void FluxCore::ProcessFrame()
 {
-
 	GameTimer::Tick();
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
@@ -189,7 +190,9 @@ void FluxCore::ProcessFrame()
 			m_pSelectedNode = result.pRigidbody->GetNode();
 		}
 		else
+		{
 			m_pSelectedNode = nullptr;
+		}
 	}
 
 	m_pGraphics->BeginFrame();
@@ -201,7 +204,9 @@ void FluxCore::ProcessFrame()
 	m_pPostProcessing->Draw();
 
 	if (m_DebugPhysics)
+	{
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
+	}
 
 	if (m_pSelectedNode)
 	{
@@ -255,7 +260,6 @@ void FluxCore::RenderUI()
 	m_pInput->DrawDebugJoysticks();
 	ImGui::Begin("Test");
 
-
 	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
@@ -275,14 +279,27 @@ void FluxCore::RenderUI()
 		ImGui::Text("\t\tTexture3D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture3D::GetTypeStatic()) / 1000000.0f);
 		ImGui::TreePop();
 	}
-	if (m_pSelectedNode && ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
+
+	if (ImGui::TreeNodeEx("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
-		ImGui::Text("Components:");
-		for (const Component* pComponent : m_pSelectedNode->GetComponents())
+		for (uint32 i = 0; i < m_pPostProcessing->GetMaterialCount(); ++i)
 		{
-			std::string t = std::string("- ") + pComponent->GetTypeName();
-			ImGui::Text(t.c_str());
+			ImGui::Checkbox(m_pPostProcessing->GetMaterial(i)->GetMaterialName().c_str(), &m_pPostProcessing->GetMaterialActive(i));
+		}
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (m_pSelectedNode)
+		{
+			ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
+			ImGui::Text("Components:");
+			for (const Component* pComponent : m_pSelectedNode->GetComponents())
+			{
+				std::string t = std::string("- ") + pComponent->GetTypeName();
+				ImGui::Text(t.c_str());
+			}
 		}
 		ImGui::TreePop();
 	}

@@ -14,6 +14,9 @@ PostProcessing::PostProcessing(Context* pContext) :
 	AUTOPROFILE(PostProcessing_Create);
 
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
+
+	m_pGraphics->GetRenderTarget()->GetRenderTexture()->SetAddressMode(TextureAddressMode::CLAMP);
+
 	m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(pContext);
 	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
 
@@ -39,17 +42,24 @@ void PostProcessing::Draw()
 	RenderTarget* pCurrentTarget = m_pIntermediateRenderTarget.get();
 
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
-	for (Material* pMaterial : m_Materials)
+	int activeMaterials = 0;
+	for (std::pair<bool, Material*> pMaterial : m_Materials)
 	{
-		m_pGraphics->SetShader(ShaderType::PixelShader, pMaterial->GetShader(ShaderType::PixelShader));
+		if (pMaterial.first == false)
+		{
+			continue;
+		}
+		++activeMaterials;
+
+		m_pGraphics->SetShader(ShaderType::PixelShader, pMaterial.second->GetShader(ShaderType::PixelShader));
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
 		m_pGraphics->FlushSRVChanges(false);
 		m_pGraphics->SetRenderTarget(0, pCurrentTarget);
-		for (const auto& texture : pMaterial->GetTextures())
+		for (const auto& texture : pMaterial.second->GetTextures())
 		{
 			m_pGraphics->SetTexture(texture.first, texture.second);
 		}
-		for (auto& parameter : pMaterial->GetShaderParameters())
+		for (auto& parameter : pMaterial.second->GetShaderParameters())
 		{
 			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
 		}
@@ -63,7 +73,7 @@ void PostProcessing::Draw()
 	m_pGraphics->SetRenderTarget(0, nullptr);
 
 	//Do an extra blit if the shader count is odd
-	if (m_Materials.size() % 2 == 1)
+	if (activeMaterials % 2 == 1)
 	{
 		m_pGraphics->SetShader(ShaderType::PixelShader, m_pBlitPixelShader);
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pIntermediateRenderTarget->GetRenderTexture());
@@ -71,10 +81,12 @@ void PostProcessing::Draw()
 	}
 }
 
-void PostProcessing::AddEffect(Material* pMaterial)
+void PostProcessing::AddEffect(Material* pMaterial, const bool active)
 {
-	if(pMaterial)
-		m_Materials.push_back(pMaterial);
+	if (pMaterial)
+	{
+		m_Materials.push_back(std::pair<bool, Material*> (active, pMaterial));
+	}
 }
 
 void PostProcessing::OnResize(const int width, const int height)
@@ -84,5 +96,8 @@ void PostProcessing::OnResize(const int width, const int height)
 	renderTargetDesc.Width = width;
 	renderTargetDesc.Height = height;
 	if (!m_pIntermediateRenderTarget->Create(renderTargetDesc))
+	{
 		FLUX_LOG(Error, "[PostProcessing::OnResize] > Failed to create render target");
+	}
+	m_pIntermediateRenderTarget->GetRenderTexture()->SetAddressMode(TextureAddressMode::CLAMP);
 }
