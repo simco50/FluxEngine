@@ -4,6 +4,25 @@
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
 
+Texture2D::Texture2D(Context* pContext) :
+	Texture(pContext)
+{
+}
+
+Texture2D::~Texture2D()
+{
+	Release();
+}
+
+void Texture2D::Release()
+{
+	SafeRelease(m_pResource);
+	SafeRelease(m_pShaderResourceView);
+	SafeRelease(m_pRenderTargetView);
+	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
+}
+
 bool Texture2D::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Texture2D_Load);

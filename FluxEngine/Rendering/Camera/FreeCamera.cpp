@@ -5,6 +5,7 @@
 #include "Audio/AudioListener.h"
 #include "Rendering/Core/Graphics.h"
 #include "Input/InputEngine.h"
+#include "Scenegraph/Scene.h"
 
 FreeCamera::FreeCamera(Context* pContext) :
 	SceneNode(pContext)
@@ -25,14 +26,22 @@ void FreeCamera::OnSceneSet(Scene* pScene)
 	AddComponent(pAudioListener);
 	m_pCamera = new Camera(m_pContext, m_pInput, m_pGraphics);
 	AddComponent(m_pCamera);
+
+	m_UpdateHandle = pScene->OnSceneUpdate().AddRaw(this, &FreeCamera::Update);
+}
+
+void FreeCamera::OnSceneRemoved()
+{
+	m_pScene->OnSceneUpdate().Remove(m_UpdateHandle);
+	SceneNode::OnSceneRemoved();
 }
 
 void FreeCamera::Update()
 {
-	SceneNode::Update();
-
-	if(m_UseMouseAndKeyboard)
+	if (m_UseMouseAndKeyboard)
+	{
 		KeyboardMouse();
+	}
 }
 
 void FreeCamera::KeyboardMouse()

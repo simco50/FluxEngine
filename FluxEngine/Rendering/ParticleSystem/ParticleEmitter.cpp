@@ -46,15 +46,21 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 		pSettings->OnLoaded().AddLambda([this]() { SetSystem(m_pParticleSystem); });
 	}
 	if (pSettings == nullptr)
+	{
 		return;
+	}
 
 	if (m_pParticleSystem->ImagePath == "")
+	{
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
+	}
 
 	FreeParticles();
 	m_Particles.resize(m_pParticleSystem->MaxParticles);
 	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
+	{
 		m_Particles[i] = new Particle(m_pParticleSystem);
+	}
 	m_BufferSize = (int)m_Particles.size();
 	CreateVertexBuffer(m_BufferSize);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
@@ -72,7 +78,9 @@ void ParticleEmitter::Reset()
 	m_Timer = 0.0f;
 	m_pParticleSystem->PlayOnAwake ? m_Playing = true : m_Playing = false;
 	for (Particle* p : m_Particles)
+	{
 		p->Reset();
+	}
 }
 
 void ParticleEmitter::OnSceneSet(Scene* pScene)
@@ -103,7 +111,9 @@ void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 void ParticleEmitter::FreeParticles()
 {
 	for (size_t i = 0; i < m_Particles.size(); i++)
+	{
 		delete m_Particles[i];
+	}
 	m_Particles.clear();
 }
 

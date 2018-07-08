@@ -1,6 +1,4 @@
 #include "FluxEngine.h"
-#include <time.h>
-#include <iomanip>
 #include "FileSystem\File\PhysicalFile.h"
 #include "Async\Thread.h"
 #include "Core\Config.h"
@@ -12,6 +10,7 @@ Console::Console()
 {
 	AUTOPROFILE(Console_Initialize);
 	consoleInstance = this;
+
 #ifdef _DEBUG
 	InitializeConsoleWindow();
 #endif
@@ -54,8 +53,6 @@ Console::Console()
 	Misc::GetCpuId(&cpuId);
 	FLUX_LOG(Info, "Cpu: %s", cpuId.Brand.c_str());
 	FLUX_LOG(Info, "Memory: %f MB", (float)Misc::GetTotalPhysicalMemory() / 1000.0f);
-
-	//Log(stream.str(), LogType::Info);
 }
 
 Console::~Console()
@@ -94,7 +91,9 @@ bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 	if (FAILED(hr))
 	{
 		if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
+		{
 			hr = HRESULT_CODE(hr);
+		}
 
 		std::stringstream ss;
 		if (source.size() != 0)
@@ -146,6 +145,7 @@ void Console::Log(const std::string &message, LogType type)
 			stream << "[WARNING] ";
 			break;
 		case LogType::Error:
+		case LogType::FatalError:
 			if (consoleInstance->m_ConsoleHandle)
 				SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
 			stream << "[ERROR] ";
@@ -165,22 +165,14 @@ void Console::Log(const std::string &message, LogType type)
 
 		if (type == LogType::Error)
 		{
+			__debugbreak();
+		}
+		else if (type == LogType::FatalError)
+		{
 			Misc::MessageBox("Fatal Error", message);
-			//PostQuitMessage(-1);
-			//__debugbreak();
 			abort();
 		}
 	}
-}
-
-void Console::LogWarning(const std::string& message)
-{
-	Log(message, LogType::Warning);
-}
-
-void Console::LogError(const std::string& message)
-{
-	Log(message, LogType::Error);
 }
 
 void Console::LogFormat(LogType type, const char* format, ...)
@@ -284,7 +276,9 @@ void Console::InitializeConsoleWindow()
 		{
 			HMENU hMenu = GetSystemMenu(hwnd, FALSE);
 			if (hMenu != nullptr)
+			{
 				DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+			}
 		}
 	}
 }

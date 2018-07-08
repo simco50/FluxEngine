@@ -10,8 +10,10 @@ class PhysicsSystem : public Subsystem
 	FLUX_OBJECT(PhysicsSystem, Subsystem)
 
 public:
-	PhysicsSystem(Context* pContext, Graphics* pGraphics = nullptr);
+	PhysicsSystem(Context* pContext);
 	~PhysicsSystem();
+
+	bool InitializeCuda();
 
 	physx::PxPhysics* GetPhysics() const { return m_pPhysics; }
 	physx::PxFoundation* GetFoundation() const { return m_pFoundation; }

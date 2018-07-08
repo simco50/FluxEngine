@@ -13,7 +13,19 @@ TextureCube::TextureCube(Context* pContext) :
 
 TextureCube::~TextureCube()
 {
+	Release();
+}
 
+void TextureCube::Release()
+{
+	SafeRelease(m_pResource);
+	SafeRelease(m_pShaderResourceView);
+	for (size_t i = 0; i < m_RenderTargetViews.size(); ++i)
+	{
+		SafeRelease(m_RenderTargetViews[i]);
+	}
+	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
 }
 
 bool TextureCube::Load(InputStream& inputStream)
@@ -188,6 +200,29 @@ bool TextureCube::Create()
 	
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Texture2D*)m_pResource, &srvDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
 
+	if (m_Usage == TextureUsage::RENDERTARGET)
+	{
+		for (int i = 0; i < (int)CubeMapFace::MAX; ++i)
+		{
+			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.Format = (DXGI_FORMAT)m_TextureFormat;
+
+			if (m_MultiSample > 1)
+			{
+				rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
+				rtvDesc.Texture2DMSArray.ArraySize = 1;
+				rtvDesc.Texture2DMSArray.FirstArraySlice = i;
+			}
+			else
+			{
+				rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+				rtvDesc.Texture2DArray.ArraySize = 1;
+				rtvDesc.Texture2DArray.FirstArraySlice = i;
+				rtvDesc.Texture2DArray.MipSlice = 0;
+			}
+			HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_RenderTargetViews[i]));
+		}
+	}
 	return true;
 }
 

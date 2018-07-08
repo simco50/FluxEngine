@@ -12,7 +12,7 @@ public:
 	virtual ~SceneNode();
 
 	virtual void OnSceneSet(Scene* pScene);
-	virtual void Update();
+	virtual void OnSceneRemoved();
 
 	void AddChild(SceneNode* pNode);
 	void AddComponent(Component* pComponent);

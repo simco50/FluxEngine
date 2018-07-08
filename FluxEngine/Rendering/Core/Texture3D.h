@@ -9,6 +9,7 @@ public:
 	Texture3D(Context* pContext);
 	virtual ~Texture3D();
 
+	virtual void Release() override;
 	virtual bool Load(InputStream& inputStream) override;
 	virtual bool Resolve(bool force) override { UNREFERENCED_PARAMETER(force); return false; }
 

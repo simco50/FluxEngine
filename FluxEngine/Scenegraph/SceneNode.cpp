@@ -21,11 +21,10 @@ SceneNode::SceneNode(Context* pContext, Scene* pScene) :
 SceneNode::~SceneNode()
 {
 	for (Component*& pComponent : m_Components)
+	{
 		SafeDelete(pComponent);
-}
-
-void SceneNode::Update()
-{
+	}
+	m_Components.clear();
 }
 
 void SceneNode::OnSceneSet(Scene* pScene)
@@ -34,7 +33,19 @@ void SceneNode::OnSceneSet(Scene* pScene)
 
 	//The component don't have the scene assigned yet
 	for (Component* pComponent : m_Components)
+	{
 		pComponent->OnSceneSet(pScene);
+	}
+}
+
+void SceneNode::OnSceneRemoved()
+{
+	m_pScene = nullptr;
+
+	for (Component* pComponent : m_Components)
+	{
+		pComponent->OnSceneRemoved();
+	}
 }
 
 void SceneNode::AddChild(SceneNode* pNode)
@@ -56,7 +67,9 @@ void SceneNode::AddComponent(Component* pComponent)
 	//If the node is already added to the scene
 	pComponent->OnNodeSet(this);
 	if (m_pScene)
+	{
 		pComponent->OnSceneSet(m_pScene);
+	}
 }
 
 Component* SceneNode::GetComponent(StringHash type)
@@ -72,5 +85,7 @@ Component* SceneNode::GetComponent(StringHash type)
 void SceneNode::OnTransformDirty(const Transform* pTransform)
 {
 	for (Component* pComponent : m_Components)
+	{
 		pComponent->OnMarkedDirty(pTransform);
+	}
 }

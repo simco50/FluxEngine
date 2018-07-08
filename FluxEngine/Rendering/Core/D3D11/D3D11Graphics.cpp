@@ -565,7 +565,9 @@ void Graphics::FlushRenderTargetChanges(bool force)
 	if (m_pImpl->m_RenderTargetsDirty || force)
 	{
 		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
+		{
 			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTexture()->GetRenderTargetView() : nullptr;
+		}
 		m_pImpl->m_pDepthStencilView = m_CurrentRenderTargets[0] ? (ID3D11DepthStencilView*)m_CurrentRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr;
 		m_pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, m_pImpl->m_RenderTargetViews.data(), m_pImpl->m_pDepthStencilView);
 		m_pImpl->m_RenderTargetsDirty = false;

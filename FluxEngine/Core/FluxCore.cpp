@@ -47,8 +47,9 @@ FluxCore::~FluxCore()
 
 int FluxCore::Run(HINSTANCE hInstance)
 {
-	Thread::SetMainThread();
 	UNREFERENCED_PARAMETER(hInstance);
+
+	Thread::SetMainThread();
 	Profiler::CreateInstance();
 
 	AUTOPROFILE(FluxCore_Run);
@@ -86,7 +87,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 
 		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
 		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
-		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>(nullptr);
+		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
 		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount());
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
@@ -123,8 +124,8 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
-			//VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
-			//VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
+			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 		};
 		if(pMesh)
 			pMesh->CreateBuffers(desc);
@@ -133,21 +134,24 @@ void FluxCore::InitGame()
 
 	std::vector<Material*> pMaterials;
 
-	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/Man.xml"));
+	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
-		SceneNode* pObject = new SceneNode(m_pContext, "Amazon Bistro");
+		SceneNode* pObject = new SceneNode(m_pContext, "Peasant Man");
 		m_pScene->AddChild(pObject);
 		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
-		Model* pModel = new Model(m_pContext);
+		AnimatedModel* pModel = new AnimatedModel(m_pContext);
 		pObject->AddComponent(pModel);
 		pModel->SetMesh(meshes[x]);
-		pModel->SetMaterial(pMaterials[x]);
+		pModel->SetMaterial(pMaterials[0]);
 		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
 		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
 		pObject->AddComponent(pRigidbody);
 		pObject->AddComponent(pCollider);
+		Animator* pAnimator = new Animator(m_pContext);
+		pObject->AddComponent(pAnimator);
+		pAnimator->Play();
 	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 

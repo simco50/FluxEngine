@@ -11,10 +11,16 @@ Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 
 Scene::~Scene()
 {
-	for (SceneNode*& pNode : m_pNodes)
+	for (SceneNode*& pNode : m_Nodes)
+	{
 		SafeDelete(pNode);
+	}
+	m_Nodes.clear();
 	for (Component*& pComponent : m_Components)
+	{
 		SafeDelete(pComponent);
+	}
+	m_Components.clear();
 }
 
 void Scene::Initialize()
@@ -24,20 +30,14 @@ void Scene::Initialize()
 
 void Scene::Update()
 {
-	SceneNode::Update();
-
 	m_OnSceneUpdate.Broadcast();
-
-	for (SceneNode* pNode : m_pNodes)
-		pNode->Update();
-
 	m_pRenderer->Draw();
 }
 
 void Scene::AddChild(SceneNode* pNode)
 {
 	pNode->OnSceneSet(this);
-	m_pNodes.push_back(pNode);
+	m_Nodes.push_back(pNode);
 }
 
 Camera* Scene::GetCamera() const
@@ -47,10 +47,12 @@ Camera* Scene::GetCamera() const
 
 SceneNode* Scene::FindNode(const std::string& name)
 {
-	for (SceneNode* pNode : m_pNodes)
+	for (SceneNode* pNode : m_Nodes)
 	{
 		if (pNode->GetName() == name)
+		{
 			return pNode;
+		}
 	}
 	return nullptr;
 }

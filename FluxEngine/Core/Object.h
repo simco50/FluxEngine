@@ -38,9 +38,8 @@ public:
 	template<typename T>
 	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
 
-	//This enforces the FLUX_OBJECT on all classes that inherit from Object
-
 protected:
+	//This enforces the FLUX_OBJECT on all classes that inherit from Object
 	virtual void NOTYPEINFO() = 0;
 
 	Context* m_pContext = nullptr;

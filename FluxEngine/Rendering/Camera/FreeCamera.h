@@ -14,7 +14,8 @@ public:
 	virtual ~FreeCamera();
 
 	virtual void OnSceneSet(Scene* pScene) override;
-	virtual void Update() override;
+	virtual void OnSceneRemoved() override;
+	void Update();
 	Camera* GetCamera() const { return m_pCamera; }
 
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }
@@ -31,6 +32,7 @@ private:
 	float m_ShiftMultiplier = 3.0f;
 	float m_RotationSpeed = 20.0f;
 	Camera *m_pCamera = nullptr;
+	DelegateHandle m_UpdateHandle;
 
 	bool m_UseMouseAndKeyboard = true;
 };

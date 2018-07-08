@@ -17,7 +17,7 @@ public:
 	virtual ~Scene();
 
 	virtual void Initialize();
-	virtual void Update();
+	void Update();
 
 	void AddChild(SceneNode* pNode);
 	Renderer* GetRenderer() const { return m_pRenderer.get(); }
@@ -31,7 +31,7 @@ public:
 	
 private:
 	std::unique_ptr<Renderer> m_pRenderer;
-	std::vector<SceneNode*> m_pNodes;
+	std::vector<SceneNode*> m_Nodes;
 
 	MulticastDelegate<> m_OnSceneUpdate;
 };
