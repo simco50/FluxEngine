@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
-#include "Rendering/Core/Graphics.h"
 #include "Input/InputEngine.h"
 #include "Scenegraph/Scene.h"
 
@@ -11,7 +10,6 @@ FreeCamera::FreeCamera(Context* pContext) :
 	SceneNode(pContext)
 {
 	m_pInput = pContext->GetSubsystem<InputEngine>();
-	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 FreeCamera::~FreeCamera()
@@ -24,7 +22,7 @@ void FreeCamera::OnSceneSet(Scene* pScene)
 
 	AudioListener* pAudioListener = new AudioListener(m_pContext);
 	AddComponent(pAudioListener);
-	m_pCamera = new Camera(m_pContext, m_pInput, m_pGraphics);
+	m_pCamera = new Camera(m_pContext);
 	AddComponent(m_pCamera);
 
 	m_UpdateHandle = pScene->OnSceneUpdate().AddRaw(this, &FreeCamera::Update);

@@ -180,8 +180,6 @@ void FluxCore::ProcessFrame()
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
 
-	m_pCamera->GetCamera()->SetViewport(0, 0, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
-
 	if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::IsMouseHoveringAnyWindow())
 	{
 		RaycastResult result;
@@ -194,11 +192,12 @@ void FluxCore::ProcessFrame()
 			m_pSelectedNode = nullptr;
 		}
 	}
+	m_pResourceManager->Update();
+	m_pAudioEngine->Update();
 
 	m_pGraphics->BeginFrame();
 	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
 
-	m_pAudioEngine->Update();
 	m_pScene->Update();
 
 	m_pPostProcessing->Draw();
@@ -207,7 +206,6 @@ void FluxCore::ProcessFrame()
 	{
 		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
 	}
-
 	if (m_pSelectedNode)
 	{
 		AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
@@ -228,7 +226,6 @@ void FluxCore::ProcessFrame()
 
 	RenderUI();
 	m_pGraphics->EndFrame();
-	m_pResourceManager->Update();
 }
 
 void FluxCore::DoExit()

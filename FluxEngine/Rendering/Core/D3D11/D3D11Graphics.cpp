@@ -553,9 +553,13 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 	{
 		unsigned int depthClearFlags = 0;
 		if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
+		{
 			depthClearFlags |= D3D11_CLEAR_DEPTH;
+		}
 		if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
+		{
 			depthClearFlags |= D3D11_CLEAR_STENCIL;
+		}
 		m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
 	}
 }

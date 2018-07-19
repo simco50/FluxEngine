@@ -222,7 +222,9 @@ void ParticleEmitter::Update()
 		int startIdx = (int)m_Particles.size();
 		m_Particles.resize(m_pParticleSystem->MaxParticles);
 		for (int i = startIdx; i < m_pParticleSystem->MaxParticles; i++)
+		{
 			m_Particles[i] = new Particle(m_pParticleSystem);
+		}
 	}
 
 	int burstParticles = 0;
@@ -255,7 +257,9 @@ void ParticleEmitter::Update()
 		}
 	}
 	if (burstParticles > 0)
+	{
 		++m_BurstIterator;
+	}
 
 	m_pVertexBuffer->Unmap();
 

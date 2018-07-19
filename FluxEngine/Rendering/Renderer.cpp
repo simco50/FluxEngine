@@ -28,29 +28,41 @@ void Renderer::Draw()
 	m_pCurrentCamera = nullptr;
 
 	for (Drawable* pDrawable : m_Drawables)
+	{
 		pDrawable->Update();
+	}
 
 	for (Camera* pCamera : m_Cameras)
 	{
 		if (pCamera == nullptr)
+		{
 			continue;
+		}
 		
-		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
+		m_pGraphics->SetViewport(pCamera->GetViewport(), true);
 
 		for (Drawable* pDrawable : m_Drawables)
 		{
 			if (pDrawable == nullptr)
+			{
 				continue;
+			}
 			if (!pDrawable->DrawEnabled())
+			{
 				continue;
-			if(pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
+			}
+			if (pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
+			{
 				continue;
+			}
 
 			const std::vector<Batch>& batches = pDrawable->GetBatches();
 			for (const Batch& batch : batches)
 			{
 				if (batch.pGeometry == nullptr || batch.pMaterial == nullptr)
+				{
 					continue;
+				}
 
 				SetPerMaterialParameters(batch.pMaterial);
 				SetPerBatchParameters(batch, pCamera);

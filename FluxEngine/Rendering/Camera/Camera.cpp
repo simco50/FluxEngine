@@ -12,8 +12,8 @@
 #include "Physics/PhysX/PhysicsScene.h"
 #include "Input/InputEngine.h"
 
-Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
-	Component(pContext), m_pInput(pInput), m_pGraphics(pGraphics)
+Camera::Camera(Context* pContext):
+	Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
 {
 	m_Projection = XMMatrixIdentity();
 	m_View = XMMatrixIdentity();
@@ -21,6 +21,8 @@ Camera::Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics):
 	m_ViewProjection = XMMatrixIdentity();
 	m_ViewProjectionInverse = XMMatrixIdentity();
 
+	m_pGraphics = GetSubsystem<Graphics>();
+	m_pInput = GetSubsystem<InputEngine>();
 }
 
 Camera::~Camera()
@@ -36,11 +38,16 @@ void Camera::OnSceneSet(Scene* pScene)
 
 void Camera::OnMarkedDirty(const Transform* transform)
 {
+	float viewportWidth = m_Viewport.GetWidth() * m_pGraphics->GetWindowWidth();
+	float viewportHeight = m_Viewport.GetHeight() * m_pGraphics->GetWindowHeight();
+
 	if (m_Perspective)
-		m_Projection = XMMatrixPerspectiveFovLH(m_FoV * (XM_PI / 180.0f), m_Viewport.GetWidth() / m_Viewport.GetHeight(), m_NearPlane, m_FarPlane);
+	{
+		m_Projection = XMMatrixPerspectiveFovLH(m_FoV * (XM_PI / 180.0f), viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
+	}
 	else
 	{
-		float viewWidth = m_Size * m_Viewport.GetWidth() / m_Viewport.GetHeight();
+		float viewWidth = m_Size * viewportWidth / viewportHeight;
 		float viewHeight = m_Size;
 		m_Projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
@@ -65,12 +72,14 @@ void Camera::SetViewport(float x, float y, float width, float height)
 	m_Viewport.Top = y;
 	m_Viewport.Right = width + x;
 	m_Viewport.Bottom = height + y;
+	OnMarkedDirty(GetTransform());
 }
 
 void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 {
 	m_NearPlane = nearPlane;
 	m_FarPlane = farPlane;
+	OnMarkedDirty(GetTransform());
 }
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const

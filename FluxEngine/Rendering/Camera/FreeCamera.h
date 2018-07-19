@@ -1,7 +1,6 @@
 #pragma once
 #include "Scenegraph\SceneNode.h"
 
-class Graphics;
 class Camera;
 class InputEngine;
 
@@ -24,7 +23,6 @@ public:
 
 private:
 	InputEngine* m_pInput = nullptr;
-	Graphics* m_pGraphics = nullptr;
 
 	void KeyboardMouse();
 
