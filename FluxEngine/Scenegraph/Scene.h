@@ -20,7 +20,7 @@ public:
 	void Update();
 
 	void AddChild(SceneNode* pNode);
-	Renderer* GetRenderer() const { return m_pRenderer.get(); }
+	Renderer* GetRenderer() const { return m_pRenderer; }
 	Camera* GetCamera() const;
 
 	SceneNode* FindNode(const std::string& name);
@@ -30,7 +30,7 @@ public:
 	MulticastDelegate<>& OnSceneUpdate() { return m_OnSceneUpdate; }
 	
 private:
-	std::unique_ptr<Renderer> m_pRenderer;
+	Renderer* m_pRenderer;
 	std::vector<SceneNode*> m_Nodes;
 
 	MulticastDelegate<> m_OnSceneUpdate;

@@ -1,6 +1,8 @@
 #pragma once
 #include "Texture.h"
 
+class RenderTarget;
+
 enum class CubeMapFace
 {
 	POSITIVE_X = 0,
@@ -29,9 +31,9 @@ public:
 	bool SetImage(const CubeMapFace face, const Image& image);
 	bool SetImageChain(const Image& image);
 
-	void* GetRenderTargetView(const CubeMapFace face) const { return m_RenderTargetViews[(int)face]; }
+	RenderTarget* GetRenderTarget(const CubeMapFace face) const { return m_RenderTargets[(int)face].get(); }
 private:
 	virtual bool Create() override;
 
-	std::array<void*, (int)CubeMapFace::MAX> m_RenderTargetViews = {};
+	std::array<std::unique_ptr<RenderTarget>, (int)CubeMapFace::MAX> m_RenderTargets = {};
 };

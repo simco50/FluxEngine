@@ -1,9 +1,9 @@
 #pragma once
 
-class RenderTarget;
 class Graphics;
 class ShaderVariation;
 class Material;
+class Texture2D;
 
 #include "Core/Subsystem.h"
 
@@ -24,7 +24,10 @@ public:
 	
 private:
 	void OnResize(const int width, const int height);
-	std::unique_ptr<RenderTarget> m_pIntermediateRenderTarget;
+
+	std::unique_ptr<Texture2D> m_pRenderTexture;
+	std::unique_ptr<Texture2D> m_pDepthTexture;
+
 	Graphics* m_pGraphics;
 
 	ShaderVariation* m_pBlitVertexShader;

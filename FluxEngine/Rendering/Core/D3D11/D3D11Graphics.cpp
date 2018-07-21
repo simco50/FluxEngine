@@ -159,22 +159,31 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 {
 	if (index == 0 && pRenderTarget == nullptr)
 	{
-		m_CurrentRenderTargets[0] = m_pDefaultRenderTarget.get();
+		m_CurrentRenderTargets[0] = nullptr;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
 	else if(m_CurrentRenderTargets[index] != pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
-	m_pImpl->m_RenderTargetsDirty = true;
-	Texture2D* pTexture = m_CurrentRenderTargets[index]->GetDepthTexture();
-	if (pTexture)
+}
+
+void Graphics::SetDepthStencil(RenderTarget* pRenderTarget)
+{
+	if (pRenderTarget != m_pCurrentDepthStencil)
 	{
-		pTexture->SetResolveDirty(true);
+		m_pCurrentDepthStencil = pRenderTarget;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
-	pTexture = m_CurrentRenderTargets[index]->GetRenderTexture();
-	if (pTexture)
+}
+
+void Graphics::SetDepthOnly(bool enable)
+{
+	if (enable != m_RenderDepthOnly)
 	{
-		pTexture->SetResolveDirty(true);
+		m_RenderDepthOnly = enable;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
 }
 
@@ -478,9 +487,13 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 
 	m_pImpl->m_TexturesDirty = true;
 	if (m_pImpl->m_FirstDirtyTexture > (unsigned int)slot)
+	{
 		m_pImpl->m_FirstDirtyTexture = (unsigned int)slot;
+	}
 	if (m_pImpl->m_LastDirtyTexture < (unsigned int)slot)
+	{
 		m_pImpl->m_LastDirtyTexture = (unsigned int)slot;
+	}
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
@@ -549,7 +562,7 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 	{
 		m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
 	}
-	if (pDsv && (clearFlags & (ClearFlags::Depth | ClearFlags::Stencil)) == (ClearFlags::Depth | ClearFlags::Stencil))
+	if (pDsv)
 	{
 		unsigned int depthClearFlags = 0;
 		if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
@@ -560,7 +573,10 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 		{
 			depthClearFlags |= D3D11_CLEAR_STENCIL;
 		}
-		m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
+		if (depthClearFlags != 0)
+		{
+			m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
+		}
 	}
 }
 
@@ -570,9 +586,15 @@ void Graphics::FlushRenderTargetChanges(bool force)
 	{
 		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
 		{
-			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTexture()->GetRenderTargetView() : nullptr;
+			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTargetView() : nullptr;
 		}
-		m_pImpl->m_pDepthStencilView = m_CurrentRenderTargets[0] ? (ID3D11DepthStencilView*)m_CurrentRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr;
+
+		if (m_pImpl->m_RenderTargetViews[0] == nullptr && m_RenderDepthOnly == false)
+		{
+			m_pImpl->m_RenderTargetViews[0] = (ID3D11RenderTargetView*)m_pDefaultRenderTarget->GetRenderTarget()->GetRenderTargetView();
+		}
+
+		m_pImpl->m_pDepthStencilView = m_pCurrentDepthStencil ? (ID3D11DepthStencilView*)m_pCurrentDepthStencil->GetRenderTargetView() : (ID3D11DepthStencilView*)m_pDefaultDepthStencil->GetRenderTarget()->GetRenderTargetView();
 		m_pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, m_pImpl->m_RenderTargetViews.data(), m_pImpl->m_pDepthStencilView);
 		m_pImpl->m_RenderTargetsDirty = false;
 	}
@@ -803,44 +825,39 @@ void Graphics::UpdateSwapchain(int width, int height)
 {
 	AUTOPROFILE(Graphics_UpdateSwapchain);
 
-	m_WindowWidth = width;
-	m_WindowHeight = height;
-
 	if (!m_pImpl->m_pSwapChain.IsValid())
+	{
 		return;
+	}
 
 	assert(m_pImpl->m_pDevice.IsValid());
 	assert(m_pImpl->m_pSwapChain.IsValid());
 
-	m_pImpl->m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
+	m_pDefaultDepthStencil.reset();
 
-	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_WindowWidth, m_WindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	ID3D11RenderTargetView* emptyView = nullptr;
+	m_pImpl->m_pDeviceContext->OMSetRenderTargets(1, &emptyView, nullptr);
+
+	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pImpl->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
-	RenderTargetDesc desc = {};
-	desc.Width = m_WindowWidth;
-	desc.Height = m_WindowHeight;
-	desc.pColorResource = pBackbuffer;
-	desc.pDepthResource = nullptr;
-	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
-	desc.MultiSample = m_Multisample;
-	m_pDefaultRenderTarget = std::make_unique<RenderTarget>(m_pContext);
-	m_pDefaultRenderTarget->Create(desc);
+	m_pDefaultRenderTarget = std::make_unique<Texture2D>(m_pContext);
+	m_pDefaultRenderTarget->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, m_Multisample, pBackbuffer);
+	m_pDefaultDepthStencil = std::make_unique<Texture2D>(m_pContext);
+	m_pDefaultDepthStencil->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_Multisample, nullptr);
 
-	m_pImpl->m_pDepthStencilView = nullptr;
-	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
+	for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
 	{
-		m_CurrentRenderTargets[i] = nullptr;
-		m_pImpl->m_RenderTargetViews[i] = nullptr;
+		SetRenderTarget(i, nullptr);
 	}
-	m_pImpl->m_RenderTargetsDirty = true;
-
-	SetRenderTarget(0, m_pDefaultRenderTarget.get());
+	SetDepthStencil(nullptr);
 	SetViewport(m_CurrentViewport, true);
+
+	m_WindowWidth = width;
+	m_WindowHeight = height;
 }
 
 void Graphics::OnResize(const int width, const int height)
@@ -857,7 +874,9 @@ void Graphics::TakeScreenshot()
 	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
 	PhysicalFile file(str.str());
 	if (!file.OpenWrite())
+	{
 		return;
+	}
 	TakeScreenshot(file);
 }
 
@@ -880,6 +899,8 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 	ComPtr<ID3D11Texture2D> pStagingTexture;
 	HR(m_pImpl->GetDevice()->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
 
+	ID3D11Resource* pRenderTexture = (ID3D11Resource*)m_pDefaultRenderTarget->GetResource();
+
 	//If we are using MSAA, we need to resolve the resource first
 	if (m_Multisample > 1)
 	{
@@ -899,12 +920,12 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 
 		HR(m_pImpl->GetDevice()->CreateTexture2D(&resolveTexDesc, nullptr, pResolveTexture.GetAddressOf()));
 
-		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)pRenderTexture, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
 		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), pResolveTexture.Get());
 	}
 	else
 	{
-		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource());
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)pRenderTexture);
 	}
 
 	Image destinationImage(m_pContext);

@@ -2,6 +2,7 @@
 #include "Texture.h"
 
 enum class ImageFormat;
+class RenderTarget;
 
 class Texture2D : public Texture
 {
@@ -19,10 +20,10 @@ public:
 	bool SetData(const unsigned int mipLevel, int x, int y, int width, int height, const void* pData);
 	bool SetImage(const Image& image);
 
-	void* GetRenderTargetView() const { return m_pRenderTargetView; }
+	RenderTarget* GetRenderTarget() const { return m_pRenderTarget.get(); }
 
 private:
 	virtual bool Create() override;
 
-	void* m_pRenderTargetView = nullptr;
+	std::unique_ptr<RenderTarget> m_pRenderTarget;
 };

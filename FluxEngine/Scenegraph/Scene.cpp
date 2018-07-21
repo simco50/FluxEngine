@@ -6,7 +6,7 @@
 
 Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 {
-	m_pRenderer = std::make_unique<Renderer>(pContext);
+	m_pRenderer = pContext->GetSubsystem<Renderer>();
 }
 
 Scene::~Scene()

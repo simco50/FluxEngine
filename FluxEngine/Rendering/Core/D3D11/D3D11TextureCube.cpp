@@ -4,6 +4,7 @@
 
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
+#include "../RenderTarget.h"
 
 TextureCube::TextureCube(Context* pContext) :
 	Texture(pContext)
@@ -20,12 +21,13 @@ void TextureCube::Release()
 {
 	SafeRelease(m_pResource);
 	SafeRelease(m_pShaderResourceView);
-	for (size_t i = 0; i < m_RenderTargetViews.size(); ++i)
-	{
-		SafeRelease(m_RenderTargetViews[i]);
-	}
 	SafeRelease(m_pSamplerState);
 	SafeRelease(m_pResolvedResource);
+
+	for (auto& pRenderTarget : m_RenderTargets)
+	{
+		pRenderTarget.reset();
+	}
 }
 
 bool TextureCube::Load(InputStream& inputStream)
@@ -69,8 +71,18 @@ bool TextureCube::SetSize(const int width, const int height, const unsigned int 
 	m_MultiSample = multiSample;
 	m_pResource = pTexture;
 
+	if (usage == TextureUsage::RENDERTARGET)
+	{
+		for (auto& pRenderTarget : m_RenderTargets)
+		{
+			pRenderTarget = std::make_unique<RenderTarget>(this);
+		}
+	}
+
 	if (!Create())
+	{
 		return false;
+	}
 	return true;
 }
 
@@ -178,6 +190,10 @@ bool TextureCube::Create()
 
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	if (m_Usage == TextureUsage::RENDERTARGET)
+	{
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	}
 	desc.CPUAccessFlags = m_Usage == TextureUsage::DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Format = (DXGI_FORMAT)m_TextureFormat;
 	desc.Height = m_Height;
@@ -220,7 +236,7 @@ bool TextureCube::Create()
 				rtvDesc.Texture2DArray.FirstArraySlice = i;
 				rtvDesc.Texture2DArray.MipSlice = 0;
 			}
-			HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_RenderTargetViews[i]));
+			HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_RenderTargets[i]->m_pRenderTargetView));
 		}
 	}
 	return true;

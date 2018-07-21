@@ -22,7 +22,6 @@ Camera::Camera(Context* pContext):
 	m_ViewProjectionInverse = XMMatrixIdentity();
 
 	m_pGraphics = GetSubsystem<Graphics>();
-	m_pInput = GetSubsystem<InputEngine>();
 }
 
 Camera::~Camera()
@@ -84,20 +83,27 @@ void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 {
-	Vector2 mousePos = m_pInput->GetMousePosition();
-	Vector2 ndc;
-	float hw = m_Viewport.GetWidth() / 2.0f;
-	float hh = m_Viewport.GetHeight() / 2.0f;
-	ndc.x = (mousePos.x - hw) / hw + m_Viewport.Left;
-	ndc.y = (hh - mousePos.y) / hh + m_Viewport.Top;
+	float viewportWidth = m_Viewport.GetWidth() * m_pGraphics->GetWindowWidth();
+	float viewportHeight = m_Viewport.GetHeight() * m_pGraphics->GetWindowHeight();
 
-	Vector3 nearPoint, farPoint;
-	nearPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 0), m_ViewProjectionInverse);
-	farPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 1), m_ViewProjectionInverse);
-	startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
+	InputEngine* input = GetSubsystem<InputEngine>();
+	if (input)
+	{
+		Vector2 mousePos = input->GetMousePosition();
+		Vector2 ndc;
+		float hw = viewportWidth / 2.0f;
+		float hh = viewportHeight / 2.0f;
+		ndc.x = (mousePos.x - hw) / hw + m_Viewport.Left;
+		ndc.y = (hh - mousePos.y) / hh + m_Viewport.Top;
 
-	direction = farPoint - nearPoint;
-	direction.Normalize();
+		Vector3 nearPoint, farPoint;
+		nearPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 0), m_ViewProjectionInverse);
+		farPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 1), m_ViewProjectionInverse);
+		startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
+
+		direction = farPoint - nearPoint;
+		direction.Normalize();
+	}
 }
 
 void Camera::SetNearPlane(const float nearPlane)

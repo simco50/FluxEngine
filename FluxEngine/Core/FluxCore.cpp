@@ -92,6 +92,7 @@ int FluxCore::Run(HINSTANCE hInstance)
 		m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount());
 		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 		m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
+		m_pContext->RegisterSubsystem<Renderer>();
 
 		InitGame();
 		GameTimer::Reset();

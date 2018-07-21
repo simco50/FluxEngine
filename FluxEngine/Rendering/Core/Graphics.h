@@ -48,6 +48,8 @@ public:
 		const int refreshRate);
 
 	void SetRenderTarget(const int index, RenderTarget* pRenderTarget);
+	void SetDepthStencil(RenderTarget* pRenderTarget);
+	void SetDepthOnly(bool enable);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
 	void SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
@@ -98,7 +100,8 @@ public:
 
 	bool GetAdapterInfo(AdapterInfo& adapterInfo);
 
-	RenderTarget* GetRenderTarget() const { return m_pDefaultRenderTarget.get(); }
+	RenderTarget* GetRenderTarget() const;
+	RenderTarget* GetDepthStencil() const { return m_pCurrentDepthStencil; }
 	BlendState* GetBlendState() const { return m_pBlendState.get(); }
 	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
 	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
@@ -132,7 +135,6 @@ private:
 
 	std::unique_ptr<GraphicsImpl> m_pImpl;
 
-	std::unique_ptr<RenderTarget> m_pDefaultRenderTarget;
 	std::unique_ptr<BlendState> m_pBlendState;
 	std::unique_ptr<RasterizerState> m_pRasterizerState;
 	std::unique_ptr<DepthStencilState> m_pDepthStencilState;
@@ -148,10 +150,15 @@ private:
 	IntRect m_CurrentScissorRect;
 	bool m_ScissorEnabled = false;
 	bool m_ScissorRectDirty = false;
+	bool m_RenderDepthOnly = false;
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	std::array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
 	std::array<RenderTarget*, GraphicsConstants::MAX_RENDERTARGETS> m_CurrentRenderTargets;
+	RenderTarget* m_pCurrentDepthStencil = nullptr;
+
+	std::unique_ptr<Texture2D> m_pDefaultRenderTarget;
+	std::unique_ptr<Texture2D> m_pDefaultDepthStencil;
 
 	//Debug data
 	unsigned int m_BatchCount = 0;

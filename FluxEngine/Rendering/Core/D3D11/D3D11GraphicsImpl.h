@@ -38,6 +38,7 @@ private:
 	//Render Target
 	std::array<ID3D11RenderTargetView*, GraphicsConstants::MAX_RENDERTARGETS> m_RenderTargetViews = {};
 	ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
+
 	bool m_RenderTargetsDirty = true;
 
 	//Primitive topology

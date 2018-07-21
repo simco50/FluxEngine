@@ -15,9 +15,11 @@ PostProcessing::PostProcessing(Context* pContext) :
 
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
 
-	m_pGraphics->GetRenderTarget()->GetRenderTexture()->SetAddressMode(TextureAddressMode::CLAMP);
+	m_pGraphics->GetRenderTarget()->GetParentTexture()->SetAddressMode(TextureAddressMode::CLAMP);
 
-	m_pIntermediateRenderTarget = std::make_unique<RenderTarget>(pContext);
+	m_pRenderTexture = std::make_unique<Texture2D>(m_pContext);
+	m_pDepthTexture = std::make_unique<Texture2D>(m_pContext);
+
 	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
 
 	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw(this, &PostProcessing::OnResize);
@@ -39,7 +41,7 @@ void PostProcessing::Draw()
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 
 	RenderTarget* pCurrentSource = m_pGraphics->GetRenderTarget();
-	RenderTarget* pCurrentTarget = m_pIntermediateRenderTarget.get();
+	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
 
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
 	int activeMaterials = 0;
@@ -64,7 +66,7 @@ void PostProcessing::Draw()
 			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
 		}
 
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetRenderTexture());
+		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetParentTexture());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
 		std::swap(pCurrentSource, pCurrentTarget);
 	}
@@ -76,7 +78,7 @@ void PostProcessing::Draw()
 	if (activeMaterials % 2 == 1)
 	{
 		m_pGraphics->SetShader(ShaderType::PixelShader, m_pBlitPixelShader);
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pIntermediateRenderTarget->GetRenderTexture());
+		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pRenderTexture.get());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
 	}
 }
@@ -91,13 +93,6 @@ void PostProcessing::AddEffect(Material* pMaterial, const bool active)
 
 void PostProcessing::OnResize(const int width, const int height)
 {
-	RenderTargetDesc renderTargetDesc = {};
-	renderTargetDesc.MultiSample = m_pGraphics->GetMultisample();
-	renderTargetDesc.Width = width;
-	renderTargetDesc.Height = height;
-	if (!m_pIntermediateRenderTarget->Create(renderTargetDesc))
-	{
-		FLUX_LOG(Error, "[PostProcessing::OnResize] > Failed to create render target");
-	}
-	m_pIntermediateRenderTarget->GetRenderTexture()->SetAddressMode(TextureAddressMode::CLAMP);
+	m_pRenderTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, m_pGraphics->GetMultisample(), nullptr);
+	m_pDepthTexture->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_pGraphics->GetMultisample(), nullptr);
 }

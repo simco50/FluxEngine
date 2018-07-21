@@ -2,8 +2,8 @@
 
 #include "SceneGraph/Component.h"
 
-class InputEngine;
 class Graphics;
+class RenderTarget;
 struct RaycastResult;
 
 class Camera : public Component
@@ -39,11 +39,17 @@ public:
 
 	bool Raycast(RaycastResult& result) const;
 
+	void SetRenderTarget(RenderTarget* pRenderTarget) { m_pRenderTarget = pRenderTarget; }
+	void SetRenderOrder(const int order) { m_Order = order; }
+
+	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
+	int GetRenderOrder() const { return m_Order; }
+
+	virtual void OnMarkedDirty(const Transform* transform) override;
+
 protected:
 	void OnSceneSet(Scene* pScene) override;
-	virtual void OnMarkedDirty(const Transform* transform) override;
 private:
-	InputEngine* m_pInput = nullptr;
 	Graphics* m_pGraphics = nullptr;
 
 	float m_Size = 50.0f;
@@ -65,7 +71,9 @@ private:
 	float m_VpY = 0.0f;
 	float m_VpWidth = 1.0f;
 	float m_VpHeight = 1.0f;
+	int m_Order = 0;
 
 	BoundingFrustum m_Frustum;
+	RenderTarget* m_pRenderTarget = nullptr;
 };
 

@@ -16,6 +16,8 @@ SceneNode::SceneNode(Context* pContext, Scene* pScene) :
 	Object(pContext),
 	m_pScene(pScene)
 {
+	m_pTransform = std::make_unique<Transform>(this);
+	m_pTransform->Initialize();
 }
 
 SceneNode::~SceneNode()
@@ -46,6 +48,13 @@ void SceneNode::OnSceneRemoved()
 	{
 		pComponent->OnSceneRemoved();
 	}
+}
+
+SceneNode* SceneNode::CreateChild(const std::string& name)
+{
+	SceneNode* pNode = new SceneNode(m_pContext, name);
+	AddChild(pNode);
+	return pNode;
 }
 
 void SceneNode::AddChild(SceneNode* pNode)
