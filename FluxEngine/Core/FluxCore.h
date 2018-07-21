@@ -13,6 +13,7 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 class PostProcessing;
+class TextureCube;
 
 class FluxCore : public Object
 {
@@ -57,4 +58,6 @@ private:
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
+
+	std::unique_ptr<TextureCube> m_CubeTexture;
 };

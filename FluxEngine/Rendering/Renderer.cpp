@@ -32,14 +32,25 @@ void Renderer::Draw()
 		pDrawable->Update();
 	}
 
+	std::vector<Camera*> cameras = m_CameraQueue;
+	m_CameraQueue.clear();
 	for (Camera* pCamera : m_Cameras)
+	{
+		cameras.push_back(pCamera);
+	}
+		
+	for (Camera* pCamera : cameras)
 	{
 		if (pCamera == nullptr)
 		{
 			continue;
 		}
-		
-		m_pGraphics->SetViewport(pCamera->GetViewport(), true);
+
+		m_pGraphics->SetRenderTarget(0, pCamera->GetRenderTarget());
+		m_pGraphics->SetDepthStencil(pCamera->GetDepthStencil());
+		m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
+
+		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
 
 		for (Drawable* pDrawable : m_Drawables)
 		{
@@ -88,11 +99,17 @@ void Renderer::RemoveDrawable(Drawable* pDrawable)
 void Renderer::AddCamera(Camera* pCamera)
 {
 	m_Cameras.push_back(pCamera);
+	std::sort(m_Cameras.begin(), m_Cameras.end(), [](Camera* pA, Camera* pB) {return pA->GetRenderOrder() > pB->GetRenderOrder(); });
 }
 
 void Renderer::RemoveCamera(Camera* pCamera)
 {
 	m_Cameras.erase(std::remove(m_Cameras.begin(), m_Cameras.end(), pCamera), m_Cameras.end());
+}
+
+void Renderer::QueueCamera(Camera * pCamera)
+{
+	m_CameraQueue.push_back(pCamera);
 }
 
 void Renderer::SetPerFrameParameters()
@@ -159,7 +176,7 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 	{
 		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
 	}
-	m_pGraphics->SetShaderParameter("cWorld", batch.pModelMatrix);
+	m_pGraphics->SetShaderParameter("cWorld", *batch.pModelMatrix);
 	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
 	m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
 }

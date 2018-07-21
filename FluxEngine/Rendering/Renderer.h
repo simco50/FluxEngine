@@ -26,6 +26,8 @@ public:
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 	Vector3* GetLightPosition() { return &m_LightPosition; }
 
+	void QueueCamera(Camera* pCamera);
+
 private:
 	void SetPerFrameParameters();
 	void SetPerCameraParameters(Camera* pCamera);
@@ -42,4 +44,6 @@ private:
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;
+
+	std::vector<Camera*> m_CameraQueue;
 };

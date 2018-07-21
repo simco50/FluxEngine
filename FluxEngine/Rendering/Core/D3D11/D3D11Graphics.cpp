@@ -310,13 +310,14 @@ void Graphics::UpdateShaderProgram()
 {
 	if (m_pImpl->m_ShaderProgramDirty)
 	{
+		//WARNING: THIS IS A REALLY BAD WAY TO HASH THE SHADERS AND THIS CAUSED A HORRIBLE BUG. PLEASE DO SOMETHING BETTER!!!
 		unsigned int hash = 0;
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
 			hash <<= 8;
 			if (pVariation == nullptr)
 				continue;
-			hash |= pVariation->GetName().size();
+			hash |= pVariation->GetByteCode().size();
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -486,13 +487,13 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	m_pImpl->m_SamplerStates[(size_t)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
 	m_pImpl->m_TexturesDirty = true;
-	if (m_pImpl->m_FirstDirtyTexture > (unsigned int)slot)
+	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
 	{
-		m_pImpl->m_FirstDirtyTexture = (unsigned int)slot;
+		m_pImpl->m_FirstDirtyTexture = (int)slot;
 	}
-	if (m_pImpl->m_LastDirtyTexture < (unsigned int)slot)
+	if (m_pImpl->m_LastDirtyTexture < (int)slot)
 	{
-		m_pImpl->m_LastDirtyTexture = (unsigned int)slot;
+		m_pImpl->m_LastDirtyTexture = (int)slot;
 	}
 }
 
@@ -602,15 +603,15 @@ void Graphics::FlushRenderTargetChanges(bool force)
 
 void Graphics::FlushSRVChanges(bool force)
 {
-	if (m_pImpl->m_TexturesDirty || force)
+	if ((m_pImpl->m_TexturesDirty || force) && m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture > 0)
 	{
 		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-
+		
 		m_pImpl->m_TexturesDirty = false;
-		m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;
 		m_pImpl->m_LastDirtyTexture = 0;
 	}
 }
@@ -953,8 +954,8 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)
 {
 	size_t hash = (size_t)shaderType
-		| index << 2
-		| size << 4;
+		| (unsigned)(index << 1)
+		| (unsigned)(size << 4);
 
 	auto pIt = m_ConstantBuffers.find(hash);
 	if (pIt != m_ConstantBuffers.end())

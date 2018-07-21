@@ -1,7 +1,7 @@
 <Material name="Default">
 	<Shaders>
 		<Shader type="Vertex" source="Resources/Shaders/Diffuse"/>
-		<Shader type="Pixel" source="Resources/Shaders/Diffuse"/>
+		<Shader type="Pixel" source="Resources/Shaders/Diffuse" defines="ENVMAP"/>
 	</Shaders>
 
 	<Properties>

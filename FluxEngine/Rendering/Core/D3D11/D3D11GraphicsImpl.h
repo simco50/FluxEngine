@@ -27,8 +27,8 @@ private:
 
 	//Textures
 	bool m_TexturesDirty = false;
-	unsigned int m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
-	unsigned int m_LastDirtyTexture = 0;
+	int m_FirstDirtyTexture = (int)TextureSlot::MAX;
+	int m_LastDirtyTexture = 0;
 	std::array<ID3D11SamplerState*, (size_t)TextureSlot::MAX> m_SamplerStates = {};
 	std::array<ID3D11ShaderResourceView*, (size_t)TextureSlot::MAX> m_ShaderResourceViews = {};
 

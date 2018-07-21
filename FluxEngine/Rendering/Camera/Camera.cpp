@@ -11,6 +11,8 @@
 #include "Audio/AudioListener.h"
 #include "Physics/PhysX/PhysicsScene.h"
 #include "Input/InputEngine.h"
+#include "../Core/RenderTarget.h"
+#include "../Core/Texture.h"
 
 Camera::Camera(Context* pContext):
 	Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
@@ -35,10 +37,26 @@ void Camera::OnSceneSet(Scene* pScene)
 	OnMarkedDirty(GetTransform());
 }
 
+FloatRect Camera::GetAbsoluteViewport() const
+{
+	FloatRect rect = m_Viewport;
+
+	float renderTargetWidth = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetWidth() : (float)m_pGraphics->GetWindowWidth();
+	float renderTargetHeight = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetHeight() : (float)m_pGraphics->GetWindowHeight();
+	
+	rect.Left = m_Viewport.Left * renderTargetWidth;
+	rect.Top = m_Viewport.Top * renderTargetHeight;
+	rect.Right = m_Viewport.Right * renderTargetWidth;
+	rect.Bottom = m_Viewport.Bottom * renderTargetHeight;
+
+	return rect;
+}
+
 void Camera::OnMarkedDirty(const Transform* transform)
 {
-	float viewportWidth = m_Viewport.GetWidth() * m_pGraphics->GetWindowWidth();
-	float viewportHeight = m_Viewport.GetHeight() * m_pGraphics->GetWindowHeight();
+	FloatRect absolute = GetAbsoluteViewport();
+	float viewportWidth = absolute.GetWidth();
+	float viewportHeight = absolute.GetHeight();
 
 	if (m_Perspective)
 	{
@@ -61,8 +79,33 @@ void Camera::OnMarkedDirty(const Transform* transform)
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
 
+	UpdateFrustum();
+}
+
+void Camera::SetProjection(const Matrix& projection)
+{
+	m_Projection = projection;
+	m_ViewProjection = m_View * m_Projection;
+	m_ViewProjection.Invert(m_ViewProjectionInverse);
+}
+
+void Camera::SetView(const Matrix& view)
+{
+	m_View = view;
+	m_ViewProjection = m_View * m_Projection;
+	m_ViewProjection.Invert(m_ViewProjectionInverse);
+}
+
+void Camera::UpdateFrustum()
+{
 	BoundingFrustum::CreateFromMatrix(m_Frustum, m_Projection);
 	m_Frustum.Transform(m_Frustum, m_ViewInverse);
+}
+
+void Camera::SetFOW(const float fov)
+{
+	m_FoV = fov;
+	OnMarkedDirty(GetTransform());
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)
@@ -83,18 +126,17 @@ void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 {
-	float viewportWidth = m_Viewport.GetWidth() * m_pGraphics->GetWindowWidth();
-	float viewportHeight = m_Viewport.GetHeight() * m_pGraphics->GetWindowHeight();
-
 	InputEngine* input = GetSubsystem<InputEngine>();
 	if (input)
 	{
+		FloatRect absolute = GetAbsoluteViewport();
+
 		Vector2 mousePos = input->GetMousePosition();
 		Vector2 ndc;
-		float hw = viewportWidth / 2.0f;
-		float hh = viewportHeight / 2.0f;
-		ndc.x = (mousePos.x - hw) / hw + m_Viewport.Left;
-		ndc.y = (hh - mousePos.y) / hh + m_Viewport.Top;
+		float hw = absolute.GetWidth() / 2.0f;
+		float hh = absolute.GetHeight() / 2.0f;
+		ndc.x = (mousePos.x - hw) / hw + absolute.Left;
+		ndc.y = (hh - mousePos.y) / hh + absolute.Top;
 
 		Vector3 nearPoint, farPoint;
 		nearPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 0), m_ViewProjectionInverse);

@@ -20,8 +20,13 @@ public:
 	const Matrix& GetViewProjectionInverse() const { return m_ViewProjectionInverse; }
 	const Matrix& GetProjection() const { return m_Projection; }
 
+	void SetProjection(const Matrix& projection);
+	void SetView(const Matrix& view);
+	void UpdateFrustum();
+
+	void SetFOW(const float fov);
 	void SetViewport(float x, float y, float width, float height);
-	const FloatRect& GetViewport() const { return m_Viewport; }
+	FloatRect GetViewport() const { return GetAbsoluteViewport(); }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
@@ -40,9 +45,11 @@ public:
 	bool Raycast(RaycastResult& result) const;
 
 	void SetRenderTarget(RenderTarget* pRenderTarget) { m_pRenderTarget = pRenderTarget; }
+	void SetDepthStencil(RenderTarget* pDepthStencil) { m_pDepthStencil = pDepthStencil; }
 	void SetRenderOrder(const int order) { m_Order = order; }
 
 	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
+	RenderTarget* GetDepthStencil() const { return m_pDepthStencil; }
 	int GetRenderOrder() const { return m_Order; }
 
 	virtual void OnMarkedDirty(const Transform* transform) override;
@@ -50,6 +57,8 @@ public:
 protected:
 	void OnSceneSet(Scene* pScene) override;
 private:
+	FloatRect GetAbsoluteViewport() const;
+
 	Graphics* m_pGraphics = nullptr;
 
 	float m_Size = 50.0f;
@@ -75,5 +84,6 @@ private:
 
 	BoundingFrustum m_Frustum;
 	RenderTarget* m_pRenderTarget = nullptr;
+	RenderTarget* m_pDepthStencil = nullptr;
 };
 

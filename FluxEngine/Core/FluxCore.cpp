@@ -106,12 +106,14 @@ void FluxCore::InitGame()
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
-	m_pCamera = new FreeCamera(m_pContext);
-	m_pScene->AddChild(m_pCamera);
+	m_pCamera = m_pScene->CreateChild<FreeCamera>("Camera");
 	m_pCamera->GetCamera()->SetNearPlane(10);
 	m_pCamera->GetCamera()->SetFarPlane(10000);
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+
+	m_CubeTexture = std::make_unique<TextureCube>(m_pContext);
+	m_CubeTexture->SetSize(512, 512, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, 1, nullptr);
 
 	std::vector<std::string> meshPaths;
 	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
@@ -138,31 +140,27 @@ void FluxCore::InitGame()
 	std::vector<Material*> pMaterials;
 
 	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
+	pMaterials[0]->SetTexture(TextureSlot::Cube, m_CubeTexture.get());
 
 	for (size_t x = 0; x < meshes.size(); x++)
 	{
-		SceneNode* pObject = new SceneNode(m_pContext, "Peasant Man");
-		m_pScene->AddChild(pObject);
+		SceneNode* pObject = m_pScene->CreateChild("Peasant Man");
 		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
-		AnimatedModel* pModel = new AnimatedModel(m_pContext);
-		pObject->AddComponent(pModel);
+		pObject->GetTransform()->SetScale(0.4f, 0.4f, 0.4f);
+		AnimatedModel* pModel = pObject->CreateComponent<AnimatedModel>();
 		pModel->SetMesh(meshes[x]);
 		pModel->SetMaterial(pMaterials[0]);
-		Rigidbody* pRigidbody = new Rigidbody(m_pContext);
-		BoxCollider* pCollider = new BoxCollider(m_pContext, pModel->GetBoundingBox());
-		pObject->AddComponent(pRigidbody);
-		pObject->AddComponent(pCollider);
-		Animator* pAnimator = new Animator(m_pContext);
-		pObject->AddComponent(pAnimator);
+		pObject->CreateComponent<Rigidbody>();
+		pObject->CreateComponent<BoxCollider>(pModel->GetBoundingBox());
+		Animator* pAnimator = pObject->CreateComponent<Animator>();
 		pAnimator->Play();
 	}
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
-	SceneNode* pCubeNode = new SceneNode(m_pContext, "Skybox");
-	m_pScene->AddChild(pCubeNode);
+	SceneNode* pCubeNode = m_pScene->CreateChild("Skybox");
 	Material* pSkybox = m_pResourceManager->Load<Material>("Resources/Materials/Skybox.xml");
-	Model* pCubeModel = new Model(m_pContext);
-	pCubeNode->AddComponent(pCubeModel);
+	
+	Model* pCubeModel = pCubeNode->CreateComponent<Model>();
 	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> desc =
 	{
@@ -173,6 +171,27 @@ void FluxCore::InitGame()
 	pCubeModel->SetMesh(pCubeMesh);
 	pCubeModel->SetMaterial(pSkybox);
 	pCubeModel->SetCullingEnabled(false);
+
+	SceneNode* pSphereNode = m_pScene->CreateChild("Sphere");
+
+	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	pDefaultMaterial->SetTexture(TextureSlot::Cube, m_CubeTexture.get());
+	Model* pSphereModel = pSphereNode->CreateComponent<Model>();
+	Mesh* pSphereMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Sphere.flux");
+	std::vector<VertexElement> sphereDesc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+	};
+	pSphereMesh->CreateBuffers(sphereDesc);
+	pSphereModel->SetMesh(pSphereMesh);
+	pSphereModel->SetMaterial(pDefaultMaterial);
+	
+	pSphereNode->GetTransform()->SetScale(20.f, 20.0f, 20.0f);
+
+	SceneNode* pReflectionCapture = m_pScene->CreateChild("Reflection Capture");
+	pReflectionCapture->GetTransform()->SetPosition(-50.0f, 50.0f, -50.0f);
 }
 
 void FluxCore::ProcessFrame()
@@ -197,7 +216,10 @@ void FluxCore::ProcessFrame()
 	m_pAudioEngine->Update();
 
 	m_pGraphics->BeginFrame();
-	m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
+
+	SceneNode* pNode = m_pScene->FindNode("Sphere");
+	pNode->GetTransform()->SetPosition(cos(GameTimer::GameTime()) * 50.0f, 50.0f, sin(GameTimer::GameTime()) * 50.0f);
+	m_CubeTexture->QueueRenderToTexture(*m_pScene->FindNode("Reflection Capture")->GetTransform());
 
 	m_pScene->Update();
 

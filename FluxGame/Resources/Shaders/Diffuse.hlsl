@@ -101,7 +101,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 #ifdef ENVMAP
 	float3 reflectV = reflect(viewDirection, normal);
 	float3 reflectionSample = SampleCube(Cube, reflectV);
-	output += reflectionSample * GetFresnelFalloff(normal, viewDirection, 1.0f, 0.4f, 0.0f);
+	output = reflectionSample /** GetFresnelFalloff(normal, viewDirection, 1.0f, 0.4f, 0.0f)*/;
 #endif
 
 	return float4(output, 1.0f);
