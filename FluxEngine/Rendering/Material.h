@@ -24,7 +24,9 @@ public:
 	{
 	public:
 		ParameterEntry() :
-			m_Size(0)
+			m_Size(0),
+			m_pDataPool(nullptr),
+			m_DataOffset(0)
 		{}
 		ParameterEntry(const size_t size, void* pInData, std::vector<char>& dataPool) :
 			m_Size(size), m_pDataPool(&dataPool)
@@ -44,14 +46,14 @@ public:
 	private:
 		size_t m_Size;
 		std::vector<char>* m_pDataPool;
-		int m_DataOffset = 0;
+		int m_DataOffset;
 	};
 
 private:
 	class ParameterCache
 	{
 	public:
-		ParameterEntry& GetParameter(const std::string name, const size_t size)
+		ParameterEntry& GetParameter(const std::string& name, const size_t size)
 		{
 			ParameterEntry& entry = m_Parameters[name];
 			if (entry.GetSize() != size)

@@ -13,6 +13,7 @@
 #include "Input/InputEngine.h"
 #include "../Core/RenderTarget.h"
 #include "../Core/Texture.h"
+#include "../Core/Texture2D.h"
 
 Camera::Camera(Context* pContext):
 	Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
@@ -50,6 +51,20 @@ FloatRect Camera::GetAbsoluteViewport() const
 	rect.Bottom = m_Viewport.Bottom * renderTargetHeight;
 
 	return rect;
+}
+
+RenderTarget* Camera::GetDepthStencil()
+{
+	if (m_pRenderTarget == nullptr)
+	{
+		return nullptr;
+	}
+	if (m_pDepthStencil == nullptr)
+	{
+		m_pDepthStencil = std::make_unique<Texture2D>(m_pContext);
+		m_pDepthStencil->SetSize(m_pRenderTarget->GetParentTexture()->GetWidth(), m_pRenderTarget->GetParentTexture()->GetHeight(), DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_pRenderTarget->GetParentTexture()->GetMultiSample(), nullptr);
+	}
+	return m_pDepthStencil->GetRenderTarget();
 }
 
 void Camera::OnMarkedDirty(const Transform* transform)
@@ -92,6 +107,7 @@ void Camera::SetProjection(const Matrix& projection)
 void Camera::SetView(const Matrix& view)
 {
 	m_View = view;
+	m_View.Invert(m_ViewInverse);
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
 }

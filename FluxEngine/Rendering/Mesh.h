@@ -33,7 +33,7 @@ public:
 
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }
 
-	Animation* GetAnimation(const std::string name) const;
+	Animation* GetAnimation(const std::string& name) const;
 	Animation* GetAnimation(const StringHash hash) const;
 	Animation* GetAnimation(const int index) const;
 

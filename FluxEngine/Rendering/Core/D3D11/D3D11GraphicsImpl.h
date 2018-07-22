@@ -54,6 +54,6 @@ private:
 
 	//Shader programs
 	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	std::map<unsigned int, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
+	std::map<uint64, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
 	bool m_ShaderProgramDirty = false;
 };

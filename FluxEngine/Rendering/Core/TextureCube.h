@@ -36,12 +36,8 @@ public:
 
 	RenderTarget* GetRenderTarget(const CubeMapFace face) const { return m_RenderTargets[(int)face].get(); }
 
-	void QueueRenderToTexture(const Transform& transform);
-
 private:
 	virtual bool Create() override;
 
 	std::array<std::unique_ptr<RenderTarget>, (int)CubeMapFace::MAX> m_RenderTargets = {};
-	std::array<std::unique_ptr<Texture2D>, (int)CubeMapFace::MAX> m_DepthStencils = {};
-	std::array<std::unique_ptr<Camera>, (int)CubeMapFace::MAX> m_Cameras = {};
 };

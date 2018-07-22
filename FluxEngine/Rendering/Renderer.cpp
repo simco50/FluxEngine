@@ -10,11 +10,14 @@
 #include "Core/BlendState.h"
 #include "Core/RasterizerState.h"
 #include "Core/DepthStencilState.h"
+#include "Core/VertexBuffer.h"
+#include "Core/IndexBuffer.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext) 
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
+	CreateQuadGeometry();
 }
 
 Renderer::~Renderer()
@@ -32,6 +35,8 @@ void Renderer::Draw()
 		pDrawable->Update();
 	}
 
+	m_OnPreRender.Broadcast();
+
 	std::vector<Camera*> cameras = m_CameraQueue;
 	m_CameraQueue.clear();
 	for (Camera* pCamera : m_Cameras)
@@ -48,9 +53,10 @@ void Renderer::Draw()
 
 		m_pGraphics->SetRenderTarget(0, pCamera->GetRenderTarget());
 		m_pGraphics->SetDepthStencil(pCamera->GetDepthStencil());
-		m_pGraphics->Clear(ClearFlags::All, Color(0.2f, 0.2f, 0.2f, 1.0f), 1.0f, 1);
+		m_pGraphics->SetViewport(pCamera->GetViewport());
+		m_pGraphics->Clear(pCamera->GetClearFlags(), pCamera->GetClearColor(), 1.0f, 1);
 
-		m_pGraphics->SetViewport(pCamera->GetViewport(), false);
+		m_pCurrentMaterial = nullptr;
 
 		for (Drawable* pDrawable : m_Drawables)
 		{
@@ -110,6 +116,35 @@ void Renderer::RemoveCamera(Camera* pCamera)
 void Renderer::QueueCamera(Camera * pCamera)
 {
 	m_CameraQueue.push_back(pCamera);
+}
+
+void Renderer::CreateQuadGeometry()
+{
+	m_pQuadVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
+	std::vector<VertexElement> elements = {
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false)
+	};
+	m_pQuadVertexBuffer->Create(4, elements);
+	Vector3 vertices[] = {
+		Vector3(-1.0f, 1.0f, 0.0f),
+		Vector3(1.0f, 1.0f, 0.0f),
+		Vector3(1.0f, -1.0f, 0.0f),
+		Vector3(-1.0f, -1.0f, 0.0f),
+	};
+	m_pQuadVertexBuffer->SetData(vertices);
+
+	m_pQuadIndexBuffer = std::make_unique<IndexBuffer>(m_pGraphics);
+	m_pQuadIndexBuffer->Create(6, false, false);
+	int indices[] = {
+		0, 1, 2,
+		0, 2, 3
+	};
+	m_pQuadIndexBuffer->SetData(indices);
+
+	m_pQuadGeometry = std::make_unique<Geometry>();
+	m_pQuadGeometry->SetIndexBuffer(m_pQuadIndexBuffer.get());
+	m_pQuadGeometry->SetVertexBuffer(m_pQuadVertexBuffer.get());
+	m_pQuadGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, 6, 4);
 }
 
 void Renderer::SetPerFrameParameters()

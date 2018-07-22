@@ -42,7 +42,9 @@ public:
 	virtual bool Resolve(bool force) = 0;
 
 	void SetAddressMode(const TextureAddressMode addressMode);
+	void SetMipLevels(const int mipLevels) { m_MipLevels = mipLevels; }
 	void SetResolveDirty(bool dirty) { m_ResolveTextureDirty = dirty; }
+	void RegenerateMips();
 	void UpdateParameters();
 
 	void* GetResource() const { return m_pResource; }
@@ -53,6 +55,7 @@ public:
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
+	int GetMultiSample() const { return m_MultiSample; }
 	bool GetResolveDirty() const { return m_ResolveTextureDirty; }
 	unsigned int GetFormat() const { return m_TextureFormat; }
 	bool IsCompressed() const;

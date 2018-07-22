@@ -172,7 +172,7 @@ bool FileSystem::IterateDirectory(const std::string& path, FileVisitor& visitor)
 	return true;
 }
 
-bool FileSystem::GetFileAttributes(const std::string filePath, FileAttributes& attributes)
+bool FileSystem::GetFileAttributes(const std::string& filePath, FileAttributes& attributes)
 {
 	WIN32_FILE_ATTRIBUTE_DATA info;
 	if (GetFileAttributesEx(filePath.c_str(), GetFileExInfoStandard, &info) == false)

@@ -61,20 +61,19 @@ class LambdaDelegate : public IDelegate<RetVal, Args...>
 {
 public:
 	explicit LambdaDelegate(TLambda&& lambda) : 
-		m_Lambda(new TLambda(lambda)) 
+		m_pLambda(std::make_shared<TLambda>(lambda)) 
 	{}
 	virtual ~LambdaDelegate()
 	{
-		delete m_Lambda;
 	}
 
 	RetVal Execute(Args... args) override
 	{
-		return (*m_Lambda)(args...);
+		return (*m_pLambda)(args...);
 	}
 
 private:
-	TLambda* m_Lambda;
+	std::shared_ptr<TLambda> m_pLambda;
 };
 
 //Delegate for shared pointers

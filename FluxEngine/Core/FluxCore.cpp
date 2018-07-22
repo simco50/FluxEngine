@@ -31,6 +31,8 @@
 #include "Rendering/Core/Texture3D.h"
 #include "Content/Image.h"
 #include "Rendering/Core/TextureCube.h"
+#include "Rendering/ReflectionProbe.h"
+#include "Scenegraph/SceneNode.h"
 
 bool FluxCore::m_Exiting;
 
@@ -105,93 +107,42 @@ void FluxCore::InitGame()
 	AUTOPROFILE(FluxCore_InitGame);
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, 1, 1), true);
 	m_pCamera = m_pScene->CreateChild<FreeCamera>("Camera");
 	m_pCamera->GetCamera()->SetNearPlane(10);
 	m_pCamera->GetCamera()->SetFarPlane(10000);
-	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	//m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
-	m_CubeTexture = std::make_unique<TextureCube>(m_pContext);
-	m_CubeTexture->SetSize(512, 512, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, 1, nullptr);
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
-	std::vector<std::string> meshPaths;
-	meshPaths.push_back("Resources/Meshes/obj/Man_Walking.dae");
-	std::vector<Mesh*> meshes;
-	for (std::string& path : meshPaths)
-	{
-		Mesh* pMesh = m_pResourceManager->Load<Mesh>(path);
-		std::vector<VertexElement> desc =
-		{
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
-			VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
-			VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
-		};
-		if (pMesh)
-		{
-			pMesh->CreateBuffers(desc);
-		}
-		meshes.push_back(pMesh);
-	}
-
-	std::vector<Material*> pMaterials;
-
-	pMaterials.push_back(m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml"));
-	pMaterials[0]->SetTexture(TextureSlot::Cube, m_CubeTexture.get());
-
-	for (size_t x = 0; x < meshes.size(); x++)
-	{
-		SceneNode* pObject = m_pScene->CreateChild("Peasant Man");
-		pObject->GetTransform()->SetPosition((float)x * 150, 0, 0);
-		pObject->GetTransform()->SetScale(0.4f, 0.4f, 0.4f);
-		AnimatedModel* pModel = pObject->CreateComponent<AnimatedModel>();
-		pModel->SetMesh(meshes[x]);
-		pModel->SetMaterial(pMaterials[0]);
-		pObject->CreateComponent<Rigidbody>();
-		pObject->CreateComponent<BoxCollider>(pModel->GetBoundingBox());
-		Animator* pAnimator = pObject->CreateComponent<Animator>();
-		pAnimator->Play();
-	}
-	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
-
-	SceneNode* pCubeNode = m_pScene->CreateChild("Skybox");
-	Material* pSkybox = m_pResourceManager->Load<Material>("Resources/Materials/Skybox.xml");
-	
-	Model* pCubeModel = pCubeNode->CreateComponent<Model>();
-	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
-	std::vector<VertexElement> desc =
-	{
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-	};
-	pCubeMesh->CreateBuffers(desc);
-	pCubeModel->SetMesh(pCubeMesh);
-	pCubeModel->SetMaterial(pSkybox);
-	pCubeModel->SetCullingEnabled(false);
-
-	SceneNode* pSphereNode = m_pScene->CreateChild("Sphere");
-
+	pA = m_pScene->CreateChild("Cube A");
 	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
-	pDefaultMaterial->SetTexture(TextureSlot::Cube, m_CubeTexture.get());
-	Model* pSphereModel = pSphereNode->CreateComponent<Model>();
-	Mesh* pSphereMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Sphere.flux");
-	std::vector<VertexElement> sphereDesc =
+	Model* pCubeModel = pA->CreateComponent<Model>();
+	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
+	std::vector<VertexElement> cubeDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 	};
-	pSphereMesh->CreateBuffers(sphereDesc);
-	pSphereModel->SetMesh(pSphereMesh);
-	pSphereModel->SetMaterial(pDefaultMaterial);
+	pCubeMesh->CreateBuffers(cubeDesc);
+	pCubeModel->SetMesh(pCubeMesh);
+	pCubeModel->SetMaterial(pDefaultMaterial);
 	
-	pSphereNode->GetTransform()->SetScale(20.f, 20.0f, 20.0f);
+	pA->GetTransform()->SetScale(20.f, 20.0f, 20.0f);
 
-	SceneNode* pReflectionCapture = m_pScene->CreateChild("Reflection Capture");
-	pReflectionCapture->GetTransform()->SetPosition(-50.0f, 50.0f, -50.0f);
+	pB = pA->CreateChild("Cube B");
+	pCubeModel = pB->CreateComponent<Model>();
+	pCubeModel->SetMesh(pCubeMesh);
+	pCubeModel->SetMaterial(pDefaultMaterial);
+	pB->GetTransform()->SetScale(12.f, 12.0f, 12.0f);
+	pB->GetTransform()->Translate(16, 0.0f, 0.0f, Space::WORLD);
+
+	pC = pB->CreateChild("Cube C");
+	pCubeModel = pC->CreateComponent<Model>();
+	pCubeModel->SetMesh(pCubeMesh);
+	pCubeModel->SetMaterial(pDefaultMaterial);
+	pC->GetTransform()->SetScale(8.f, 8.0f, 8.0f);
+	pC->GetTransform()->Translate(16, 10.0f, 0.0f, Space::WORLD);
 }
 
 void FluxCore::ProcessFrame()
@@ -217,9 +168,9 @@ void FluxCore::ProcessFrame()
 
 	m_pGraphics->BeginFrame();
 
-	SceneNode* pNode = m_pScene->FindNode("Sphere");
-	pNode->GetTransform()->SetPosition(cos(GameTimer::GameTime()) * 50.0f, 50.0f, sin(GameTimer::GameTime()) * 50.0f);
-	m_CubeTexture->QueueRenderToTexture(*m_pScene->FindNode("Reflection Capture")->GetTransform());
+	pA->GetTransform()->Rotate(0, GameTimer::DeltaTime() * 50, 0);
+	pB->GetTransform()->Rotate(GameTimer::DeltaTime() * 80, 0, 0, Space::SELF);
+	pC->GetTransform()->Rotate(0, -GameTimer::DeltaTime() * 100, 0, Space::SELF);
 
 	m_pScene->Update();
 

@@ -3,6 +3,6 @@
 		<Shader type="Pixel" source="Resources/Shaders/LUT"/>
 	</Shaders>
 	<Parameters>
-		<Texture3D slot="Volume" value="Resources/Textures/RGBTable16x1.dds"/>
+		<Texture3D slot="Volume" value="Resources/Textures/RGBTable16x1_edit.dds"/>
 	</Parameters>
 </Material>

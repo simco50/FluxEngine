@@ -39,6 +39,7 @@ void PostProcessing::Draw()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
+	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	RenderTarget* pCurrentSource = m_pGraphics->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
@@ -94,5 +95,6 @@ void PostProcessing::AddEffect(Material* pMaterial, const bool active)
 void PostProcessing::OnResize(const int width, const int height)
 {
 	m_pRenderTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, m_pGraphics->GetMultisample(), nullptr);
+	m_pRenderTexture->SetAddressMode(TextureAddressMode::CLAMP);
 	m_pDepthTexture->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_pGraphics->GetMultisample(), nullptr);
 }

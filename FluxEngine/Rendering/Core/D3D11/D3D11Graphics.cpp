@@ -20,12 +20,15 @@
 #include <SDL_syswm.h>
 #include "Content/Image.h"
 #include "Input/InputEngine.h"
+#include "../../Renderer.h"
+#include "../../Geometry.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
 Graphics::Graphics(Context* pContext) :
 	Subsystem(pContext),
-	m_pImpl(std::make_unique<GraphicsImpl>())
+	m_pImpl(std::make_unique<GraphicsImpl>()),
+	m_WindowType(WindowType::WINDOWED)
 {
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
@@ -310,14 +313,13 @@ void Graphics::UpdateShaderProgram()
 {
 	if (m_pImpl->m_ShaderProgramDirty)
 	{
-		//WARNING: THIS IS A REALLY BAD WAY TO HASH THE SHADERS AND THIS CAUSED A HORRIBLE BUG. PLEASE DO SOMETHING BETTER!!!
-		unsigned int hash = 0;
+		uint64 hash = 0;
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
-			hash <<= 8;
+			hash <<= 16;
 			if (pVariation == nullptr)
 				continue;
-			hash |= pVariation->GetByteCode().size();
+			hash |= (int)pVariation->GetByteCode().size() % std::numeric_limits<uint16>::max();
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -439,7 +441,7 @@ bool Graphics::SetShaderParameter(const std::string& name, const Matrix& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Matrix), &value);
 }
 
-void Graphics::SetViewport(const FloatRect& rect, bool relative)
+void Graphics::SetViewport(const FloatRect& rect)
 {
 	D3D11_VIEWPORT viewport;
 	viewport.Height = rect.GetHeight();
@@ -448,20 +450,7 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 	viewport.TopLeftY = rect.Top;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
-
-	if (relative)
-	{
-		m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
-
-		viewport.Height *= m_WindowHeight;
-		viewport.Width *= m_WindowWidth;
-		viewport.TopLeftX *= m_WindowWidth;
-		viewport.TopLeftY *= m_WindowHeight;
-	}
-	else
-	{
-		m_CurrentViewport = { viewport.TopLeftX / m_WindowWidth, viewport.TopLeftY / m_WindowHeight, viewport.Width / m_WindowWidth, viewport.Height / m_WindowHeight };
-	}
+	m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
 
 	m_pImpl->m_pDeviceContext->RSSetViewports(1, &viewport);
 }
@@ -556,28 +545,50 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
-	PrepareDraw();
-	ID3D11RenderTargetView* pRtv = m_pImpl->m_RenderTargetViews[0];
-	ID3D11DepthStencilView* pDsv = m_pImpl->m_pDepthStencilView;
-	if (pRtv && (clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget)
+	if (m_CurrentViewport.Left == 0 && m_CurrentViewport.Top == 0 && m_CurrentViewport.Right == m_WindowWidth && m_CurrentViewport.Bottom == m_WindowHeight)
 	{
-		m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
+		PrepareDraw();
+		ID3D11RenderTargetView* pRtv = m_pImpl->m_RenderTargetViews[0];
+		ID3D11DepthStencilView* pDsv = m_pImpl->m_pDepthStencilView;
+		if (pRtv && (clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget)
+		{
+			m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
+		}
+		if (pDsv)
+		{
+			unsigned int depthClearFlags = 0;
+			if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
+			{
+				depthClearFlags |= D3D11_CLEAR_DEPTH;
+			}
+			if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
+			{
+				depthClearFlags |= D3D11_CLEAR_STENCIL;
+			}
+			if (depthClearFlags != 0)
+			{
+				m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
+			}
+		}
 	}
-	if (pDsv)
+	else
 	{
-		unsigned int depthClearFlags = 0;
-		if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
-		{
-			depthClearFlags |= D3D11_CLEAR_DEPTH;
-		}
-		if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
-		{
-			depthClearFlags |= D3D11_CLEAR_STENCIL;
-		}
-		if (depthClearFlags != 0)
-		{
-			m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
-		}
+		GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
+		GetDepthStencilState()->SetDepthWrite((clearFlags & ClearFlags::Depth) == ClearFlags::Depth);
+		GetBlendState()->SetColorWrite(((clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget) ? ColorWrite::ALL : ColorWrite::NONE);
+		GetDepthStencilState()->SetStencilTest((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil, CompareMode::ALWAYS, StencilOperation::REF, StencilOperation::KEEP, StencilOperation::KEEP, stencil, 0XFF, 0XFF);
+
+		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
+
+		SetShader(ShaderType::VertexShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::VertexShader));
+		SetShader(ShaderType::PixelShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::PixelShader));
+
+		Matrix worldMatrix = Matrix::CreateTranslation(Vector3(0, 0, depth));
+
+		SetShaderParameter("cColor", color);
+		SetShaderParameter("cWorld", worldMatrix);
+
+		quadGeometry->Draw(this);
 	}
 }
 
@@ -603,7 +614,7 @@ void Graphics::FlushRenderTargetChanges(bool force)
 
 void Graphics::FlushSRVChanges(bool force)
 {
-	if ((m_pImpl->m_TexturesDirty || force) && m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture > 0)
+	if ((m_pImpl->m_TexturesDirty || force) && m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1 > 0)
 	{
 		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
@@ -855,7 +866,11 @@ void Graphics::UpdateSwapchain(int width, int height)
 		SetRenderTarget(i, nullptr);
 	}
 	SetDepthStencil(nullptr);
-	SetViewport(m_CurrentViewport, true);
+	m_CurrentViewport.Left = 0;
+	m_CurrentViewport.Top = 0;
+	m_CurrentViewport.Right = (float)width;
+	m_CurrentViewport.Bottom = (float)height;
+	SetViewport(m_CurrentViewport);
 
 	m_WindowWidth = width;
 	m_WindowHeight = height;

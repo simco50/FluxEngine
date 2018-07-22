@@ -12,6 +12,8 @@ public:
 	Application();
 	virtual ~Application();
 
+	DELETE_COPY(Application)
+
 	int Run();
 	virtual void Start() {}
 	virtual void Stop() {}

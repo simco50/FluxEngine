@@ -1,9 +1,11 @@
 #pragma once
 
 #include "SceneGraph/Component.h"
+#include "../Core/GraphicsDefines.h"
 
 class Graphics;
 class RenderTarget;
+class Texture2D;
 struct RaycastResult;
 
 class Camera : public Component
@@ -45,12 +47,16 @@ public:
 	bool Raycast(RaycastResult& result) const;
 
 	void SetRenderTarget(RenderTarget* pRenderTarget) { m_pRenderTarget = pRenderTarget; }
-	void SetDepthStencil(RenderTarget* pDepthStencil) { m_pDepthStencil = pDepthStencil; }
 	void SetRenderOrder(const int order) { m_Order = order; }
 
+	void SetClearFlags(const ClearFlags& flags) { m_ClearFlags = flags; }
+	void SetClearColor(const Color& color) { m_ClearColor = color; }
+
 	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
-	RenderTarget* GetDepthStencil() const { return m_pDepthStencil; }
+	RenderTarget* GetDepthStencil();
 	int GetRenderOrder() const { return m_Order; }
+	const ClearFlags& GetClearFlags() const { return m_ClearFlags; }
+	const Color& GetClearColor() const { return m_ClearColor; }
 
 	virtual void OnMarkedDirty(const Transform* transform) override;
 
@@ -76,14 +82,11 @@ private:
 	bool m_Perspective = true;
 
 	FloatRect m_Viewport;
-	float m_VpX = 0.0f;
-	float m_VpY = 0.0f;
-	float m_VpWidth = 1.0f;
-	float m_VpHeight = 1.0f;
 	int m_Order = 0;
 
 	BoundingFrustum m_Frustum;
 	RenderTarget* m_pRenderTarget = nullptr;
-	RenderTarget* m_pDepthStencil = nullptr;
+	std::unique_ptr<Texture2D> m_pDepthStencil;
+	Color m_ClearColor = Color(0.2f, 0.2f, 0.2f, 1.0f);
+	ClearFlags m_ClearFlags = ClearFlags::All;
 };
-

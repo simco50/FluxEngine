@@ -17,11 +17,11 @@
 #include "Rendering/Core/Texture2D.h"
 
 ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
-	Drawable(pContext)
+	Drawable(pContext),
+	m_pGeometry(std::make_unique<Geometry>())
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
-	m_pGeometry = std::make_unique<Geometry>();
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
 	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");

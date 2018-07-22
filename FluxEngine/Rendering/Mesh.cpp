@@ -157,7 +157,7 @@ void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
 	}
 }
 
-Animation* Mesh::GetAnimation(const std::string name) const
+Animation* Mesh::GetAnimation(const std::string& name) const
 {
 	StringHash hash = std::hash<std::string>{}(name);
 	return GetAnimation(hash);
@@ -250,7 +250,6 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 		return false;
 	if (!ProcessAssimpMeshes(pScene))
 		return false;
-	std::map<std::string, int> boneMap;
 	if (!ProcessSkeleton(pScene))
 		return false;
 	if (!ProcessAssimpAnimations(pScene))

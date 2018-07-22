@@ -13,7 +13,7 @@ Texture3D::Texture3D(Context* pContext) :
 
 Texture3D::~Texture3D()
 {
-	Release();
+	Texture3D::Release();
 }
 
 void Texture3D::Release()

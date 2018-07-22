@@ -178,7 +178,7 @@ bool Misc::MessageBox(const std::string& title, const std::string& description)
 	return true;
 }
 
-bool Misc::OsExecute(const std::string& command, const std::string commandLine, const std::string& operation /*= ""*/)
+bool Misc::OsExecute(const std::string& command, const std::string& commandLine, const std::string& operation /*= ""*/)
 {
 	HINSTANCE process = ShellExecute(0,
 		operation.c_str(),

@@ -5,6 +5,9 @@ class Graphics;
 class Drawable;
 class Material;
 class Camera;
+class IndexBuffer;
+class VertexBuffer;
+class Geometry;
 struct Batch;
 
 class Renderer : public Subsystem
@@ -26,15 +29,23 @@ public:
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 	Vector3* GetLightPosition() { return &m_LightPosition; }
 
+	Geometry* GetQuadGeometry() const { return m_pQuadGeometry.get(); }
+
 	void QueueCamera(Camera* pCamera);
 
+	MulticastDelegate<>& OnPreRender() { return m_OnPreRender; }
+
 private:
+	void CreateQuadGeometry();
+
 	void SetPerFrameParameters();
 	void SetPerCameraParameters(Camera* pCamera);
 	void SetPerMaterialParameters(const Material* pMaterial);
 	void SetPerBatchParameters(const Batch& batch, Camera* pCamera);
 
 	const Material* m_pCurrentMaterial = nullptr;
+
+	MulticastDelegate<> m_OnPreRender;
 
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;
@@ -46,4 +57,8 @@ private:
 	Camera* m_pCurrentCamera = nullptr;
 
 	std::vector<Camera*> m_CameraQueue;
+
+	std::unique_ptr<VertexBuffer> m_pQuadVertexBuffer;
+	std::unique_ptr<IndexBuffer> m_pQuadIndexBuffer;
+	std::unique_ptr<Geometry> m_pQuadGeometry;
 };

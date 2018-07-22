@@ -18,7 +18,7 @@ TextureCube::TextureCube(Context* pContext) :
 
 TextureCube::~TextureCube()
 {
-	Release();
+	TextureCube::Release();
 }
 
 void TextureCube::Release()
@@ -204,6 +204,10 @@ bool TextureCube::Create()
 	desc.Width = m_Width;
 	desc.MipLevels = m_MipLevels;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+	if (m_Usage == TextureUsage::RENDERTARGET && m_MipLevels > 1)
+	{
+		desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
 	desc.Usage = (m_Usage == TextureUsage::DYNAMIC) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
@@ -263,56 +267,4 @@ bool TextureCube::Resolve(bool force)
 		m_ResolveTextureDirty = false;
 	}
 	return true;
-}
-
-void TextureCube::QueueRenderToTexture(const Transform& transform)
-{
-	Renderer* pRenderer = GetSubsystem<Renderer>();
-	
-	for (int i = 0; i < (int)CubeMapFace::MAX; ++i)
-	{
-		if (m_Cameras[i] == nullptr)
-		{
-			m_Cameras[i] = std::make_unique<Camera>(m_pContext);
-			m_Cameras[i]->SetRenderTarget(m_RenderTargets[i].get());
-
-			m_DepthStencils[i] = std::make_unique<Texture2D>(m_pContext);
-			m_DepthStencils[i]->SetSize(m_Width, m_Height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
-
-			m_Cameras[i]->SetDepthStencil(m_DepthStencils[i]->GetRenderTarget());
-		}
-
-		CubeMapFace face = (CubeMapFace)i;
-
-		m_Cameras[i]->SetProjection(XMMatrixPerspectiveFovLH(90.0f * (XM_PI / 180.0f), 1.0f, 0.01f, 200.0f));
-
-		Vector3 position = transform.GetWorldPosition();
-
-		switch (face)
-		{
-		case CubeMapFace::POSITIVE_X:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f)));
-			break;
-		case CubeMapFace::NEGATIVE_X:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f)));
-			break;
-		case CubeMapFace::POSITIVE_Y:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f)));
-			break;
-		case CubeMapFace::NEGATIVE_Y:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f)));
-			break;
-		case CubeMapFace::POSITIVE_Z:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f)));
-			break;
-		case CubeMapFace::NEGATIVE_Z:
-			m_Cameras[i]->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f)));
-			break;
-		case CubeMapFace::MAX:
-		default:
-			break;
-		}
-		m_Cameras[i]->UpdateFrustum();
-		pRenderer->QueueCamera(m_Cameras[i].get());
-	}
 }

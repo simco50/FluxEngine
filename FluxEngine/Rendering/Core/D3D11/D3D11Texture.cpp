@@ -199,3 +199,11 @@ bool Texture::IsCompressed() const
 		return false;
 	}
 }
+
+void Texture::RegenerateMips()
+{
+	if (m_Usage == TextureUsage::RENDERTARGET && m_pShaderResourceView != nullptr && m_MipLevels > 1)
+	{
+		m_pGraphics->GetImpl()->GetDeviceContext()->GenerateMips((ID3D11ShaderResourceView*)m_pShaderResourceView);
+	}
+}

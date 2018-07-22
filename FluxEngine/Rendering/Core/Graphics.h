@@ -59,7 +59,7 @@ public:
 	void InvalidateShaders();
 	bool SetShader(const ShaderType type, ShaderVariation* pShader);
 
-	void SetViewport(const FloatRect& rect, bool relative = false);
+	void SetViewport(const FloatRect& rect);
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);

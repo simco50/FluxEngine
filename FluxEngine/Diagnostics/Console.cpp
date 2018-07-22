@@ -41,8 +41,6 @@ Console::Console()
 		FLUX_LOG(Error, "Failed to open console log");
 	}
 
-	std::stringstream stream;
-
 	FLUX_LOG(Info, "Date: %02d-%02d-%02d", time.Day, time.Month, time.Year);
 	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
 	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());

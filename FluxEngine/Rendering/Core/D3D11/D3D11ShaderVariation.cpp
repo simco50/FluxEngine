@@ -192,7 +192,7 @@ bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
 {
 	AUTOPROFILE_DESC(ShaderVariation_CreateShader, m_Name);
 
-	if (m_ShaderByteCode.size() <= 0)
+	if (m_ShaderByteCode.size() == 0)
 	{
 		return false;
 	}

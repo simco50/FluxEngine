@@ -13,7 +13,6 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 class PostProcessing;
-class TextureCube;
 
 class FluxCore : public Object
 {
@@ -38,7 +37,7 @@ private:
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	Scene* pScene;
+	Scene* pScene = nullptr;
 
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
@@ -59,5 +58,7 @@ private:
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
 
-	std::unique_ptr<TextureCube> m_CubeTexture;
+	SceneNode* pA = nullptr;
+	SceneNode* pB = nullptr;
+	SceneNode* pC = nullptr;
 };
