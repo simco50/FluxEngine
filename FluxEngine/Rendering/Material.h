@@ -93,7 +93,7 @@ public:
 	void SetDepthEnabled(bool enabled) { m_DepthEnabled = enabled; }
 	void SetDepthWrite(bool enabled) { m_DepthWrite = enabled; }
 
-	const std::string& GetMaterialName() const { return m_MaterialName; }
+	const std::string& GetName() const { return m_Name; }
 
 	CullMode GetCullMode() const { return m_CullMode; }
 	BlendMode GetBlendMode() const { return m_BlendMode; }
@@ -113,7 +113,7 @@ private:
 
 	void RefreshMemoryUsage();
 
-	std::string m_MaterialName;
+	std::string m_Name;
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
 	
 	//Properties

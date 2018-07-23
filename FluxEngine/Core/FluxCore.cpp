@@ -47,6 +47,15 @@ FluxCore::~FluxCore()
 	Profiler::DestroyInstance();
 }
 
+void Test(int)
+{
+	float f = 474545864684.0485646846f;
+	for (size_t j = 0; j < 10000; ++j)
+	{
+		f = sqrt(f);
+	}
+}
+
 int FluxCore::Run(HINSTANCE hInstance)
 {
 	UNREFERENCED_PARAMETER(hInstance);
@@ -108,16 +117,16 @@ void FluxCore::InitGame()
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pCamera = m_pScene->CreateChild<FreeCamera>("Camera");
+	m_pCamera->GetTransform()->SetPosition(0, 0, -40.0f);
 	m_pCamera->GetCamera()->SetNearPlane(10);
 	m_pCamera->GetCamera()->SetFarPlane(10000);
+	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
 
-	pA = m_pScene->CreateChild("Cube A");
 	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
-	Model* pCubeModel = pA->CreateComponent<Model>();
 	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
 	std::vector<VertexElement> cubeDesc =
 	{
@@ -126,9 +135,11 @@ void FluxCore::InitGame()
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 	};
 	pCubeMesh->CreateBuffers(cubeDesc);
+	
+	pA = m_pScene->CreateChild("Cube A");
+	Model* pCubeModel = pA->CreateComponent<Model>();
 	pCubeModel->SetMesh(pCubeMesh);
 	pCubeModel->SetMaterial(pDefaultMaterial);
-	
 	pA->GetTransform()->SetScale(20.f, 20.0f, 20.0f);
 
 	pB = pA->CreateChild("Cube B");
@@ -256,7 +267,7 @@ void FluxCore::RenderUI()
 	{
 		for (uint32 i = 0; i < m_pPostProcessing->GetMaterialCount(); ++i)
 		{
-			ImGui::Checkbox(m_pPostProcessing->GetMaterial(i)->GetMaterialName().c_str(), &m_pPostProcessing->GetMaterialActive(i));
+			ImGui::Checkbox(m_pPostProcessing->GetMaterial(i)->GetName().c_str(), &m_pPostProcessing->GetMaterialActive(i));
 		}
 		ImGui::TreePop();
 	}

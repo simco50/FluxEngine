@@ -63,9 +63,6 @@ public:
 	explicit LambdaDelegate(TLambda&& lambda) : 
 		m_pLambda(std::make_shared<TLambda>(lambda)) 
 	{}
-	virtual ~LambdaDelegate()
-	{
-	}
 
 	RetVal Execute(Args... args) override
 	{
@@ -187,7 +184,7 @@ public:
 	static SinglecastDelegate CreateLambda(LambdaType&& lambda)
 	{
 		SinglecastDelegate<RetVal, Args...> NewDelegate;
-		NewDelegate.BindLambda(lambda);
+		NewDelegate.BindLambda(std::forward<LambdaType>(lambda));
 		return NewDelegate;
 	}
 

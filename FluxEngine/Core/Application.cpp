@@ -18,12 +18,16 @@ int Application::Run()
 {
 	int exitCode = m_pEngine->Run(nullptr);
 	if (exitCode > 0)
+	{
 		return exitCode;
+	}
 
 	Start();
 
 	while (FluxCore::IsExiting() == false)
+	{
 		m_pEngine->ProcessFrame();
+	}
 
 	Stop();
 

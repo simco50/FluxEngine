@@ -2,8 +2,10 @@
 	<Shaders>
 		<Shader type="Pixel" source="Resources/Shaders/Vignette"/>
 	</Shaders>
+
 	<Parameters>
-		<Value name="cRadius" value="0.75"/>
-		<Value name="cSmoothness" value="0.45"/>
+		<Value name="cIntensity" value="0.5"/>
+		<Value name="cRadius" value="0.8"/>
+		<Value name="cSmoothness" value="0.65"/>
 	</Parameters>
 </Material>

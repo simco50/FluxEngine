@@ -17,23 +17,16 @@ AsyncTaskQueue::~AsyncTaskQueue()
 	m_Shutdown = true;
 
 	m_Tasks.clear();
-
-	for (WorkerThread*& pThread : m_pThreads)
-	{
-		delete pThread;
-		pThread = nullptr;
-	}
+	m_Threads.clear();
 }
 
 void AsyncTaskQueue::CreateThreads(const size_t count)
 {
-	if (m_pThreads.size() > 0)
-		return;
-	for (size_t i = 0; i < count; ++i)
+	for (size_t i = m_Threads.size(); i < count; ++i)
 	{
-		WorkerThread* pThread = new WorkerThread(this, (int)i);
+		std::unique_ptr<WorkerThread> pThread = std::make_unique<WorkerThread>(this, (int)i);
 		pThread->Run();
-		m_pThreads.push_back(pThread);
+		m_Threads.push_back(std::move(pThread));
 	}
 }
 
@@ -44,12 +37,16 @@ void AsyncTaskQueue::JoinAll()
 	for (;;)
 	{
 		if (IsCompleted())
+		{
 			break;
+		}
 	}
 #else
 	//Execute all of them on the main thread (current)
 	for (AsyncTask* pTask : m_Queue)
+	{
 		pTask->Action.ExecuteIfBound(pTask, 0);
+	}
 	m_Queue.clear();
 #endif
 
@@ -70,10 +67,14 @@ void AsyncTaskQueue::ProcessItems(int index)
 	for (;;)
 	{
 		if (m_Shutdown)
+		{
 			return;
+		}
 
 		if (m_Paused && !wasActive)
+		{
 			Sleep(0);
+		}
 
 		m_QueueMutex.Lock();
 		if (!m_Queue.empty())
@@ -98,6 +99,8 @@ void AsyncTaskQueue::ProcessItems(int index)
 
 AsyncTask* AsyncTaskQueue::GetFreeTask()
 {
+	assert(Thread::IsMainThread());
+
 	if (m_TaskPool.size() > 0)
 	{
 		AsyncTask* pTask = m_TaskPool.back();
@@ -115,7 +118,9 @@ AsyncTask* AsyncTaskQueue::GetFreeTask()
 void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 {
 	if (pItem == nullptr)
+	{
 		return;
+	}
 
 	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](AsyncTask* pOther) {return pOther == pItem; });
 	if (pIt != m_TaskPool.end())
@@ -142,8 +147,10 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 				break;
 			}
 		}
-		if(isInserted == false)
+		if (isInserted == false)
+		{
 			m_Queue.push_back(pItem);
+		}
 	}
 }
 
@@ -152,12 +159,35 @@ void AsyncTaskQueue::Stop()
 	m_Shutdown = true;
 }
 
+void AsyncTaskQueue::ParallelFor(const int count, const SinglecastDelegate<void, int>& function, bool singleThreaded /* = false */)
+{
+	if (singleThreaded)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			function.ExecuteIfBound(i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			AsyncTask* pTask = GetFreeTask();
+			pTask->Action.BindLambda([function, i](AsyncTask*, int) { function.ExecuteIfBound(i); });
+			AddWorkItem(pTask);
+		}
+		JoinAll();
+	}
+}
+
 bool AsyncTaskQueue::IsCompleted() const
 {
 	for (auto& pItem : m_RunningTasks)
 	{
 		if (pItem->IsCompleted == false)
+		{
 			return false;
+		}
 	}
 	return true;
 }

@@ -43,7 +43,6 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 	if (pSettings != m_pParticleSystem)
 	{
 		m_pParticleSystem = pSettings;
-		pSettings->OnLoaded().AddLambda([this]() { SetSystem(m_pParticleSystem); });
 	}
 	if (pSettings == nullptr)
 	{

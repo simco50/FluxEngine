@@ -10,8 +10,8 @@
 
 bool ShaderVariation::Create()
 {
-	AUTOPROFILE_DESC(ShaderVariation_Create, m_pParentShader->GetName());
-	m_Name = m_pParentShader->GetShaderName() + "_" + Shader::GetEntryPoint(m_ShaderType);
+	AUTOPROFILE_DESC(ShaderVariation_Create, m_pParentShader->GetResourceName());
+	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
 	Graphics* pGraphics = GetSubsystem<Graphics>();
 	if (!Compile(pGraphics))
 	{

@@ -1,13 +1,12 @@
 #include "FluxEngine.h"
 #include "Image.h"
 
+#include "FileSystem/File/PhysicalFile.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
-#include "FileSystem/File/PhysicalFile.h"
-
-#include "DDSLoader.h"
 
 namespace STBI
 {
@@ -74,15 +73,25 @@ bool Image::Save(const std::string& filePath)
 	std::string extension = Paths::GetFileExtenstion(filePath);
 	PhysicalFile file(filePath);
 	if (file.OpenWrite() == false)
+	{
 		return false;
+	}
 	if (extension == "png")
+	{
 		return SavePng(file);
-	if(extension == "jpg")
+	}
+	if (extension == "jpg")
+	{
 		return SaveJpg(file);
+	}
 	if (extension == "tga")
+	{
 		return SaveTga(file);
+	}
 	if (extension == "bmp")
+	{
 		return SaveBmp(file);
+	}
 	FLUX_LOG(Warning, "[Image::Save] > File extension '%s' is not supported", extension.c_str());
 	return false;
 }
@@ -95,9 +104,12 @@ bool Image::LoadLUT(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	unsigned char*  pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	int components = 0;
+	unsigned char*  pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
 	if (pPixels == nullptr)
+	{
 		return false;
+	}
 
 	m_Pixels.resize(m_Height * m_Width * m_Components);
 	m_Width = m_Depth = m_Height = 16;
@@ -106,10 +118,15 @@ bool Image::LoadLUT(InputStream& inputStream)
 	int* c2D = (int*)pPixels;
 	int dim = m_Height;
 	for (int z = 0; z < dim; ++z)
+	{
 		for (int y = 0; y < dim; ++y)
+		{
 			for (int x = 0; x < dim; ++x)
-				c3D[x + y * dim + z * dim * dim]
-				= c2D[x + y * dim * dim + z * dim];
+			{
+				c3D[x + y * dim + z * dim * dim] = c2D[x + y * dim * dim + z * dim];
+			}
+		}
+	}
 
 	stbi_image_free(pPixels);
 
@@ -265,7 +282,7 @@ const unsigned char* Image::GetData(int mipLevel) const
 		FLUX_LOG(Warning, "[Image::GetSurfaceInfo] Requested mip level %d but only has %d mips", mipLevel, m_MipLevels);
 		return nullptr;
 	}
-	uint32 offset = mipLevel == 0 ? 0 : m_DataOffsets[mipLevel];
+	uint32 offset = mipLevel == 0 ? 0 : m_MipLevelDataOffsets[mipLevel];
 	return m_Pixels.data() + offset;
 }
 
@@ -289,7 +306,8 @@ bool Image::LoadStbi(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
-	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &m_ActualComponents, m_Components);
+	int components = 0;
+	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
 	if (pPixels == nullptr)
 	{
 		return false;
@@ -543,9 +561,6 @@ bool Image::LoadDds(InputStream& inputStream)
 			}
 		}
 
-		m_MipLevels = Math::Max(1, (int)header.dwMipMapCount);
-
-		// Is it a cube map or texture array? If so determine the size of the image chain.
 		bool isCubemap = (header.dwCaps2 & 0x0000FC00U) != 0 || (hasDxgi && (pDx10Header->miscFlag & 0x4) != 0);
 		uint32 imageChainCount = 1;
 		if (isCubemap)
@@ -558,12 +573,13 @@ bool Image::LoadDds(InputStream& inputStream)
 			m_IsArray = true;
 		}
 		uint32 totalDataSize = 0;
-		m_DataOffsets.clear();
+		m_MipLevelDataOffsets.clear();
+		m_MipLevels = Math::Max(1, (int)header.dwMipMapCount);
 		for (int mipLevel = 0; mipLevel < m_MipLevels; ++mipLevel)
 		{
 			MipLevelInfo mipInfo;
 			GetSurfaceInfo(header.dwWidth, header.dwHeight, header.dwDepth, mipLevel, mipInfo);
-			m_DataOffsets.push_back(totalDataSize);
+			m_MipLevelDataOffsets.push_back(totalDataSize);
 			totalDataSize += mipInfo.DataSize;
 		}
 

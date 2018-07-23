@@ -7,6 +7,7 @@
 #include "Material.h"
 #include "Core\DepthStencilState.h"
 #include "Input\InputEngine.h"
+#include "Core\BlendState.h"
 
 PostProcessing::PostProcessing(Context* pContext) :
 	Subsystem(pContext)
@@ -66,6 +67,7 @@ void PostProcessing::Draw()
 		{
 			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
 		}
+		m_pGraphics->GetBlendState()->SetBlendMode(pMaterial.second->GetBlendMode(), false);
 
 		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetParentTexture());
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);

@@ -14,6 +14,7 @@ struct AsyncTask
 class AsyncTaskQueue : public Subsystem
 {
 	FLUX_OBJECT(AsyncTaskQueue, Subsystem)
+	DELETE_COPY(AsyncTaskQueue)
 
 public:
 	AsyncTaskQueue(Context* pContext, const size_t count);
@@ -24,14 +25,16 @@ public:
 	AsyncTask* GetFreeTask();
 	void AddWorkItem(AsyncTask* pItem);
 	void Stop();
-	size_t GetThreadCount() const { return m_pThreads.size(); }
+	size_t GetThreadCount() const { return m_Threads.size(); }
+
+	void ParallelFor(const int count, const SinglecastDelegate<void, int>& function, bool singleThreaded = false);
 
 	bool IsCompleted() const;
 
 private:
 	void CreateThreads(const size_t count);
 
-	std::vector<WorkerThread*> m_pThreads;
+	std::vector<std::unique_ptr<WorkerThread>> m_Threads;
 
 	std::vector<std::unique_ptr<AsyncTask>> m_Tasks;
 	std::vector<AsyncTask*> m_RunningTasks;

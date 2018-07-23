@@ -14,8 +14,7 @@ AudioSource::AudioSource(Context* pContext, const std::string& filePath, const F
 		m_pSound = pResourceManager->Load<Sound>(filePath);
 		m_pSound->SetMode(mode);
 	}
-	AudioEngine* pAudioEngine = pContext->GetSubsystem<AudioEngine>();
-	m_pFmodSystem = pAudioEngine->GetSystem();
+	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
 
 AudioSource::AudioSource(Context* pContext, Sound* pSound): 
@@ -35,7 +34,7 @@ void AudioSource::Play()
 		return;
 	}
 
-	m_pFmodSystem->playSound(m_pSound->GetSound(), nullptr, false, &m_pChannel);
+	m_pAudio->GetSystem()->playSound(m_pSound->GetSound(), nullptr, false, &m_pChannel);
 }
 
 void AudioSource::PlayOneShot(Sound* pSound)
@@ -46,7 +45,7 @@ void AudioSource::PlayOneShot(Sound* pSound)
 		return;
 	}
 
-	m_pFmodSystem->playSound(pSound->GetSound(), nullptr, false, nullptr);
+	m_pAudio->GetSystem()->playSound(pSound->GetSound(), nullptr, false, nullptr);
 }
 
 void AudioSource::Stop()

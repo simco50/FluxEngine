@@ -3,6 +3,7 @@
 
 cbuffer MaterialBuffer : register(b3)
 {
+	float cIntensity;
 	float cRadius;
 	float cSmoothness;
 }
@@ -23,5 +24,5 @@ float4 PSMain(VS_OUTPUT input) : SV_TARGET
 	float center = length(input.texCoord - float2(0.5f, 0.5f));
 	float vignette = smoothstep(cRadius, cRadius - cSmoothness, center);
 	float4 sample = Sample2D(Diffuse, input.texCoord);
-	return float4(sample.rgb * vignette, sample.a);
+	return float4(sample.rgb * saturate(vignette + 1 - cIntensity), 1.0f);
 }

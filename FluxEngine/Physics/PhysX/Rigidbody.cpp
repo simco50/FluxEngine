@@ -57,8 +57,11 @@ void Rigidbody::OnNodeRemoved()
 
 void Rigidbody::OnMarkedDirty(const Transform* pTransform)
 {
+
+	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+
 	if (m_pBody)
-		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&pTransform->GetWorldMatrix())), true);
+		m_pBody->setGlobalPose(transform, true);
 }
 
 void Rigidbody::UpdateBody()
