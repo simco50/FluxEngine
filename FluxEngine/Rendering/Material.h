@@ -34,14 +34,16 @@ public:
 			m_DataOffset = (int)dataPool.size();
 			dataPool.resize(dataPool.size() + size);
 			if (pInData)
+			{
 				memcpy(dataPool.data() + m_DataOffset, pInData, size);
+			}
 		}
 		void SetData(const void* pInData, const size_t size)
 		{
 			assert(size == m_Size);
-			memcpy(m_pDataPool->data(), pInData, size);
+			memcpy(m_pDataPool->data() + m_DataOffset, pInData, size);
 		}
-		void* GetData() const { return m_pDataPool->data(); }
+		void* GetData() const { return m_pDataPool->data() + m_DataOffset; }
 		size_t GetSize() const { return m_Size; }
 	private:
 		size_t m_Size;
@@ -66,8 +68,7 @@ private:
 
 		size_t ByteSize() const
 		{
-			return m_Parameters.size() * sizeof(ParameterEntry) +
-				m_ParameterPool.size();
+			return m_Parameters.size() * sizeof(ParameterEntry) + m_ParameterPool.size();
 		}
 
 	private:
