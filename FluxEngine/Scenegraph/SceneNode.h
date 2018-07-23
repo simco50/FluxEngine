@@ -33,9 +33,6 @@ public:
 		return pChild;
 	}
 
-	void AddChild(SceneNode* pNode);
-	void AddComponent(Component* pComponent);
-
 	Transform* GetTransform() const { return m_pTransform.get();}
 	SceneNode* GetParent() const { return m_pParent; }
 
@@ -77,5 +74,8 @@ protected:
 	Scene* m_pScene = nullptr;
 
 private:
+	void AddChild(SceneNode* pNode);
+	void AddComponent(Component* pComponent);
+
 	std::string m_Name;
 };

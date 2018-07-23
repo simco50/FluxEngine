@@ -10,6 +10,8 @@ class Camera;
 
 class Scene : public SceneNode
 {
+	friend class SceneNode;
+
 	FLUX_OBJECT(Scene, SceneNode);
 
 public:
@@ -19,7 +21,6 @@ public:
 	virtual void Initialize();
 	void Update();
 
-	void AddChild(SceneNode* pNode);
 	Renderer* GetRenderer() const { return m_pRenderer; }
 	Camera* GetCamera() const;
 
@@ -30,6 +31,8 @@ public:
 	MulticastDelegate<>& OnSceneUpdate() { return m_OnSceneUpdate; }
 	
 private:
+	void AddChild(SceneNode* pNode);
+
 	Renderer* m_pRenderer;
 	std::vector<SceneNode*> m_Nodes;
 

@@ -84,12 +84,13 @@ void Collider::OnNodeSet(SceneNode* pNode)
 	m_pRigidbody = GetComponent<Rigidbody>();
 	if (m_pRigidbody == nullptr)
 	{
-		m_pRigidbody = new Rigidbody(m_pContext);
-		pNode->AddComponent(m_pRigidbody);
+		m_pRigidbody = m_pNode->CreateComponent<Rigidbody>();
 	}
 	CreateShape();
 	if (m_pShape)
+	{
 		m_pRigidbody->GetBody()->attachShape(*m_pShape);
+	}
 }
 
 void Collider::OnNodeRemoved()

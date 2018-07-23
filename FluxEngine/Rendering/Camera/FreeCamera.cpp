@@ -20,10 +20,8 @@ void FreeCamera::OnSceneSet(Scene* pScene)
 {
 	SceneNode::OnSceneSet(pScene);
 
-	AudioListener* pAudioListener = new AudioListener(m_pContext);
-	AddComponent(pAudioListener);
-	m_pCamera = new Camera(m_pContext);
-	AddComponent(m_pCamera);
+	CreateComponent<AudioListener>();
+	m_pCamera = CreateComponent<Camera>();
 
 	m_UpdateHandle = pScene->OnSceneUpdate().AddRaw(this, &FreeCamera::Update);
 }
