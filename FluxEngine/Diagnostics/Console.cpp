@@ -45,8 +45,8 @@ Console::Console()
 	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
 	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());
 
-	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration).c_str());
-	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform).c_str());
+	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
+	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform));
 	Misc::CpuId cpuId;
 	Misc::GetCpuId(&cpuId);
 	FLUX_LOG(Info, "Cpu: %s", cpuId.Brand.c_str());

@@ -22,6 +22,8 @@ using uint32 = uint32_t;
 using uint64 = uint64_t;
 #endif
 
+using StringHash = size_t;
+
 #define FORCEINLINE __forceinline
 #define FORCENOINLINE __declspec(noinline)
 

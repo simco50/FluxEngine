@@ -25,7 +25,9 @@ public:
 		std::string path = Paths::Normalize(filePath);
 		Resource* pResource = FindResource(path, T::GetTypeStatic());
 		if (pResource)
-			return (T*)pResource;
+		{
+			return static_cast<T*>(pResource);
+		}
 		pResource = new T(m_pContext);
 		if (!LoadResourcePrivate(pResource, path))
 		{
@@ -33,7 +35,7 @@ public:
 			return nullptr;
 		}
 		m_Resources[T::GetTypeStatic()][path] = pResource;
-		return (T*)pResource;
+		return static_cast<T*>(pResource);
 	}
 
 	void EnableAutoReload(bool enable);
@@ -48,10 +50,10 @@ public:
 	bool ReloadDependencies(const std::string& resourcePath);
 
 	void AddResourceDependency(Resource* pResource, const std::string& filePath);
+
+	//Remove all the reload dependencies other resources have to this resource
 	void ResetDependencies(Resource* pResource);
 
-	std::vector<Resource*> GetResourcesOfType(StringHash type);
-	unsigned int GetMemoryUsageOfType(StringHash type);
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
 	Resource* FindResource(const std::string& filePath, const StringHash type);

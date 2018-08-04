@@ -1,6 +1,7 @@
 #include "FluxEngine.h"
 #include "Profiler.h"
 #include "FileSystem\File\PhysicalFile.h"
+#include "Async\Thread.h"
 
 Profiler::Profiler() :
 	m_pRootBlock(std::make_unique<AutoProfilerBlock>("Root", "", nullptr))
@@ -12,7 +13,7 @@ Profiler::Profiler() :
 
 Profiler::~Profiler()
 {
-	__int64 endTime;
+	int64 endTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&endTime);
 	m_pRootBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0 / m_Frequency;
 
@@ -43,9 +44,13 @@ void Profiler::OutputLog(File* pFile, int maxDepth)
 				stream << "\t";
 			}
 			if (m_pCurrentBlock->Description.empty())
+			{
 				stream << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Time << " ms" << std::endl;
+			}
 			else
+			{
 				stream << "[" << m_pCurrentBlock->Name << "] > " << m_pCurrentBlock->Description << " : " << m_pCurrentBlock->Time << " ms" << std::endl;
+			}
 			std::string output = stream.str();
 			pFile->Write(output.c_str(), output.size());
 		}
@@ -54,7 +59,9 @@ void Profiler::OutputLog(File* pFile, int maxDepth)
 		{
 			m_pCurrentBlock = m_pCurrentBlock->pParent;
 			if (m_pCurrentBlock == nullptr)
+			{
 				return;
+			}
 			m_pCurrentBlock->Children.pop_front();
 			--depth;
 		}
@@ -68,16 +75,19 @@ void Profiler::BeginBlock(const std::string& name, const std::string& descriptio
 	std::unique_ptr<AutoProfilerBlock> pBlock = std::make_unique<AutoProfilerBlock>(name, description, m_pCurrentBlock);
 	pBlock->Frame = GameTimer::Ticks();
 	AutoProfilerBlock* pNewBlock = pBlock.get();
+
+	ScopeLock lock(m_BlockMutex);
 	m_pCurrentBlock->Children.push_back(std::move(pBlock));
 	m_pCurrentBlock = pNewBlock;
 }
 
 void Profiler::EndBlock()
 {
-	__int64 endTime;
+	int64 endTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&endTime);
-	m_pCurrentBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0f / m_Frequency;
 
+	ScopeLock lock(m_BlockMutex);
+	m_pCurrentBlock->Time = (endTime - m_pCurrentBlock->BeginTime) * 1000.0f / m_Frequency;
 	m_pCurrentBlock = m_pCurrentBlock->pParent;
 }
 

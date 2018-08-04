@@ -15,10 +15,10 @@ public:
 	virtual bool Load(InputStream& inputStream) = 0;
 	virtual bool Save(OutputStream& outputStream);
 
-	void SetFileName(const std::string& name) { m_FilePath = name; }
+	void SetFilePath(const std::string& name) { m_FilePath = name; }
 	void SetMemoryUsage(const unsigned int memory) { m_MemoryUsage = memory; }
 
-	const std::string& GetResourceName() const { return m_FilePath; }
+	const std::string& GetFilePath() const { return m_FilePath; }
 	unsigned int GetMemoryUsage() const { return m_MemoryUsage; }
 
 protected:

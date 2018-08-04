@@ -45,7 +45,7 @@ bool Texture2D::Load(InputStream& inputStream)
 
 bool Texture2D::SetImage(const Image& image)
 {
-	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetResourceName().c_str());
+	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetFilePath().c_str());
 
 	uint32 memoryUsage = 0;
 

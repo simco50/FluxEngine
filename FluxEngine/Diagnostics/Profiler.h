@@ -35,6 +35,7 @@ private:
 	std::unique_ptr<AutoProfilerBlock> m_pRootBlock;
 	AutoProfilerBlock* m_pCurrentBlock = nullptr;
 	int64 m_Frequency;
+	Mutex m_BlockMutex;
 };
 
 class AutoProfiler

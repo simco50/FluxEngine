@@ -12,7 +12,7 @@ namespace BuildConfiguration
 	Type Configuration = Type::Other;
 #endif
 
-	std::string ToString(Type type)
+	char* ToString(Type type)
 	{
 		switch (type)
 		{
@@ -25,13 +25,13 @@ namespace BuildConfiguration
 		}
 	}
 
-	Type FromString(const std::string& configuration)
+	Type FromString(const char* configuration)
 	{
-		if (configuration == "Debug")
+		if (strcmp(configuration, "Debug") == 0)
 		{
 			return Type::Debug;
 		}
-		else if (configuration == "Release")
+		else if (strcmp(configuration, "Release") == 0)
 		{
 			return Type::Release;
 		}
@@ -49,7 +49,7 @@ namespace BuildPlatform
 	Type Platform = Type::Other;
 #endif
 
-	std::string ToString(Type type)
+	char* ToString(Type type)
 	{
 		switch (type)
 		{
@@ -62,13 +62,13 @@ namespace BuildPlatform
 		}
 	}
 
-	Type FromString(const std::string& configuration)
+	Type FromString(const char* configuration)
 	{
-		if (configuration == "x64")
+		if (strcmp(configuration, "x64") == 0)
 		{
 			return Type::X64;
 		}
-		else if (configuration == "x86")
+		else if (strcmp(configuration, "x86") == 0)
 		{
 			return Type::X86;
 		}

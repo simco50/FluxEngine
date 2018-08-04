@@ -47,15 +47,6 @@ FluxCore::~FluxCore()
 	Profiler::DestroyInstance();
 }
 
-void Test(int)
-{
-	float f = 474545864684.0485646846f;
-	for (size_t j = 0; j < 10000; ++j)
-	{
-		f = sqrt(f);
-	}
-}
-
 int FluxCore::Run(HINSTANCE hInstance)
 {
 	UNREFERENCED_PARAMETER(hInstance);
@@ -232,6 +223,9 @@ void FluxCore::RenderUI()
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
+	ImGui::Text("Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
+	ImGui::SameLine(150);
+	ImGui::Text("Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform));
 	ImGui::Text("MS: %f", GameTimer::DeltaTime());
 	ImGui::SameLine(150);
 	ImGui::Text("FPS: %f", 1.0f / GameTimer::DeltaTime());
@@ -247,19 +241,6 @@ void FluxCore::RenderUI()
 	{
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
 		ImGui::SliderFloat3("Light Position", &m_pScene->GetRenderer()->GetLightPosition()->x, -1, 1);
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNodeEx("Resources", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Text("Resources: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Resource::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\tModels: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Mesh::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\tMaterials: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Material::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\tShaders: %f", (float)m_pResourceManager->GetMemoryUsageOfType(Shader::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\tImages: %f", m_pResourceManager->GetMemoryUsageOfType(Image::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\tTextures: %f", m_pResourceManager->GetMemoryUsageOfType(Texture::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\t\tTexture2D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture2D::GetTypeStatic()) / 1000000.0f);
-		ImGui::Text("\t\tTexture3D: %f", m_pResourceManager->GetMemoryUsageOfType(Texture3D::GetTypeStatic()) / 1000000.0f);
 		ImGui::TreePop();
 	}
 

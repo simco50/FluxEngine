@@ -1,7 +1,5 @@
 #pragma once
 
-using StringHash = size_t;
-
 class TypeInfo
 {
 public:

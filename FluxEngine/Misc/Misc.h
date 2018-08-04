@@ -11,8 +11,8 @@ namespace BuildConfiguration
 
 	extern Type Configuration;
 
-	std::string ToString(Type type);
-	Type FromString(const std::string& configuration);
+	char* ToString(Type type);
+	Type FromString(const char* configuration);
 }
 
 namespace BuildPlatform
@@ -26,8 +26,8 @@ namespace BuildPlatform
 
 	extern Type Platform;
 
-	std::string ToString(Type type);
-	Type FromString(const std::string& configuration);
+	char* ToString(Type type);
+	Type FromString(const char* configuration);
 }
 
 struct Misc

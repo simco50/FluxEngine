@@ -113,7 +113,7 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-	if(GetResourceName() != inputStream.GetSource())
+	if(GetFilePath() != inputStream.GetSource())
 		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
 
 	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
