@@ -439,5 +439,5 @@ private:
 	}
 
 	std::vector<std::pair<DelegateHandle, DelegateHandlerPtrT>> m_Events;
-	int m_Bindings = 0;
+	size_t m_Bindings = 0;
 };
