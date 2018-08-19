@@ -24,6 +24,7 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Update()
 {
+	AUTOPROFILE(ResourceManager_Update);
 	if (m_pResourceWatcher)
 	{
 		std::string resource;

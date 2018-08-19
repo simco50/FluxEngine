@@ -59,6 +59,8 @@ void PhysicsScene::OnSceneRemoved()
 
 void PhysicsScene::Update()
 {
+	AUTOPROFILE(PhysicsScene_Update);
+
 	float frameTime = GameTimer::DeltaTime();
 	if (frameTime > 0.25f)
 		frameTime = 0.25f;

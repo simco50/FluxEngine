@@ -5,6 +5,8 @@
 
 void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 {
+	m_IsDirty = false;
+
 	unsigned int stateHash =
 		(unsigned char)m_DepthEnabled << 0
 		| (unsigned char)m_DepthWrite << 1
@@ -19,7 +21,9 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 
 	auto state = m_DepthStencilStates.find(stateHash);
 	if (state != m_DepthStencilStates.end())
+	{
 		return state->second;
+	}
 
 	AUTOPROFILE_DESC(DepthStencilState_Create, Math::ToHex(stateHash));
 
@@ -49,6 +53,5 @@ void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 	desc.BackFace.StencilDepthFailOp = desc.FrontFace.StencilDepthFailOp;
 
 	HR(pGraphics->GetImpl()->GetDevice()->CreateDepthStencilState(&desc, (ID3D11DepthStencilState**)&pState));
-
 	return pState;
 }

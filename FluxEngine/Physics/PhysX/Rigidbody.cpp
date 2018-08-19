@@ -121,7 +121,9 @@ void Rigidbody::CreateBody(const Type type)
 {
 	m_Type = type;
 	if (m_pNode == nullptr)
+	{
 		return;
+	}
 
 	AUTOPROFILE(Rigidbody_CreateBody);
 
@@ -154,10 +156,14 @@ void Rigidbody::CreateBody(const Type type)
 			pNewBody->attachShape(*pShape);
 		}
 		if (m_pScene)
+		{
 			m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
+		}
 	}
 	m_pBody = pNewBody;
 	m_pBody->userData = this;
 	if (m_pScene)
+	{
 		m_pPhysicsScene->GetScene()->addActor(*m_pBody);
+	}
 }

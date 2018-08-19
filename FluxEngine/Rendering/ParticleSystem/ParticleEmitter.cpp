@@ -40,6 +40,8 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
+	AUTOPROFILE(ParticleEmitter_SetSystem);
+
 	if (pSettings != m_pParticleSystem)
 	{
 		m_pParticleSystem = pSettings;
@@ -198,7 +200,9 @@ void ParticleEmitter::Update()
 	if (m_Playing == false)
 		return;
 
+	AUTOPROFILE(ParticleEmitter_Update);
 	CalculateBoundingBox();
+
 
 	m_Timer += GameTimer::DeltaTime();
 	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)

@@ -98,13 +98,17 @@ void Collider::OnNodeRemoved()
 	RemoveShape();
 }
 
-SphereCollider::SphereCollider(Context* pContext, 
-	float radius,
-	PxMaterial* pMaterial /*= nullptr*/,
-	physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+SphereCollider::SphereCollider(Context* pContext, float radius, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pContext, pMaterial, shapeFlags),
 	m_Radius(radius)
 {}
+
+SphereCollider::SphereCollider(Context* pContext, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags),
+	m_Radius(0)
+{
+
+}
 
 SphereCollider::~SphereCollider()
 {
@@ -113,6 +117,16 @@ SphereCollider::~SphereCollider()
 
 void SphereCollider::CreateGeometry()
 {
+	if (m_Radius <= 0.0f)
+	{
+		Drawable* pDrawable = GetComponent<Drawable>();
+		if (pDrawable)
+		{
+			BoundingBox bb = pDrawable->GetBoundingBox();
+			m_Radius = Math::Average3(bb.Extents.x, bb.Extents.y, bb.Extents.z);
+			m_LocalPose = PxTransform(PxVec3(bb.Center.x, bb.Center.y, bb.Center.z), PxQuat(PxIdentity));
+		}
+	}
 	m_pGeometry = new PxSphereGeometry(m_Radius);
 }
 
@@ -129,8 +143,24 @@ BoxCollider::BoxCollider(Context* pContext, const BoundingBox& boundingBox, PxMa
 	m_LocalPose = PxTransform(PxVec3(boundingBox.Center.x, boundingBox.Center.y, boundingBox.Center.z), PxQuat(PxIdentity));
 }
 
+BoxCollider::BoxCollider(Context* pContext, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags)
+{
+
+}
+
 void BoxCollider::CreateGeometry()
 {
+	if (m_Extents.LengthSquared() == 0)
+	{
+		Drawable* pDrawable = GetComponent<Drawable>();
+		if (pDrawable)
+		{
+			BoundingBox bb = pDrawable->GetBoundingBox();
+			m_Extents = Vector3(bb.Extents.x, bb.Extents.y, bb.Extents.z);
+			m_LocalPose = PxTransform(PxVec3(bb.Center.x, bb.Center.y, bb.Center.z), PxQuat(PxIdentity));
+		}
+	}
 	m_pGeometry = new PxBoxGeometry(m_Extents.x, m_Extents.y, m_Extents.z);
 }
 
@@ -142,16 +172,37 @@ PlaneCollider::PlaneCollider(Context* pContext, PxMaterial* pMaterial /*= nullpt
 void PlaneCollider::CreateGeometry()
 {
 	m_pGeometry = new PxPlaneGeometry();
+	m_LocalPose = PxTransform(PxVec3(0, 0, 0), PxQuat(XM_PIDIV2, PxVec3(0, 0, 1)));
 }
 
 //CAPSULE
 CapsuleCollider::CapsuleCollider(Context* pContext, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pContext, pMaterial, shapeFlags),
-	m_Height(height / 2), m_Radius(radius)
+	m_Height(height / 2), 
+	m_Radius(radius)
 {}
+
+CapsuleCollider::CapsuleCollider(Context* pContext, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
+	Collider(pContext, pMaterial, shapeFlags),
+	m_Height(0), 
+	m_Radius(0)
+{
+
+}
 
 void CapsuleCollider::CreateGeometry()
 {
+	if (m_Height == 0 || m_Radius == 0)
+	{
+		Drawable* pDrawable = GetComponent<Drawable>();
+		if (pDrawable)
+		{
+			BoundingBox bb = pDrawable->GetBoundingBox();
+			m_Radius = Math::Average(bb.Extents.x, bb.Extents.z);
+			m_Height = bb.Extents.y / 2;
+			m_LocalPose = PxTransform(PxVec3(bb.Center.x, bb.Center.y, bb.Center.z), PxQuat(XM_PIDIV2, PxVec3(0, 0, 1)));
+		}
+	}
 	m_pGeometry = new PxCapsuleGeometry(m_Radius, m_Height);
 }
 

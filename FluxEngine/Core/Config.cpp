@@ -15,6 +15,8 @@ Config::~Config()
 
 void Config::Initialize()
 {
+	AUTOPROFILE(Config_Initialize);
+
 	for (int i = 0; i < (int)Type::MAX_TYPES; ++i)
 	{
 		PopulateConfigValues((Type)i);

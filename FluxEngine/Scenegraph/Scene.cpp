@@ -30,7 +30,13 @@ void Scene::Initialize()
 
 void Scene::Update()
 {
-	m_OnSceneUpdate.Broadcast();
+	AUTOPROFILE(Scene_Update);
+
+	{
+		AUTOPROFILE(Scene_UpdateScene);
+		m_OnSceneUpdate.Broadcast();
+	}
+
 	m_pRenderer->Draw();
 }
 

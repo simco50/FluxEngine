@@ -201,6 +201,8 @@ void Console::SetVerbosity(LogType type)
 
 bool Console::CleanupLogs(const TimeSpan& age)
 {
+	AUTOPROFILE(Console_CleanupLogs);
+
 	struct LogCleaner : public FileVisitor
 	{
 		LogCleaner(const TimeSpan& maxAge) :
@@ -245,6 +247,8 @@ bool Console::Flush()
 
 void Console::InitializeConsoleWindow()
 {
+	AUTOPROFILE(Console_InitializeConsoleWindow);
+
 	if (AllocConsole())
 	{
 		// Redirect the CRT standard input, output, and error handles to the console

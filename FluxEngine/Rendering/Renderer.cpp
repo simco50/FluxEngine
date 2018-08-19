@@ -12,6 +12,8 @@
 #include "Core/DepthStencilState.h"
 #include "Core/VertexBuffer.h"
 #include "Core/IndexBuffer.h"
+#include "Scenegraph/SceneNode.h"
+#include "Async/AsyncTaskQueue.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext) 
@@ -27,15 +29,25 @@ Renderer::~Renderer()
 
 void Renderer::Draw()
 {
+	AUTOPROFILE(Renderer_Draw);
+
 	m_pCurrentMaterial = nullptr;
 	m_pCurrentCamera = nullptr;
 
-	for (Drawable* pDrawable : m_Drawables)
 	{
-		pDrawable->Update();
+		AUTOPROFILE(Renderer_UpdateDrawables);
+		AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
+		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i) 
+		{
+			AUTOPROFILE(Renderer_UpdateDrawable);
+			m_Drawables[i]->Update();
+		}));
 	}
 
-	m_OnPreRender.Broadcast();
+	{
+		AUTOPROFILE(Renderer_PreRender);
+		m_OnPreRender.Broadcast();
+	}
 
 	std::vector<Camera*> cameras = m_CameraQueue;
 	m_CameraQueue.clear();
@@ -43,50 +55,59 @@ void Renderer::Draw()
 	{
 		cameras.push_back(pCamera);
 	}
-		
-	for (Camera* pCamera : cameras)
+
 	{
-		if (pCamera == nullptr)
+		AUTOPROFILE(Renderer_Draw_All);
+
+		for (Camera* pCamera : cameras)
 		{
-			continue;
-		}
+			AUTOPROFILE(Renderer_Draw_Camera);
 
-		m_pGraphics->SetRenderTarget(0, pCamera->GetRenderTarget());
-		m_pGraphics->SetDepthStencil(pCamera->GetDepthStencil());
-		m_pGraphics->SetViewport(pCamera->GetViewport());
-		m_pGraphics->Clear(pCamera->GetClearFlags(), pCamera->GetClearColor(), 1.0f, 1);
-
-		m_pCurrentMaterial = nullptr;
-
-		for (Drawable* pDrawable : m_Drawables)
-		{
-			if (pDrawable == nullptr)
-			{
-				continue;
-			}
-			if (!pDrawable->DrawEnabled())
-			{
-				continue;
-			}
-			if (pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
+			if (pCamera == nullptr)
 			{
 				continue;
 			}
 
-			const std::vector<Batch>& batches = pDrawable->GetBatches();
-			for (const Batch& batch : batches)
+			m_pGraphics->SetRenderTarget(0, pCamera->GetRenderTarget());
+			m_pGraphics->SetDepthStencil(pCamera->GetDepthStencil());
+			m_pGraphics->SetViewport(pCamera->GetViewport());
+			m_pGraphics->Clear(pCamera->GetClearFlags(), pCamera->GetClearColor(), 1.0f, 1);
+
+			m_pCurrentMaterial = nullptr;
+
+			for (Drawable* pDrawable : m_Drawables)
 			{
-				if (batch.pGeometry == nullptr || batch.pMaterial == nullptr)
+				AUTOPROFILE_DESC(Renderer_Draw_Drawable, pDrawable->GetNode()->GetName());
+
+				if (pDrawable == nullptr)
+				{
+					continue;
+				}
+				if (!pDrawable->DrawEnabled())
+				{
+					continue;
+				}
+				if (pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
 				{
 					continue;
 				}
 
-				SetPerMaterialParameters(batch.pMaterial);
-				SetPerBatchParameters(batch, pCamera);
-				SetPerFrameParameters();
-				SetPerCameraParameters(pCamera);
 
-				batch.pGeometry->Draw(m_pGraphics);
+				const std::vector<Batch>& batches = pDrawable->GetBatches();
+				for (const Batch& batch : batches)
+				{
+					if (batch.pGeometry == nullptr || batch.pMaterial == nullptr)
+					{
+						continue;
+					}
+
+					SetPerMaterialParameters(batch.pMaterial);
+					SetPerBatchParameters(batch, pCamera);
+					SetPerFrameParameters();
+					SetPerCameraParameters(pCamera);
+
+					batch.pGeometry->Draw(m_pGraphics);
+				}
 			}
 		}
 	}
@@ -120,6 +141,8 @@ void Renderer::QueueCamera(Camera * pCamera)
 
 void Renderer::CreateQuadGeometry()
 {
+	AUTOPROFILE(Renderer_CreateQuadGeometry);
+
 	m_pQuadVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 	std::vector<VertexElement> elements = {
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false)

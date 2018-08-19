@@ -1,12 +1,12 @@
 workspace "FluxEngine"
 	filename "FluxEngine"
 	basedir "../"
-	configurations { "Debug", "Release" }
+	configurations { "Debug", "Test", "Release" }
     platforms {"x86", "x64"}
     warnings "Extra"
     rtti "Off"
 	characterset ("MBCS")
-	defines { "_CONSOLE", "PHYSX", "PROFILING", "THREADING", "GRAPHICS_D3D11" }
+	defines { "_CONSOLE", "PHYSX", "THREADING", "GRAPHICS_D3D11" }
 	flags {"FatalWarnings"}
 	language "C++"
 
@@ -19,18 +19,25 @@ workspace "FluxEngine"
 		defines {"x86", "PLATFORM_WINDOWS"}	
 
 	filter { "configurations:Debug" }
-			runtime "Debug"
-		 	defines { "_DEBUG" }
-		 	flags {  }
-		 	symbols "On"
-		 	optimize "Off"
+		runtime "Debug"
+	 	defines { "FLUX_DEBUG", "_DEBUG", "PROFILING" }
+	 	flags {  }
+	 	symbols "On"
+	 	optimize "Off"
+
+ 	filter { "configurations:Test" }
+		runtime "Release"
+	 	defines { "FLUX_TEST", "NDEBUG", "PROFILING" }
+	 	flags {  }
+	 	symbols "Off"
+	 	optimize "Full"
 
 	filter { "configurations:Release" }
-		 	runtime "Release"
-			defines { "NDEBUG" }
-		 	flags {  }
-		 	symbols "Off"
-		 	optimize "Full"
+	 	runtime "Release"
+		defines { "FLUX_RELEASE", "NDEBUG" }
+	 	flags {  }
+	 	symbols "Off"
+	 	optimize "Full"
 
 	project "FluxEngine"
 		filename "FluxEngine"
@@ -127,7 +134,7 @@ workspace "FluxEngine"
 				"{COPY} \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib_DEBUG.dll\" \"$(OutDir)\"",
 			}
 
-		filter { "configurations:Release" }
+		filter { "configurations:Release or Test" }
 		 	postbuildcommands
 			{ 
 				"{COPY} \"$(SolutionDir)Libraries\\Zlib\\bin\\%{cfg.platform}\\Zlib.dll\" \"$(OutDir)\"",
@@ -157,7 +164,7 @@ workspace "FluxEngine"
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x86\\PxPvdSDKDEBUG_x86.dll\" \"$(OutDir)\"",
 			}
 
-		filter { "configurations:Release", "platforms:x86" }
+		filter { "configurations:Release or Test", "platforms:x86" }
 			postbuildcommands
 			{ 
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\PhysX3Common_x86.dll\" \"$(OutDir)\"",
@@ -175,7 +182,7 @@ workspace "FluxEngine"
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDKDEBUG_x64.dll\" \"$(OutDir)\"",
 			}
 
-		filter { "configurations:Release", "platforms:x64" }
+		filter { "configurations:Release or Test", "platforms:x64" }
 			postbuildcommands
 			{ 
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\PhysX3Common_x64.dll\" \"$(OutDir)\"",

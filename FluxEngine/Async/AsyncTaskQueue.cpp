@@ -5,8 +5,11 @@
 AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count):
 	Subsystem(pContext)
 {
+	AUTOPROFILE(AsyncTaskQueue_Construct);
+
 #ifdef THREADING
 	CreateThreads(count);
+	PreAllocateJobs(100);
 #else
 	UNREFERENCED_PARAMETER(count);
 #endif
@@ -18,6 +21,15 @@ AsyncTaskQueue::~AsyncTaskQueue()
 
 	m_Tasks.clear();
 	m_Threads.clear();
+}
+
+void AsyncTaskQueue::PreAllocateJobs(const size_t count)
+{
+	for (size_t i = 0; i < count; ++i)
+	{
+		std::unique_ptr<AsyncTask> pTask = std::make_unique<AsyncTask>();
+		m_Tasks.push_back(std::move(pTask));
+	}
 }
 
 void AsyncTaskQueue::CreateThreads(const size_t count)
@@ -154,12 +166,20 @@ void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
 	}
 }
 
+void AsyncTaskQueue::AddWorkItem(const AsyncTaskDelegate& action, int priority /*= 0*/)
+{
+	AsyncTask* pTask = GetFreeTask();
+	pTask->Action = action;
+	pTask->Priority = priority;
+	AddWorkItem(pTask);
+}
+
 void AsyncTaskQueue::Stop()
 {
 	m_Shutdown = true;
 }
 
-void AsyncTaskQueue::ParallelFor(const int count, const SinglecastDelegate<void, int>& function, bool singleThreaded /* = false */)
+void AsyncTaskQueue::ParallelFor(const int count, const ParallelForDelegate& function, bool singleThreaded /* = false */)
 {
 	if (singleThreaded)
 	{

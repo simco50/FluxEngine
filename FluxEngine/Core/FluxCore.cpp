@@ -54,51 +54,48 @@ int FluxCore::Run(HINSTANCE hInstance)
 	Thread::SetMainThread();
 	Profiler::CreateInstance();
 
-	AUTOPROFILE(FluxCore_Run);
+	AUTOPROFILE(FluxCore_Initialize);
+	m_pConsole = std::make_unique<Console>();
+
+	//Register resource locations
+	FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
+	if (!FileSystem::Mount(Paths::ResourcesDir(), "Resources", ArchiveType::Physical))
 	{
-		AUTOPROFILE(FluxCore_Initialize);
-		m_pConsole = std::make_unique<Console>();
-
-		//Register resource locations
-		FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
-		if (!FileSystem::Mount(Paths::ResourcesDir(), "Resources", ArchiveType::Physical))
-		{
-			FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesDir().c_str());
-		}
-
-		Config::Initialize();
-
-		//ResourceManager
-		m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
-		m_pResourceManager->EnableAutoReload(Config::GetBool("AutoReload", "Resources", true));
-
-		//Graphics
-		m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
-		if (!m_pGraphics->SetMode(
-			Config::GetString("Title", "Window", "FluxEngine"),
-			Config::GetInt("Width", "Window", 1240),
-			Config::GetInt("Height", "Window", 720),
-			(WindowType)Config::GetInt("WindowMode", "Window", 0),
-			Config::GetBool("Resizable", "Window", true),
-			Config::GetBool("VSync", "Window", true),
-			Config::GetInt("MSAA", "Window", 1),
-			Config::GetInt("RefreshRate", "Window", 60)))
-		{
-			FLUX_LOG(Error, "[FluxCore::Run] Failed to initialize graphics");
-		}
-
-		m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
-		m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
-		m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
-		m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
-		m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount());
-		m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
-		m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
-		m_pContext->RegisterSubsystem<Renderer>();
-
-		InitGame();
-		GameTimer::Reset();
+		FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesDir().c_str());
 	}
+
+	Config::Initialize();
+
+	//ResourceManager
+	m_pResourceManager = m_pContext->RegisterSubsystem<ResourceManager>();
+	m_pResourceManager->EnableAutoReload(Config::GetBool("AutoReload", "Resources", true));
+
+	//Graphics
+	m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
+	if (!m_pGraphics->SetMode(
+		Config::GetString("Title", "Window", "FluxEngine"),
+		Config::GetInt("Width", "Window", 1240),
+		Config::GetInt("Height", "Window", 720),
+		(WindowType)Config::GetInt("WindowMode", "Window", 0),
+		Config::GetBool("Resizable", "Window", true),
+		Config::GetBool("VSync", "Window", true),
+		Config::GetInt("MSAA", "Window", 1),
+		Config::GetInt("RefreshRate", "Window", 60)))
+	{
+		FLUX_LOG(Error, "[FluxCore::Run] Failed to initialize graphics");
+	}
+
+	m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
+	m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
+	m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
+	m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
+	m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount() - 1);
+	m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
+	m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
+	m_pContext->RegisterSubsystem<Renderer>();
+
+	InitGame();
+	GameTimer::Reset();
 	return 0;
 }
 
@@ -117,39 +114,42 @@ void FluxCore::InitGame()
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
 
-	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
-	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
-	std::vector<VertexElement> cubeDesc =
+	Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
+	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
+	std::vector<VertexElement> manDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
+		VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
 	};
-	pCubeMesh->CreateBuffers(cubeDesc);
-	
-	pA = m_pScene->CreateChild("Cube A");
-	Model* pCubeModel = pA->CreateComponent<Model>();
-	pCubeModel->SetMesh(pCubeMesh);
-	pCubeModel->SetMaterial(pDefaultMaterial);
-	pA->GetTransform()->SetScale(20.f, 20.0f, 20.0f);
+	pManMesh->CreateBuffers(manDesc);
 
-	pB = pA->CreateChild("Cube B");
-	pCubeModel = pB->CreateComponent<Model>();
-	pCubeModel->SetMesh(pCubeMesh);
-	pCubeModel->SetMaterial(pDefaultMaterial);
-	pB->GetTransform()->SetScale(12.f, 12.0f, 12.0f);
-	pB->GetTransform()->Translate(16, 0.0f, 0.0f, Space::WORLD);
-
-	pC = pB->CreateChild("Cube C");
-	pCubeModel = pC->CreateComponent<Model>();
-	pCubeModel->SetMesh(pCubeMesh);
-	pCubeModel->SetMaterial(pDefaultMaterial);
-	pC->GetTransform()->SetScale(8.f, 8.0f, 8.0f);
-	pC->GetTransform()->Translate(16, 10.0f, 0.0f, Space::WORLD);
+	for (int x = 0; x < 5; ++x)
+	{
+		for (int y = 0; y < 1; ++y)
+		{
+			for (int z = 0; z < 5; ++z)
+			{
+				SceneNode* pMan = m_pScene->CreateChild("Man");
+				AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
+				pManModel->SetMesh(pManMesh);
+				pManModel->SetMaterial(pManMaterial);
+				Animator* pAnimator = pMan->CreateComponent<Animator>();
+				pAnimator->Play();
+				pMan->GetTransform()->SetPosition(200.0f * x, 200.0f * y + 10, 200.0f * z);
+			}
+		}
+	}
 }
 
 void FluxCore::ProcessFrame()
 {
+	Profiler::Instance()->Tick();
+	AUTOPROFILE(FluxCore_ProcessFrame);
+
 	GameTimer::Tick();
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
@@ -171,32 +171,10 @@ void FluxCore::ProcessFrame()
 
 	m_pGraphics->BeginFrame();
 
-	pA->GetTransform()->Rotate(0, GameTimer::DeltaTime() * 50, 0);
-	pB->GetTransform()->Rotate(GameTimer::DeltaTime() * 80, 0, 0, Space::SELF);
-	pC->GetTransform()->Rotate(0, -GameTimer::DeltaTime() * 100, 0, Space::SELF);
+	GameUpdate();
 
 	m_pScene->Update();
-
 	m_pPostProcessing->Draw();
-
-	if (m_DebugPhysics)
-	{
-		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
-	}
-	if (m_pSelectedNode)
-	{
-		AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
-		if (pAnimatedModel)
-		{
-			m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
-			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
-		}
-		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
-		if (pModel)
-		{
-			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
-		}
-	}
 
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
@@ -212,6 +190,7 @@ void FluxCore::DoExit()
 
 void FluxCore::RenderUI()
 {
+	AUTOPROFILE(FluxCore_RenderUI);
 	m_pImmediateUI->NewFrame();
 
 	unsigned int batchCount, primitiveCount;
@@ -244,6 +223,16 @@ void FluxCore::RenderUI()
 		ImGui::TreePop();
 	}
 
+	if (ImGui::TreeNodeEx("Profiling", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::SliderInt("Frames", &m_FramesToCapture, 1, 10);
+		if (ImGui::Button("Capture frame"))
+		{
+			Profiler::Instance()->Capture(m_FramesToCapture);
+		}
+		ImGui::TreePop();
+	}
+
 	if (ImGui::TreeNodeEx("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		for (uint32 i = 0; i < m_pPostProcessing->GetMaterialCount(); ++i)
@@ -269,4 +258,28 @@ void FluxCore::RenderUI()
 	}
 	ImGui::End();
 	m_pImmediateUI->Render();
+}
+
+void FluxCore::GameUpdate()
+{
+	AUTOPROFILE(FluxCore_GameUpdate);
+
+	if (m_DebugPhysics)
+	{
+		m_pDebugRenderer->AddPhysicsScene(m_pScene->GetComponent<PhysicsScene>());
+	}
+	if (m_pSelectedNode)
+	{
+		AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
+		if (pAnimatedModel)
+		{
+			m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
+			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+		}
+		Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
+		if (pModel)
+		{
+			m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+		}
+	}
 }

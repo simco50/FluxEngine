@@ -4,11 +4,16 @@
 
 class WorkerThread;
 
+struct AsyncTask;
+DECLARE_DELEGATE(AsyncTaskDelegate, AsyncTask*, unsigned int);
+
+DECLARE_DELEGATE(ParallelForDelegate, int);
+
 struct AsyncTask
 {
 	unsigned Priority = 0;
 	bool IsCompleted = false;
-	SinglecastDelegate<void, AsyncTask*, unsigned> Action;
+	AsyncTaskDelegate Action;
 };
 
 class AsyncTaskQueue : public Subsystem
@@ -23,15 +28,17 @@ public:
 	void JoinAll();
 	void ProcessItems(int index);
 	AsyncTask* GetFreeTask();
+	void AddWorkItem(const AsyncTaskDelegate& action, int priority = 0);
 	void AddWorkItem(AsyncTask* pItem);
 	void Stop();
 	size_t GetThreadCount() const { return m_Threads.size(); }
 
-	void ParallelFor(const int count, const SinglecastDelegate<void, int>& function, bool singleThreaded = false);
+	void ParallelFor(const int count, const ParallelForDelegate& function, bool singleThreaded = false);
 
 	bool IsCompleted() const;
 
 private:
+	void PreAllocateJobs(const size_t count);
 	void CreateThreads(const size_t count);
 
 	std::vector<std::unique_ptr<WorkerThread>> m_Threads;

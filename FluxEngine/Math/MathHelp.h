@@ -80,6 +80,18 @@ struct Math
 	}
 
 	template<typename T>
+	inline static T Average(const T& a, const T& b)
+	{
+		return (a + b) / (T)2;
+	}
+
+	template<typename T>
+	inline static T Average3(const T& a, const T& b, const T& c)
+	{
+		return (a + b + c) / (T)3;
+	}
+
+	template<typename T>
 	inline static void Clamp01(T& value)
 	{
 		if (value > 1)
@@ -120,27 +132,48 @@ struct Math
 
 	inline static std::string ToBinary(unsigned int number)
 	{
-		std::stringstream nr;
-		while (number != 0)
-		{
-			nr << number % 2;
-			number /= 2;
-		}
-		nr << "b0";
-		std::string out = nr.str();
-		std::reverse(out.begin(), out.end());
-		return out;
+		return Math::ToBase(number, 2);
 	}
 
 	inline static std::string ToHex(unsigned int number)
 	{
+		return Math::ToBase(number, 16);
+	}
+
+	inline static std::string ToBase(unsigned int number, unsigned int base)
+	{
 		std::stringstream nr;
+		unsigned int count = 0;
 		while (number != 0)
 		{
-			nr << number % 16;
-			number /= 16;
+			unsigned int mod = number % base;
+			if (mod > 9)
+			{
+				nr << (char)('A' + mod - 10);
+			}
+			else
+			{
+				nr << mod;
+			}
+			number /= base;
+			++count;
 		}
-		nr << "x0";
+		for (count; count <= 8; ++count)
+		{
+			nr << '0';
+		}
+		if (base == 2)
+		{
+			nr << "b0";
+		}
+		else if (base == 8)
+		{
+			nr << "c0";
+		}
+		else if (base == 16)
+		{
+			nr << "x0";
+		}
 		std::string out = nr.str();
 		std::reverse(out.begin(), out.end());
 		return out;

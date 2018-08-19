@@ -30,6 +30,8 @@ Graphics::Graphics(Context* pContext) :
 	m_pImpl(std::make_unique<GraphicsImpl>()),
 	m_WindowType(WindowType::WINDOWED)
 {
+	AUTOPROFILE(Graphics_Construct);
+
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
 
@@ -107,6 +109,8 @@ bool Graphics::SetMode(
 
 bool Graphics::OpenWindow()
 {
+	AUTOPROFILE(Graphics_OpenWindow);
+
 	SDL_DisplayMode displayMode;
 	SDL_GetCurrentDisplayMode(0, &displayMode);
 
@@ -239,6 +243,7 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
 	if (m_pCurrentIndexBuffer != pIndexBuffer)
 	{
+		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 		else
@@ -251,6 +256,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 {
 	if (m_CurrentShaders[(unsigned int)type] != pShader)
 	{
+		AUTOPROFILE_DESC(Graphics_SetShader, pShader ? pShader->GetName() : "NULL Shader");
 		m_CurrentShaders[(unsigned int)type] = pShader;
 		switch (type)
 		{
@@ -275,6 +281,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 
 	if (pShader)
 	{
+		AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader ? pShader->GetName() : "NULL Shader");
 		bool buffersChanged = false;
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
@@ -313,6 +320,8 @@ void Graphics::UpdateShaderProgram()
 {
 	if (m_pImpl->m_ShaderProgramDirty)
 	{
+		AUTOPROFILE(Graphics_UpdateShaderProgram);
+
 		uint64 hash = 0;
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
@@ -488,6 +497,7 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
 {
+	AUTOPROFILE(Graphics_Draw);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -507,6 +517,7 @@ void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int v
 
 void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
 {
+	AUTOPROFILE(Graphics_DrawIndexed);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -526,6 +537,7 @@ void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const
 
 void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex, const int instanceStart)
 {
+	AUTOPROFILE(Graphics_DrawIndexedInstanced);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -545,6 +557,8 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
+	AUTOPROFILE(Graphics_Clear);
+
 	if (m_CurrentViewport.Left == 0 && m_CurrentViewport.Top == 0 && m_CurrentViewport.Right == m_WindowWidth && m_CurrentViewport.Bottom == m_WindowHeight)
 	{
 		PrepareDraw();
@@ -630,29 +644,36 @@ void Graphics::FlushSRVChanges(bool force)
 
 void Graphics::PrepareDraw()
 {
+	AUTOPROFILE(Graphics_PrepareDraw);
+
 	FlushRenderTargetChanges(false);
 	FlushSRVChanges(false);
 
 	if (m_pDepthStencilState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetDepthStencilState);
 		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
 	}
 
 	if (m_pRasterizerState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetRasterizerState);
 		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_pRasterizerState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->RSSetState(pState);
 	}
 
 	if (m_pBlendState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetVertexBuffers);
+
 		//Set the vertex buffers
 		m_pImpl->m_pDeviceContext->IASetVertexBuffers(
 			m_pImpl->m_FirstDirtyVertexBuffer,
@@ -701,6 +722,8 @@ void Graphics::PrepareDraw()
 
 	if (m_ScissorRectDirty)
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetScissorRect);
+
 		D3D11_RECT rect = {
 			(LONG)m_CurrentScissorRect.Left,
 			(LONG)m_CurrentScissorRect.Top,
@@ -725,13 +748,17 @@ void Graphics::PrepareDraw()
 
 void Graphics::BeginFrame()
 {
+	PROFILER_EVENT(Graphics_BeginFrame);
 	m_BatchCount = 0;
 	m_PrimitiveCount = 0;
 }
 
 void Graphics::EndFrame()
 {
+	AUTOPROFILE(Graphics_Present);
 	m_pImpl->m_pSwapChain->Present(m_Vsync ? 1 : 0, 0);
+
+	PROFILER_EVENT(Graphics_EndFrame);
 }
 
 bool Graphics::EnumerateAdapters()

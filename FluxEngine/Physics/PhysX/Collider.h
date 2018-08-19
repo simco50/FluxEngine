@@ -63,6 +63,7 @@ class SphereCollider : public Collider
 
 public:
 	SphereCollider(Context* pContext, float radius, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	SphereCollider(Context* pContext, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~SphereCollider();
 protected:
 	virtual void CreateGeometry() override;
@@ -77,6 +78,7 @@ class BoxCollider : public Collider
 public:
 	BoxCollider(Context* pContext, const Vector3& extents, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	BoxCollider(Context* pContext, const BoundingBox& boundingBox, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	BoxCollider(Context* pContext, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	
 	virtual ~BoxCollider() {}
 protected:
@@ -102,6 +104,7 @@ class CapsuleCollider : public Collider
 
 public:
 	CapsuleCollider(Context* pContext, const float radius, const float height, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
+	CapsuleCollider(Context* pContext, physx::PxMaterial* pMaterial = nullptr, physx::PxShapeFlags shapeFlags = physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION);
 	virtual ~CapsuleCollider() {}
 protected:
 	virtual void CreateGeometry() override;

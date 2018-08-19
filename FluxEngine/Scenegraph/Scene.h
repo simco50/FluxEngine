@@ -29,7 +29,7 @@ public:
 	virtual void OnSceneSet(Scene* pScene) override;
 
 	MulticastDelegate<>& OnSceneUpdate() { return m_OnSceneUpdate; }
-	
+
 private:
 	void AddChild(SceneNode* pNode);
 

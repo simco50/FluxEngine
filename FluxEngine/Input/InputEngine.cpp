@@ -8,6 +8,8 @@ InputEngine::InputEngine(Context* pContext) :
 	m_Enabled(false), 
 	m_ForceToCenter(false)
 {
+	AUTOPROFILE(InputEngine_Construct);
+
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	pContext->InitSDLSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 
@@ -21,6 +23,8 @@ InputEngine::~InputEngine()
 
 void InputEngine::Update()
 {
+	AUTOPROFILE(InputEngine_Update);
+
 	ZeroMemory(m_KeyPressed.data(), m_KeyPressed.size() * sizeof(bool));
 	m_MouseButtonPressed = 0;
 	m_MouseWheel = 0;
@@ -344,6 +348,8 @@ void InputEngine::ResetGamepads()
 
 bool InputEngine::OpenGamepad(int index)
 {
+	AUTOPROFILE(InputEngine_OpenGamepad);
+
 	SDL_Joystick* pJoystick = SDL_JoystickOpen(index);
 	if (pJoystick == nullptr)
 	{
@@ -396,6 +402,8 @@ bool InputEngine::OpenGamepad(int index)
 
 bool InputEngine::CloseGamepad(int index)
 {
+	AUTOPROFILE(InputEngine_CloseGamepad);
+
 	for (auto& pair : m_Joysticks)
 	{
 		if (pair.second.Index == index)

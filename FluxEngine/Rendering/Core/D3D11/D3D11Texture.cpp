@@ -10,7 +10,9 @@
 void Texture::UpdateParameters()
 {
 	if ((m_pSamplerState && !m_ParametersDirty) || m_pResource == nullptr)
+	{
 		return;
+	}
 
 	AUTOPROFILE(Texture_CreateTextureSampler);
 
@@ -45,6 +47,8 @@ void Texture::UpdateParameters()
 	desc.MaxLOD = std::numeric_limits<float>::max();
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
+
+	m_ParametersDirty = false;
 }
 
 int Texture::GetRowDataSize(unsigned int width)

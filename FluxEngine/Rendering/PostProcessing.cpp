@@ -38,6 +38,8 @@ void PostProcessing::Draw()
 	if (m_Materials.size() == 0)
 		return;
 
+	AUTOPROFILE(PostProcessing_Draw);
+
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));

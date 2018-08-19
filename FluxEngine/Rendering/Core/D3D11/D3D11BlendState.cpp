@@ -5,6 +5,8 @@
 
 void* BlendState::GetOrCreate(Graphics* pGraphics)
 {
+	m_IsDirty = false;
+
 	//Check if the blend state already exists in the cache
 	unsigned int stateHash =
 		(unsigned char)m_BlendMode << 0

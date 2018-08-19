@@ -5,6 +5,8 @@
 
 void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 {
+	m_IsDirty = false;
+
 	unsigned int stateHash =
 		(unsigned char)m_ScissorEnabled << 0
 		| (unsigned char)m_MultisampleEnabled << 1

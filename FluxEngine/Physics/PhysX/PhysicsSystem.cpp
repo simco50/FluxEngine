@@ -53,7 +53,7 @@ PhysicsSystem::PhysicsSystem(Context* pContext) :
 		FLUX_LOG(Error, "PxInitExtensions failed!");
 	}
 
-	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(3);
+	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(Misc::GetCoreCount() - 1);
 
 	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 }
@@ -73,6 +73,8 @@ PhysicsSystem::~PhysicsSystem()
 
 bool PhysicsSystem::InitializeCuda()
 {
+	AUTOPROFILE(PhysicsSystem_InitializeCuda);
+
 	Graphics* pGraphics = GetSubsystem<Graphics>();
 	if (pGraphics == nullptr)
 	{
