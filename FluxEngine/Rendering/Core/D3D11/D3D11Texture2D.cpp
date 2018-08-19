@@ -3,6 +3,27 @@
 #include "Rendering/Core/Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
+#include "../RenderTarget.h"
+
+Texture2D::Texture2D(Context* pContext) :
+	Texture(pContext)
+{
+}
+
+Texture2D::~Texture2D()
+{
+	Release();
+}
+
+void Texture2D::Release()
+{
+	SafeRelease(m_pResource);
+	SafeRelease(m_pShaderResourceView);
+	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
+
+	m_pRenderTarget.reset();
+}
 
 bool Texture2D::Load(InputStream& inputStream)
 {
@@ -24,7 +45,7 @@ bool Texture2D::Load(InputStream& inputStream)
 
 bool Texture2D::SetImage(const Image& image)
 {
-	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetName().c_str());
+	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetFilePath().c_str());
 
 	uint32 memoryUsage = 0;
 
@@ -70,6 +91,11 @@ bool Texture2D::SetSize(const int width, const int height, const unsigned int fo
 	m_Usage = usage;
 	m_MultiSample = multiSample;
 	m_pResource = pTexture;
+
+	if (usage == TextureUsage::RENDERTARGET || usage == TextureUsage::DEPTHSTENCILBUFFER)
+	{
+		m_pRenderTarget = std::make_unique<RenderTarget>(this);
+	}
 
 	if (!Create())
 		return false;
@@ -210,7 +236,7 @@ bool Texture2D::Create()
 		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 		rtvDesc.Format = (DXGI_FORMAT)m_TextureFormat;
 		rtvDesc.ViewDimension = m_MultiSample > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-		HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_pRenderTargetView));
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Texture2D*)m_pResource, &rtvDesc, (ID3D11RenderTargetView**)&m_pRenderTarget->m_pRenderTargetView));
 	}
 
 	else if ((desc.BindFlags & D3D11_BIND_DEPTH_STENCIL) == D3D11_BIND_DEPTH_STENCIL)
@@ -219,7 +245,7 @@ bool Texture2D::Create()
 		dsvDesc.Format = (DXGI_FORMAT)GetDSVFormat(m_TextureFormat);
 		dsvDesc.ViewDimension = (m_MultiSample > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
-		HR(m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Texture2D*)m_pResource, &dsvDesc, (ID3D11DepthStencilView**)&m_pRenderTargetView));
+		HR(m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Texture2D*)m_pResource, &dsvDesc, (ID3D11DepthStencilView**)&m_pRenderTarget->m_pRenderTargetView));
 	}
 	return true;
 }

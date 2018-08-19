@@ -99,6 +99,8 @@ ImmediateUI::~ImmediateUI()
 
 void ImmediateUI::NewFrame()
 {
+	AUTOPROFILE(ImmediateUI_NewFrame);
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight());
 	io.DeltaTime = GameTimer::DeltaTime();
@@ -119,7 +121,11 @@ void ImmediateUI::NewFrame()
 
 void ImmediateUI::Render()
 {
-	ImGui::Render();
+	AUTOPROFILE(ImmediateUI_Render);
+	{
+		AUTOPROFILE(ImGui_Render);
+		ImGui::Render();
+	}
 
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 

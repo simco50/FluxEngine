@@ -157,7 +157,7 @@ void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
 	}
 }
 
-Animation* Mesh::GetAnimation(const std::string name) const
+Animation* Mesh::GetAnimation(const std::string& name) const
 {
 	StringHash hash = std::hash<std::string>{}(name);
 	return GetAnimation(hash);
@@ -250,7 +250,6 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 		return false;
 	if (!ProcessAssimpMeshes(pScene))
 		return false;
-	std::map<std::string, int> boneMap;
 	if (!ProcessSkeleton(pScene))
 		return false;
 	if (!ProcessAssimpAnimations(pScene))
@@ -372,7 +371,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 
 bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 {
-	AUTOPROFILE(Mesh_Load_Animations);
+	AUTOPROFILE(Mesh_ProcessAssimpAnimations);
 
 	if (pScene->HasAnimations())
 	{
@@ -389,6 +388,8 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 				const aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
 				pTask->Action.BindLambda([this, &pNewAnimation, pAnimNode](AsyncTask*, int)
 				{
+					AUTOPROFILE(Mesh_ProcessAssimpAnimations_Channel);
+
 					AnimationNode animNode;
 
 					animNode.Name = pAnimNode->mNodeName.C_Str();
@@ -412,6 +413,8 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 
 					for (float time : keyTimes)
 					{
+						AUTOPROFILE(Mesh_ProcessAssimpAnimations_Channel_Interpolate);
+
 						AnimationKey key;
 						key.Rotation = TxDXQuaternion(GetRotation(pAnimNode, time));
 						key.Scale = ToDXVector3(GetScale(pAnimNode, time));
@@ -532,6 +535,8 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 		AsyncTask* pTask = pQueue->GetFreeTask();
 		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
 		{
+			AUTOPROFILE(Mesh_CreateVertexBufferForGeometry);
+
 			UNREFERENCED_PARAMETER(pTask);
 			UNREFERENCED_PARAMETER(index);
 			char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
@@ -552,19 +557,13 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	}
 	if (pGeometry->HasData("INDEX"))
 	{
-		AsyncTask* pTask = pQueue->GetFreeTask();
-		pTask->Action.BindLambda([&, this, pGeometry](AsyncTask* pTask, unsigned index)
-		{
-			UNREFERENCED_PARAMETER(pTask);
-			UNREFERENCED_PARAMETER(index);
+		AUTOPROFILE(Mesh_CreateIndexBufferForGeometry);
 
-			std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(GetSubsystem<Graphics>());
-			pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
-			pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
-			pGeometry->SetIndexBuffer(pIndexBuffer.get());
-			m_IndexBuffers.push_back(std::move(pIndexBuffer));
-		});
-		pQueue->AddWorkItem(pTask);
+		std::unique_ptr<IndexBuffer> pIndexBuffer = std::make_unique<IndexBuffer>(GetSubsystem<Graphics>());
+		pIndexBuffer->Create(pGeometry->GetIndexCount(), false, false);
+		pIndexBuffer->SetData(pGeometry->GetVertexData("INDEX").pData);
+		pGeometry->SetIndexBuffer(pIndexBuffer.get());
+		m_IndexBuffers.push_back(std::move(pIndexBuffer));
 	}
 
 	pQueue->JoinAll();

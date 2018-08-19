@@ -17,6 +17,6 @@ float4 PSMain(VS_OUTPUT input) : SV_TARGET
 	float3 scale = 15.0f / 16.0f;
   	float3 offset = 1.0f / 32.0f;
 
-	float3 sample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord).rgb;
-	return tVolumeTexture.Sample(sVolumeSampler, scale * sample + offset);
+	float3 sample = Sample2D(Diffuse, input.texCoord).rgb;
+	return Sample3D(Volume, scale * sample + offset);
 }

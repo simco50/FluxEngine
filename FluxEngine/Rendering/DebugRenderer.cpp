@@ -38,6 +38,8 @@ void DebugRenderer::Render()
 	if (totalPrimitives == 0 || m_pCamera == nullptr)
 		return;
 
+	AUTOPROFILE(DebugRenderer_Render);
+
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
 	m_pGraphics->SetShader(ShaderType::ComputeShader, nullptr);

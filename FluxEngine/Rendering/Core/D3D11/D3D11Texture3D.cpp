@@ -13,7 +13,15 @@ Texture3D::Texture3D(Context* pContext) :
 
 Texture3D::~Texture3D()
 {
+	Texture3D::Release();
+}
 
+void Texture3D::Release()
+{
+	SafeRelease(m_pResource);
+	SafeRelease(m_pShaderResourceView);
+	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
 }
 
 bool Texture3D::Load(InputStream& inputStream)
@@ -68,7 +76,7 @@ bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int wi
 	if (x < 0 || x + width > levelWidth || y < 0 || y + height > levelHeight || z < 0 || z + depth > levelDepth || width <= 0 ||
 		height <= 0 || depth <= 0)
 	{
-		FLUX_LOG(Warning, "[Texture3D::SetData] Illegal dimensions for setting data");
+		FLUX_LOG(Error, "[Texture3D::SetData] Illegal dimensions for setting data");
 		return false;
 	}
 

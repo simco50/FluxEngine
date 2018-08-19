@@ -1,6 +1,4 @@
 #include "FluxEngine.h"
-#include <time.h>
-#include <iomanip>
 #include "FileSystem\File\PhysicalFile.h"
 #include "Async\Thread.h"
 #include "Core\Config.h"
@@ -12,6 +10,7 @@ Console::Console()
 {
 	AUTOPROFILE(Console_Initialize);
 	consoleInstance = this;
+
 #ifdef _DEBUG
 	InitializeConsoleWindow();
 #endif
@@ -42,20 +41,16 @@ Console::Console()
 		FLUX_LOG(Error, "Failed to open console log");
 	}
 
-	std::stringstream stream;
-
 	FLUX_LOG(Info, "Date: %02d-%02d-%02d", time.Day, time.Month, time.Year);
 	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
 	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());
 
-	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration).c_str());
-	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform).c_str());
+	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
+	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform));
 	Misc::CpuId cpuId;
 	Misc::GetCpuId(&cpuId);
 	FLUX_LOG(Info, "Cpu: %s", cpuId.Brand.c_str());
 	FLUX_LOG(Info, "Memory: %f MB", (float)Misc::GetTotalPhysicalMemory() / 1000.0f);
-
-	//Log(stream.str(), LogType::Info);
 }
 
 Console::~Console()
@@ -94,7 +89,9 @@ bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 	if (FAILED(hr))
 	{
 		if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
+		{
 			hr = HRESULT_CODE(hr);
+		}
 
 		std::stringstream ss;
 		if (source.size() != 0)
@@ -146,6 +143,7 @@ void Console::Log(const std::string &message, LogType type)
 			stream << "[WARNING] ";
 			break;
 		case LogType::Error:
+		case LogType::FatalError:
 			if (consoleInstance->m_ConsoleHandle)
 				SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_INTENSITY);
 			stream << "[ERROR] ";
@@ -165,22 +163,14 @@ void Console::Log(const std::string &message, LogType type)
 
 		if (type == LogType::Error)
 		{
+			__debugbreak();
+		}
+		else if (type == LogType::FatalError)
+		{
 			Misc::MessageBox("Fatal Error", message);
-			//PostQuitMessage(-1);
-			//__debugbreak();
 			abort();
 		}
 	}
-}
-
-void Console::LogWarning(const std::string& message)
-{
-	Log(message, LogType::Warning);
-}
-
-void Console::LogError(const std::string& message)
-{
-	Log(message, LogType::Error);
 }
 
 void Console::LogFormat(LogType type, const char* format, ...)
@@ -211,6 +201,8 @@ void Console::SetVerbosity(LogType type)
 
 bool Console::CleanupLogs(const TimeSpan& age)
 {
+	AUTOPROFILE(Console_CleanupLogs);
+
 	struct LogCleaner : public FileVisitor
 	{
 		LogCleaner(const TimeSpan& maxAge) :
@@ -255,6 +247,8 @@ bool Console::Flush()
 
 void Console::InitializeConsoleWindow()
 {
+	AUTOPROFILE(Console_InitializeConsoleWindow);
+
 	if (AllocConsole())
 	{
 		// Redirect the CRT standard input, output, and error handles to the console
@@ -284,7 +278,9 @@ void Console::InitializeConsoleWindow()
 		{
 			HMENU hMenu = GetSystemMenu(hwnd, FALSE);
 			if (hMenu != nullptr)
+			{
 				DeleteMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+			}
 		}
 	}
 }

@@ -80,5 +80,6 @@ AudioEngine::~AudioEngine()
 
 void AudioEngine::Update()
 {
+	AUTOPROFILE(AudioEngine_Update);
 	m_pSystem->update();
 }

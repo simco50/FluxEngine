@@ -20,13 +20,18 @@
 #include <SDL_syswm.h>
 #include "Content/Image.h"
 #include "Input/InputEngine.h"
+#include "../../Renderer.h"
+#include "../../Geometry.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
 Graphics::Graphics(Context* pContext) :
 	Subsystem(pContext),
-	m_pImpl(std::make_unique<GraphicsImpl>())
+	m_pImpl(std::make_unique<GraphicsImpl>()),
+	m_WindowType(WindowType::WINDOWED)
 {
+	AUTOPROFILE(Graphics_Construct);
+
 	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
 		m_CurrentRenderTargets[i] = nullptr;
 
@@ -104,6 +109,8 @@ bool Graphics::SetMode(
 
 bool Graphics::OpenWindow()
 {
+	AUTOPROFILE(Graphics_OpenWindow);
+
 	SDL_DisplayMode displayMode;
 	SDL_GetCurrentDisplayMode(0, &displayMode);
 
@@ -159,22 +166,31 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 {
 	if (index == 0 && pRenderTarget == nullptr)
 	{
-		m_CurrentRenderTargets[0] = m_pDefaultRenderTarget.get();
+		m_CurrentRenderTargets[0] = nullptr;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
 	else if(m_CurrentRenderTargets[index] != pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
-	m_pImpl->m_RenderTargetsDirty = true;
-	Texture2D* pTexture = m_CurrentRenderTargets[index]->GetDepthTexture();
-	if (pTexture)
+}
+
+void Graphics::SetDepthStencil(RenderTarget* pRenderTarget)
+{
+	if (pRenderTarget != m_pCurrentDepthStencil)
 	{
-		pTexture->SetResolveDirty(true);
+		m_pCurrentDepthStencil = pRenderTarget;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
-	pTexture = m_CurrentRenderTargets[index]->GetRenderTexture();
-	if (pTexture)
+}
+
+void Graphics::SetDepthOnly(bool enable)
+{
+	if (enable != m_RenderDepthOnly)
 	{
-		pTexture->SetResolveDirty(true);
+		m_RenderDepthOnly = enable;
+		m_pImpl->m_RenderTargetsDirty = true;
 	}
 }
 
@@ -227,6 +243,7 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
 	if (m_pCurrentIndexBuffer != pIndexBuffer)
 	{
+		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 		else
@@ -239,6 +256,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 {
 	if (m_CurrentShaders[(unsigned int)type] != pShader)
 	{
+		AUTOPROFILE_DESC(Graphics_SetShader, pShader ? pShader->GetName() : "NULL Shader");
 		m_CurrentShaders[(unsigned int)type] = pShader;
 		switch (type)
 		{
@@ -263,6 +281,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 
 	if (pShader)
 	{
+		AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader ? pShader->GetName() : "NULL Shader");
 		bool buffersChanged = false;
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
@@ -301,13 +320,15 @@ void Graphics::UpdateShaderProgram()
 {
 	if (m_pImpl->m_ShaderProgramDirty)
 	{
-		unsigned int hash = 0;
+		AUTOPROFILE(Graphics_UpdateShaderProgram);
+
+		uint64 hash = 0;
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
-			hash <<= 8;
+			hash <<= 16;
 			if (pVariation == nullptr)
 				continue;
-			hash |= pVariation->GetName().size();
+			hash |= (int)pVariation->GetByteCode().size() % std::numeric_limits<uint16>::max();
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -429,7 +450,7 @@ bool Graphics::SetShaderParameter(const std::string& name, const Matrix& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Matrix), &value);
 }
 
-void Graphics::SetViewport(const FloatRect& rect, bool relative)
+void Graphics::SetViewport(const FloatRect& rect)
 {
 	D3D11_VIEWPORT viewport;
 	viewport.Height = rect.GetHeight();
@@ -438,20 +459,7 @@ void Graphics::SetViewport(const FloatRect& rect, bool relative)
 	viewport.TopLeftY = rect.Top;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
-
-	if (relative)
-	{
-		m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
-
-		viewport.Height *= m_WindowHeight;
-		viewport.Width *= m_WindowWidth;
-		viewport.TopLeftX *= m_WindowWidth;
-		viewport.TopLeftY *= m_WindowHeight;
-	}
-	else
-	{
-		m_CurrentViewport = { viewport.TopLeftX / m_WindowWidth, viewport.TopLeftY / m_WindowHeight, viewport.Width / m_WindowWidth, viewport.Height / m_WindowHeight };
-	}
+	m_CurrentViewport = { viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height };
 
 	m_pImpl->m_pDeviceContext->RSSetViewports(1, &viewport);
 }
@@ -477,14 +485,19 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	m_pImpl->m_SamplerStates[(size_t)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
 	m_pImpl->m_TexturesDirty = true;
-	if (m_pImpl->m_FirstDirtyTexture > (unsigned int)slot)
-		m_pImpl->m_FirstDirtyTexture = (unsigned int)slot;
-	if (m_pImpl->m_LastDirtyTexture < (unsigned int)slot)
-		m_pImpl->m_LastDirtyTexture = (unsigned int)slot;
+	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
+	{
+		m_pImpl->m_FirstDirtyTexture = (int)slot;
+	}
+	if (m_pImpl->m_LastDirtyTexture < (int)slot)
+	{
+		m_pImpl->m_LastDirtyTexture = (int)slot;
+	}
 }
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
 {
+	AUTOPROFILE(Graphics_Draw);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -504,6 +517,7 @@ void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int v
 
 void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
 {
+	AUTOPROFILE(Graphics_DrawIndexed);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -523,6 +537,7 @@ void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const
 
 void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex, const int instanceStart)
 {
+	AUTOPROFILE(Graphics_DrawIndexedInstanced);
 	PrepareDraw();
 
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -542,67 +557,123 @@ void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCou
 
 void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
 {
-	PrepareDraw();
-	ID3D11RenderTargetView* pRtv = m_pImpl->m_RenderTargetViews[0];
-	ID3D11DepthStencilView* pDsv = m_pImpl->m_pDepthStencilView;
-	if (pRtv && (clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget)
+	AUTOPROFILE(Graphics_Clear);
+
+	if (m_CurrentViewport.Left == 0 && m_CurrentViewport.Top == 0 && m_CurrentViewport.Right == m_WindowWidth && m_CurrentViewport.Bottom == m_WindowHeight)
 	{
-		m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
+		PrepareDraw();
+		ID3D11RenderTargetView* pRtv = m_pImpl->m_RenderTargetViews[0];
+		ID3D11DepthStencilView* pDsv = m_pImpl->m_pDepthStencilView;
+		if (pRtv && (clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget)
+		{
+			m_pImpl->GetDeviceContext()->ClearRenderTargetView(pRtv, &color.x);
+		}
+		if (pDsv)
+		{
+			unsigned int depthClearFlags = 0;
+			if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
+			{
+				depthClearFlags |= D3D11_CLEAR_DEPTH;
+			}
+			if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
+			{
+				depthClearFlags |= D3D11_CLEAR_STENCIL;
+			}
+			if (depthClearFlags != 0)
+			{
+				m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
+			}
+		}
 	}
-	if (pDsv && (clearFlags & (ClearFlags::Depth | ClearFlags::Stencil)) == (ClearFlags::Depth | ClearFlags::Stencil))
+	else
 	{
-		unsigned int depthClearFlags = 0;
-		if ((clearFlags & ClearFlags::Depth) == ClearFlags::Depth)
-			depthClearFlags |= D3D11_CLEAR_DEPTH;
-		if ((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil)
-			depthClearFlags |= D3D11_CLEAR_STENCIL;
-		m_pImpl->m_pDeviceContext->ClearDepthStencilView(pDsv, depthClearFlags, depth, stencil);
+		GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
+		GetDepthStencilState()->SetDepthWrite((clearFlags & ClearFlags::Depth) == ClearFlags::Depth);
+		GetBlendState()->SetColorWrite(((clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget) ? ColorWrite::ALL : ColorWrite::NONE);
+		GetDepthStencilState()->SetStencilTest((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil, CompareMode::ALWAYS, StencilOperation::REF, StencilOperation::KEEP, StencilOperation::KEEP, stencil, 0XFF, 0XFF);
+
+		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
+
+		SetShader(ShaderType::VertexShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::VertexShader));
+		SetShader(ShaderType::PixelShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::PixelShader));
+
+		Matrix worldMatrix = Matrix::CreateTranslation(Vector3(0, 0, depth));
+
+		SetShaderParameter("cColor", color);
+		SetShaderParameter("cWorld", worldMatrix);
+
+		quadGeometry->Draw(this);
 	}
 }
 
-void Graphics::PrepareDraw()
+void Graphics::FlushRenderTargetChanges(bool force)
 {
-	if (m_pImpl->m_RenderTargetsDirty)
+	if (m_pImpl->m_RenderTargetsDirty || force)
 	{
 		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
-			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTexture()->GetRenderTargetView() : nullptr;
-		m_pImpl->m_pDepthStencilView = m_CurrentRenderTargets[0] ? (ID3D11DepthStencilView*)m_CurrentRenderTargets[0]->GetDepthTexture()->GetRenderTargetView() : nullptr;
+		{
+			m_pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTargetView() : nullptr;
+		}
+
+		if (m_pImpl->m_RenderTargetViews[0] == nullptr && m_RenderDepthOnly == false)
+		{
+			m_pImpl->m_RenderTargetViews[0] = (ID3D11RenderTargetView*)m_pDefaultRenderTarget->GetRenderTarget()->GetRenderTargetView();
+		}
+
+		m_pImpl->m_pDepthStencilView = m_pCurrentDepthStencil ? (ID3D11DepthStencilView*)m_pCurrentDepthStencil->GetRenderTargetView() : (ID3D11DepthStencilView*)m_pDefaultDepthStencil->GetRenderTarget()->GetRenderTargetView();
 		m_pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, m_pImpl->m_RenderTargetViews.data(), m_pImpl->m_pDepthStencilView);
 		m_pImpl->m_RenderTargetsDirty = false;
 	}
+}
 
-	if (m_pImpl->m_TexturesDirty)
+void Graphics::FlushSRVChanges(bool force)
+{
+	if ((m_pImpl->m_TexturesDirty || force) && m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1 > 0)
 	{
 		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-
+		
 		m_pImpl->m_TexturesDirty = false;
-		m_pImpl->m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;
 		m_pImpl->m_LastDirtyTexture = 0;
 	}
+}
+
+
+void Graphics::PrepareDraw()
+{
+	AUTOPROFILE(Graphics_PrepareDraw);
+
+	FlushRenderTargetChanges(false);
+	FlushSRVChanges(false);
 
 	if (m_pDepthStencilState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetDepthStencilState);
 		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
 	}
 
 	if (m_pRasterizerState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetRasterizerState);
 		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_pRasterizerState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->RSSetState(pState);
 	}
 
 	if (m_pBlendState->IsDirty())
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetVertexBuffers);
+
 		//Set the vertex buffers
 		m_pImpl->m_pDeviceContext->IASetVertexBuffers(
 			m_pImpl->m_FirstDirtyVertexBuffer,
@@ -651,6 +722,8 @@ void Graphics::PrepareDraw()
 
 	if (m_ScissorRectDirty)
 	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetScissorRect);
+
 		D3D11_RECT rect = {
 			(LONG)m_CurrentScissorRect.Left,
 			(LONG)m_CurrentScissorRect.Top,
@@ -675,13 +748,17 @@ void Graphics::PrepareDraw()
 
 void Graphics::BeginFrame()
 {
+	PROFILER_EVENT(Graphics_BeginFrame);
 	m_BatchCount = 0;
 	m_PrimitiveCount = 0;
 }
 
 void Graphics::EndFrame()
 {
+	AUTOPROFILE(Graphics_Present);
 	m_pImpl->m_pSwapChain->Present(m_Vsync ? 1 : 0, 0);
+
+	PROFILER_EVENT(Graphics_EndFrame);
 }
 
 bool Graphics::EnumerateAdapters()
@@ -787,44 +864,43 @@ void Graphics::UpdateSwapchain(int width, int height)
 {
 	AUTOPROFILE(Graphics_UpdateSwapchain);
 
-	m_WindowWidth = width;
-	m_WindowHeight = height;
-
 	if (!m_pImpl->m_pSwapChain.IsValid())
+	{
 		return;
+	}
 
 	assert(m_pImpl->m_pDevice.IsValid());
 	assert(m_pImpl->m_pSwapChain.IsValid());
 
-	m_pImpl->m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
+	m_pDefaultDepthStencil.reset();
 
-	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, m_WindowWidth, m_WindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+	ID3D11RenderTargetView* emptyView = nullptr;
+	m_pImpl->m_pDeviceContext->OMSetRenderTargets(1, &emptyView, nullptr);
+
+	HR(m_pImpl->m_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	ID3D11Texture2D *pBackbuffer = nullptr;
 	HR(m_pImpl->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackbuffer)));
 
-	RenderTargetDesc desc = {};
-	desc.Width = m_WindowWidth;
-	desc.Height = m_WindowHeight;
-	desc.pColorResource = pBackbuffer;
-	desc.pDepthResource = nullptr;
-	desc.ColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.DepthFormat = DXGI_FORMAT_R24G8_TYPELESS;
-	desc.MultiSample = m_Multisample;
-	m_pDefaultRenderTarget = std::make_unique<RenderTarget>(m_pContext);
-	m_pDefaultRenderTarget->Create(desc);
+	m_pDefaultRenderTarget = std::make_unique<Texture2D>(m_pContext);
+	m_pDefaultRenderTarget->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, m_Multisample, pBackbuffer);
+	m_pDefaultDepthStencil = std::make_unique<Texture2D>(m_pContext);
+	m_pDefaultDepthStencil->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_Multisample, nullptr);
 
-	m_pImpl->m_pDepthStencilView = nullptr;
-	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
+	for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
 	{
-		m_CurrentRenderTargets[i] = nullptr;
-		m_pImpl->m_RenderTargetViews[i] = nullptr;
+		SetRenderTarget(i, nullptr);
 	}
-	m_pImpl->m_RenderTargetsDirty = true;
+	SetDepthStencil(nullptr);
+	m_CurrentViewport.Left = 0;
+	m_CurrentViewport.Top = 0;
+	m_CurrentViewport.Right = (float)width;
+	m_CurrentViewport.Bottom = (float)height;
+	SetViewport(m_CurrentViewport);
 
-	SetRenderTarget(0, m_pDefaultRenderTarget.get());
-	SetViewport(m_CurrentViewport, true);
+	m_WindowWidth = width;
+	m_WindowHeight = height;
 }
 
 void Graphics::OnResize(const int width, const int height)
@@ -841,7 +917,9 @@ void Graphics::TakeScreenshot()
 	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
 	PhysicalFile file(str.str());
 	if (!file.OpenWrite())
+	{
 		return;
+	}
 	TakeScreenshot(file);
 }
 
@@ -864,6 +942,8 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 	ComPtr<ID3D11Texture2D> pStagingTexture;
 	HR(m_pImpl->GetDevice()->CreateTexture2D(&desc, nullptr, pStagingTexture.GetAddressOf()));
 
+	ID3D11Resource* pRenderTexture = (ID3D11Resource*)m_pDefaultRenderTarget->GetResource();
+
 	//If we are using MSAA, we need to resolve the resource first
 	if (m_Multisample > 1)
 	{
@@ -883,12 +963,12 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 
 		HR(m_pImpl->GetDevice()->CreateTexture2D(&resolveTexDesc, nullptr, pResolveTexture.GetAddressOf()));
 
-		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		m_pImpl->GetDeviceContext()->ResolveSubresource(pResolveTexture.Get(), 0, (ID3D11Texture2D*)pRenderTexture, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
 		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), pResolveTexture.Get());
 	}
 	else
 	{
-		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)m_pDefaultRenderTarget->GetRenderTexture()->GetResource());
+		m_pImpl->GetDeviceContext()->CopyResource(pStagingTexture.Get(), (ID3D11Texture2D*)pRenderTexture);
 	}
 
 	Image destinationImage(m_pContext);
@@ -916,8 +996,8 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)
 {
 	size_t hash = (size_t)shaderType
-		| index << 2
-		| size << 4;
+		| (unsigned)(index << 1)
+		| (unsigned)(size << 4);
 
 	auto pIt = m_ConstantBuffers.find(hash);
 	if (pIt != m_ConstantBuffers.end())

@@ -1,9 +1,11 @@
 #pragma once
 
 #include "SceneGraph/Component.h"
+#include "../Core/GraphicsDefines.h"
 
-class InputEngine;
 class Graphics;
+class RenderTarget;
+class Texture2D;
 struct RaycastResult;
 
 class Camera : public Component
@@ -11,7 +13,7 @@ class Camera : public Component
 	FLUX_OBJECT(Camera, Component)
 
 public:
-	Camera(Context* pContext, InputEngine* pInput, Graphics* pGraphics);
+	Camera(Context* pContext);
 	virtual ~Camera();
 
 	const Matrix& GetView() const { return m_View; }
@@ -20,8 +22,13 @@ public:
 	const Matrix& GetViewProjectionInverse() const { return m_ViewProjectionInverse; }
 	const Matrix& GetProjection() const { return m_Projection; }
 
+	void SetProjection(const Matrix& projection);
+	void SetView(const Matrix& view);
+	void UpdateFrustum();
+
+	void SetFOW(const float fov);
 	void SetViewport(float x, float y, float width, float height);
-	const FloatRect& GetViewport() const { return m_Viewport; }
+	FloatRect GetViewport() const { return GetAbsoluteViewport(); }
 	void SetClippingPlanes(const float nearPlane, const float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
@@ -39,11 +46,25 @@ public:
 
 	bool Raycast(RaycastResult& result) const;
 
+	void SetRenderTarget(RenderTarget* pRenderTarget) { m_pRenderTarget = pRenderTarget; }
+	void SetRenderOrder(const int order) { m_Order = order; }
+
+	void SetClearFlags(const ClearFlags& flags) { m_ClearFlags = flags; }
+	void SetClearColor(const Color& color) { m_ClearColor = color; }
+
+	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
+	RenderTarget* GetDepthStencil();
+	int GetRenderOrder() const { return m_Order; }
+	const ClearFlags& GetClearFlags() const { return m_ClearFlags; }
+	const Color& GetClearColor() const { return m_ClearColor; }
+
+	virtual void OnMarkedDirty(const Transform* transform) override;
+
 protected:
 	void OnSceneSet(Scene* pScene) override;
-	virtual void OnMarkedDirty(const Transform* transform) override;
 private:
-	InputEngine* m_pInput = nullptr;
+	FloatRect GetAbsoluteViewport() const;
+
 	Graphics* m_pGraphics = nullptr;
 
 	float m_Size = 50.0f;
@@ -61,11 +82,11 @@ private:
 	bool m_Perspective = true;
 
 	FloatRect m_Viewport;
-	float m_VpX = 0.0f;
-	float m_VpY = 0.0f;
-	float m_VpWidth = 1.0f;
-	float m_VpHeight = 1.0f;
+	int m_Order = 0;
 
 	BoundingFrustum m_Frustum;
+	RenderTarget* m_pRenderTarget = nullptr;
+	std::unique_ptr<Texture2D> m_pDepthStencil;
+	Color m_ClearColor = Color(0.2f, 0.2f, 0.2f, 1.0f);
+	ClearFlags m_ClearFlags = ClearFlags::All;
 };
-

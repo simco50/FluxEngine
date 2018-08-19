@@ -1,5 +1,6 @@
 #include "FluxEngine.h"
 #include "Thread.h"
+#include "AsyncTaskQueue.h"
 
 #ifndef WIN32
 #include <thread>
@@ -98,6 +99,11 @@ void Thread::SetMainThread()
 bool Thread::IsMainThread()
 {
 	return m_MainThread == GetCurrentId();
+}
+
+bool Thread::IsMainThread(unsigned int id)
+{
+	return m_MainThread == id;
 }
 
 //WORKER THREAD

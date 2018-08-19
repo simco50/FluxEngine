@@ -23,7 +23,9 @@ void Model::OnSceneSet(Scene* pScene)
 void Model::OnMarkedDirty(const Transform* pTransform)
 {
 	for (Batch& batch : m_Batches)
+	{
 		batch.pModelMatrix = &pTransform->GetWorldMatrix();
+	}
 }
 
 void Model::SetMesh(Mesh* pMesh)

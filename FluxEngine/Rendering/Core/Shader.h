@@ -23,13 +23,13 @@ public:
 
 	const std::string& GetSource() { return m_ShaderSource; }
 	static std::string GetEntryPoint(const ShaderType type);
-	const std::string& GetShaderName() const { return m_ShaderName; }
+	const std::string& GetName() const { return m_Name; }
 	const DateTime& GetLastModifiedTimestamp() const { return m_LastModifiedTimestamp; }
 
 private:
 	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes);
 
-	std::string m_ShaderName;
+	std::string m_Name;
 	std::string m_ShaderSource;
 
 	DateTime m_LastModifiedTimestamp;

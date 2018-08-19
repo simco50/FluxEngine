@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "UI/ImmediateUI.h"
 #include "ShaderProgram.h"
+#include "Texture2D.h"
 
 void Graphics::InvalidateShaders()
 {
@@ -44,6 +45,11 @@ ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderTy
 	if (pShader)
 		return pShader->GetOrCreateVariation(type, defines);
 	return nullptr;
+}
+
+RenderTarget* Graphics::GetRenderTarget() const
+{
+	return m_CurrentRenderTargets[0] ? m_CurrentRenderTargets[0] : m_pDefaultRenderTarget->GetRenderTarget();
 }
 
 void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCount)

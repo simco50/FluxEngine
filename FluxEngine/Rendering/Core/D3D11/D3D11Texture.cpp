@@ -10,7 +10,9 @@
 void Texture::UpdateParameters()
 {
 	if ((m_pSamplerState && !m_ParametersDirty) || m_pResource == nullptr)
+	{
 		return;
+	}
 
 	AUTOPROFILE(Texture_CreateTextureSampler);
 
@@ -18,7 +20,7 @@ void Texture::UpdateParameters()
 
 	D3D11_SAMPLER_DESC desc = {};
 	Color borderColor = Color();
-	switch (m_TextureAddressMode)
+	switch (m_AddressMode)
 	{
 	case TextureAddressMode::WRAP:
 		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -45,6 +47,8 @@ void Texture::UpdateParameters()
 	desc.MaxLOD = std::numeric_limits<float>::max();
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
+
+	m_ParametersDirty = false;
 }
 
 int Texture::GetRowDataSize(unsigned int width)
@@ -197,5 +201,13 @@ bool Texture::IsCompressed() const
 		return true;
 	default:
 		return false;
+	}
+}
+
+void Texture::RegenerateMips()
+{
+	if (m_Usage == TextureUsage::RENDERTARGET && m_pShaderResourceView != nullptr && m_MipLevels > 1)
+	{
+		m_pGraphics->GetImpl()->GetDeviceContext()->GenerateMips((ID3D11ShaderResourceView*)m_pShaderResourceView);
 	}
 }

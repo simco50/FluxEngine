@@ -6,26 +6,22 @@ class OutputStream;
 class Resource : public Object
 {
 	FLUX_OBJECT(Resource, Object)
+	DELETE_COPY(Resource)
 
 public:
 	Resource(Context* pContext);
 	virtual ~Resource();
 
-	DELETE_COPY(Resource)
-
 	virtual bool Load(InputStream& inputStream) = 0;
 	virtual bool Save(OutputStream& outputStream);
 
-	void SetName(const std::string& name) { m_Name = name; }
+	void SetFilePath(const std::string& name) { m_FilePath = name; }
 	void SetMemoryUsage(const unsigned int memory) { m_MemoryUsage = memory; }
 
-	const std::string& GetName() const { return m_Name; }
+	const std::string& GetFilePath() const { return m_FilePath; }
 	unsigned int GetMemoryUsage() const { return m_MemoryUsage; }
 
-	MulticastDelegate<>& OnLoaded() { return m_OnLoadedEvent; }
-
 protected:
-	std::string m_Name;
-	MulticastDelegate<> m_OnLoadedEvent;
+	std::string m_FilePath;
 	unsigned int m_MemoryUsage = 0;
 };

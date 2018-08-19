@@ -31,6 +31,6 @@ PS_INPUT VSMain(VS_INPUT input)
 #ifdef COMPILE_PS
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-      return input.color * tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
+      return input.color * Sample2D(Diffuse, input.texCoord);
 }
 #endif

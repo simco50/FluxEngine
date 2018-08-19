@@ -16,11 +16,11 @@ Shader::~Shader()
 
 bool Shader::Load(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(Shader_Load, m_ShaderName);
+	AUTOPROFILE_DESC(Shader_Load, m_Name);
 	GetSubsystem<ResourceManager>()->ResetDependencies(this);
 
 	std::string fileName = inputStream.GetSource();
-	m_ShaderName = Paths::GetFileNameWithoutExtension(fileName);
+	m_Name = Paths::GetFileNameWithoutExtension(fileName);
 
 	m_LastModifiedTimestamp = 0;
 	{
@@ -42,7 +42,7 @@ bool Shader::Load(InputStream& inputStream)
 
 bool Shader::ReloadVariations()
 {
-	AUTOPROFILE_DESC(ReloadVariations, m_ShaderName);
+	AUTOPROFILE_DESC(ReloadVariations, m_Name);
 	//Reload all shaders in the cache
 	for (auto& map : m_ShaderCache)
 	{
@@ -68,7 +68,7 @@ ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(m_pContext, this, type);
 	
 	std::stringstream cacheName;
-	cacheName << m_ShaderName + Shader::GetEntryPoint(type) << "_" << hash;
+	cacheName << m_Name + Shader::GetEntryPoint(type) << "_" << hash;
 	if (pVariation->LoadFromCache(cacheName.str()))
 	{
 		if (!pVariation->CreateShader(GetSubsystem<Graphics>(), type))
@@ -113,7 +113,7 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-	if(GetName() != inputStream.GetSource())
+	if(GetFilePath() != inputStream.GetSource())
 		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
 
 	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());

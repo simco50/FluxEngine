@@ -7,7 +7,7 @@
 AudioListener::AudioListener(Context* pContext) : 
 	Component(pContext)
 {
-	m_pFmodSystem = pContext->GetSubsystem<AudioEngine>()->GetSystem();
+	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
 
 AudioListener::~AudioListener()
@@ -25,7 +25,7 @@ void AudioListener::OnMarkedDirty(const Transform* transform)
 {
 	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
-	m_pFmodSystem->set3DListenerAttributes(
+	m_pAudio->GetSystem()->set3DListenerAttributes(
 		0, 
 		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetWorldPosition()),
 		reinterpret_cast<const FMOD_VECTOR*>(&velocity),

@@ -13,6 +13,7 @@ enum class ImageFormat
 	BC5,
 	BC6H,
 	BC7,
+	MAX
 };
 
 struct MipLevelInfo
@@ -28,6 +29,7 @@ struct MipLevelInfo
 class Image : public Resource
 {
 	FLUX_OBJECT(Image, Resource)
+	DELETE_COPY(Image)
 
 public:
 	Image(Context* pContext);
@@ -56,10 +58,9 @@ public:
 	int GetHeight() const { return m_Height; }
 	int GetDepth() const { return m_Depth; }
 	int GetComponents() const { return m_Components; }
-	int GetActualComponents() const { return m_ActualComponents; }
+	bool IsSRGB() const { return m_sRgb; }
 
 	SDL_Surface* GetSDLSurface();
-	bool IsSRGB() const { return m_sRgb; }
 	unsigned char* GetWritableData() { return m_Pixels.data(); }
 	const unsigned char* GetData(int mipLevel = 0) const;
 
@@ -78,7 +79,6 @@ private:
 	int m_Width = 0;
 	int m_Height = 0;
 	int m_Components = 0;
-	int m_ActualComponents = 0;
 	int m_Depth = 1;
 	int m_MipLevels = 1;
 	int m_BBP = 0;
@@ -87,5 +87,5 @@ private:
 	std::unique_ptr<Image> m_pNextImage;
 	ImageFormat m_Format = ImageFormat::RGBA;
 	std::vector<unsigned char> m_Pixels;
-	std::vector<uint32> m_DataOffsets;
+	std::vector<uint32> m_MipLevelDataOffsets;
 };

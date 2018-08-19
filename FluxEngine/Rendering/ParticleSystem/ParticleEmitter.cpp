@@ -17,11 +17,11 @@
 #include "Rendering/Core/Texture2D.h"
 
 ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
-	Drawable(pContext)
+	Drawable(pContext),
+	m_pGeometry(std::make_unique<Geometry>())
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
-	m_pGeometry = std::make_unique<Geometry>();
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
 	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");
@@ -40,21 +40,28 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 {
+	AUTOPROFILE(ParticleEmitter_SetSystem);
+
 	if (pSettings != m_pParticleSystem)
 	{
 		m_pParticleSystem = pSettings;
-		pSettings->OnLoaded().AddLambda([this]() { SetSystem(m_pParticleSystem); });
 	}
 	if (pSettings == nullptr)
+	{
 		return;
+	}
 
 	if (m_pParticleSystem->ImagePath == "")
+	{
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
+	}
 
 	FreeParticles();
 	m_Particles.resize(m_pParticleSystem->MaxParticles);
 	for (int i = 0; i < m_pParticleSystem->MaxParticles; i++)
+	{
 		m_Particles[i] = new Particle(m_pParticleSystem);
+	}
 	m_BufferSize = (int)m_Particles.size();
 	CreateVertexBuffer(m_BufferSize);
 	m_pGeometry->SetVertexBuffer(m_pVertexBuffer.get());
@@ -72,7 +79,9 @@ void ParticleEmitter::Reset()
 	m_Timer = 0.0f;
 	m_pParticleSystem->PlayOnAwake ? m_Playing = true : m_Playing = false;
 	for (Particle* p : m_Particles)
+	{
 		p->Reset();
+	}
 }
 
 void ParticleEmitter::OnSceneSet(Scene* pScene)
@@ -103,7 +112,9 @@ void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 void ParticleEmitter::FreeParticles()
 {
 	for (size_t i = 0; i < m_Particles.size(); i++)
+	{
 		delete m_Particles[i];
+	}
 	m_Particles.clear();
 }
 
@@ -189,7 +200,9 @@ void ParticleEmitter::Update()
 	if (m_Playing == false)
 		return;
 
+	AUTOPROFILE(ParticleEmitter_Update);
 	CalculateBoundingBox();
+
 
 	m_Timer += GameTimer::DeltaTime();
 	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)
@@ -212,7 +225,9 @@ void ParticleEmitter::Update()
 		int startIdx = (int)m_Particles.size();
 		m_Particles.resize(m_pParticleSystem->MaxParticles);
 		for (int i = startIdx; i < m_pParticleSystem->MaxParticles; i++)
+		{
 			m_Particles[i] = new Particle(m_pParticleSystem);
+		}
 	}
 
 	int burstParticles = 0;
@@ -245,7 +260,9 @@ void ParticleEmitter::Update()
 		}
 	}
 	if (burstParticles > 0)
+	{
 		++m_BurstIterator;
+	}
 
 	m_pVertexBuffer->Unmap();
 

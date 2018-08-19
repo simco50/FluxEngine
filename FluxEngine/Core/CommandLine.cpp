@@ -2,6 +2,7 @@
 #include "CommandLine.h"
 
 std::vector<std::string> CommandLine::m_Parameters;
+std::string CommandLine::m_CommandLine;
 
 bool CommandLine::Parse(wchar_t* pCommandLine)
 {
@@ -11,6 +12,7 @@ bool CommandLine::Parse(wchar_t* pCommandLine)
 
 bool CommandLine::Parse(const std::string& commandLine)
 {
+	m_CommandLine = commandLine;
 	m_Parameters.clear();
 	bool quoted = false;
 	bool skipArgument = false;
@@ -25,7 +27,9 @@ bool CommandLine::Parse(const std::string& commandLine)
 		else if (commandLine[i] == ' ' && !quoted)
 		{
 			if (!skipArgument)
+			{
 				m_Parameters.push_back(commandLine.substr(commandStart, i - commandStart));
+			}
 			skipArgument = false;
 			commandStart = (int)i + 1;
 		}
@@ -38,10 +42,11 @@ bool CommandLine::Parse(const std::string& commandLine)
 	{
 		argument.erase(std::remove(argument.begin(), argument.end(), '\"'), argument.end());
 	}
+	std::sort(m_Parameters.begin(), m_Parameters.end());
 	return true;
 }
 
 bool CommandLine::GetBool(const std::string& parameter)
 {
-	return std::find(m_Parameters.begin(), m_Parameters.end(), parameter) != m_Parameters.end();
+	return std::binary_search(m_Parameters.begin(), m_Parameters.end(), parameter);
 }

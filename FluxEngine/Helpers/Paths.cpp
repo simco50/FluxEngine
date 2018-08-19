@@ -15,7 +15,9 @@ std::string Paths::GetFileName(const std::string& filePath)
 		return IsSlash(c);
 	});
 	if (it == filePath.rend())
+	{
 		return filePath;
+	}
 
 	return filePath.substr(it.base() - filePath.begin());
 }
@@ -25,7 +27,9 @@ std::string Paths::GetFileNameWithoutExtension(const std::string& filePath)
 	std::string fileName = GetFileName(filePath);
 	size_t dotPos = fileName.find('.');
 	if (dotPos == std::string::npos)
+	{
 		return fileName;
+	}
 	return fileName.substr(0, dotPos);
 }
 
@@ -33,7 +37,9 @@ std::string Paths::GetFileExtenstion(const std::string& filePath)
 {
 	size_t dotPos = filePath.rfind('.');
 	if (dotPos == std::string::npos)
+	{
 		return filePath;
+	}
 	return filePath.substr(dotPos + 1);
 }
 
@@ -46,7 +52,9 @@ std::string Paths::GetDirectoryPath(const std::string& filePath)
 	if (it == filePath.rend())
 	{
 		if (filePath.rfind('.') == std::string::npos)
+		{
 			return "/";
+		}
 		return filePath;
 	}
 
@@ -65,21 +73,29 @@ void Paths::NormalizeInline(std::string& filePath)
 	for (char& c : filePath)
 	{
 		if (c == '\\')
+		{
 			c = '/';
+		}
 		c = (char)tolower(c);
 	}
 	if (filePath.find("./") == 0)
+	{
 		filePath = std::string(filePath.begin() + 2, filePath.end());
+	}
 }
 
 std::string Paths::ChangeExtension(const std::string& filePath, const std::string& newExtension)
 {
 	size_t extensionStart = filePath.rfind('.');
 	if (extensionStart == std::string::npos)
+	{
 		return filePath;
+	}
 	size_t lastSlash = filePath.rfind('/');
 	if (extensionStart < lastSlash)
+	{
 		return filePath;
+	}
 	return filePath.substr(0, extensionStart + 1) + newExtension;
 }
 
@@ -88,8 +104,10 @@ std::string Paths::MakeRelativePath(const std::string& basePath, const std::stri
 	size_t matchLength = 0;
 	for (size_t i = 0; i < basePath.size(); i++)
 	{
-		if (basePath[i] != filePath[i])
+		if (basePath[i] != filePath[i]) 
+		{
 			break;
+		}
 		++matchLength;
 	}
 	return filePath.substr(matchLength);
@@ -102,7 +120,9 @@ void Paths::Combine(const std::vector<std::string>& elements, std::string& outpu
 	{
 		stream << elements[i];
 		if (i != elements.size() - 1)
+		{
 			stream << "/";
+		}
 	}
 	output = stream.str();
 }

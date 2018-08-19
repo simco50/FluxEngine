@@ -13,7 +13,7 @@ Texture::Texture(Context* pContext) :
 
 Texture::~Texture()
 {
-	Release();
+	
 }
 
 void Texture::SetAddressMode(const TextureAddressMode addressMode)
@@ -23,16 +23,6 @@ void Texture::SetAddressMode(const TextureAddressMode addressMode)
 		m_AddressMode = addressMode;
 		m_ParametersDirty = true;
 	}
-}
-
-void Texture::Release()
-{
-	SafeRelease(m_pResource);
-	SafeRelease(m_pShaderResourceView);
-	SafeRelease(m_pRenderTargetView);
-	SafeRelease(m_pReadOnlyView);
-	SafeRelease(m_pSamplerState);
-	SafeRelease(m_pResolvedResource);
 }
 
 int Texture::GetLevelWidth(unsigned int mipLevel)

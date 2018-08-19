@@ -57,7 +57,7 @@ public:
 	static void GetFilesWithExtension(const std::string& directory, std::vector<std::string>& files, const std::string& extension, const bool recursive);
 
 private:
-	static bool GetFileAttributes(const std::string filePath, FileAttributes& attributes);
+	static bool GetFileAttributes(const std::string& filePath, FileAttributes& attributes);
 
 	static std::string FixPath(const std::string& path);
 	static std::unique_ptr<IMountPoint> CreateMountPoint(const std::string& physicalPath, const ArchiveType type);

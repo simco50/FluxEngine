@@ -12,10 +12,26 @@ public:
 	virtual ~SceneNode();
 
 	virtual void OnSceneSet(Scene* pScene);
-	virtual void Update();
+	virtual void OnSceneRemoved();
 
-	void AddChild(SceneNode* pNode);
-	void AddComponent(Component* pComponent);
+	template<typename T, typename ...Args>
+	T* CreateComponent(Args ...args)
+	{
+		T* pComponent = new T(m_pContext, args...);
+		AddComponent(pComponent);
+		return pComponent;
+	}
+
+	SceneNode* CreateChild(const std::string& name = "");
+
+	template<typename T>
+	T* CreateChild(const std::string& name = "")
+	{
+		T* pChild = new T(m_pContext);
+		AddChild(pChild);
+		pChild->SetName(name);
+		return pChild;
+	}
 
 	Transform* GetTransform() const { return m_pTransform.get();}
 	SceneNode* GetParent() const { return m_pParent; }
@@ -37,7 +53,9 @@ public:
 	{
 		T* pComponent = GetComponent<T>();
 		if (pComponent)
+		{
 			return pComponent;
+		}
 		pComponent = new T(m_pContext, args...);
 		AddComponent(pComponent);
 		return pComponent;
@@ -56,5 +74,8 @@ protected:
 	Scene* m_pScene = nullptr;
 
 private:
+	void AddChild(SceneNode* pNode);
+	void AddComponent(Component* pComponent);
+
 	std::string m_Name;
 };

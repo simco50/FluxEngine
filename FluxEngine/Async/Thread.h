@@ -1,5 +1,4 @@
 #pragma once
-#include "AsyncTaskQueue.h"
 
 class AsyncTaskQueue;
 
@@ -15,9 +14,11 @@ public:
 	unsigned long GetId() const { return m_ThreadId; }
 	bool IsCurrentThread() const { return GetId() == GetCurrentId(); }
 	static unsigned int GetCurrentId();
+	bool IsRunning() const { return m_pHandle != nullptr; }
 
 	static void SetMainThread();
 	static bool IsMainThread();
+	static bool IsMainThread(unsigned int id);
 
 protected:
 	bool RunThread();

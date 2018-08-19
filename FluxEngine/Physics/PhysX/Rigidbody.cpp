@@ -57,8 +57,11 @@ void Rigidbody::OnNodeRemoved()
 
 void Rigidbody::OnMarkedDirty(const Transform* pTransform)
 {
+
+	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+
 	if (m_pBody)
-		m_pBody->setGlobalPose(PxTransform(*reinterpret_cast<const PxMat44*>(&pTransform->GetWorldMatrix())), true);
+		m_pBody->setGlobalPose(transform, true);
 }
 
 void Rigidbody::UpdateBody()
@@ -118,7 +121,9 @@ void Rigidbody::CreateBody(const Type type)
 {
 	m_Type = type;
 	if (m_pNode == nullptr)
+	{
 		return;
+	}
 
 	AUTOPROFILE(Rigidbody_CreateBody);
 
@@ -151,10 +156,14 @@ void Rigidbody::CreateBody(const Type type)
 			pNewBody->attachShape(*pShape);
 		}
 		if (m_pScene)
+		{
 			m_pPhysicsScene->GetScene()->removeActor(*m_pBody);
+		}
 	}
 	m_pBody = pNewBody;
 	m_pBody->userData = this;
 	if (m_pScene)
+	{
 		m_pPhysicsScene->GetScene()->addActor(*m_pBody);
+	}
 }

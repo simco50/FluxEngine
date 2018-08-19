@@ -25,6 +25,8 @@ void ConstantBuffer::Apply()
 {
 	if (m_IsDirty && m_pBuffer)
 	{
+		AUTOPROFILE(ConstantBuffer_Apply);
+
 		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, 0, (void*)m_pShadowData, 0, 0);
 		m_IsDirty = false;
 	}

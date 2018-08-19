@@ -9,7 +9,6 @@ public:
 	AudioEngine(Context* pContext);
 	~AudioEngine();
 
-	FMOD::Sound* LoadSound(const std::string& filePath, const FMOD_MODE mode, FMOD_CREATESOUNDEXINFO* exInfo);
 	FMOD::System* GetSystem() const { return m_pSystem; }
 
 	void Update();

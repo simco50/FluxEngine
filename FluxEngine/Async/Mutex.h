@@ -6,6 +6,8 @@ public:
 	Mutex();
 	~Mutex();
 
+	DELETE_COPY(Mutex)
+
 	void Lock();
 	bool TryLock();
 	void Unlock();
@@ -17,7 +19,7 @@ private:
 class ScopeLock
 {
 public:
-	ScopeLock(Mutex& mutex) :
+	explicit ScopeLock(Mutex& mutex) :
 		m_pMutex(&mutex)
 	{
 		m_pMutex->Lock();
@@ -26,6 +28,8 @@ public:
 	{
 		m_pMutex->Unlock();
 	}
+
+	DELETE_COPY(ScopeLock)
 
 private:
 	Mutex* m_pMutex;

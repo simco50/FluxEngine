@@ -27,8 +27,8 @@ private:
 
 	//Textures
 	bool m_TexturesDirty = false;
-	unsigned int m_FirstDirtyTexture = std::numeric_limits<unsigned int>::max();
-	unsigned int m_LastDirtyTexture = 0;
+	int m_FirstDirtyTexture = (int)TextureSlot::MAX;
+	int m_LastDirtyTexture = 0;
 	std::array<ID3D11SamplerState*, (size_t)TextureSlot::MAX> m_SamplerStates = {};
 	std::array<ID3D11ShaderResourceView*, (size_t)TextureSlot::MAX> m_ShaderResourceViews = {};
 
@@ -38,6 +38,7 @@ private:
 	//Render Target
 	std::array<ID3D11RenderTargetView*, GraphicsConstants::MAX_RENDERTARGETS> m_RenderTargetViews = {};
 	ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
+
 	bool m_RenderTargetsDirty = true;
 
 	//Primitive topology
@@ -53,6 +54,6 @@ private:
 
 	//Shader programs
 	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	std::map<unsigned int, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
+	std::map<uint64, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
 	bool m_ShaderProgramDirty = false;
 };

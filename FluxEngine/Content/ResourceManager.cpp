@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "FileSystem\File\File.h"
 #include "FileSystem\FileWatcher.h"
+#include "Async\AsyncTaskQueue.h"
 
 ResourceManager::ResourceManager(Context* pContext) :
 	Subsystem(pContext)
@@ -23,6 +24,7 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Update()
 {
+	AUTOPROFILE(ResourceManager_Update);
 	if (m_pResourceWatcher)
 	{
 		std::string resource;
@@ -52,7 +54,7 @@ bool ResourceManager::Reload(Resource* pResource)
 {
 	if (pResource == nullptr)
 		return false;
-	return LoadResourcePrivate(pResource, pResource->GetName());
+	return LoadResourcePrivate(pResource, pResource->GetFilePath());
 }
 
 bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
@@ -60,7 +62,7 @@ bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 	if (pResource == nullptr)
 		return false;
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
-	auto pIt = resourceGroup.find(pResource->GetName());
+	auto pIt = resourceGroup.find(pResource->GetFilePath());
 	if(pIt != resourceGroup.end())
 		resourceGroup.erase(pIt);
 	std::string path = Paths::Normalize(filePath);
@@ -95,7 +97,7 @@ void ResourceManager::Unload(Resource*& pResource)
 		return;
 
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
-	auto pIt = resourceGroup.find(pResource->GetName());
+	auto pIt = resourceGroup.find(pResource->GetFilePath());
 	if (pIt != resourceGroup.end())
 		resourceGroup.erase(pIt);
 	delete pResource;
@@ -112,7 +114,9 @@ bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
 		for (const std::string& path : dependants)
 		{
 			if (!Reload(path))
+			{
 				success = false;
+			}
 		}
 	}
 	return success;
@@ -120,59 +124,27 @@ bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
 
 void ResourceManager::AddResourceDependency(Resource* pResource, const std::string& filePath)
 {
-	std::string name = pResource->GetName();
+	std::string name = pResource->GetFilePath();
 	m_ResourceDependencies[Paths::Normalize(filePath)].push_back(name);
 }
 
 void ResourceManager::ResetDependencies(Resource* pResource)
 {
-	std::string path = Paths::Normalize(pResource->GetName());
+	std::string path = Paths::Normalize(pResource->GetFilePath());
 	for (auto pIt = m_ResourceDependencies.begin(); pIt != m_ResourceDependencies.end(); ++pIt)
 	{
 		auto it = std::remove_if(pIt->second.begin(), pIt->second.end(), [path](const std::string& name) {return name == path; });
 		size_t distance = std::distance(pIt->second.begin(), it);
 		if (distance < pIt->second.size())
+		{
 			pIt->second.resize(distance);
-	}
-}
-
-std::vector<Resource*> ResourceManager::GetResourcesOfType(StringHash type)
-{
-	std::vector<Resource*> resources;
-	for (auto& resourceGroup : m_Resources)
-	{
-		if (resourceGroup.second.size() > 0 && resourceGroup.second.begin()->second->IsTypeOf(type))
-		{
-			for (auto& p : resourceGroup.second)
-			{
-				if (p.second->IsTypeOf(type))
-					resources.push_back(p.second);
-			}
 		}
 	}
-	return resources;
-}
-
-unsigned int ResourceManager::GetMemoryUsageOfType(StringHash type)
-{
-	unsigned int size = 0;
-
-	for (const auto& resourceGroup : m_Resources)
-	{
-		if (resourceGroup.second.size() > 0 && resourceGroup.second.begin()->second->IsTypeOf(type))
-		{
-			for (auto& resourcePair : resourceGroup.second)
-			{
-				size += resourcePair.second->GetMemoryUsage();
-			}
-		}
-	}
-	return size;
 }
 
 bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
 {
-	pResource->SetName(filePath);
+	pResource->SetFilePath(filePath);
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 	{
@@ -191,7 +163,6 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
 		return false;
 	}
-	pResource->OnLoaded().Broadcast();
 	return true;
 }
 
@@ -200,6 +171,8 @@ Resource* ResourceManager::FindResource(const std::string& filePath, const Strin
 	ResourceGroup& group = m_Resources[type];
 	auto pIt = group.find(filePath);
 	if (pIt != group.end())
+	{
 		return pIt->second;
+	}
 	return nullptr;
 }

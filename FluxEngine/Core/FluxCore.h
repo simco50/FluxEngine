@@ -33,11 +33,12 @@ public:
 
 private:
 	void RenderUI();
+	void GameUpdate();
 
 	//Window variables
 	HINSTANCE m_hInstance = nullptr;
 
-	Scene* pScene;
+	Scene* pScene = nullptr;
 
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
@@ -57,4 +58,5 @@ private:
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
+	int m_FramesToCapture = 1;
 };

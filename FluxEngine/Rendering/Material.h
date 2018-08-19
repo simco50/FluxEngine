@@ -24,7 +24,9 @@ public:
 	{
 	public:
 		ParameterEntry() :
-			m_Size(0)
+			m_Size(0),
+			m_pDataPool(nullptr),
+			m_DataOffset(0)
 		{}
 		ParameterEntry(const size_t size, void* pInData, std::vector<char>& dataPool) :
 			m_Size(size), m_pDataPool(&dataPool)
@@ -32,26 +34,28 @@ public:
 			m_DataOffset = (int)dataPool.size();
 			dataPool.resize(dataPool.size() + size);
 			if (pInData)
+			{
 				memcpy(dataPool.data() + m_DataOffset, pInData, size);
+			}
 		}
 		void SetData(const void* pInData, const size_t size)
 		{
 			assert(size == m_Size);
-			memcpy(m_pDataPool->data(), pInData, size);
+			memcpy(m_pDataPool->data() + m_DataOffset, pInData, size);
 		}
-		void* GetData() const { return m_pDataPool->data(); }
+		void* GetData() const { return m_pDataPool->data() + m_DataOffset; }
 		size_t GetSize() const { return m_Size; }
 	private:
 		size_t m_Size;
 		std::vector<char>* m_pDataPool;
-		int m_DataOffset = 0;
+		int m_DataOffset;
 	};
 
 private:
 	class ParameterCache
 	{
 	public:
-		ParameterEntry& GetParameter(const std::string name, const size_t size)
+		ParameterEntry& GetParameter(const std::string& name, const size_t size)
 		{
 			ParameterEntry& entry = m_Parameters[name];
 			if (entry.GetSize() != size)
@@ -64,8 +68,7 @@ private:
 
 		size_t ByteSize() const
 		{
-			return m_Parameters.size() * sizeof(ParameterEntry) +
-				m_ParameterPool.size();
+			return m_Parameters.size() * sizeof(ParameterEntry) + m_ParameterPool.size();
 		}
 
 	private:
@@ -89,6 +92,8 @@ public:
 	void SetFillMode(FillMode mode) { m_FillMode = mode; }
 	void SetDepthEnabled(bool enabled) { m_DepthEnabled = enabled; }
 	void SetDepthWrite(bool enabled) { m_DepthWrite = enabled; }
+
+	const std::string& GetName() const { return m_Name; }
 
 	CullMode GetCullMode() const { return m_CullMode; }
 	BlendMode GetBlendMode() const { return m_BlendMode; }
