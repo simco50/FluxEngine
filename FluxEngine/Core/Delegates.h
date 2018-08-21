@@ -109,7 +109,7 @@ public:
 		m_pFunction(pFunction)
 	{}
 
-	virtual RetVal Execute(Args ...args) override
+	virtual RetVal Execute(Args ...args) const override
 	{
 		return (m_pObject.get()->*m_pFunction)(args...);
 	}
@@ -130,28 +130,55 @@ class DelegateHandler
 public:
 	template<typename T>
 	DelegateHandler(T* pObj, RetVal(T::*pFunction)(Args...)) :
-		m_pDelegate(std::make_unique<RawDelegate<RetVal, T, Args...>>(pObj, pFunction))
+		m_pDelegate(new RawDelegate<RetVal, T, Args...>(pObj, pFunction)),
+		m_Size(sizeof(RawDelegate<RetVal, T, Args...>))
 	{}
 
 	DelegateHandler(RetVal(*pFunction)(Args...)) :
-		m_pDelegate(std::make_unique<StaticDelegate<RetVal, Args...>>(pFunction))
+		m_pDelegate(new StaticDelegate<RetVal, Args...>(pFunction)),
+		m_Size(sizeof(StaticDelegate<RetVal, Args...>))
 	{}
 
 	template<typename T>
 	DelegateHandler(const std::shared_ptr<T>& pObj, RetVal(T::*pFunction)(Args...)) :
-		m_pDelegate(std::make_unique<SPDelegate<RetVal, T, Args...>>(pObj, pFunction))
+		m_pDelegate(new SPDelegate<RetVal, T, Args...>(pObj, pFunction)),
+		m_Size(sizeof(SPDelegate<RetVal, T, Args...>))
 	{}
 
 	template<typename LambdaType>
 	DelegateHandler(LambdaType&& lambda) :
-		m_pDelegate(std::make_unique<LambdaDelegate<LambdaType, RetVal, Args...>>(std::forward<LambdaType>(lambda)))
+		m_pDelegate(new LambdaDelegate<LambdaType, RetVal, Args...>(std::forward<LambdaType>(lambda))),
+		m_Size(sizeof(LambdaDelegate<LambdaType, RetVal, Args...>))
 	{}
+
+	DelegateHandler(const DelegateHandler& other) :
+		m_Size(other.m_Size)
+	{
+		m_pDelegate = (IDelegate<RetVal, Args...>*)(new char[other.m_Size]);
+		memcpy(m_pDelegate, other.m_pDelegate, other.m_Size);
+	}
+
+	DelegateHandler(DelegateHandler&& other) :
+		m_Size(other.m_Size),
+		m_pDelegate(other.m_pDelegate)
+	{
+		other.m_pDelegate = nullptr;
+	}
+
+	DelegateHandler& operator=(const DelegateHandler& other)
+	{
+		Release();
+		m_Size = other.m_Size;
+		m_pDelegate = (IDelegate<RetVal, Args...>*)(new char[other.m_Size]);
+		memcpy(m_pDelegate, other.m_pDelegate, other.m_Size);
+	}
 
 	~DelegateHandler()
 	{
+		Release();
 	}
 
-	RetVal Execute(Args... args)
+	RetVal Execute(Args... args) const
 	{
 		if (m_pDelegate)
 		{
@@ -170,7 +197,17 @@ public:
 	}
 
 private:
-	std::unique_ptr<IDelegate<RetVal, Args...>> m_pDelegate;
+	void Release()
+	{
+		if (m_pDelegate)
+		{
+			delete m_pDelegate;
+			m_pDelegate = nullptr;
+		}
+	}
+
+	IDelegate<RetVal, Args...>* m_pDelegate;
+	size_t m_Size;
 };
 
 //Delegate that can be bound to by just ONE object
@@ -303,20 +340,28 @@ class DelegateHandle
 {
 public:
 	DelegateHandle() : m_Id(-1) {}
-	explicit DelegateHandle(bool generateId) : m_Id(GetNewID()) { UNREFERENCED_PARAMETER(generateId); }
+	explicit DelegateHandle(bool /*generateId*/) : m_Id(GetNewID()) {}
 	~DelegateHandle() {}
 
 	bool operator==(const DelegateHandle& other) const
 	{
 		return m_Id == other.m_Id;
 	}
+
 	bool operator<(const DelegateHandle& other) const
 	{
 		return m_Id < other.m_Id;
 	}
 
-	bool IsValid() const { return m_Id != -1; }
-	void Invalidate() { m_Id = -1; }
+	bool IsValid() const 
+	{
+		return m_Id != -1; 
+	}
+
+	void Reset() 
+	{ 
+		m_Id = -1; 
+	}
 
 private:
 	int m_Id;
@@ -334,10 +379,7 @@ private:
 
 public:
 	MulticastDelegate() {}
-	~MulticastDelegate() 
-	{
-		m_Events.clear();
-	}
+	~MulticastDelegate() {}
 
 	MulticastDelegate(const MulticastDelegate& other) = delete;
 	MulticastDelegate& operator=(const MulticastDelegate& other) = delete;
@@ -345,6 +387,16 @@ public:
 	bool operator-=(DelegateHandle& handle)
 	{
 		return Remove(handle);
+	}
+
+	DelegateHandle operator+=(DelegateHandlerT&& d)
+	{
+		return AddDelegate(std::make_unique<DelegateHandlerT>(std::forward<DelegateHandlerT>(d)));
+	}
+
+	DelegateHandle operator+=(const DelegateHandlerT& d)
+	{
+		return AddDelegate(std::make_unique<DelegateHandlerT>(d));
 	}
 
 	//Bind a member function
@@ -399,6 +451,7 @@ public:
 				e.second.reset();
 				std::swap(e, m_Events[m_Bindings - 1]);
 				--m_Bindings;
+				handle.Reset();
 				return true;
 			}
 		}
