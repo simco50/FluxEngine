@@ -22,6 +22,69 @@ public:
 	virtual void* GetOwner() = 0;
 };
 
+template<typename RetVal, typename... Args2>
+class StaticDelegate2;
+
+template<typename RetVal, typename... Args, typename... Args2>
+class StaticDelegate2<RetVal (Args...), Args2...> : public IDelegate<RetVal, Args...>
+{
+public:
+	using DelegateFunction = RetVal(*)(Args..., Args2...);
+
+	StaticDelegate2(DelegateFunction function, Args2... args) : m_Function(function), m_Payload(args...) {}
+	virtual ~StaticDelegate2() {}
+	virtual RetVal Execute(Args ...args) override
+	{
+		Execute_Internal(std::forward<Args>(args)..., std::index_sequence_for<Args2...>());
+	}
+	virtual void* GetOwner() override
+	{
+		return nullptr;
+	}
+
+private:
+	template<std::size_t... Is>
+	void Execute_Internal(Args... args, std::index_sequence<Is...>)
+	{
+		m_Function(args..., std::get<Is>(m_Payload)...);
+	}
+
+	DelegateFunction m_Function;
+	std::tuple<Args2...> m_Payload;
+};
+
+template<typename T, typename RetVal, typename... Args2>
+class RawDelegate2;
+
+template<typename T, typename RetVal, typename... Args, typename... Args2>
+class RawDelegate2<T, RetVal(Args...), Args2...> : public IDelegate<RetVal, Args...>
+{
+public:
+	using DelegateFunction = RetVal(T::*)(Args..., Args2...);
+
+	RawDelegate2(T* pObject, DelegateFunction function, Args2... args) : m_pObject(pObject), m_Function(function), m_Payload(args...) {}
+	virtual ~RawDelegate2() {}
+	virtual RetVal Execute(Args ...args) override
+	{
+		Execute_Internal(std::forward<Args>(args)..., std::index_sequence_for<Args2...>());
+	}
+	virtual void* GetOwner() override
+	{
+		return nullptr;
+	}
+
+private:
+	template<std::size_t... Is>
+	void Execute_Internal(Args... args, std::index_sequence<Is...>)
+	{
+		(m_pObject->*m_Function)(args..., std::get<Is>(m_Payload)...);
+	}
+
+	T* m_pObject;
+	DelegateFunction m_Function;
+	std::tuple<Args2...> m_Payload;
+};
+
 //Delegate for member functions
 template<typename RetVal, typename T, typename ...Args>
 class RawDelegate : public IDelegate<RetVal, Args...>
@@ -134,9 +197,22 @@ public:
 		m_Size(sizeof(RawDelegate<RetVal, T, Args...>))
 	{}
 
+	template<typename T, typename... Args2>
+	DelegateHandler(T* pObj, RetVal(T::*pFunction)(Args..., Args2...), Args2... args) :
+		m_pDelegate(new RawDelegate2<T, RetVal(Args...), Args2...>(pObj, pFunction, args...)),
+		m_Size(sizeof(RawDelegate2<T, RetVal(Args...), Args2...>))
+	{}
+
+
 	DelegateHandler(RetVal(*pFunction)(Args...)) :
 		m_pDelegate(new StaticDelegate<RetVal, Args...>(pFunction)),
 		m_Size(sizeof(StaticDelegate<RetVal, Args...>))
+	{}
+
+	template<typename... Args2>
+	DelegateHandler(RetVal(*pFunction)(Args..., Args2...), Args2... args) :
+		m_pDelegate(new StaticDelegate2<RetVal(Args...), Args2...>(pFunction, args...)),
+		m_Size(sizeof(StaticDelegate2<RetVal(Args...), Args2...>))
 	{}
 
 	template<typename T>
@@ -264,10 +340,24 @@ public:
 		m_pEvent = std::make_shared<DelegateHandlerT>(pObject, pFunction);
 	}
 
+	//Bind a member function
+	template<typename T, typename... Args2>
+	void BindRaw2(T* pObject, RetVal(T::*pFunction)(Args..., Args2...), Args2... args)
+	{
+		m_pEvent = std::make_shared<DelegateHandlerT>(pObject, pFunction, args...);
+	}
+
 	//Bind a static/global function
 	void BindStatic(RetVal(*pFunction)(Args...))
 	{
 		m_pEvent = std::make_shared<DelegateHandlerT>(pFunction);
+	}
+
+	//Bind a static/global function
+	template<typename... Args2>
+	void BindStatic2(RetVal(*pFunction)(Args..., Args2...), Args2... args)
+	{
+		m_pEvent = std::make_shared<DelegateHandlerT>(pFunction, args...);
 	}
 
 	//Bind a lambda
