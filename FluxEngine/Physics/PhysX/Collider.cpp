@@ -19,7 +19,7 @@ Collider::Collider(Context* pContext, PxMaterial* pMaterial, physx::PxShapeFlags
 
 Collider::~Collider()
 {
-	SafeDelete(m_pGeometry);
+	delete m_pGeometry;
 }
 
 void Collider::CreateShape()
@@ -112,7 +112,7 @@ SphereCollider::SphereCollider(Context* pContext, physx::PxMaterial* pMaterial /
 
 SphereCollider::~SphereCollider()
 {
-	SafeDelete(m_pGeometry);
+	delete m_pGeometry;
 }
 
 void SphereCollider::CreateGeometry()
@@ -178,13 +178,13 @@ void PlaneCollider::CreateGeometry()
 //CAPSULE
 CapsuleCollider::CapsuleCollider(Context* pContext, const float radius, const float height, PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pContext, pMaterial, shapeFlags),
-	m_Height(height / 2), 
+	m_Height(height / 2),
 	m_Radius(radius)
 {}
 
 CapsuleCollider::CapsuleCollider(Context* pContext, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/) :
 	Collider(pContext, pMaterial, shapeFlags),
-	m_Height(0), 
+	m_Height(0),
 	m_Radius(0)
 {
 

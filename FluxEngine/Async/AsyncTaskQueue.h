@@ -3,8 +3,8 @@
 #include "Core\Subsystem.h"
 
 class WorkerThread;
-
 struct AsyncTask;
+
 DECLARE_DELEGATE(AsyncTaskDelegate, AsyncTask*, unsigned int);
 DECLARE_DELEGATE(ParallelForDelegate, int);
 
@@ -42,9 +42,13 @@ private:
 
 	std::vector<std::unique_ptr<WorkerThread>> m_Threads;
 
+	//Owner of all the tasks
 	std::vector<std::unique_ptr<AsyncTask>> m_Tasks;
+	//List of running tasks
 	std::vector<AsyncTask*> m_RunningTasks;
+	//List of free tasks
 	std::vector<AsyncTask*> m_TaskPool;
+	//Queued tasks
 	std::deque<AsyncTask*> m_Queue;
 
 	Mutex m_QueueMutex;

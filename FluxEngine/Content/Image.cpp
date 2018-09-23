@@ -14,7 +14,9 @@ namespace STBI
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream == nullptr)
+		{
 			return 0;
+		}
 		return (int)pStream->Read(pData, (size_t)size);
 	}
 
@@ -22,20 +24,24 @@ namespace STBI
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream)
+		{
 			pStream->MovePointer(n);
+		}
 	}
 
 	int EofCallback(void* pUser)
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream == nullptr)
+		{
 			return 1;
+		}
 		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
 	}
 }
 
-Image::Image(Context* pContext) :
-	Resource(pContext)
+Image::Image(Context* pContext)
+	: Resource(pContext)
 {
 
 }
@@ -141,7 +147,9 @@ bool Image::SavePng(OutputStream& outputStream)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), m_Width * m_Components * m_Depth);
 	return result > 0;
 }
@@ -153,7 +161,9 @@ bool Image::SaveBmp(OutputStream& outputStream)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data());
 	return result > 0;
 }
@@ -164,7 +174,9 @@ bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), quality);
 	return result > 0;
 }
@@ -176,7 +188,9 @@ bool Image::SaveTga(OutputStream& outputStream)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data());
 	return result > 0;
 }
@@ -204,20 +218,28 @@ bool Image::SetData(const unsigned int* pPixels)
 bool Image::SetPixel(const int x, const int y, const Color& color)
 {
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return false;
+	}
 	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		pPixel[i] = (unsigned char)(color[i] * 255);
+	}
 	return true;
 }
 
 bool Image::SetPixelInt(const int x, const int y, const unsigned int color)
 {
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return false;
+	}
 	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		pPixel[i] = reinterpret_cast<const unsigned char*>(&color)[i];
+	}
 	return true;
 }
 
@@ -225,10 +247,14 @@ Color Image::GetPixel(const int x, const int y) const
 {
 	Color c = {};
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return c;
+	}
 	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		reinterpret_cast<float*>(&c)[i] = (float)pPixel[i] / 255.0f;
+	}
 	return c;
 }
 
@@ -236,7 +262,9 @@ unsigned int Image::GetPixelInt(const int x, const int y) const
 {
 	unsigned int c = 0;
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return c;
+	}
 	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
 	{
@@ -250,7 +278,9 @@ unsigned int Image::GetPixelInt(const int x, const int y) const
 SDL_Surface* Image::GetSDLSurface()
 {
 	if (m_Pixels.size() == 0)
+	{
 		return nullptr;
+	}
 
 	// Assume little-endian for all the supported platforms
 	unsigned rMask = 0x000000ff;

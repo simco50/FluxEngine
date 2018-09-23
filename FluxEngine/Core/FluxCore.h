@@ -52,8 +52,6 @@ private:
 	AudioEngine* m_pAudioEngine = nullptr;
 	PostProcessing* m_pPostProcessing = nullptr;
 
-	std::vector<SceneNode*> m_Lights;
-
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
 	int m_FramesToCapture = 1;

@@ -24,7 +24,7 @@ bool PakMountPoint::OnMount()
 		return false;
 	}
 
-	if (std::string(m_Header.ID) != "PAK")
+	if (strcmp("PAK", m_Header.ID) != 0)
 	{
 		return false;
 	}
@@ -39,7 +39,9 @@ bool PakMountPoint::OnMount()
 	//Read in all the table entries
 	m_FileEntries.resize(m_Header.NumEntries);
 	if (!m_pPakFile->ReadFrom(reinterpret_cast<char*>(m_FileEntries.data()), sizeof(PakFileHeader), m_Header.NumEntries * sizeof(PakFileEntry)))
+	{
 		return false;
+	}
 
 	//Set all characters to lower case
 	for (PakFileEntry& entry : m_FileEntries)
@@ -72,6 +74,8 @@ std::unique_ptr<File> PakMountPoint::GetFile(const std::string& filePath)
 		return entry.FilePath == filePath;
 	});
 	if (pIt == m_FileEntries.end())
+	{
 		return nullptr;
+	}
 	return std::make_unique<PakFile>(pIt._Ptr->FilePath, this, pIt._Ptr);
 }

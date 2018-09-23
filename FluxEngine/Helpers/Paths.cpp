@@ -104,7 +104,7 @@ std::string Paths::MakeRelativePath(const std::string& basePath, const std::stri
 	size_t matchLength = 0;
 	for (size_t i = 0; i < basePath.size(); i++)
 	{
-		if (basePath[i] != filePath[i]) 
+		if (basePath[i] != filePath[i])
 		{
 			break;
 		}

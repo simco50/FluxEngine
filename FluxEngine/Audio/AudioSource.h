@@ -30,7 +30,7 @@ private:
 	Sound* m_pSound = nullptr;
 	FMOD::Channel* m_pChannel = nullptr;
 
-	FMOD_MODE m_Mode;
-	std::string m_FilePath;
 	Vector3 m_LastPosition;
+	std::string m_FilePath;
+	FMOD_MODE m_Mode;
 };

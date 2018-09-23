@@ -34,7 +34,7 @@ public:
 	T* Get() const { return m_pPtr; }
 
 	T** GetAddressOf() { return &m_pPtr; }
-	T** GetAddressOf() const { return &m_pPtr; }
+	T* const * GetAddressOf() const { return &m_pPtr; }
 
 	T* operator->() { return m_pPtr; }
 	T* operator->() const { return m_pPtr; }
@@ -68,7 +68,13 @@ public:
 		return &m_pPtr;
 	}
 
-	T* operator*()
+	T* const * operator&() const
+	{
+		return &m_pPtr;
+	}
+
+
+	T* operator*() const
 	{
 		return m_pPtr;
 	}

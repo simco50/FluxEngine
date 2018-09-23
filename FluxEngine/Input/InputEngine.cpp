@@ -3,9 +3,9 @@
 #include "Rendering/Core/Graphics.h"
 #include "Core/FluxCore.h"
 
-InputEngine::InputEngine(Context* pContext) :
-	Subsystem(pContext),
-	m_Enabled(false), 
+InputEngine::InputEngine(Context* pContext)
+	: Subsystem(pContext),
+	m_Enabled(false),
 	m_ForceToCenter(false)
 {
 	AUTOPROFILE(InputEngine_Construct);

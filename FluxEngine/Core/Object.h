@@ -49,7 +49,9 @@ template<typename T>
 T* DynamicCast(Object* pObject)
 {
 	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	{
 		return static_cast<T*>(pObject);
+	}
 	return nullptr;
 }
 

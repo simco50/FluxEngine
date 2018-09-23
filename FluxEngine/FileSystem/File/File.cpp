@@ -1,8 +1,8 @@
 #include "FluxEngine.h"
 #include "File.h"
 
-File::File(const std::string& fileName) :
-	m_FileName(fileName)
+File::File(const std::string& fileName)
+	: m_FileName(fileName)
 {
 	m_Source = fileName;
 }

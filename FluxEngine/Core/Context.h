@@ -27,7 +27,9 @@ public:
 	void InitSDLSystem(unsigned int flag)
 	{
 		if (m_SdlInits == 0)
+		{
 			SDL_Init(0);
+		}
 
 		unsigned int flagsToEnable = flag & ~SDL_WasInit(0);
 		SDL_InitSubSystem(flagsToEnable);

@@ -9,8 +9,8 @@ public:
 	IOStream()
 	{}
 
-	IOStream(const size_t size) :
-		InputStream(size)
+	IOStream(const size_t size)
+		: InputStream(size)
 	{}
 
 	virtual ~IOStream()

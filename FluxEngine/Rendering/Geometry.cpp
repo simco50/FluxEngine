@@ -10,7 +10,9 @@ Geometry::Geometry()
 Geometry::~Geometry()
 {
 	for (auto& vertexData : m_VertexData)
-		SafeDeleteArray(vertexData.second.pData);
+	{
+		delete vertexData.second.pData;
+	}
 }
 
 void Geometry::Draw(Graphics* pGraphics) const

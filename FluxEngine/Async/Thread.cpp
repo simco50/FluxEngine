@@ -118,3 +118,13 @@ int WorkerThread::ThreadFunction()
 	m_pOwner->ProcessItems(m_Index);
 	return 0;
 }
+
+bool WorkerThread::Run()
+{
+	return RunThread();
+}
+
+int WorkerThread::GetIndex() const
+{
+	return m_Index;
+}

@@ -3,8 +3,6 @@
 #include "Async\Thread.h"
 #include "Core\Config.h"
 
-using namespace std;
-
 static Console* consoleInstance = nullptr;
 Console::Console()
 {
@@ -129,7 +127,7 @@ void Console::Log(const std::string &message, LogType type)
 	}
 	else
 	{
-		stringstream stream;
+		std::stringstream stream;
 		DateTime now = DateTime::Now();
 		stream << "[" << now.GetHours() << ":" << now.GetMinutes() << ":" << now.GetSeconds() << "]";
 		switch (type)

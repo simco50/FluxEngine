@@ -2,11 +2,10 @@
 #include "PakFile.h"
 #include "FileSystem/MountPoint/PakMountPoint.h"
 #include "PhysicalFile.h"
-
 #include "Helpers/Compression.h"
 
-PakFile::PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry) :
-	File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
+PakFile::PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry)
+	: File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
 {
 
 }

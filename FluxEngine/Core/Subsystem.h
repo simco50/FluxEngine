@@ -8,6 +8,4 @@ class Subsystem : public Object
 public:
 	Subsystem(Context* pContext);
 	virtual ~Subsystem();
-
-private:
 };

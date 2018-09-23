@@ -39,13 +39,17 @@ void GameTimer::Tick()
 	m_PrevTime = m_CurrTime;
 
 	if (m_DeltaTime < 0.0f)
+	{
 		m_DeltaTime = 0.0f;
+	}
 }
 
 float GameTimer::GameTime()
 {
-	if(m_IsStopped)
+	if (m_IsStopped)
+	{
 		return (float)(((m_StopTime - m_PausedTime) - m_BaseTime) * m_SecondsPerCount);
+	}
 	return (float)(((m_CurrTime - m_PausedTime) - m_BaseTime) * m_SecondsPerCount);
 }
 

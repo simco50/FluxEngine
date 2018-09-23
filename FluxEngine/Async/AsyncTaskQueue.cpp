@@ -2,8 +2,8 @@
 #include "AsyncTaskQueue.h"
 #include "Thread.h"
 
-AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count):
-	Subsystem(pContext)
+AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count)
+	: Subsystem(pContext)
 {
 	AUTOPROFILE(AsyncTaskQueue_Construct);
 
@@ -202,7 +202,7 @@ void AsyncTaskQueue::ParallelFor(const int count, const ParallelForDelegate& fun
 
 bool AsyncTaskQueue::IsCompleted() const
 {
-	for (auto& pItem : m_RunningTasks)
+	for (const AsyncTask* pItem : m_RunningTasks)
 	{
 		if (pItem->IsCompleted == false)
 		{

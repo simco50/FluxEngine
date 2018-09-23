@@ -8,25 +8,6 @@ className(const className& other) = delete; \
 className& operator=(const className& other) = delete;
 
 //Utility methods
-template<typename T>
-inline void SafeDelete(T*& object)
-{
-	if (object)
-	{
-		delete object;
-		object = nullptr;
-	}
-}
-
-template<typename T>
-inline void SafeDeleteArray(T*& object)
-{
-	if (object)
-	{
-		delete[] object;
-		object = nullptr;
-	}
-}
 
 template<typename T>
 inline void SafeRelease(T*& object)

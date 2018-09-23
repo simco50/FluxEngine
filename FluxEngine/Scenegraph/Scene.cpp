@@ -13,12 +13,12 @@ Scene::~Scene()
 {
 	for (SceneNode*& pNode : m_Nodes)
 	{
-		SafeDelete(pNode);
+		delete pNode;
 	}
 	m_Nodes.clear();
 	for (Component*& pComponent : m_Components)
 	{
-		SafeDelete(pComponent);
+		delete pComponent;
 	}
 	m_Components.clear();
 }

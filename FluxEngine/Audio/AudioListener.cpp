@@ -4,8 +4,8 @@
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
 
-AudioListener::AudioListener(Context* pContext) : 
-	Component(pContext)
+AudioListener::AudioListener(Context* pContext)
+	: Component(pContext)
 {
 	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
@@ -26,7 +26,7 @@ void AudioListener::OnMarkedDirty(const Transform* transform)
 	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
 	m_pAudio->GetSystem()->set3DListenerAttributes(
-		0, 
+		0,
 		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetWorldPosition()),
 		reinterpret_cast<const FMOD_VECTOR*>(&velocity),
 		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetForward()),

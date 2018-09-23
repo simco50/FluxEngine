@@ -130,16 +130,24 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 			std::string includeFilePath = std::string(line.begin() + 10, line.end() - 1);
 			size_t includeHash = std::hash<std::string>{}(includeFilePath);
 			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) != processedIncludes.end())
+			{
 				continue;
+			}
 			processedIncludes.push_back(includeHash);
 			std::string basePath = Paths::GetDirectoryPath(inputStream.GetSource());
 			std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
 			if (newFile == nullptr)
+			{
 				return false;
+			}
 			if (!newFile->OpenRead())
+			{
 				return false;
+			}
 			if (!ProcessSource(*newFile, output, processedIncludes))
+			{
 				return false;
+			}
 		}
 		else
 		{

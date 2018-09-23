@@ -5,8 +5,8 @@
 class MemoryStream : public InputStream, public OutputStream
 {
 public:
-	MemoryStream(void* pData, const size_t size) : 
-		InputStream(size), m_pBuffer(pData)
+	MemoryStream(void* pData, const size_t size)
+		: InputStream(size), m_pBuffer(pData)
 	{}
 
 	virtual ~MemoryStream()

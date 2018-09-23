@@ -6,7 +6,7 @@ std::map<Config::Type, ConfigFile> Config::m_Configs;
 
 Config::Config()
 {
-	
+
 }
 
 Config::~Config()
@@ -27,7 +27,9 @@ int Config::GetInt(const std::string& name, const std::string& section, const in
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
+	{
 		return defaultValue;
+	}
 	return stoi(pValue->Value);
 }
 
@@ -35,7 +37,9 @@ float Config::GetFloat(const std::string& name, const std::string& section, cons
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
+	{
 		return defaultValue;
+	}
 	return stof(pValue->Value);
 }
 
@@ -43,7 +47,9 @@ const std::string& Config::GetString(const std::string& name, const std::string&
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
+	{
 		return defaultValue;
+	}
 	return pValue->Value;
 }
 
@@ -51,7 +57,9 @@ bool Config::GetBool(const std::string& name, const std::string& section, const 
 {
 	ConfigValue* pValue = GetValue(name, section, type);
 	if (pValue == nullptr)
+	{
 		return defaultValue;
+	}
 	return stoi(pValue->Value) == 1;
 }
 
@@ -62,7 +70,9 @@ bool Config::Flush(const Type t /*= Type::MAX_TYPES*/)
 		for (int i = 0; i < (int)Type::MAX_TYPES; ++i)
 		{
 			if (!FlushConfigValues((Type)i))
+			{
 				return false;
+			}
 		}
 	}
 	else
@@ -74,10 +84,14 @@ ConfigValue* Config::GetValue(const std::string& name, const std::string& sectio
 {
 	ConfigFile* pFile = GetConfigFile(t);
 	if (pFile == nullptr)
+	{
 		return nullptr;
+	}
 	ConfigSection* pSection = pFile->GetSection(section);
 	if (pSection == nullptr)
+	{
 		return nullptr;
+	}
 	ConfigValue* pValue = pSection->GetValue(name);
 	return pValue;
 }
@@ -111,7 +125,9 @@ bool Config::PopulateConfigValues(const Type t)
 		while (pFile->GetLine(line))
 		{
 			if (line.length() == 0)
+			{
 				continue;
+			}
 			if (line[0] == '[')
 			{
 				currentSection = line.substr(1, line.length() - 2);
@@ -120,12 +136,16 @@ bool Config::PopulateConfigValues(const Type t)
 			}
 			size_t equals = line.rfind('=');
 			if (equals == std::string::npos)
+			{
 				continue;
+			}
 			m_Configs[t].Sections[currentSection].Values[line.substr(0, equals)].Value = line.substr(equals + 1);
 		}
 	}
 	else
+	{
 		return false;
+	}
 
 	return true;
 }
@@ -146,11 +166,15 @@ bool Config::FlushConfigValues(const Type t)
 		return false;
 	}
 	if (!pFile->OpenRead())
+	{
 		return false;
+	}
 
 	auto valueMap = m_Configs.find(t);
 	if (valueMap == m_Configs.end())
+	{
 		return false;
+	}
 
 	for (const auto& section : valueMap->second.Sections)
 	{

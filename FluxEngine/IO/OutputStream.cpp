@@ -5,11 +5,17 @@ bool OutputStream::WriteLine(const std::string& line)
 {
 	bool success = true;
 	if (!Write(line.c_str(), line.size()))
+	{
 		success = false;
+	}
 	if (!WriteUByte(13))
+	{
 		success = false;
+	}
 	if (!WriteUByte(10))
+	{
 		success = false;
+	}
 	return success;
 }
 

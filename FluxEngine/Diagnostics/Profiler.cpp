@@ -2,8 +2,6 @@
 #include "Profiler.h"
 #include "FileSystem\File\PhysicalFile.h"
 #include "Async\Thread.h"
-#include "External\NlohmannJson\json.hpp"
-#include "Core\GameTimer.h"
 #include "Core\CommandLine.h"
 
 ProfilingThread::ProfilingThread()

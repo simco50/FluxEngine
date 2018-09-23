@@ -21,8 +21,8 @@ public:
 
 	struct LogEntry
 	{
-		LogEntry(const std::string& message, const LogType type) :
-			Message(message), Type(type)
+		LogEntry(const std::string& message, const LogType type)
+			: Message(message), Type(type)
 		{}
 		std::string Message;
 		LogType Type;

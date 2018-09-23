@@ -4,8 +4,8 @@ struct ConfigValue
 {
 	ConfigValue()
 	{}
-	ConfigValue(const std::string& value) :
-		Value(value)
+	ConfigValue(const std::string& value)
+		: Value(value)
 	{}
 
 	std::string Value;
@@ -49,7 +49,7 @@ public:
 		GameIni = 1,
 		MAX_TYPES = 2,
 	};
-	
+
 	static int GetInt(const std::string& name, const std::string& section, const int defaultValue = 0, const Type type = Type::EngineIni);
 	static float GetFloat(const std::string& name, const std::string& section, const float defaultValue = 0.0f, const Type type = Type::EngineIni);
 	static const std::string& GetString(const std::string& name, const std::string& section, const std::string& defaultValue = "", const Type type = Type::EngineIni);

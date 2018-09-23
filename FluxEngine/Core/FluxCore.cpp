@@ -22,9 +22,6 @@
 #include "Rendering/Animation/AnimatedModel.h"
 #include "Rendering/Animation/Animator.h"
 #include "Rendering/Renderer.h"
-#include "Rendering/Core/Texture2D.h"
-#include "Rendering/Core/Texture3D.h"
-#include "Content/Image.h"
 #include "Scenegraph/SceneNode.h"
 #include "Rendering/Light.h"
 
@@ -150,7 +147,6 @@ void FluxCore::InitGame()
 	pL->SetRange(300);
 	pLight->GetTransform()->Rotate(20, -50, 0);
 	pLight->GetTransform()->SetPosition(0, 150, -100);
-	m_Lights.push_back(pLight);
 }
 
 void FluxCore::ProcessFrame()
@@ -187,7 +183,7 @@ void FluxCore::ProcessFrame()
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
 
-	//RenderUI();
+	RenderUI();
 	m_pGraphics->EndFrame();
 }
 

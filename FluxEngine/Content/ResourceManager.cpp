@@ -3,10 +3,9 @@
 #include "Resource.h"
 #include "FileSystem\File\File.h"
 #include "FileSystem\FileWatcher.h"
-#include "Async\AsyncTaskQueue.h"
 
-ResourceManager::ResourceManager(Context* pContext) :
-	Subsystem(pContext)
+ResourceManager::ResourceManager(Context* pContext)
+	: Subsystem(pContext)
 {
 
 }
@@ -17,7 +16,7 @@ ResourceManager::~ResourceManager()
 	{
 		for (auto& resourceEntry : resourceGroupEntry.second)
 		{
-			SafeDelete(resourceEntry.second);
+			delete resourceEntry.second;
 		}
 	}
 }
@@ -53,18 +52,24 @@ void ResourceManager::EnableAutoReload(bool enable)
 bool ResourceManager::Reload(Resource* pResource)
 {
 	if (pResource == nullptr)
+	{
 		return false;
+	}
 	return LoadResourcePrivate(pResource, pResource->GetFilePath());
 }
 
 bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 {
 	if (pResource == nullptr)
+	{
 		return false;
+	}
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
 	auto pIt = resourceGroup.find(pResource->GetFilePath());
-	if(pIt != resourceGroup.end())
+	if (pIt != resourceGroup.end())
+	{
 		resourceGroup.erase(pIt);
+	}
 	std::string path = Paths::Normalize(filePath);
 	resourceGroup[path] = pResource;
 	return LoadResourcePrivate(pResource, path);
@@ -94,12 +99,16 @@ bool ResourceManager::Reload(const std::string& filePath)
 void ResourceManager::Unload(Resource*& pResource)
 {
 	if (pResource == nullptr)
+	{
 		return;
+	}
 
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
 	auto pIt = resourceGroup.find(pResource->GetFilePath());
 	if (pIt != resourceGroup.end())
+	{
 		resourceGroup.erase(pIt);
+	}
 	delete pResource;
 	pResource = nullptr;
 }
@@ -110,6 +119,7 @@ bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
 	auto pIt = m_ResourceDependencies.find(Paths::Normalize(resourcePath));
 	if (pIt != m_ResourceDependencies.end())
 	{
+		FLUX_LOG(Info, "[ResourceManager::ReloadDependencies] %s has %d dependencies. Reloading dependencies", resourcePath.c_str(), pIt->second.size());
 		std::vector<std::string> dependants = pIt->second;
 		for (const std::string& path : dependants)
 		{

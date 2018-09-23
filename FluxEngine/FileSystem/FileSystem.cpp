@@ -29,7 +29,7 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 	m_MountPoints.push_back(MountPointPair(FixPath(virtualPath), std::move(pPtr)));
 
 	//Sort the mountpoints depending on their priority
-	std::sort(m_MountPoints.begin(), m_MountPoints.end(), 
+	std::sort(m_MountPoints.begin(), m_MountPoints.end(),
 		[](const MountPointPair& a, const MountPointPair& b)
 	{
 		return a.second->GetOrder() > b.second->GetOrder();
@@ -255,12 +255,20 @@ std::string FileSystem::FixPath(const std::string& path)
 {
 	std::string output;
 	if (path.substr(0, 2) == "./" || path.substr(0, 2) == ".\\")
+	{
 		output = std::string(path.begin() + 2, path.end());
+	}
 	else
+	{
 		output = path;
+	}
 	std::replace(output.begin(), output.end(), '\\', '/');
 	ToLower(output);
-		
+	if (output.back() == '/')
+	{
+		output.pop_back();
+	}
+
 	return output;
 }
 

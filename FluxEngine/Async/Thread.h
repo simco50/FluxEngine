@@ -8,6 +8,8 @@ public:
 	Thread();
 	virtual ~Thread();
 
+	DELETE_COPY(Thread)
+
 	bool SetPriority(const int priority);
 
 	//Get the given thread ID
@@ -36,11 +38,13 @@ class WorkerThread : public Thread
 {
 public:
 	WorkerThread(AsyncTaskQueue* pOwner, int index);
+	virtual ~WorkerThread() = default;
+
+	DELETE_COPY(WorkerThread)
+
 	virtual int ThreadFunction() override;
-
-	bool Run() { return RunThread(); }
-
-	int GetIndex() const { return m_Index; }
+	bool Run();
+	int GetIndex() const;
 private:
 	AsyncTaskQueue* m_pOwner;
 	int m_Index;

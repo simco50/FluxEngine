@@ -1,7 +1,8 @@
 #include "FluxEngine.h"
 #include "PhysicalFile.h"
 
-PhysicalFile::PhysicalFile(const std::string& fileName) : File(fileName)
+PhysicalFile::PhysicalFile(const std::string& fileName)
+	: File(fileName)
 {
 
 }

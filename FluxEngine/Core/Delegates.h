@@ -1,11 +1,6 @@
 #ifndef CPP_DELEGATES
 #define CPP_DELEGATES
 
-#include <assert.h>
-#include <memory>
-#include <vector>
-#include <tuple>
-
 //This enables the typedef of Delegate = SinglecastDelegate as the name "SinglecastDelegate" is deprecated
 #define CPP_DELEGATES_USE_OLD_NAMING 0
 

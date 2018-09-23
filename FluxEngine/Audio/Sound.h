@@ -1,7 +1,7 @@
 #pragma once
 #include "Content\Resource.h"
 
-class Sound : public Resource 
+class Sound : public Resource
 {
 	FLUX_OBJECT(Sound, Resource)
 
