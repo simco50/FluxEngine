@@ -68,7 +68,7 @@ void Console::FlushThreadedMessages()
 	ScopeLock lock(m_QueueMutex);
 	while (m_MessageQueue.size() > 0)
 	{
-		const QueuedMessage& message = m_MessageQueue.front();
+		const LogEntry& message = m_MessageQueue.front();
 		Log(message.Message, message.Type);
 		m_MessageQueue.pop();
 	}
@@ -125,7 +125,7 @@ void Console::Log(const std::string &message, LogType type)
 	if (!Thread::IsMainThread())
 	{
 		ScopeLock lock(consoleInstance->m_QueueMutex);
-		consoleInstance->m_MessageQueue.push(QueuedMessage(message, type));
+		consoleInstance->m_MessageQueue.push(LogEntry(message, type));
 	}
 	else
 	{
@@ -160,6 +160,12 @@ void Console::Log(const std::string &message, LogType type)
 			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 
 		consoleInstance->m_pFileLog->WriteLine(output.c_str());
+
+		consoleInstance->m_History.push_back(LogEntry(message, type));
+		if (consoleInstance->m_History.size() > 50)
+		{
+			consoleInstance->m_History.pop_front();
+		}
 
 		if (type == LogType::Error)
 		{
@@ -243,6 +249,11 @@ bool Console::Flush()
 		return false;
 	}
 	return consoleInstance->m_pFileLog->Flush();
+}
+
+const std::deque<Console::LogEntry>& Console::GetHistory()
+{
+	return consoleInstance->m_History;
 }
 
 void Console::InitializeConsoleWindow()

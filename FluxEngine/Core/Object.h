@@ -52,3 +52,13 @@ T* DynamicCast(Object* pObject)
 		return static_cast<T*>(pObject);
 	return nullptr;
 }
+
+template<typename T>
+std::shared_ptr<T> DynamicCastPtr(const std::shared_ptr<Object>& pObject)
+{
+	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	{
+		return std::static_pointer_cast<T>(pObject);
+	}
+	return std::shared_ptr<T>();
+}

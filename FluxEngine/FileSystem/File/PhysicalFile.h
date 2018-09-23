@@ -6,14 +6,13 @@ class IMountPoint;
 
 #ifdef PLATFORM_WINDOWS
 #define FILE_HANDLE_INVALID INVALID_HANDLE_VALUE
-using FileHandle = HANDLE; 
+using FileHandle = HANDLE;
 #endif
 
 class PhysicalFile : public File
 {
 public:
-	PhysicalFile(const std::string& fileName) : File(fileName)
-	{}
+	PhysicalFile(const std::string& fileName);
 	virtual ~PhysicalFile();
 
 	virtual bool OpenRead(bool allowWrite = false) override;

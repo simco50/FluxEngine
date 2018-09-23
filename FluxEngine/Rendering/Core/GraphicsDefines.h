@@ -4,9 +4,10 @@ namespace GraphicsConstants
 {
 	const int MAX_VERTEX_BUFFERS = 4;
 	const int MAX_RENDERTARGETS = 4;
+	const int MAX_LIGHTS = 100;
 }
 
-enum class ShaderType 
+enum class ShaderType
 {
 	VertexShader = 0,
 	PixelShader,
@@ -24,7 +25,7 @@ enum class PrimitiveType : unsigned char
 	LINELIST,
 };
 
-//The windwo type
+//The window type
 enum class WindowType
 {
 	WINDOWED = 0,
@@ -111,11 +112,13 @@ enum class ShaderParameterType
 enum class TextureSlot
 {
 	Diffuse = 0,
-	Normal,
-	Specular,
-	Volume,
-	Cube,
-	MAX
+	Normal = 1,
+	Specular = 2,
+	Volume = 3,
+	Cube = 3,
+	Lights = 4,
+	Shadow = 5,
+	MAX = 6
 };
 
 enum class TextureFilter

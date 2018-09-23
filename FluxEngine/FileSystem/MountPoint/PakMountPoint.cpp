@@ -4,8 +4,8 @@
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystem/FileSystemHelpers.h"
 
-PakMountPoint::PakMountPoint(const std::string& physicalPath) : 
-	IMountPoint(physicalPath, -1)
+PakMountPoint::PakMountPoint(const std::string& physicalPath)
+	: IMountPoint(physicalPath, -1)
 {
 }
 
@@ -14,17 +14,25 @@ bool PakMountPoint::OnMount()
 	//A pak file is a regular file so load that first
 	m_pPakFile = std::make_unique<PhysicalFile>(m_PhysicalPath);
 	if (!m_pPakFile->OpenRead())
+	{
 		return false;
+	}
 
 	//Read in the header
 	if (!m_pPakFile->ReadFrom(reinterpret_cast<char*>(&m_Header), 0, sizeof(PakFileHeader)))
+	{
 		return false;
+	}
 
 	if (std::string(m_Header.ID) != "PAK")
+	{
 		return false;
+	}
 
 	if (m_Header.Version != PAK_VERSION)
+	{
 		return false;
+	}
 
 	m_Order = m_Header.ContentVersion;
 

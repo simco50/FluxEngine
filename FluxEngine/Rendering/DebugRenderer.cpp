@@ -10,13 +10,14 @@
 #include "Physics\PhysX\PhysicsScene.h"
 #include "Mesh.h"
 #include "Geometry.h"
+#include "Light.h"
 
 DebugRenderer::DebugRenderer(Context* pContext) :
 	Subsystem(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
-	m_ElementDesc = 
+	m_ElementDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
@@ -295,10 +296,17 @@ void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& co
 
 void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLength)
 {
+	Matrix newMatrix = Matrix::CreateScale(
+		Vector3(transform._11, transform._21, transform._31).Length(),
+		Vector3(transform._12, transform._22, transform._32).Length(),
+		Vector3(transform._13, transform._23, transform._33).Length()
+	);
+	newMatrix.Invert(newMatrix);
+	newMatrix = newMatrix * transform;
 	Vector3 origin(Vector3::Transform(Vector3(), transform));
-	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), transform));
-	Vector3 y(Vector3::Transform(Vector3(0, lineLength, 0), transform));
-	Vector3 z(Vector3::Transform(Vector3(0, 0, lineLength), transform));
+	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), newMatrix));
+	Vector3 y(Vector3::Transform(Vector3(0, lineLength, 0), newMatrix));
+	Vector3 z(Vector3::Transform(Vector3(0, 0, lineLength), newMatrix));
 
 	AddLine(origin, x, Color(1, 0, 0, 1));
 	AddLine(origin, y, Color(0, 1, 0, 1));
@@ -408,6 +416,23 @@ void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Colo
 	AddTriangle(a, tip, d, color, color, color, false);
 	AddTriangle(b, tip, a, color, color, color, false);
 	AddTriangle(c, tip, b, color, color, color, false);
+}
+
+void DebugRenderer::AddLight(const Light* pLight)
+{
+	const Light::Data* pData = pLight->GetData();
+	switch (pData->Type)
+	{
+	case Light::Type::Directional:
+		break;
+	case Light::Type::Point:
+		AddSphere(pData->Position, pData->Range, 8, 8, Color(1.0f, 0.0f, 0.0f, 1.0f), false);
+		break;
+	case Light::Type::Spot:
+		break;
+	default:
+		break;
+	}
 }
 
 void DebugRenderer::AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)

@@ -2,7 +2,6 @@ cbuffer cPerFrame : register(b0)
 {
 	float cDeltaTime;
 	float cElapsedTime;
-	float4 cLightDirection;
 }
 
 cbuffer cPerView : register(b1)

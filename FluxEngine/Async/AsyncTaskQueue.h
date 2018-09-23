@@ -6,7 +6,6 @@ class WorkerThread;
 
 struct AsyncTask;
 DECLARE_DELEGATE(AsyncTaskDelegate, AsyncTask*, unsigned int);
-
 DECLARE_DELEGATE(ParallelForDelegate, int);
 
 struct AsyncTask

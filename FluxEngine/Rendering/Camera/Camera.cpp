@@ -44,7 +44,7 @@ FloatRect Camera::GetAbsoluteViewport() const
 
 	float renderTargetWidth = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetWidth() : (float)m_pGraphics->GetWindowWidth();
 	float renderTargetHeight = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetHeight() : (float)m_pGraphics->GetWindowHeight();
-	
+
 	rect.Left = m_Viewport.Left * renderTargetWidth;
 	rect.Top = m_Viewport.Top * renderTargetHeight;
 	rect.Right = m_Viewport.Right * renderTargetWidth;
@@ -85,8 +85,8 @@ void Camera::OnMarkedDirty(const Transform* transform)
 	}
 
 	m_View = XMMatrixLookAtLH(
-		transform->GetWorldPosition(), 
-		transform->GetWorldPosition() + transform->GetForward(), 
+		transform->GetWorldPosition(),
+		transform->GetWorldPosition() + transform->GetForward(),
 		XMLoadFloat3(&transform->GetUp()));
 
 	m_View.Invert(m_ViewInverse);

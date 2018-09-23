@@ -4,7 +4,7 @@
 #include "ShaderVariation.h"
 #include "Graphics.h"
 
-InputLayout::InputLayout(Graphics* pGraphics) : 
+InputLayout::InputLayout(Graphics* pGraphics) :
 	m_pGraphics(pGraphics)
 {
 }

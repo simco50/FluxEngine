@@ -1,25 +1,29 @@
 #include "FluxEngine.h"
 #include "Renderer.h"
-#include "Drawable.h"
-#include "Material.h"
-#include "Rendering/Core/Graphics.h"
-#include "Geometry.h"
-#include "Core/ShaderVariation.h"
-#include "Camera/Camera.h"
-#include "Rendering/Core/Texture.h"
-#include "Core/BlendState.h"
-#include "Core/RasterizerState.h"
-#include "Core/DepthStencilState.h"
-#include "Core/VertexBuffer.h"
-#include "Core/IndexBuffer.h"
-#include "Scenegraph/SceneNode.h"
 #include "Async/AsyncTaskQueue.h"
+#include "Camera/Camera.h"
+#include "Core/BlendState.h"
+#include "Core/DepthStencilState.h"
+#include "Core/Graphics.h"
+#include "Core/IndexBuffer.h"
+#include "Core/RasterizerState.h"
+#include "Core/StructuredBuffer.h"
+#include "Core/VertexBuffer.h"
+#include "Drawable.h"
+#include "Geometry.h"
+#include "Light.h"
+#include "Material.h"
+#include "Scenegraph/SceneNode.h"
+#include "Core/Texture2D.h"
 
 Renderer::Renderer(Context* pContext) :
-	Subsystem(pContext) 
+	Subsystem(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	CreateQuadGeometry();
+
+	m_pLightBuffer = std::make_unique<StructuredBuffer>(m_pGraphics);
+	m_pLightBuffer->Create(GraphicsConstants::MAX_LIGHTS, Light::GetDataStride(), true);
 }
 
 Renderer::~Renderer()
@@ -37,7 +41,7 @@ void Renderer::Draw()
 	{
 		AUTOPROFILE(Renderer_UpdateDrawables);
 		AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i) 
+		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i)
 		{
 			AUTOPROFILE(Renderer_UpdateDrawable);
 			m_Drawables[i]->Update();
@@ -47,6 +51,16 @@ void Renderer::Draw()
 	{
 		AUTOPROFILE(Renderer_PreRender);
 		m_OnPreRender.Broadcast();
+	}
+
+	{
+		AUTOPROFILE(Renderer_UploadLights);
+		m_pLightBuffer->Map(true);
+		for (size_t i = 0; i < m_Lights.size(); ++i)
+		{
+			m_pLightBuffer->SetElement<Light::Data>(i, *m_Lights[i]->GetData());
+		}
+		m_pLightBuffer->Unmap();
 	}
 
 	std::vector<Camera*> cameras = m_CameraQueue;
@@ -134,6 +148,16 @@ void Renderer::RemoveCamera(Camera* pCamera)
 	m_Cameras.erase(std::remove(m_Cameras.begin(), m_Cameras.end(), pCamera), m_Cameras.end());
 }
 
+void Renderer::AddLight(Light* pLight)
+{
+	m_Lights.push_back(pLight);
+}
+
+void Renderer::RemoveLight(Light* pLight)
+{
+	m_Lights.erase(std::remove(m_Lights.begin(), m_Lights.end(), pLight), m_Lights.end());
+}
+
 void Renderer::QueueCamera(Camera * pCamera)
 {
 	m_CameraQueue.push_back(pCamera);
@@ -178,9 +202,6 @@ void Renderer::SetPerFrameParameters()
 		m_CurrentFrame = frame;
 		m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
 		m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
-		m_LightPosition.Normalize(m_LightDirection);
-		m_LightDirection *= -1;
-		m_pGraphics->SetShaderParameter("cLightDirection", m_LightDirection);
 	}
 }
 
@@ -215,13 +236,16 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
 	}
 
+	m_pGraphics->SetStructuredBuffer(TextureSlot::Lights, m_pLightBuffer.get());
+
+
 	//Blend state
 	m_pGraphics->GetBlendState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
-	
+
 	//Rasterizer state
 	m_pGraphics->GetRasterizerState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
 	m_pGraphics->GetRasterizerState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
-	
+
 	//Depth stencil state
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());

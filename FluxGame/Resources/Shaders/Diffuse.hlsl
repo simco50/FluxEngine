@@ -73,37 +73,36 @@ PS_INPUT VSMain(VS_INPUT input)
 
 #ifdef COMPILE_PS
 
-
-
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
+	float4 output = (float4)0;
+
 	float3 normal = normalize(input.normal);
 
 #ifdef NORMALMAP
 	normal = CalculateNormal(normal, normalize(input.tangent), input.texCoord, false);
 #endif
 
-	float3 output = float3(1.0f, 1.0f, 1.0f);
-	float diffuseStrength = saturate(dot(normal, -cLightDirection));
-	output *= diffuseStrength;
+	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
+	LightResult result = DoLight(cLights, input.worldPosition, normal, viewDirection);
+	float4 diffuse = result.Diffuse;
+	float4 specular = result.Specular;
 
 #ifdef DIFFUSEMAP
-	float4 diffuseSample = tDiffuseTexture.Sample(sDiffuseSampler, input.texCoord);
-	output *= diffuseSample.rgb;
+	diffuse *= Sample2D(Diffuse, input.texCoord);
 #endif
 
-	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
-	float3 specular = 1.0f;
 #ifdef SPECULARMAP
-	specular = GetSpecularPhong(viewDirection, normal, input.texCoord, 1.0f);
+	specular *= Sample2D(Specular, input.texCoord);
 #endif
+
+	output += diffuse;
+	output += specular;
 
 #ifdef ENVMAP
-	float3 reflectV = reflect(viewDirection, normal);
-	float3 reflectionSample = SampleCube(Cube, reflectV);
-	output += reflectionSample * GetFresnelFalloff(normal, viewDirection, 1.0f, 0.4f, 0.0f);
+	output += CubeMapReflection(normal, viewDirection, 1.0f, 0.4f, 0.0f);
 #endif
 
-	return float4(output, 1.0f);
+	return output;
 }
 #endif

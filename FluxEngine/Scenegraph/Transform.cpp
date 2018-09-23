@@ -111,7 +111,7 @@ void Transform::Rotate(const Vector3& eulerAngles, const Space space)
 }
 
 void Transform::Rotate(const float x, const float y, const float z, const Space space)
-{	
+{
 	Rotate(Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z)), space);
 }
 

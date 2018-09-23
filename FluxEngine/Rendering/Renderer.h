@@ -8,6 +8,8 @@ class Camera;
 class IndexBuffer;
 class VertexBuffer;
 class Geometry;
+class Light;
+class StructuredBuffer;
 struct Batch;
 
 class Renderer : public Subsystem
@@ -25,9 +27,10 @@ public:
 	void RemoveDrawable(Drawable* pDrawable);
 	void AddCamera(Camera* pCamera);
 	void RemoveCamera(Camera* pCamera);
+	void AddLight(Light* pLight);
+	void RemoveLight(Light* pLight);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
-	Vector3* GetLightPosition() { return &m_LightPosition; }
 
 	Geometry* GetQuadGeometry() const { return m_pQuadGeometry.get(); }
 
@@ -50,8 +53,7 @@ private:
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;
 	std::vector<Camera*> m_Cameras;
-	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
-	Vector3 m_LightPosition = Vector3(1, 1, -1);
+	std::vector<Light*> m_Lights;
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;
@@ -61,4 +63,5 @@ private:
 	std::unique_ptr<VertexBuffer> m_pQuadVertexBuffer;
 	std::unique_ptr<IndexBuffer> m_pQuadIndexBuffer;
 	std::unique_ptr<Geometry> m_pQuadGeometry;
+	std::unique_ptr<StructuredBuffer> m_pLightBuffer;
 };

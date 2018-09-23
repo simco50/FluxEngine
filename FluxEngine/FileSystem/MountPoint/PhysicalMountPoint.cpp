@@ -3,8 +3,13 @@
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystem/FileSystemHelpers.h"
 
-PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath) : 
-	IMountPoint(physicalPath, 0)
+PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath)
+	: IMountPoint(physicalPath, 0)
+{
+
+}
+
+PhysicalMountPoint::~PhysicalMountPoint()
 {
 
 }
@@ -12,7 +17,9 @@ PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath) :
 bool PhysicalMountPoint::OnMount()
 {
 	if (!RegisterDirectory(m_PhysicalPath))
+	{
 		return false;
+	}
 
 	sort(m_FileEntries.begin(), m_FileEntries.end(), [](const PhysicalFileEntry& a, const PhysicalFileEntry& b) { return a.FilePath > b.FilePath; });
 
@@ -36,7 +43,9 @@ std::unique_ptr<File> PhysicalMountPoint::GetFile(const std::string& filePath)
 		return strcmp(entry.FilePath.c_str(), resolvedPath.c_str()) == 0;
 	});
 	if (pIt == m_FileEntries.end())
+	{
 		return nullptr;
+	}
 
 	return std::make_unique<PhysicalFile>(resolvedPath);
 }
@@ -54,7 +63,9 @@ bool PhysicalMountPoint::RegisterDirectory(const std::string& path)
 		if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
+			{
 				continue;
+			}
 			if (!RegisterDirectory(path + "/" + find_data.cFileName))
 			{
 				FindClose(handle);

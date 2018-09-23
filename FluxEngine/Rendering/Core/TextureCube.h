@@ -23,7 +23,7 @@ class TextureCube : public Texture
 
 public:
 	TextureCube(Context* pContext);
-	virtual ~TextureCube(); 
+	virtual ~TextureCube();
 
 	virtual void Release() override;
 	virtual bool Load(InputStream& inputStream) override;

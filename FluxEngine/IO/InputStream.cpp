@@ -16,7 +16,7 @@ bool InputStream::ReadAllBytes(std::vector<unsigned char>& buffer)
 
 bool InputStream::SetPointer(const size_t position)
 {
-	m_FilePointer = position; 
+	m_FilePointer = position;
 	return true;
 }
 

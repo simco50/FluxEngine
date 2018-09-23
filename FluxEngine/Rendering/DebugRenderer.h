@@ -8,8 +8,8 @@ class Camera;
 class PhysicsScene;
 class Mesh;
 class Skeleton;
+class Light;
 struct Bone;
-
 struct VertexElement;
 
 struct DebugLine
@@ -59,7 +59,7 @@ struct DebugSphere
 	Vector3 Center;
 	float Radius;
 
-	Vector3 GetPoint(const float theta, const float phi) const 
+	Vector3 GetPoint(const float theta, const float phi) const
 	{
 		return Center + GetLocalPoint(theta, phi);
 	}
@@ -103,6 +103,7 @@ public:
 	void AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid = false);
 	void AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);
 	void AddBone(const Matrix& matrix, const float length, const Color& color);
+	void AddLight(const Light* pLight);
 
 private:
 	void AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);

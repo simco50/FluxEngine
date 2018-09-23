@@ -5,6 +5,17 @@
 
 #include "Helpers/Compression.h"
 
+PakFile::PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry) :
+	File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
+{
+
+}
+
+PakFile::~PakFile()
+{
+
+}
+
 bool PakFile::OpenRead(bool allowWrite)
 {
 	if (allowWrite)
@@ -67,7 +78,7 @@ bool PakFile::SetPointer(const size_t position)
 
 size_t PakFile::Write(const void* /*pBuffer*/, const size_t /*size*/)
 {
-	return 0;
+	throw std::exception("Function not implemented");
 }
 
 bool PakFile::Flush()

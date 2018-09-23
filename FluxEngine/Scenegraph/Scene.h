@@ -25,6 +25,7 @@ public:
 	Camera* GetCamera() const;
 
 	SceneNode* FindNode(const std::string& name);
+	const std::vector<SceneNode*>& GetNodes() const { return m_Nodes; }
 
 	virtual void OnSceneSet(Scene* pScene) override;
 

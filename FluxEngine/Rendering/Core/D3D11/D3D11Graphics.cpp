@@ -22,6 +22,7 @@
 #include "Input/InputEngine.h"
 #include "../../Renderer.h"
 #include "../../Geometry.h"
+#include "../StructuredBuffer.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
@@ -134,7 +135,7 @@ bool Graphics::OpenWindow()
 	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_WindowWidth, m_WindowHeight, flags);
 	if (!m_pWindow)
 		return false;
-	
+
 	//Hardcode the logo into the binary
 	unsigned int pLogo[] =
 	{
@@ -172,6 +173,12 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 	else if(m_CurrentRenderTargets[index] != pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
+
+		if (pRenderTarget->GetParentTexture()->GetMultiSample() > 1)
+		{
+			pRenderTarget->GetParentTexture()->SetResolveDirty(true);
+		}
+
 		m_pImpl->m_RenderTargetsDirty = true;
 	}
 }
@@ -495,6 +502,34 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	}
 }
 
+void Graphics::SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer)
+{
+	if (slot >= TextureSlot::MAX)
+	{
+		FLUX_LOG(Warning, "[Graphics::SetStructuredBuffer] > Can't assign a structuredbuffer to a slot out of range");
+		return;
+	}
+
+	if (pBuffer && (pBuffer->GetView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot]))
+	{
+		return;
+	}
+
+	m_pImpl->m_ShaderResourceViews[(size_t)slot] = pBuffer ? (ID3D11ShaderResourceView*)pBuffer->GetView() : nullptr;
+	m_pImpl->m_SamplerStates[(size_t)slot] = nullptr;
+
+	m_pImpl->m_TexturesDirty = true;
+	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
+	{
+		m_pImpl->m_FirstDirtyTexture = (int)slot;
+	}
+	if (m_pImpl->m_LastDirtyTexture < (int)slot)
+	{
+		m_pImpl->m_LastDirtyTexture = (int)slot;
+	}
+}
+
+
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
 {
 	AUTOPROFILE(Graphics_Draw);
@@ -634,7 +669,7 @@ void Graphics::FlushSRVChanges(bool force)
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-		
+
 		m_pImpl->m_TexturesDirty = false;
 		m_pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;
 		m_pImpl->m_LastDirtyTexture = 0;

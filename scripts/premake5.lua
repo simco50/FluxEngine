@@ -190,7 +190,7 @@ workspace "FluxEngine"
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxFoundation_x64.dll\" \"$(OutDir)\"",
 				"{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\x64\\PxPvdSDK_x64.dll\" \"$(OutDir)\"",
 			}
-
+			
 newaction {
 	trigger     = "clean",
 	description = "Remove all binaries and generated files",

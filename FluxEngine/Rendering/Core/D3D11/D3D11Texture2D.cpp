@@ -127,7 +127,7 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 	unsigned int rowSize = GetRowDataSize(width);
 	unsigned int rowStart = GetRowDataSize(x);
 	unsigned int subResource = D3D11CalcSubresource(mipLevel, 0, m_MipLevels);
-	
+
 	if (m_Usage == TextureUsage::STATIC)
 	{
 		if (IsCompressed())

@@ -79,7 +79,7 @@ private:
 	bool m_Success = false;
 };
 
-using OnHttpProcessComplete = SinglecastDelegate<void, const HttpRequest&, bool>;
+DECLARE_DELEGATE(OnHttpProcessComplete, const HttpRequest&, bool);
 
 class HttpRequest
 {

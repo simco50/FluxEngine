@@ -52,7 +52,7 @@ void InputEngine::Update()
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 			case SDL_WINDOWEVENT_MINIMIZED:
-				GameTimer::Stop();
+				//GameTimer::Stop();
 				break;
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 			case SDL_WINDOWEVENT_MAXIMIZED:

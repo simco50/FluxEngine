@@ -15,6 +15,7 @@ class ConstantBuffer;
 class Shader;
 class ShaderProgram;
 class Texture2D;
+class StructuredBuffer;
 
 class GraphicsImpl;
 
@@ -63,17 +64,18 @@ public:
 	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
 
 	void SetTexture(const TextureSlot slot, Texture* pTexture);
+	void SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer);
 
 	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
 	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
 	void DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex = 0, const int instanceStart = 0);
 
 	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
-	
+
 	ConstantBuffer* GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size);
 	Shader* GetShader(const std::string& filePath);
 	ShaderVariation* GetShader(const std::string& filePath, const ShaderType type, const std::string& defines = "");
-	
+
 	bool SetShaderParameter(const std::string& name, const void* pData);
 	bool SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count);
 	bool SetShaderParameter(const std::string& name, const float value);

@@ -66,7 +66,7 @@ ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::
 		return pIt->second.get();
 
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(m_pContext, this, type);
-	
+
 	std::stringstream cacheName;
 	cacheName << m_Name + Shader::GetEntryPoint(type) << "_" << hash;
 	if (pVariation->LoadFromCache(cacheName.str()))

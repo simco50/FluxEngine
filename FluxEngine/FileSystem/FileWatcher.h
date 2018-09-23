@@ -5,8 +5,8 @@
 class FileWatcher : public Thread
 {
 public:
-	FileWatcher() {}
-	virtual ~FileWatcher() { StopWatching(); }
+	FileWatcher();
+	virtual ~FileWatcher();
 
 	bool StartWatching(const std::string& directory, const bool recursiveWatch = true);
 	void StopWatching();

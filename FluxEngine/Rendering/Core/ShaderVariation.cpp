@@ -89,7 +89,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	std::stringstream filePathStream;
 	filePathStream << Paths::ShaderCacheDir() << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
-	
+
 	DateTime timeStamp = FileSystem::GetLastModifiedTime(filePathStream.str());
 	if (timeStamp.Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
 	{
