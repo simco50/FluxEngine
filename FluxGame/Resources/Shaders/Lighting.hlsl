@@ -1,5 +1,6 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
+#include "Constants.hlsl"
 
 float GetSpecularBlinnPhong(float3 viewDirection, float3 normal, float3 lightVector, float shininess)
 {
@@ -50,11 +51,6 @@ float3 CalculateNormal(float3 normal, float3 tangent, float2 texCoord, bool inve
 	return mul(sampledNormal, normalMatrix);
 }
 #endif
-
-#define LIGHT_COUNT 100
-#define DIRECTIONAL_LIGHT 0
-#define POINT_LIGHT 1
-#define SPOT_LIGHT 2
 
 struct LightResult
 {

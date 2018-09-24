@@ -1,2 +1,7 @@
 #define MAX_BONE_COUNT 100
 #define MAX_BONES_PER_VERTEX 4
+
+#define LIGHT_COUNT 100
+#define DIRECTIONAL_LIGHT 0
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2

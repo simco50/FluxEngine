@@ -5,6 +5,8 @@
 #include "Content\ResourceManager.h"
 #include "Graphics.h"
 
+#define USE_SHADER_LINE_DIRECTIVE
+
 Shader::Shader(Context* pContext) :
 	Resource(pContext)
 {
@@ -28,7 +30,9 @@ bool Shader::Load(InputStream& inputStream)
 		std::stringstream codeStream;
 		std::vector<size_t> processedIncludes;
 		if (!ProcessSource(inputStream, codeStream, processedIncludes))
+		{
 			return false;
+		}
 
 		m_ShaderSource = codeStream.str();
 	}
@@ -63,7 +67,9 @@ ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::
 	size_t hash = std::hash<std::string>{}(defines);
 	auto pIt = m_ShaderCache[(size_t)type].find(hash);
 	if (pIt != m_ShaderCache[(size_t)type].end())
+	{
 		return pIt->second.get();
+	}
 
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(m_pContext, this, type);
 
@@ -113,7 +119,7 @@ std::string Shader::GetEntryPoint(const ShaderType type)
 bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-	if(GetFilePath() != inputStream.GetSource())
+	if (GetFilePath() != inputStream.GetSource())
 		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
 
 	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
@@ -123,38 +129,49 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 	}
 
 	std::string line;
+
+	int ignoredLines = 0;
+
+	bool placedLine = false;
 	while (inputStream.GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
 		{
 			std::string includeFilePath = std::string(line.begin() + 10, line.end() - 1);
 			size_t includeHash = std::hash<std::string>{}(includeFilePath);
-			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) != processedIncludes.end())
+			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) == processedIncludes.end())
 			{
-				continue;
+				processedIncludes.push_back(includeHash);
+				std::string basePath = Paths::GetDirectoryPath(inputStream.GetSource());
+				std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
+				if (newFile == nullptr)
+				{
+					return false;
+				}
+				if (!newFile->OpenRead())
+				{
+					return false;
+				}
+
+				if (!ProcessSource(*newFile, output, processedIncludes))
+				{
+					return false;
+				}
 			}
-			processedIncludes.push_back(includeHash);
-			std::string basePath = Paths::GetDirectoryPath(inputStream.GetSource());
-			std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
-			if (newFile == nullptr)
-			{
-				return false;
-			}
-			if (!newFile->OpenRead())
-			{
-				return false;
-			}
-			if (!ProcessSource(*newFile, output, processedIncludes))
-			{
-				return false;
-			}
+			++ignoredLines;
 		}
 		else
 		{
+			if (placedLine == false)
+			{
+				placedLine = true;
+#ifdef USE_SHADER_LINE_DIRECTIVE
+				output << "#line " << ignoredLines + 1 << " \"" << inputStream.GetSource() << "\"\n";
+#endif
+			}
 			output << line << '\n';
 		}
 	}
-	output << '\n';
 	return true;
 }
 
