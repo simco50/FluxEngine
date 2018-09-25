@@ -120,7 +120,9 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if (GetFilePath() != inputStream.GetSource())
+	{
 		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
+	}
 
 	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
 	if (timestamp > m_LastModifiedTimestamp)
@@ -130,9 +132,8 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 
 	std::string line;
 
-	int ignoredLines = 0;
-
-	bool placedLine = false;
+	int linesProcessed = 0;
+	bool placedLineDirective = false;
 	while (inputStream.GetLine(line))
 	{
 		if (line.substr(0, 8) == "#include")
@@ -158,19 +159,20 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 					return false;
 				}
 			}
-			++ignoredLines;
+			placedLineDirective = false;
 		}
 		else
 		{
-			if (placedLine == false)
+			if (placedLineDirective == false)
 			{
-				placedLine = true;
+				placedLineDirective = true;
 #ifdef USE_SHADER_LINE_DIRECTIVE
-				output << "#line " << ignoredLines + 1 << " \"" << inputStream.GetSource() << "\"\n";
+				output << "#line " << linesProcessed + 1 << " \"" << inputStream.GetSource() << "\"\n";
 #endif
 			}
 			output << line << '\n';
 		}
+		++linesProcessed;
 	}
 	return true;
 }
