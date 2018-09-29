@@ -184,7 +184,6 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 				result.pCollider = pShapeB;
 				result.pRigidbody = reinterpret_cast<Rigidbody*>(pairHeader.actors[1]->userData);
 				result.pNode = pShapeB->GetNode();
-				result.pTransform = pShapeB->GetTransform();
 
 				if (pairs[i].events.isSet(PxPairFlag::eNOTIFY_TOUCH_FOUND))
 				{

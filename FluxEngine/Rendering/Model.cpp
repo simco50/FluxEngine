@@ -3,7 +3,6 @@
 #include "Scenegraph\Scene.h"
 #include "Mesh.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 
 Model::Model(Context* pContext):
 	Drawable(pContext)
@@ -20,11 +19,11 @@ void Model::OnSceneSet(Scene* pScene)
 	Drawable::OnSceneSet(pScene);
 }
 
-void Model::OnMarkedDirty(const Transform* pTransform)
+void Model::OnMarkedDirty(const SceneNode* pNode)
 {
 	for (Batch& batch : m_Batches)
 	{
-		batch.pModelMatrix = &pTransform->GetWorldMatrix();
+		batch.pModelMatrix = &pNode->GetWorldMatrix();
 	}
 }
 
@@ -41,7 +40,7 @@ void Model::SetMesh(Mesh* pMesh)
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
 		m_Batches[i].NumSkinMatrices = 1;
 	}
 	m_BoundingBox = pMesh->GetBoundingBox();

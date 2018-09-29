@@ -1,10 +1,10 @@
 #include "FluxEngine.h"
 #include "Light.h"
 #include "Renderer.h"
-#include "Scenegraph/Transform.h"
 #include "Core/TextureCube.h"
 #include "Core/Texture2D.h"
 #include "Core/Texture.h"
+#include "Scenegraph/SceneNode.h"
 
 Light::Light(Context* pContext)
 	: Component(pContext)
@@ -20,7 +20,7 @@ void Light::SetType(const Type type)
 {
 	m_Data.Type = type;
 	SetShadowCasting(m_CastShadow);
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Light::SetShadowCasting(const bool enabled)
@@ -50,7 +50,7 @@ void Light::SetShadowCasting(const bool enabled)
 void Light::OnSceneSet(Scene* /*pScene*/)
 {
 	m_pContext->GetSubsystem<Renderer>()->AddLight(this);
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Light::OnSceneRemoved()
@@ -58,10 +58,10 @@ void Light::OnSceneRemoved()
 	m_pContext->GetSubsystem<Renderer>()->RemoveLight(this);
 }
 
-void Light::OnMarkedDirty(const Transform* transform)
+void Light::OnMarkedDirty(const SceneNode* pNode)
 {
-	m_Data.Position = transform->GetWorldPosition();
-	m_Data.Direction = transform->GetForward();
+	m_Data.Position = pNode->GetWorldPosition();
+	m_Data.Direction = pNode->GetForward();
 
 	Matrix projection;
 	switch (m_Data.Type)
@@ -78,5 +78,5 @@ void Light::OnMarkedDirty(const Transform* transform)
 	default:
 		break;
 	}
-	m_ViewProjection = transform->GetWorldMatrix() * projection;
+	m_ViewProjection = pNode->GetWorldMatrix() * projection;
 }

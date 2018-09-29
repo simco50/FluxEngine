@@ -58,7 +58,7 @@ public:
 	const ClearFlags& GetClearFlags() const { return m_ClearFlags; }
 	const Color& GetClearColor() const { return m_ClearColor; }
 
-	virtual void OnMarkedDirty(const Transform* transform) override;
+	virtual void OnMarkedDirty(const SceneNode* pNode) override;
 
 protected:
 	void OnSceneSet(Scene* pScene) override;

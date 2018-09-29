@@ -4,7 +4,6 @@
 #include "ParticleEmitter.h"
 #include "Particle.h"
 
-#include "SceneGraph/Transform.h"
 #include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
 
@@ -106,7 +105,7 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 {
 	Drawable::OnNodeSet(pNode);
-	m_Batches[0].pModelMatrix = &pNode->GetTransform()->GetWorldMatrix();
+	m_Batches[0].pModelMatrix = &pNode->GetWorldMatrix();
 }
 
 void ParticleEmitter::FreeParticles()
@@ -141,16 +140,16 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 	case ParticleSortingMode::FrontToBack:
 		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
 			return d1 > d2;
 		});
 		break;
 	case ParticleSortingMode::BackToFront:
 		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
 			return d1 < d2;
 		});
 	case ParticleSortingMode::OldestFirst:

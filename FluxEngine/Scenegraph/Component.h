@@ -1,7 +1,6 @@
 #pragma once
 class Scene;
 class SceneNode;
-class Transform;
 
 class Component : public Object
 {
@@ -17,11 +16,10 @@ public:
 	virtual void OnNodeRemoved();
 	virtual void OnSceneRemoved();
 	//Broadcast transform change to all components
-	virtual void OnMarkedDirty(const Transform* /*transform*/) { }
+	virtual void OnMarkedDirty(const SceneNode* /*pNode*/) { }
 
 	virtual bool CanHaveMultiple() const { return false; }
 
-	Transform* GetTransform();
 	SceneNode* GetNode() const { return m_pNode; }
 
 	Component* GetComponent(StringHash type) const;

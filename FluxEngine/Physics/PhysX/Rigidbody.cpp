@@ -1,6 +1,5 @@
 #include "FluxEngine.h"
 #include "Rigidbody.h"
-#include "Scenegraph\Transform.h"
 #include "PhysicsSystem.h"
 #include "PhysicsScene.h"
 #include "Scenegraph\SceneNode.h"
@@ -55,10 +54,10 @@ void Rigidbody::OnNodeRemoved()
 	}
 }
 
-void Rigidbody::OnMarkedDirty(const Transform* pTransform)
+void Rigidbody::OnMarkedDirty(const SceneNode* pNode)
 {
-	Vector3 wPos = pTransform->GetWorldPosition();
-	Quaternion wRot = pTransform->GetWorldRotation();
+	Vector3 wPos = pNode->GetWorldPosition();
+	Quaternion wRot = pNode->GetWorldRotation();
 
 	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
@@ -71,8 +70,8 @@ void Rigidbody::UpdateBody()
 	if (m_pBody)
 	{
 		PxTransform transform = m_pBody->getGlobalPose();
-		GetTransform()->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::WORLD);
-		GetTransform()->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::WORLD);
+		m_pNode->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::WORLD);
+		m_pNode->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::WORLD);
 	}
 }
 
@@ -130,9 +129,8 @@ void Rigidbody::CreateBody(const Type type)
 
 	AUTOPROFILE(Rigidbody_CreateBody);
 
-	Transform* pTransform = GetTransform();
-	Vector3 wPos = pTransform->GetWorldPosition();
-	Quaternion wRot = pTransform->GetWorldRotation();
+	Vector3 wPos = m_pNode->GetWorldPosition();
+	Quaternion wRot = m_pNode->GetWorldRotation();
 	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
 	PxRigidActor* pNewBody;

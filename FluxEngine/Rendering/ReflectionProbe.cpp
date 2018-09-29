@@ -2,9 +2,9 @@
 #include "ReflectionProbe.h"
 #include "Camera/Camera.h"
 #include "Core/TextureCube.h"
-#include "Scenegraph/Transform.h"
 #include "Renderer.h"
 #include "Core/Texture2D.h"
+#include "Scenegraph/SceneNode.h"
 
 ReflectionProbe::ReflectionProbe(Context* pContext) :
 	Component(pContext)
@@ -23,7 +23,7 @@ void ReflectionProbe::Capture(const CubeMapFace face)
 	std::unique_ptr<Camera>& pCamera = m_Cameras[(int)face];
 	pCamera->SetProjection(projection);
 
-	Vector3 position = GetTransform()->GetWorldPosition();
+	Vector3 position = m_pNode->GetWorldPosition();
 
 	switch (face)
 	{

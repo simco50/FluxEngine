@@ -4,7 +4,6 @@
 #include "UI/ImmediateUI.h"
 
 #include "Scenegraph/Scene.h"
-#include "Scenegraph/Transform.h"
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/VertexBuffer.h"
 #include "Rendering/Core/Texture.h"
@@ -94,16 +93,16 @@ void FluxCore::InitGame()
 
 	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pCamera = m_pScene->CreateChild<FreeCamera>("Camera");
-	m_pCamera->GetTransform()->SetPosition(0, 0, -40.0f);
+	m_pCamera->SetPosition(0, 0, -40.0f);
 	m_pCamera->GetCamera()->SetNearPlane(10);
 	m_pCamera->GetCamera()->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	/*m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+	/*m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));*/
 
-	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -116,7 +115,7 @@ void FluxCore::InitGame()
 	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 	pPlaneModel->SetMesh(pPlaneMesh);
 	pPlaneModel->SetMaterial(pDefaultMaterial);
-	pPlaneModel->GetTransform()->SetScale(5000);
+	pPlaneNode->SetScale(5000);
 
 	Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
 	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
@@ -156,10 +155,45 @@ void FluxCore::InitGame()
 			pL->SetType(Light::Type::Point);
 			pL->SetRange(300);
 			pL->SetColor(Color(Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), 1.0));
-			pLight->GetTransform()->Rotate(45, 0, 0);
-			pLight->GetTransform()->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
+			pLight->Rotate(45, 0, 0);
+			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
-	}
+	}*/
+
+	SceneNode* pLight = m_pScene->CreateChild("Light");
+	pLight->CreateComponent<Light>();
+	pLight->Rotate(45, 0, 0);
+
+	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
+	std::vector<VertexElement> cubeDesc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+	};
+	pCubeMesh->CreateBuffers(cubeDesc);
+	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+
+	SceneNode* pMainCube = m_pScene->CreateChild("MainCube");
+	pMainCube->SetScale(5);
+	SceneNode* pSecondCube = pMainCube->CreateChild("SecondCube");
+	pSecondCube->SetScale(3);
+	pSecondCube->Translate(0, 0, 4);
+	SceneNode* pLastCube = pSecondCube->CreateChild("LastCube");
+	pLastCube->SetScale(2);
+	pLastCube->Translate(2.5f, 0, 4);
+
+	Model* pModel = pMainCube->CreateComponent<Model>();
+	pModel->SetMesh(pCubeMesh);
+	pModel->SetMaterial(pDefaultMaterial);
+
+	pModel = pSecondCube->CreateComponent<Model>();
+	pModel->SetMesh(pCubeMesh);
+	pModel->SetMaterial(pDefaultMaterial);
+
+	pModel = pLastCube->CreateComponent<Model>();
+	pModel->SetMesh(pCubeMesh);
+	pModel->SetMaterial(pDefaultMaterial);
 }
 
 void FluxCore::ProcessFrame()
@@ -185,12 +219,12 @@ void FluxCore::ProcessFrame()
 	}
 	m_pResourceManager->Update();
 	m_pAudioEngine->Update();
-
-
 	m_pGraphics->BeginFrame();
 
 	GameUpdate();
-	m_pScene->FindNode("Lights")->GetTransform()->Rotate(0, GameTimer::DeltaTime() * 10, 0);
+	m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::SELF);
+	m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::SELF);
+	m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::SELF);
 
 	m_pScene->Update();
 	m_pPostProcessing->Draw();
@@ -366,20 +400,20 @@ void FluxCore::GameUpdate()
 			AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
 			if (pAnimatedModel)
 			{
-				m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1));
-				m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 1.0f);
+				m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetWorldMatrix(), Color(1, 0, 0, 1));
+				m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix(), 1.0f);
 			}
 			Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
 			if (pModel)
 			{
-				m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetTransform()->GetWorldMatrix(), Color(1, 0, 0, 1), false);
+				m_pDebugRenderer->AddBoundingBox(pModel->GetBoundingBox(), m_pSelectedNode->GetWorldMatrix(), Color(1, 0, 0, 1), false);
 			}
 			Light* pLight = m_pSelectedNode->GetComponent<Light>();
 			if (pLight)
 			{
 				m_pDebugRenderer->AddLight(pLight);
 			}
-			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetTransform()->GetWorldMatrix(), 50.0f);
+			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix(), 50.0f);
 		}
 	}
 }

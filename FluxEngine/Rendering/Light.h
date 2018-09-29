@@ -46,7 +46,7 @@ public:
 
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnSceneRemoved() override;
-	virtual void OnMarkedDirty(const Transform* transform) override;
+	virtual void OnMarkedDirty(const SceneNode* pNode) override;
 
 	const Matrix& GetViewProjection() const { return m_ViewProjection; }
 	const Texture* GetShadowTexture() const { return m_pShadowTexture.get(); }
