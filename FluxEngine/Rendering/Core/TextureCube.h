@@ -2,7 +2,6 @@
 #include "Texture.h"
 
 class RenderTarget;
-class Transform;
 class Camera;
 class Texture2D;
 

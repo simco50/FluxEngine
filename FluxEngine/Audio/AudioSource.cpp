@@ -1,7 +1,6 @@
 #include "FluxEngine.h"
 #include "AudioSource.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 #include "AudioEngine.h"
 #include "Sound.h"
 
@@ -84,20 +83,22 @@ void AudioSource::SetLoop(const bool loop)
 void AudioSource::OnNodeSet(SceneNode* pNode)
 {
 	Component::OnNodeSet(pNode);
-	m_LastPosition = pNode->GetTransform()->GetWorldPosition();
+	m_LastPosition = pNode->GetWorldPosition();
 }
 
-void AudioSource::OnMarkedDirty(const Transform* transform)
+void AudioSource::OnMarkedDirty(const SceneNode* pNode)
 {
 	if (m_Mode == FMOD_3D)
 	{
-		Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+		Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+
+		Vector3 wPos = pNode->GetWorldPosition();
 
 		m_pChannel->set3DAttributes(
-			reinterpret_cast<const FMOD_VECTOR*>(&m_pNode->GetTransform()->GetWorldPosition()),
+			reinterpret_cast<const FMOD_VECTOR*>(&wPos),
 			reinterpret_cast<const FMOD_VECTOR*>(&velocity)
 		);
 
-		m_LastPosition = m_pNode->GetTransform()->GetWorldPosition();
+		m_LastPosition = m_pNode->GetWorldPosition();
 	}
 }

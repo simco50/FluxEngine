@@ -23,7 +23,7 @@ public:
 	virtual void OnSceneRemoved() override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
 	virtual void OnNodeRemoved() override;
-	virtual void OnMarkedDirty(const Transform* pTransform) override;
+	virtual void OnMarkedDirty(const SceneNode* pNode) override;
 	void UpdateBody();
 
 	void SetKinematic(const bool isKinematic);

@@ -43,12 +43,6 @@ void Component::OnSceneRemoved()
 	m_pScene = nullptr;
 }
 
-Transform* Component::GetTransform()
-{
-	checkf(m_pNode, "[Component::GetTransform()] > Component is not attached to a SceneNode");
-	return m_pNode->GetTransform();
-}
-
 Component* Component::GetComponent(StringHash type) const
 {
 	checkf(m_pNode, "[Component::GetComponent] > Component is not attached to a SceneNode");

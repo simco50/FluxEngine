@@ -2,7 +2,6 @@
 #include "AnimatedModel.h"
 #include "Rendering/Mesh.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 #include "Animation.h"
 
 AnimatedModel::AnimatedModel(Context* pContext):
@@ -33,7 +32,7 @@ void AnimatedModel::SetMesh(Mesh* pMesh)
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
+		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
 		m_Batches[i].pSkinMatrices = m_SkinMatrices.data();
 		m_Batches[i].NumSkinMatrices = (int)m_SkinMatrices.size();
 	}

@@ -3,7 +3,6 @@
 
 #include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Renderer.h"
@@ -35,7 +34,7 @@ void Camera::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 	pScene->GetRenderer()->AddCamera(this);
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 FloatRect Camera::GetAbsoluteViewport() const
@@ -65,7 +64,7 @@ RenderTarget* Camera::GetDepthStencil()
 	return m_pDepthStencil->GetRenderTarget();
 }
 
-void Camera::OnMarkedDirty(const Transform* transform)
+void Camera::OnMarkedDirty(const SceneNode* pNode)
 {
 	FloatRect absolute = GetAbsoluteViewport();
 	float viewportWidth = absolute.GetWidth();
@@ -83,9 +82,9 @@ void Camera::OnMarkedDirty(const Transform* transform)
 	}
 
 	m_View = XMMatrixLookAtLH(
-		transform->GetWorldPosition(),
-		transform->GetWorldPosition() + transform->GetForward(),
-		XMLoadFloat3(&transform->GetUp()));
+		pNode->GetWorldPosition(),
+		pNode->GetWorldPosition() + pNode->GetForward(),
+		pNode->GetUp());
 
 	m_View.Invert(m_ViewInverse);
 
@@ -119,7 +118,7 @@ void Camera::UpdateFrustum()
 void Camera::SetFOW(float fov)
 {
 	m_FoV = fov;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)
@@ -128,14 +127,14 @@ void Camera::SetViewport(float x, float y, float width, float height)
 	m_Viewport.Top = y;
 	m_Viewport.Right = width + x;
 	m_Viewport.Bottom = height + y;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Camera::SetClippingPlanes(float nearPlane, float farPlane)
 {
 	m_NearPlane = nearPlane;
 	m_FarPlane = farPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
@@ -165,13 +164,13 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 void Camera::SetNearPlane(float nearPlane)
 {
 	m_NearPlane = nearPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Camera::SetFarPlane(float farPlane)
 {
 	m_FarPlane = farPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 bool Camera::Raycast(RaycastResult& result) const

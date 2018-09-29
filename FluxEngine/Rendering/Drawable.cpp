@@ -3,7 +3,6 @@
 #include "SceneGraph/Scene.h"
 #include "Renderer.h"
 #include "Scenegraph/SceneNode.h"
-#include "Scenegraph/Transform.h"
 
 void Drawable::OnSceneSet(Scene* pScene)
 {
@@ -14,6 +13,6 @@ void Drawable::OnSceneSet(Scene* pScene)
 DirectX::BoundingBox Drawable::GetWorldBoundingBox() const
 {
 	BoundingBox worldBoundingBox;
-	m_BoundingBox.Transform(worldBoundingBox, m_pNode->GetTransform()->GetWorldMatrix());
+	m_BoundingBox.Transform(worldBoundingBox, m_pNode->GetWorldMatrix());
 	return worldBoundingBox;
 }

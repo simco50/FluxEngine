@@ -1,7 +1,6 @@
 #include "FluxEngine.h"
 #include "FreeCamera.h"
 #include "Camera.h"
-#include "SceneGraph/Transform.h"
 #include "Audio/AudioListener.h"
 #include "Input/InputEngine.h"
 #include "Scenegraph/Scene.h"
@@ -40,7 +39,7 @@ void FreeCamera::Update()
 	}
 	//else
 	{
-		Controller();
+		//Controller();
 	}
 }
 
@@ -63,7 +62,7 @@ void FreeCamera::KeyboardMouse()
 	moveDirection *= dt * moveSpeed;
 
 	if(moveDirection != Vector3())
-		GetTransform()->Translate(moveDirection, Space::SELF);
+		Translate(moveDirection, Space::SELF);
 
 	//Rotation
 	if ( m_pInput->IsMouseButtonDown(MouseKey::RIGHT_BUTTON))
@@ -71,8 +70,8 @@ void FreeCamera::KeyboardMouse()
 		Vector2 mouseMove =  m_pInput->GetMouseMovement();
 		if (mouseMove != Vector2())
 		{
-			GetTransform()->Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
-			GetTransform()->Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+			Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
+			Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
 		}
 	}
 }
@@ -102,11 +101,11 @@ void FreeCamera::Controller()
 
 		if (moveDirection != Vector3())
 		{
-			GetTransform()->Translate(moveDirection, Space::SELF);
+			Translate(moveDirection, Space::SELF);
 		}
 
 		//Rotation
-		GetTransform()->Rotate(5 * pState->GetAxis(ControllerAxis::RIGHT_Y, 0.2f) * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
-		GetTransform()->Rotate(0.0f, 5 * pState->GetAxis(ControllerAxis::RIGHT_X, 0.2f) * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+		Rotate(5 * pState->GetAxis(ControllerAxis::RIGHT_Y, 0.2f) * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
+		Rotate(0.0f, 5 * pState->GetAxis(ControllerAxis::RIGHT_X, 0.2f) * dt * m_RotationSpeed, 0.0f, Space::WORLD);
 	}
 }

@@ -5,7 +5,6 @@ class PhysicsSystem;
 class Collider;
 class Rigidbody;
 class SceneNode;
-class Transform;
 
 struct RaycastResult
 {
@@ -29,7 +28,6 @@ struct CollisionResult
 	Collider* pCollider = nullptr;
 	Rigidbody* pRigidbody = nullptr;
 	SceneNode* pNode = nullptr;
-	Transform* pTransform = nullptr;
 };
 
 class PhysicsScene : public Component, public physx::PxSimulationEventCallback
