@@ -139,11 +139,16 @@ void FluxCore::InitGame()
 	pAnimator->Play();
 
 	SceneNode* pLights = m_pScene->CreateChild("Lights");
-	for (int x = 0; x < 4; ++x)
+
+	float spacing = 350.0f;
+	int countX = 4;
+	int countZ = 5;
+
+	for (int x = 0; x < countX; ++x)
 	{
-		for (int z = 0; z < 5; ++z)
+		for (int z = 0; z < countZ; ++z)
 		{
-			int idx = z + x * 5;
+			int idx = z + x * countZ;
 
 			SceneNode* pLight = pLights->CreateChild(Printf("Light %d", idx));
 			Light* pL = pLight->CreateComponent<Light>();
@@ -151,8 +156,8 @@ void FluxCore::InitGame()
 			pL->SetType(Light::Type::Point);
 			pL->SetRange(300);
 			pL->SetColor(Color(Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), 1.0));
-			pLight->GetTransform()->Rotate(20, -50, 0);
-			pLight->GetTransform()->SetPosition(x * 350.0f - 2 * 350.0f, 150.0f, z * 350.0f + 100 - 2 * 350.0f);
+			pLight->GetTransform()->Rotate(45, 0, 0);
+			pLight->GetTransform()->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
 	}
 }
@@ -181,9 +186,11 @@ void FluxCore::ProcessFrame()
 	m_pResourceManager->Update();
 	m_pAudioEngine->Update();
 
+
 	m_pGraphics->BeginFrame();
 
 	GameUpdate();
+	m_pScene->FindNode("Lights")->GetTransform()->Rotate(0, GameTimer::DeltaTime() * 10, 0);
 
 	m_pScene->Update();
 	m_pPostProcessing->Draw();

@@ -25,12 +25,16 @@ void AudioListener::OnMarkedDirty(const Transform* transform)
 {
 	Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
+	Vector3 wPos = transform->GetWorldPosition();
+	Vector3 fwd = transform->GetForward();
+	Vector3 up = transform->GetUp();
+
 	m_pAudio->GetSystem()->set3DListenerAttributes(
 		0,
-		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetWorldPosition()),
+		reinterpret_cast<const FMOD_VECTOR*>(&wPos),
 		reinterpret_cast<const FMOD_VECTOR*>(&velocity),
-		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetForward()),
-		reinterpret_cast<const FMOD_VECTOR*>(&transform->GetUp())
+		reinterpret_cast<const FMOD_VECTOR*>(&fwd),
+		reinterpret_cast<const FMOD_VECTOR*>(&up)
 	);
 
 	m_LastPosition = transform->GetWorldPosition();

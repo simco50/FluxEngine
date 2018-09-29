@@ -16,88 +16,122 @@ Transform::~Transform()
 
 void Transform::Initialize()
 {
-	OnLocalChange();
 }
 
-void Transform::OnLocalChange()
+Vector3 Transform::GetWorldPosition() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return GetWorldMatrix().Translation();
+}
+
+const Vector3& Transform::GetScale() const
+{
+	return m_Scale;
+}
+
+const Vector3& Transform::GetWorldScale() const
+{
+	return m_Scale;
+}
+
+const Quaternion& Transform::GetRotation() const
+{
+	return m_Rotation;
+}
+
+const Quaternion& Transform::GetWorldRotation() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return m_WorldRotation;
+}
+
+const Matrix& Transform::GetWorldMatrix() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return m_WorldMatrix;
+}
+
+Vector3 Transform::GetUp() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return XMVector3Rotate(Vector3(0, 1, 0), m_WorldRotation);
+}
+
+Vector3 Transform::GetForward() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return XMVector3Rotate(Vector3(0, 0, 1), m_WorldRotation);
+}
+
+Vector3 Transform::GetRight() const
+{
+	if (m_Dirty)
+	{
+		UpdateWorld();
+	}
+	return XMVector3Rotate(Vector3(1, 0, 0), m_WorldRotation);
+}
+
+void Transform::MarkDirty()
+{
+	if (m_Dirty == false)
+	{
+		m_Dirty = true;
+		m_pNode->OnTransformDirty(this);
+	}
+}
+
+void Transform::UpdateWorld() const
 {
 	Matrix localTranslation = Matrix::CreateTranslation(m_Position);
-	Matrix localRotation = Matrix::CreateFromQuaternion(m_Rotation);
 	Matrix localScale = Matrix::CreateScale(m_Scale);
-	Matrix localMatrix = localScale * localRotation * localTranslation;
+	Matrix localRotation = Matrix::CreateFromQuaternion(m_Rotation);
+	m_WorldMatrix = localScale * localRotation * localTranslation;
+	m_WorldRotation = m_Rotation;
 
 	SceneNode* pParent = m_pNode->GetParent();
-
-	if (pParent != nullptr)
+	if (pParent)
 	{
-		m_WorldMatrix = localMatrix * pParent->GetTransform()->GetWorldMatrix();
-		m_WorldMatrix.Decompose(m_WorldScale, m_WorldRotation, m_WorldPosition);
-	}
-	else
-	{
-		m_WorldPosition = m_Position;
-		m_WorldRotation = m_Rotation;
-		m_WorldScale = m_Scale;
-		m_WorldMatrix = localMatrix;
+		m_WorldMatrix *= pParent->GetTransform()->GetWorldMatrix();
+		m_WorldRotation *= pParent->GetTransform()->GetWorldRotation();
 	}
 
-	UpdateDirections();
-}
-
-void Transform::OnWorldChange()
-{
-	SceneNode* pParent = m_pNode->GetParent();
-
-	Matrix worldTranslation = Matrix::CreateTranslation(m_WorldPosition);
-	Matrix worldRotation = Matrix::CreateFromQuaternion(m_WorldRotation);
-	Matrix worldScale = Matrix::CreateScale(m_WorldScale);
-	m_WorldMatrix = worldScale * worldRotation * worldTranslation;
-
-	if(pParent != nullptr)
-	{
-		Matrix parentInverse;
-		pParent->GetTransform()->GetWorldMatrix().Invert(parentInverse);
-
-		Matrix localMatrix = m_WorldMatrix * parentInverse;
-		localMatrix.Decompose(m_Scale, m_Rotation, m_Position);
-	}
-	else
-	{
-		m_Position = m_WorldPosition;
-		m_Rotation = m_WorldRotation;
-		m_Scale = m_WorldScale;
-	}
-	UpdateDirections();
-}
-
-void Transform::UpdateDirections()
-{
-	Matrix rotMatrix = Matrix::CreateFromQuaternion(m_WorldRotation);
-	m_Forward = Vector3::Transform(Vector3(0, 0, 1), rotMatrix);
-	m_Right = Vector3::Transform(Vector3(1, 0, 0), rotMatrix);
-	m_Up = m_Forward.Cross(m_Right);
-}
-
-void Transform::MarkDirty(const Vector3& position, const Vector3& scale, const Quaternion& rotation)
-{
-	m_WorldPosition = position;
-	m_WorldScale = scale;
-	m_WorldRotation = rotation;
-	OnWorldChange();
+	m_Dirty = false;
 }
 
 void Transform::Translate(const Vector3& translation, const Space space)
 {
-	if (space == Space::SELF)
+	if (space == Space::WORLD)
 	{
-		m_WorldPosition = Vector3::Transform(translation, m_WorldMatrix);
+		if (m_pNode->GetParent())
+		{
+			m_Position += XMVector3Transform(translation, XMMatrixInverse(nullptr, m_pNode->GetParent()->GetTransform()->GetWorldMatrix()));
+		}
+		else
+		{
+			m_Position += translation;
+		}
 	}
 	else
 	{
-		m_WorldPosition += translation;
+		m_Position += XMVector3Rotate(translation, m_Rotation);
 	}
-	OnWorldChange();
-	m_pNode->OnTransformDirty(this);
+	MarkDirty();
 }
 
 void Transform::Translate(const float x, const float y, const float z, const Space space)
@@ -119,44 +153,39 @@ void Transform::Rotate(const Quaternion& quaternion, const Space space)
 {
 	if (space == Space::WORLD)
 	{
-		m_WorldRotation *= quaternion;
-		OnWorldChange();
+		Quaternion worldRotation = GetWorldRotation();
+		m_Rotation = XMQuaternionMultiply(worldRotation, XMQuaternionMultiply(XMQuaternionMultiply(quaternion, XMQuaternionInverse(worldRotation)), m_Rotation));
 	}
 	else
 	{
-		m_Rotation = quaternion * m_Rotation;
-		OnLocalChange();
+		m_Rotation = XMQuaternionMultiply(quaternion, m_Rotation);
 	}
-	m_pNode->OnTransformDirty(this);
+	MarkDirty();
 }
 
-Vector3 Transform::TransformVector(const Vector3& input, const TransformElement elements) const
+const Vector3& Transform::GetPosition() const
 {
-	Matrix resultMatrix = XMMatrixIdentity();
-	if (elements & TransformElement::SCALE)
-		resultMatrix *= Matrix::CreateScale(m_WorldScale);
-	if (elements & TransformElement::ROTATION)
-		resultMatrix *= Matrix::CreateFromQuaternion(m_WorldRotation);
-	if (elements & TransformElement::POSITION)
-		resultMatrix *= Matrix::CreateTranslation(m_WorldPosition);
-	Vector3 output;
-	Vector3::Transform(input, resultMatrix, output);
-	return output;
+	return m_Position;
 }
 
 void Transform::SetPosition(const Vector3& newPosition, const Space space)
 {
 	if (space == Space::WORLD)
 	{
-		m_WorldPosition = newPosition;
-		OnWorldChange();
+		if (m_pNode->GetParent())
+		{
+			m_Position = XMVector3Transform(newPosition, XMMatrixInverse(nullptr, m_pNode->GetParent()->GetTransform()->GetWorldMatrix()));
+		}
+		else
+		{
+			m_Position = newPosition;
+		}
 	}
 	else
 	{
 		m_Position = newPosition;
-		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(this);
+	MarkDirty();
 }
 
 void Transform::SetPosition(const float x, const float y, const float z, const Space space)
@@ -166,21 +195,18 @@ void Transform::SetPosition(const float x, const float y, const float z, const S
 
 void Transform::SetScale(const Vector3& scale)
 {
-	m_WorldScale = scale;
-	OnWorldChange();
-	m_pNode->OnTransformDirty(this);
+	m_Scale = scale;
+	MarkDirty();
 }
 
 void Transform::SetScale(const float x, const float y, const float z)
 {
 	SetScale(Vector3(x, y, z));
-	OnWorldChange();
 }
 
 void Transform::SetScale(const float uniformScale)
 {
 	SetScale(Vector3(uniformScale, uniformScale, uniformScale));
-	OnWorldChange();
 }
 
 void Transform::SetRotation(const Vector3& eulerAngles, const Space space)
@@ -190,30 +216,25 @@ void Transform::SetRotation(const Vector3& eulerAngles, const Space space)
 
 void Transform::SetRotation(const float x, const float y, const float z, const Space space)
 {
-	if (space == Space::WORLD)
-	{
-		m_WorldRotation = Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z));
-		OnWorldChange();
-	}
-	else
-	{
-		m_Rotation = Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z));
-		OnLocalChange();
-	}
-	m_pNode->OnTransformDirty(this);
+	SetRotation(Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z)), space);
 }
 
 void Transform::SetRotation(const Quaternion& quaternion, const Space space)
 {
 	if (space == Space::WORLD)
 	{
-		m_WorldRotation = quaternion;
-		OnWorldChange();
+		if (m_pNode->GetParent())
+		{
+			m_Rotation = XMQuaternionMultiply(quaternion, XMQuaternionInverse(m_pNode->GetParent()->GetTransform()->GetWorldRotation()));
+		}
+		else
+		{
+			m_Rotation = quaternion;
+		}
 	}
 	else
 	{
 		m_Rotation = quaternion;
-		OnLocalChange();
 	}
-	m_pNode->OnTransformDirty(this);
+	MarkDirty();
 }

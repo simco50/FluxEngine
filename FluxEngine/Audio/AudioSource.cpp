@@ -93,8 +93,10 @@ void AudioSource::OnMarkedDirty(const Transform* transform)
 	{
 		Vector3 velocity = (transform->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
 
+		Vector3 wPos = transform->GetWorldPosition();
+
 		m_pChannel->set3DAttributes(
-			reinterpret_cast<const FMOD_VECTOR*>(&m_pNode->GetTransform()->GetWorldPosition()),
+			reinterpret_cast<const FMOD_VECTOR*>(&wPos),
 			reinterpret_cast<const FMOD_VECTOR*>(&velocity)
 		);
 

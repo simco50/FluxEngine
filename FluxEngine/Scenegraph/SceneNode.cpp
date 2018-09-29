@@ -103,6 +103,7 @@ void SceneNode::OnTransformDirty(const Transform* pTransform)
 	}
 	for (SceneNode* pChild : m_Children)
 	{
+		pChild->GetTransform()->MarkDirty();
 		pChild->OnTransformDirty(pChild->GetTransform());
 	}
 }

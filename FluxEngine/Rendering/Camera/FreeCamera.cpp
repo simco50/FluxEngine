@@ -40,7 +40,7 @@ void FreeCamera::Update()
 	}
 	//else
 	{
-		Controller();
+		//Controller();
 	}
 }
 

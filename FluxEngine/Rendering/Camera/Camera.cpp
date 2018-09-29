@@ -85,7 +85,7 @@ void Camera::OnMarkedDirty(const Transform* transform)
 	m_View = XMMatrixLookAtLH(
 		transform->GetWorldPosition(),
 		transform->GetWorldPosition() + transform->GetForward(),
-		XMLoadFloat3(&transform->GetUp()));
+		transform->GetUp());
 
 	m_View.Invert(m_ViewInverse);
 

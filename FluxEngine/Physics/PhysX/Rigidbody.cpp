@@ -57,8 +57,10 @@ void Rigidbody::OnNodeRemoved()
 
 void Rigidbody::OnMarkedDirty(const Transform* pTransform)
 {
+	Vector3 wPos = pTransform->GetWorldPosition();
+	Quaternion wRot = pTransform->GetWorldRotation();
 
-	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
 	if (m_pBody)
 		m_pBody->setGlobalPose(transform, true);
@@ -69,7 +71,8 @@ void Rigidbody::UpdateBody()
 	if (m_pBody)
 	{
 		PxTransform transform = m_pBody->getGlobalPose();
-		GetTransform()->MarkDirty(*reinterpret_cast<Vector3*>(&transform.p), GetTransform()->GetWorldScale(), *reinterpret_cast<Quaternion*>(&transform.q));
+		GetTransform()->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::WORLD);
+		GetTransform()->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::WORLD);
 	}
 }
 
@@ -128,7 +131,9 @@ void Rigidbody::CreateBody(const Type type)
 	AUTOPROFILE(Rigidbody_CreateBody);
 
 	Transform* pTransform = GetTransform();
-	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+	Vector3 wPos = pTransform->GetWorldPosition();
+	Quaternion wRot = pTransform->GetWorldRotation();
+	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
 	PxRigidActor* pNewBody;
 	switch (m_Type)
