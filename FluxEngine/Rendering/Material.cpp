@@ -28,7 +28,9 @@ bool Material::Load(InputStream& inputStream)
 
 	std::vector<unsigned char> buffer;
 	if (!inputStream.ReadAllBytes(buffer))
+	{
 		return false;
+	}
 
 	XML::XMLDocument document;
 	if (document.Parse((char*)buffer.data(), buffer.size()) != XML::XML_SUCCESS)
@@ -68,7 +70,7 @@ ShaderVariation* Material::GetShader(const ShaderType type) const
 	return m_ShaderVariations[(unsigned int)type];
 }
 
-void Material::SetTexture(const TextureSlot slot, Texture* pTexture)
+void Material::SetTexture(TextureSlot slot, Texture* pTexture)
 {
 	m_Textures[slot] = pTexture;
 }
@@ -103,9 +105,11 @@ bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 		}
 
 		const char* pAttribute = pShader->Attribute("defines");
-		std::string defines = "";
+		std::string defines;
 		if (pAttribute)
+		{
 			defines = pAttribute;
+		}
 		std::string source = pShader->Attribute("source");
 		ShaderVariation* pShaderVariation = m_pGraphics->GetShader(source, type, defines + m_InternalDefines);
 		if (pShaderVariation == nullptr)
@@ -200,12 +204,12 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 				return false;
 			}
 
-			Texture* pTexture = nullptr;
+			Texture* pTexture;
 			if (parameterType == "Texture")
 			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
 			}
-			else if(parameterType == "Texture3D") 
+			else if(parameterType == "Texture3D")
 			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
 			}
@@ -258,7 +262,7 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 	{
 		values.push_back(stof(stringValue));
 	}
-	size_t byteSize = values.size() * sizeof(float);
+	const size_t byteSize = values.size() * sizeof(float);
 	ParameterEntry& entry = m_ParameterCache.GetParameter(name, byteSize);
 	entry.SetData(values.data(), byteSize);
 }

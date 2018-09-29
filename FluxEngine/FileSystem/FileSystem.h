@@ -26,6 +26,9 @@ struct FileAttributes
 
 struct FileVisitor
 {
+	FileVisitor() = default;
+	virtual ~FileVisitor() = default;
+
 	virtual bool Visit(const std::string& fileName, const bool isDirectory) = 0;
 	virtual bool IsRecursive() const = 0;
 };
@@ -36,7 +39,7 @@ public:
 	FileSystem();
 	~FileSystem();
 
-	static bool Mount(const std::string& path, const ArchiveType type = ArchiveType::Physical);
+	static bool Mount(const std::string& physicalPath, const ArchiveType type = ArchiveType::Physical);
 	static bool Mount(const std::string& physicalPath, const std::string& virtualPath, const ArchiveType type = ArchiveType::Physical);
 
 	static void AddPakLocation(const std::string& path, const std::string& virtualPath);

@@ -11,7 +11,7 @@ namespace BuildConfiguration
 
 	extern Type Configuration;
 
-	char* ToString(Type type);
+	const char* ToString(Type type);
 	Type FromString(const char* configuration);
 }
 
@@ -26,7 +26,7 @@ namespace BuildPlatform
 
 	extern Type Platform;
 
-	char* ToString(Type type);
+	const char* ToString(Type type);
 	Type FromString(const char* configuration);
 }
 

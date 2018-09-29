@@ -38,8 +38,8 @@ protected:
 
 private:
 	void FreeParticles();
-	void CreateVertexBuffer(const int bufferSize);
-	void SortParticles(const ParticleSortingMode sortMode);
+	void CreateVertexBuffer(int bufferSize);
+	void SortParticles(ParticleSortingMode sortMode);
 
 	void CalculateBoundingBox();
 

@@ -66,10 +66,10 @@ public:
 	void Tick();
 	void Capture(int frameCount = 1);
 
-	void BeginEvent(const std::string& name, const std::string& description = "");
-	void EndEvent(const std::string& name, const std::string& description = "");
-	void MarkDuration(const std::string& name, const int64 startTime, const std::string& description = "");
-	void MarkEvent(const std::string& name, const std::string& description = "");
+	void BeginEvent(const std::string& name, const std::string& description = "") const;
+	void EndEvent(const std::string& name, const std::string& description = "") const;
+	void MarkDuration(const std::string& name, const int64 startTime, const std::string& description = "") const;
+	void MarkEvent(const std::string& name, const std::string& description = "") const;
 
 private:
 	bool ShouldRecord() const;

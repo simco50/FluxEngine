@@ -29,10 +29,10 @@ public:
 	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
 	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; }
 
-	bool IsTypeOf(const TypeInfo* pTypeInfo);
-	bool IsTypeOf(StringHash type);
+	bool IsTypeOf(const TypeInfo* pTypeInfo) const;
+	bool IsTypeOf(StringHash type) const;
 	template<typename T>
-	inline bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
+	inline bool IsTypeOf() const { return IsTypeOf(T::GetTypeInfoStatic()); }
 
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>

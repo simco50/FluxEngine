@@ -18,9 +18,9 @@ public:
 
 	DELETE_COPY(ConstantBuffer)
 
-	void SetSize(const unsigned int size);
+	void SetSize(unsigned int size);
 	void Apply();
-	bool SetParameter(unsigned int offset, const unsigned int size, const void* pData);
+	bool SetParameter(unsigned int offset, unsigned int size, const void* pData);
 	bool IsDirty() const { return m_IsDirty; }
 	void Release();
 	int GetSize() const { return m_Size; }

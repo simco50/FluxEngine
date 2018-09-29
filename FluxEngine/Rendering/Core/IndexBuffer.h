@@ -9,7 +9,7 @@ public:
 
 	DELETE_COPY(IndexBuffer)
 
-	void Create(const int indexCount, const bool smallIndexStride = false, const bool dynamic = false);
+	void Create(int indexCount, bool smallIndexStride = false, bool dynamic = false);
 	void SetData(void* pData);
 
 	void* GetBuffer() const { return m_pBuffer; }

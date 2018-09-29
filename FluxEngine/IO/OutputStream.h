@@ -3,6 +3,9 @@
 class OutputStream
 {
 public:
+	OutputStream() = default;
+	virtual ~OutputStream() = default;
+
 	virtual size_t Write(const void* pData, const size_t size) = 0;
 
 	bool WriteInt(const int value) { return Write(&value, sizeof(int)) == sizeof(int); }

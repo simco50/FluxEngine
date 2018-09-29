@@ -28,7 +28,7 @@ public:
 			m_pDataPool(nullptr),
 			m_DataOffset(0)
 		{}
-		ParameterEntry(const size_t size, void* pInData, std::vector<char>& dataPool) :
+		ParameterEntry(size_t size, void* pInData, std::vector<char>& dataPool) :
 			m_Size(size), m_pDataPool(&dataPool)
 		{
 			m_DataOffset = (int)dataPool.size();
@@ -38,7 +38,7 @@ public:
 				memcpy(dataPool.data() + m_DataOffset, pInData, size);
 			}
 		}
-		void SetData(const void* pInData, const size_t size)
+		void SetData(const void* pInData, size_t size)
 		{
 			assert(size == m_Size);
 			memcpy(m_pDataPool->data() + m_DataOffset, pInData, size);
@@ -79,11 +79,11 @@ private:
 public:
 	virtual bool Load(InputStream& inputStream) override;
 
-	ShaderVariation* GetShader(const ShaderType type) const;
-	const std::unordered_map<TextureSlot, Texture*> GetTextures() const { return m_Textures; }
+	ShaderVariation* GetShader(ShaderType type) const;
+	const std::unordered_map<TextureSlot, Texture*>& GetTextures() const { return m_Textures; }
 	const std::unordered_map<std::string, ParameterEntry>& GetShaderParameters() const { return m_ParameterCache.GetParameters(); }
 
-	void SetTexture(const TextureSlot slot, Texture* pTexture);
+	void SetTexture(TextureSlot slot, Texture* pTexture);
 
 	void SetCullMode(CullMode mode) { m_CullMode = mode; }
 	void SetBlendMode(BlendMode mode) { m_BlendMode = mode; }
@@ -115,7 +115,7 @@ private:
 
 	std::string m_Name;
 	std::array<ShaderVariation*, (size_t)ShaderType::MAX> m_ShaderVariations = {};
-	
+
 	//Properties
 	CullMode m_CullMode = CullMode::BACK;
 	BlendMode m_BlendMode = BlendMode::REPLACE;
@@ -128,5 +128,4 @@ private:
 	std::string m_InternalDefines;
 	std::unordered_map<TextureSlot, Texture*> m_Textures;
 	ParameterCache m_ParameterCache;
-	int m_BufferOffset = 0;
 };

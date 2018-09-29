@@ -3,7 +3,7 @@
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
 
-void IndexBuffer::Create(const int indexCount, const bool smallIndexStride, bool dynamic /*= false*/)
+void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*= false*/)
 {
 	AUTOPROFILE(IndexBuffer_Create);
 	SafeRelease(m_pBuffer);
@@ -41,7 +41,7 @@ void* IndexBuffer::Map(bool discard)
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	mappedData.pData = nullptr;
 
-	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
+	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData));
 	void* pBuffer = mappedData.pData;
 
 	m_HardwareLocked = true;

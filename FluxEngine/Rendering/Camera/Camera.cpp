@@ -15,8 +15,8 @@
 #include "../Core/Texture.h"
 #include "../Core/Texture2D.h"
 
-Camera::Camera(Context* pContext):
-	Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
+Camera::Camera(Context* pContext)
+	: Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
 {
 	m_Projection = XMMatrixIdentity();
 	m_View = XMMatrixIdentity();
@@ -40,16 +40,14 @@ void Camera::OnSceneSet(Scene* pScene)
 
 FloatRect Camera::GetAbsoluteViewport() const
 {
-	FloatRect rect = m_Viewport;
-
 	float renderTargetWidth = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetWidth() : (float)m_pGraphics->GetWindowWidth();
 	float renderTargetHeight = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetHeight() : (float)m_pGraphics->GetWindowHeight();
 
+	FloatRect rect;
 	rect.Left = m_Viewport.Left * renderTargetWidth;
 	rect.Top = m_Viewport.Top * renderTargetHeight;
 	rect.Right = m_Viewport.Right * renderTargetWidth;
 	rect.Bottom = m_Viewport.Bottom * renderTargetHeight;
-
 	return rect;
 }
 
@@ -118,7 +116,7 @@ void Camera::UpdateFrustum()
 	m_Frustum.Transform(m_Frustum, m_ViewInverse);
 }
 
-void Camera::SetFOW(const float fov)
+void Camera::SetFOW(float fov)
 {
 	m_FoV = fov;
 	OnMarkedDirty(GetTransform());
@@ -133,7 +131,7 @@ void Camera::SetViewport(float x, float y, float width, float height)
 	OnMarkedDirty(GetTransform());
 }
 
-void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
+void Camera::SetClippingPlanes(float nearPlane, float farPlane)
 {
 	m_NearPlane = nearPlane;
 	m_FarPlane = farPlane;
@@ -164,13 +162,13 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 	}
 }
 
-void Camera::SetNearPlane(const float nearPlane)
+void Camera::SetNearPlane(float nearPlane)
 {
 	m_NearPlane = nearPlane;
 	OnMarkedDirty(GetTransform());
 }
 
-void Camera::SetFarPlane(const float farPlane)
+void Camera::SetFarPlane(float farPlane)
 {
 	m_FarPlane = farPlane;
 	OnMarkedDirty(GetTransform());

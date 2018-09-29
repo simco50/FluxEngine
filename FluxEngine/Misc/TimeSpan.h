@@ -1,6 +1,4 @@
 #pragma once
-#include <time.h>
-
 namespace Time
 {
 	const unsigned long long TicksPerDay = 864000000000;
@@ -28,45 +26,45 @@ struct TimeStamp
 struct TimeSpan
 {
 	TimeSpan() :
-		Ticks(0)
+		m_Ticks(0)
 	{}
 
 	TimeSpan(unsigned long long ticks) :
-		Ticks(ticks)
+		m_Ticks(ticks)
 	{}
 
-	int GetMilliSeconds() const { return Ticks / Time::TicksPerMillisecond % 1000; }
-	int GetSeconds() const { return Ticks / Time::TicksPerSecond % 60; }
-	int GetMinutes() const { return Ticks / Time::TicksPerMinute % 60; }
-	int GetHours() const { return (int)(Ticks / Time::TicksPerHour % 24); }
-	int GetDays() const { return (int)(Ticks / Time::TicksPerDay); }
+	int GetMilliSeconds() const { return m_Ticks / Time::TicksPerMillisecond % 1000; }
+	int GetSeconds() const { return m_Ticks / Time::TicksPerSecond % 60; }
+	int GetMinutes() const { return m_Ticks / Time::TicksPerMinute % 60; }
+	int GetHours() const { return (int)(m_Ticks / Time::TicksPerHour % 24); }
+	int GetDays() const { return (int)(m_Ticks / Time::TicksPerDay); }
 
-	double GetTotalMinutes() const { return (double)Ticks / Time::TicksPerMinute; }
-	double GetTotalSeconds() const { return (double)Ticks / Time::TicksPerSecond; }
-	double GetTotalMilliseconds() const { return (double)Ticks / Time::TicksPerMillisecond; }
-	double GetTotalMicroseconds() const { return (double)Ticks / Time::TicksPerMicrosecond; }
+	double GetTotalMinutes() const { return (double)m_Ticks / Time::TicksPerMinute; }
+	double GetTotalSeconds() const { return (double)m_Ticks / Time::TicksPerSecond; }
+	double GetTotalMilliseconds() const { return (double)m_Ticks / Time::TicksPerMillisecond; }
+	double GetTotalMicroseconds() const { return (double)m_Ticks / Time::TicksPerMicrosecond; }
 
-	bool operator==(TimeSpan& other) const { return Ticks == other.Ticks; }
-	bool operator!=(TimeSpan& other) const { return Ticks != other.Ticks; }
-	bool operator<(TimeSpan& other) const { return Ticks < other.Ticks; }
-	bool operator>(TimeSpan& other) const { return Ticks > other.Ticks; }
-	bool operator<=(TimeSpan& other) const { return Ticks <= other.Ticks; }
-	bool operator>=(TimeSpan& other) const { return Ticks >= other.Ticks; }
+	bool operator==(TimeSpan& other) const { return m_Ticks == other.m_Ticks; }
+	bool operator!=(TimeSpan& other) const { return m_Ticks != other.m_Ticks; }
+	bool operator<(TimeSpan& other) const { return m_Ticks < other.m_Ticks; }
+	bool operator>(TimeSpan& other) const { return m_Ticks > other.m_Ticks; }
+	bool operator<=(TimeSpan& other) const { return m_Ticks <= other.m_Ticks; }
+	bool operator>=(TimeSpan& other) const { return m_Ticks >= other.m_Ticks; }
 
-	TimeSpan operator+(const TimeSpan& other) const { return TimeSpan(Ticks + other.Ticks); }
-	TimeSpan operator-(const TimeSpan& other) const { return TimeSpan(Ticks - other.Ticks); }
-	
-	TimeSpan& operator+=(const TimeSpan& other) 
-	{ 
-		Ticks += other.Ticks;
-		return *this;
-	}
+	TimeSpan operator+(const TimeSpan& other) const { return TimeSpan(m_Ticks + other.m_Ticks); }
+	TimeSpan operator-(const TimeSpan& other) const { return TimeSpan(m_Ticks - other.m_Ticks); }
 
-	TimeSpan& operator-=(const TimeSpan& other) 
+	TimeSpan& operator+=(const TimeSpan& other)
 	{
-		Ticks -= other.Ticks; 
+		m_Ticks += other.m_Ticks;
 		return *this;
 	}
 
-	unsigned long long Ticks;
+	TimeSpan& operator-=(const TimeSpan& other)
+	{
+		m_Ticks -= other.m_Ticks;
+		return *this;
+	}
+
+	unsigned long long m_Ticks;
 };

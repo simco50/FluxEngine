@@ -21,7 +21,7 @@ class AsyncTaskQueue : public Subsystem
 	DELETE_COPY(AsyncTaskQueue)
 
 public:
-	AsyncTaskQueue(Context* pContext, const size_t count);
+	AsyncTaskQueue(Context* pContext, size_t count);
 	~AsyncTaskQueue();
 
 	void JoinAll();
@@ -32,13 +32,13 @@ public:
 	void Stop();
 	size_t GetThreadCount() const { return m_Threads.size(); }
 
-	void ParallelFor(const int count, const ParallelForDelegate& function, bool singleThreaded = false);
+	void ParallelFor(int count, const ParallelForDelegate& function, bool singleThreaded = false);
 
 	bool IsCompleted() const;
 
 private:
-	void PreAllocateJobs(const size_t count);
-	void CreateThreads(const size_t count);
+	void PreAllocateJobs(size_t count);
+	void CreateThreads(size_t count);
 
 	std::vector<std::unique_ptr<WorkerThread>> m_Threads;
 

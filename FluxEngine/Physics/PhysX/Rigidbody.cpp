@@ -107,11 +107,11 @@ void Rigidbody::SetConstraints(const Constraint constraints)
 			m_pConstraintJoint->setMotion(PxD6Axis::eX, (constraints & Constraint::XPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eY, (constraints & Constraint::YPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eZ, (constraints & Constraint::ZPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
-			
+
 			m_pConstraintJoint->setMotion(PxD6Axis::eTWIST, (constraints & Constraint::XRotation) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eSWING1, (constraints & Constraint::YRotation) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eSWING2, (constraints & Constraint::ZPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
-			
+
 			m_pConstraintJoint->setLocalPose(PxJointActorIndex::eACTOR0, m_pBody->getGlobalPose());
 		}
 	}

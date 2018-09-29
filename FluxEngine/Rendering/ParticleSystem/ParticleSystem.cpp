@@ -8,27 +8,27 @@ using json = nlohmann::json;
 
 #define LOAD_VECTOR3_KEY(jsonData, name) \
 {\
-	name.Clear(); \
-	json keys = jsonData[#name]["Keys"];\
+	(name).Clear(); \
+	json keys = (jsonData)[#name]["Keys"];\
 	for (auto it = keys.begin(); it != keys.end(); ++it)\
 	{\
 		json j = it.value();\
-		name.Add(stof(it.key()), Vector3(j["X"].get<float>(), j["Y"].get<float>(), j["Z"].get<float>()));\
+		(name).Add(stof(it.key()), Vector3(j["X"].get<float>(), j["Y"].get<float>(), j["Z"].get<float>()));\
 	}\
 }\
 {\
-	json constantData = jsonData[#name]["Constant"];\
-	name.ConstantValue = Vector3(constantData["X"].get<float>(),constantData["Y"].get<float>(),constantData["Z"].get<float>());\
-}
+	json constantData = (jsonData)[#name]["Constant"];\
+	(name).ConstantValue = Vector3(constantData["X"].get<float>(),constantData["Y"].get<float>(),constantData["Z"].get<float>());\
+} \
 
 #define LOAD_FLOAT_KEY(jsonData, name) \
 {\
-	name.Clear(); \
-	json keys = jsonData[#name]["Keys"];\
+	(name).Clear(); \
+	json keys = (jsonData)[#name]["Keys"];\
 	for (auto it = keys.begin(); it != keys.end(); ++it)\
-		name.Add(stof(it.key()), it.value());\
+		(name).Add(stof(it.key()), it.value());\
 }\
-name.ConstantValue = data[#name]["Constant"];
+(name).ConstantValue = data[#name]["Constant"]
 
 bool ParticleSystem::Load(InputStream& inputStream)
 {

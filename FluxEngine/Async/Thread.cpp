@@ -70,7 +70,7 @@ bool Thread::SetPriority(const int priority)
 	}
 	return false;
 #else
-	UNREFERENCED_PARAMETER(priority);
+	priority;
 	return false;
 #endif
 }

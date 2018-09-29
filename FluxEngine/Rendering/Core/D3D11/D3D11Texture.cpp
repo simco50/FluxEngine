@@ -1,10 +1,7 @@
 #include "FluxEngine.h"
 #include "../Texture.h"
 #include "../Graphics.h"
-
 #include "D3D11GraphicsImpl.h"
-
-#include "External/Stb/stb_image_write.h"
 #include "Content/Image.h"
 
 void Texture::UpdateParameters()
@@ -37,9 +34,12 @@ void Texture::UpdateParameters()
 	case TextureAddressMode::MIRROR_ONCE:
 		desc.AddressU = desc.AddressV = desc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 		break;
+	case TextureAddressMode::MAX:
+	default:
+		FLUX_LOG(Warning, "[Texture::UpdateParameters()] Address Mode unknown");
 	}
 
-	memcpy(desc.BorderColor, &borderColor, 4 * sizeof(float));
+	memcpy(&desc.BorderColor[0], &borderColor.x, 4 * sizeof(float));
 	desc.ComparisonFunc = D3D11ComparisonFunction(CompareMode::LESSEQUAL);
 	desc.Filter = D3D11Filter(TextureFilter::MIN_MAG_MIP_LINEAR);
 	desc.MaxAnisotropy = 1;
@@ -51,7 +51,7 @@ void Texture::UpdateParameters()
 	m_ParametersDirty = false;
 }
 
-int Texture::GetRowDataSize(unsigned int width)
+int Texture::GetRowDataSize(unsigned int width) const
 {
 	switch (m_TextureFormat)
 	{
@@ -115,24 +115,22 @@ unsigned int Texture::GetSRVFormat(const unsigned int format)
 {
 	if (format == DXGI_FORMAT_R24G8_TYPELESS)
 		return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	else if (format == DXGI_FORMAT_R16_TYPELESS)
+	if (format == DXGI_FORMAT_R16_TYPELESS)
 		return DXGI_FORMAT_R16_UNORM;
-	else if (format == DXGI_FORMAT_R32_TYPELESS)
+	if (format == DXGI_FORMAT_R32_TYPELESS)
 		return DXGI_FORMAT_R32_FLOAT;
-	else
-		return format;
+	return format;
 }
 
 unsigned int Texture::GetDSVFormat(const unsigned int format)
 {
 	if (format == DXGI_FORMAT_R24G8_TYPELESS)
 		return DXGI_FORMAT_D24_UNORM_S8_UINT;
-	else if (format == DXGI_FORMAT_R16_TYPELESS)
+	if (format == DXGI_FORMAT_R16_TYPELESS)
 		return DXGI_FORMAT_D16_UNORM;
-	else if (format == DXGI_FORMAT_R32_TYPELESS)
+	if (format == DXGI_FORMAT_R32_TYPELESS)
 		return DXGI_FORMAT_D32_FLOAT;
-	else
-		return format;
+	return format;
 }
 
 unsigned int Texture::TextureFormatFromCompressionFormat(const ImageFormat& format, bool sRgb)

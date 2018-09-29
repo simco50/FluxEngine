@@ -38,10 +38,8 @@ FluxCore::~FluxCore()
 	Profiler::DestroyInstance();
 }
 
-int FluxCore::Run(HINSTANCE hInstance)
+int FluxCore::Run(HINSTANCE /*hInstance*/)
 {
-	UNREFERENCED_PARAMETER(hInstance);
-
 	Thread::SetMainThread();
 	Profiler::CreateInstance();
 
@@ -140,13 +138,23 @@ void FluxCore::InitGame()
 	Animator* pAnimator = pMan->CreateComponent<Animator>();
 	pAnimator->Play();
 
-	SceneNode* pLight = m_pScene->CreateChild("Light");
-	Light* pL = pLight->CreateComponent<Light>();
-	pL->SetShadowCasting(true);
-	pL->SetType(Light::Type::Directional);
-	pL->SetRange(300);
-	pLight->GetTransform()->Rotate(20, -50, 0);
-	pLight->GetTransform()->SetPosition(0, 150, -100);
+	SceneNode* pLights = m_pScene->CreateChild("Lights");
+	for (int x = 0; x < 4; ++x)
+	{
+		for (int z = 0; z < 5; ++z)
+		{
+			int idx = z + x * 5;
+
+			SceneNode* pLight = pLights->CreateChild(Printf("Light %d", idx));
+			Light* pL = pLight->CreateComponent<Light>();
+			pL->SetShadowCasting(true);
+			pL->SetType(Light::Type::Point);
+			pL->SetRange(300);
+			pL->SetColor(Color(Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), 1.0));
+			pLight->GetTransform()->Rotate(20, -50, 0);
+			pLight->GetTransform()->SetPosition(x * 350.0f - 2 * 350.0f, 150.0f, z * 350.0f + 100 - 2 * 350.0f);
+		}
+	}
 }
 
 void FluxCore::ProcessFrame()
@@ -192,6 +200,46 @@ void FluxCore::DoExit()
 	m_Exiting = true;
 }
 
+void FluxCore::ObjectUI(SceneNode* pNode)
+{
+	if (pNode == nullptr)
+	{
+		return;
+	}
+	const std::vector<SceneNode*> pChildren = pNode->GetChildren();
+
+	std::string name = pNode->GetName();
+	if (name.empty())
+		name = "SceneNode";
+	if (pChildren.empty() == false)
+	{
+		ImGui::PushID(pNode);
+		if (ImGui::Button("   "))
+		{
+			m_pSelectedNode = pNode;
+		}
+		ImGui::PopID();
+		ImGui::SameLine();
+		if (ImGui::TreeNode(name.c_str()))
+		{
+			for (SceneNode* pChild : pChildren)
+			{
+				ObjectUI(pChild);
+			}
+			ImGui::TreePop();
+		}
+	}
+	else
+	{
+		ImGui::PushID(pNode);
+		if (ImGui::Button(pNode->GetName().c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			m_pSelectedNode = pNode;
+		}
+		ImGui::PopID();
+	}
+}
+
 void FluxCore::RenderUI()
 {
 	AUTOPROFILE(FluxCore_RenderUI);
@@ -203,7 +251,7 @@ void FluxCore::RenderUI()
 	std::stringstream timeStr;
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;
 	std::string time = timeStr.str();
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowPos(ImVec2((float)m_pGraphics->GetWindowWidth(), 30), 0, ImVec2(1, 0));
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
@@ -217,65 +265,81 @@ void FluxCore::RenderUI()
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::End();
 
+	ImGui::Begin("Outliner");
+	ObjectUI(m_pScene.get());
+	ImGui::End();
+
 	m_pInput->DrawDebugJoysticks();
-	ImGui::Begin("Test");
-
-	if (ImGui::TreeNodeEx("Outliner", ImGuiTreeNodeFlags_DefaultOpen))
+	ImGui::Begin("Inspector");
+	if (m_pSelectedNode)
 	{
-		static int current = 0;
-		const std::vector<SceneNode*>& nodes = m_pScene->GetNodes();
-		ImGui::ListBox("", &current, [](void* pData, int index, const char** pLabel)
+		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
+		ImGui::Text("Components:");
+		for (Component* pComponent : m_pSelectedNode->GetComponents())
 		{
-			SceneNode** pNodes = (SceneNode**)pData;
-			*pLabel = pNodes[index]->GetName().c_str();
-			return true;
-		}, (void*)nodes.data(), nodes.size());
-		m_pSelectedNode = nodes[current];
-		ImGui::TreePop();
-	}
+			std::string t = std::string("- ") + pComponent->GetTypeName();
+			ImGui::Text(t.c_str());
 
-	if (ImGui::TreeNodeEx("Inspector", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		if (m_pSelectedNode)
-		{
-			ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
-			ImGui::Text("Components:");
-			for (const Component* pComponent : m_pSelectedNode->GetComponents())
+			Light* pLight = DynamicCast<Light>(pComponent);
+			if (pLight)
 			{
-				std::string t = std::string("- ") + pComponent->GetTypeName();
-				ImGui::Text(t.c_str());
+				ImGui::Checkbox("Enabled", (bool*)&pLight->GetData()->Enabled);
+				static int selected = 0;
+				ImGui::Combo("Type", (int*)&pLight->GetData()->Type, [](void*, int selected, const char** pName)
+				{
+					Light::Type type = (Light::Type)selected;
+					switch (type)
+					{
+					case Light::Type::Directional:
+						*pName = "Directional";
+						break;
+					case Light::Type::Point:
+						*pName = "Point";
+						break;
+					case Light::Type::Spot:
+						*pName = "Spot";
+						break;
+					default:
+						break;
+
+					}
+					return true;
+				}, nullptr, (int)Light::Type::MAX);
+				ImGui::InputFloat3("Position", &pLight->GetData()->Position.x, 1);
+				pLight->GetData()->Direction.Normalize();
+				ImGui::SliderFloat3("Direction", &pLight->GetData()->Direction.x, -1, 1);
+				ImGui::ColorEdit4("Color", &pLight->GetData()->Colour.x);
+				ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 100);
+				ImGui::SliderFloat("Range", &pLight->GetData()->Range, 0, 1000);
+				ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 180);
+				ImGui::SliderFloat("Attenuation", &pLight->GetData()->Attenuation, 0, 1);
 			}
 		}
-		ImGui::TreePop();
 	}
+	ImGui::End();
 
-	if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
+	ImGui::BeginMainMenuBar();
+	if (ImGui::BeginMenu("Debug"))
 	{
 		ImGui::Checkbox("Debug Rendering", &m_EnableDebugRendering);
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNodeEx("Profiling", ImGuiTreeNodeFlags_DefaultOpen))
-	{
+		ImGui::Separator();
 		ImGui::SliderInt("Frames", &m_FramesToCapture, 1, 10);
 		if (ImGui::Button("Capture frame"))
 		{
 			Profiler::Instance()->Capture(m_FramesToCapture);
 		}
-		ImGui::TreePop();
+		ImGui::EndMenu();
 	}
-
-	if (ImGui::TreeNodeEx("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::BeginMenu("Post Processing"))
 	{
 		for (uint32 i = 0; i < m_pPostProcessing->GetMaterialCount(); ++i)
 		{
 			ImGui::Checkbox(m_pPostProcessing->GetMaterial(i)->GetName().c_str(), &m_pPostProcessing->GetMaterialActive(i));
 		}
-		ImGui::TreePop();
+		ImGui::EndMenu();
 	}
-
-	ImGui::End();
+	ImGui::EndMainMenuBar();
 
 	m_pImmediateUI->Render();
 }

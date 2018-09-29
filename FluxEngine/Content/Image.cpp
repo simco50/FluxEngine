@@ -55,8 +55,8 @@ bool Image::Load(InputStream& inputStream)
 {
 	AUTOPROFILE_DESC(Image_Load, inputStream.GetSource().c_str());
 
-	std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
-	bool success = false;
+	const std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
+	bool success;
 	if (extenstion == "dds")
 	{
 		success = LoadDds(inputStream);
@@ -122,7 +122,7 @@ bool Image::LoadLUT(InputStream& inputStream)
 
 	int* c3D = (int*)m_Pixels.data();
 	int* c2D = (int*)pPixels;
-	int dim = m_Height;
+	const int dim = m_Height;
 	for (int z = 0; z < dim; ++z)
 	{
 		for (int y = 0; y < dim; ++y)
@@ -143,7 +143,7 @@ bool Image::LoadLUT(InputStream& inputStream)
 
 bool Image::SavePng(OutputStream& outputStream)
 {
-	int result = stbi_write_png_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_png_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
@@ -157,7 +157,7 @@ bool Image::SavePng(OutputStream& outputStream)
 
 bool Image::SaveBmp(OutputStream& outputStream)
 {
-	int result = stbi_write_bmp_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_bmp_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
@@ -170,7 +170,7 @@ bool Image::SaveBmp(OutputStream& outputStream)
 
 bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 {
-	int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
@@ -183,8 +183,7 @@ bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 
 bool Image::SaveTga(OutputStream& outputStream)
 {
-	const int quality = 8;
-	int result = stbi_write_tga_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_tga_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
@@ -458,7 +457,7 @@ bool Image::LoadDds(InputStream& inputStream)
 		DDSCAPS2_CUBEMAP = 0x00000200U,
 	};
 
-#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
+#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)(a) | (unsigned char)(b) << 8 | (unsigned char)(c) << 16 | (unsigned char)(d) << 24)
 
 	char magic[5];
 	magic[4] = '\0';
@@ -569,7 +568,7 @@ bool Image::LoadDds(InputStream& inputStream)
 				if (m_BBP == 32)
 				{
 					m_Components = 4;
-#define ISBITMASK(r, g, b, a) (header.ddpf.dwRBitMask == r && header.ddpf.dwGBitMask == g && header.ddpf.dwBBitMask == b && header.ddpf.dwABitMask == a)
+#define ISBITMASK(r, g, b, a) (header.ddpf.dwRBitMask == (r) && header.ddpf.dwGBitMask == (g) && header.ddpf.dwBBitMask == (b) && header.ddpf.dwABitMask == (a))
 					if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
 					{
 						m_Format = ImageFormat::RGBA;

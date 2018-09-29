@@ -13,7 +13,7 @@
 	<Parameters>
 		<Texture slot="Diffuse" value="Resources/Textures/Peasant_Man_diffuse.dds"/>
 		<Texture slot="Normal" value="Resources/Textures/Peasant_Man_normal.dds"/>
-		<Texture slot="Specular" value="Resources/Textures/Peasant_Man_specular.png"/>
+		<Texture slot="Specular" value="Resources/Textures/Peasant_Man_specular.dds"/>
 		<TextureCube slot="Cube" value="Resources/Textures/Skybox.dds"/>
 	</Parameters>
 </Material>

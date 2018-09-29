@@ -1,7 +1,6 @@
 #include "FluxEngine.h"
 #include "PhysicalMountPoint.h"
 #include "FileSystem/File/PhysicalFile.h"
-#include "FileSystem/FileSystemHelpers.h"
 
 PhysicalMountPoint::PhysicalMountPoint(const std::string& physicalPath)
 	: IMountPoint(physicalPath, 0)

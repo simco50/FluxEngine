@@ -8,6 +8,9 @@ class Collider;
 
 struct CollisionResult;
 
+DECLARE_MULTICAST_DELEGATE(OnTriggerDelegate, Collider*);
+DECLARE_MULTICAST_DELEGATE(OnColliderDelegate, const CollisionResult&);
+
 class Rigidbody : public Component
 {
 	FLUX_OBJECT(Rigidbody, Component)
@@ -50,24 +53,28 @@ public:
 	template<typename T>
 	T* GetBody() const;
 	template<>
-	physx::PxRigidDynamic* GetBody() const 
-	{ 
-		if(m_Type == Type::Dynamic)
-			return reinterpret_cast<physx::PxRigidDynamic*>(m_pBody); 
+	physx::PxRigidDynamic* GetBody() const
+	{
+		if (m_Type == Type::Dynamic)
+		{
+			return reinterpret_cast<physx::PxRigidDynamic*>(m_pBody);
+		}
 		return nullptr;
 	}
 	template<>
-	physx::PxRigidStatic* GetBody() const 
+	physx::PxRigidStatic* GetBody() const
 	{
-		if(m_Type == Type::Static)
+		if (m_Type == Type::Static)
+		{
 			return reinterpret_cast<physx::PxRigidStatic*>(m_pBody);
+		}
 		return nullptr;
 	}
 
-	MulticastDelegate<Collider*>& OnTriggerEnter() { return m_OnTriggerEnterEvent; }
-	MulticastDelegate<Collider*>& OnTriggerExit() { return m_OnTriggerExitEvent; }
-	MulticastDelegate<const CollisionResult&>& OnCollisionEnter() { return m_OnCollisionEnterEvent; }
-	MulticastDelegate<const CollisionResult&>& OnCollisionExit() { return m_OnCollisionExitEvent; }
+	OnTriggerDelegate& OnTriggerEnter() { return m_OnTriggerEnterEvent; }
+	OnTriggerDelegate& OnTriggerExit() { return m_OnTriggerExitEvent; }
+	OnColliderDelegate& OnCollisionEnter() { return m_OnCollisionEnterEvent; }
+	OnColliderDelegate& OnCollisionExit() { return m_OnCollisionExitEvent; }
 
 private:
 	void CreateBody(const Rigidbody::Type type);
@@ -82,8 +89,8 @@ private:
 	physx::PxD6Joint* m_pConstraintJoint = nullptr;
 	physx::PxRigidActor* m_pBody = nullptr;
 
-	MulticastDelegate<Collider*> m_OnTriggerEnterEvent;
-	MulticastDelegate<Collider*> m_OnTriggerExitEvent;
-	MulticastDelegate<const CollisionResult&> m_OnCollisionEnterEvent;
-	MulticastDelegate<const CollisionResult&> m_OnCollisionExitEvent;
+	OnTriggerDelegate m_OnTriggerEnterEvent;
+	OnTriggerDelegate m_OnTriggerExitEvent;
+	OnColliderDelegate m_OnCollisionEnterEvent;
+	OnColliderDelegate m_OnCollisionExitEvent;
 };

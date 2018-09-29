@@ -2,7 +2,7 @@
 #include "AsyncTaskQueue.h"
 #include "Thread.h"
 
-AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count)
+AsyncTaskQueue::AsyncTaskQueue(Context* pContext, size_t count)
 	: Subsystem(pContext)
 {
 	AUTOPROFILE(AsyncTaskQueue_Construct);
@@ -11,7 +11,7 @@ AsyncTaskQueue::AsyncTaskQueue(Context* pContext, const size_t count)
 	CreateThreads(count);
 	PreAllocateJobs(100);
 #else
-	UNREFERENCED_PARAMETER(count);
+	count;
 #endif
 }
 
@@ -23,7 +23,7 @@ AsyncTaskQueue::~AsyncTaskQueue()
 	m_Threads.clear();
 }
 
-void AsyncTaskQueue::PreAllocateJobs(const size_t count)
+void AsyncTaskQueue::PreAllocateJobs(size_t count)
 {
 	for (size_t i = 0; i < count; ++i)
 	{
@@ -32,7 +32,7 @@ void AsyncTaskQueue::PreAllocateJobs(const size_t count)
 	}
 }
 
-void AsyncTaskQueue::CreateThreads(const size_t count)
+void AsyncTaskQueue::CreateThreads(size_t count)
 {
 	for (size_t i = m_Threads.size(); i < count; ++i)
 	{
@@ -179,7 +179,7 @@ void AsyncTaskQueue::Stop()
 	m_Shutdown = true;
 }
 
-void AsyncTaskQueue::ParallelFor(const int count, const ParallelForDelegate& function, bool singleThreaded /* = false */)
+void AsyncTaskQueue::ParallelFor(int count, const ParallelForDelegate& function, bool singleThreaded /* = false */)
 {
 	if (singleThreaded)
 	{

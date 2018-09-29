@@ -11,30 +11,29 @@
 #include "../DepthStencilState.h"
 #include "../InputLayout.h"
 #include "../BlendState.h"
-#include "../Shader.h"
 #include "../ShaderProgram.h"
-#include "UI/ImmediateUI.h"
-#include "FileSystem/File/PhysicalFile.h"
-
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include "Content/Image.h"
-#include "Input/InputEngine.h"
+#include "../../../FileSystem/File/PhysicalFile.h"
+#include "../../../Content/Image.h"
 #include "../../Renderer.h"
 #include "../../Geometry.h"
 #include "../StructuredBuffer.h"
 
+#include <SDL.h>
+#include <SDL_syswm.h>
+
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
-Graphics::Graphics(Context* pContext) :
-	Subsystem(pContext),
-	m_pImpl(std::make_unique<GraphicsImpl>()),
-	m_WindowType(WindowType::WINDOWED)
+Graphics::Graphics(Context* pContext)
+	: Subsystem(pContext),
+	m_WindowType(WindowType::WINDOWED),
+	m_pImpl(std::make_unique<GraphicsImpl>())
 {
 	AUTOPROFILE(Graphics_Construct);
 
-	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
-		m_CurrentRenderTargets[i] = nullptr;
+	for (RenderTarget*& pRt : m_CurrentRenderTargets)
+	{
+		pRt = nullptr;
+	}
 
 	pContext->InitSDLSystem(SDL_INIT_VIDEO);
 }
@@ -42,7 +41,9 @@ Graphics::Graphics(Context* pContext) :
 Graphics::~Graphics()
 {
 	if (m_pImpl->m_pSwapChain.IsValid())
-		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, NULL);
+	{
+		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, nullptr);
+	}
 
 	m_pContext->ShutdownSDL();
 
@@ -949,7 +950,7 @@ void Graphics::OnResize(const int width, const int height)
 void Graphics::TakeScreenshot()
 {
 	std::stringstream str;
-	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
+	str << Paths::ScreenshotDir() << "\\Screenshot_" << DateTime::Now().ToString("%y-%m-%d_%H-%M-%S") << ".png";
 	PhysicalFile file(str.str());
 	if (!file.OpenWrite())
 	{

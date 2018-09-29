@@ -40,15 +40,15 @@ public:
 
 	bool SetMode(
 		const std::string& windowTitle,
-		const int width,
-		const int height,
+		int width,
+		int height,
 		WindowType windowType,
-		const bool resizable,
-		const bool vsync,
-		const int multiSample,
-		const int refreshRate);
+		bool resizable,
+		bool vsync,
+		int multiSample,
+		int refreshRate);
 
-	void SetRenderTarget(const int index, RenderTarget* pRenderTarget);
+	void SetRenderTarget(int index, RenderTarget* pRenderTarget);
 	void SetDepthStencil(RenderTarget* pRenderTarget);
 	void SetDepthOnly(bool enable);
 
@@ -58,35 +58,35 @@ public:
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
 	void InvalidateShaders();
-	bool SetShader(const ShaderType type, ShaderVariation* pShader);
+	bool SetShader(ShaderType type, ShaderVariation* pShader);
 
 	void SetViewport(const FloatRect& rect);
-	void SetScissorRect(const bool enabled, const IntRect& rect = IntRect::ZERO());
+	void SetScissorRect(bool enabled, const IntRect& rect = IntRect::ZERO());
 
-	void SetTexture(const TextureSlot slot, Texture* pTexture);
-	void SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer);
+	void SetTexture(TextureSlot slot, Texture* pTexture);
+	void SetStructuredBuffer(TextureSlot slot, const StructuredBuffer* pBuffer);
 
-	void Draw(const PrimitiveType type, const int vertexStart, const int vertexCount);
-	void DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex = 0);
-	void DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex = 0, const int instanceStart = 0);
+	void Draw(PrimitiveType type, int vertexStart, int vertexCount);
+	void DrawIndexed(PrimitiveType type, int indexCount, int indexStart, int minVertex = 0);
+	void DrawIndexedInstanced(PrimitiveType type, int indexCount, int indexStart, int instanceCount, int minVertex = 0, int instanceStart = 0);
 
-	void Clear(const ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), const float depth = 1.0f, const unsigned char stencil = 0);
+	void Clear(ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), float depth = 1.0f, unsigned char stencil = 0);
 
-	ConstantBuffer* GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size);
+	ConstantBuffer* GetOrCreateConstantBuffer(ShaderType shaderType, unsigned int index, unsigned int size);
 	Shader* GetShader(const std::string& filePath);
-	ShaderVariation* GetShader(const std::string& filePath, const ShaderType type, const std::string& defines = "");
+	ShaderVariation* GetShader(const std::string& filePath, ShaderType type, const std::string& defines = "");
 
 	bool SetShaderParameter(const std::string& name, const void* pData);
-	bool SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count);
-	bool SetShaderParameter(const std::string& name, const float value);
-	bool SetShaderParameter(const std::string& name, const int value);
+	bool SetShaderParameter(const std::string& name, const void* pData, int stride, int count);
+	bool SetShaderParameter(const std::string& name, float value);
+	bool SetShaderParameter(const std::string& name, int value);
 	bool SetShaderParameter(const std::string& name, const Vector2& value);
 	bool SetShaderParameter(const std::string& name, const Vector3& value);
 	bool SetShaderParameter(const std::string& name, const Vector4& value);
 	bool SetShaderParameter(const std::string& name, const Color& value);
 	bool SetShaderParameter(const std::string& name, const Matrix& value);
 
-	void OnResize(const int width, const int height);
+	void OnResize(int width, int height);
 	void BeginFrame();
 	void EndFrame();
 
@@ -119,7 +119,7 @@ private:
 
 	bool OpenWindow();
 	bool EnumerateAdapters();
-	bool CreateDevice(const int windowWidth, const int windowHeight);
+	bool CreateDevice(int windowWidth, int windowHeight);
 	void UpdateSwapchain(int windowWidth, int windowHeight);
 
 	void UpdateShaderProgram();

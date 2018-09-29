@@ -1,6 +1,5 @@
 #include "FluxEngine.h"
 #include "AnimatedModel.h"
-#include "Scenegraph\Scene.h"
 #include "Rendering/Mesh.h"
 #include "Scenegraph/SceneNode.h"
 #include "SceneGraph/Transform.h"
@@ -28,7 +27,7 @@ void AnimatedModel::SetMesh(Mesh* pMesh)
 		return;
 	}
 
-	int geometries = pMesh->GetGeometryCount();
+	const int geometries = pMesh->GetGeometryCount();
 	m_Batches.resize(geometries);
 	m_SkinMatrices.resize(pMesh->GetSkeleton().BoneCount());
 	for (int i = 0; i < geometries; ++i)
@@ -50,8 +49,7 @@ const Skeleton& AnimatedModel::GetSkeleton() const
 
 AnimationState* AnimatedModel::AddAnimationState(Animation* pAnimation)
 {
-	AnimationState state(pAnimation, this);
-	m_AnimationStates.push_back(state);
+	m_AnimationStates.push_back(AnimationState(pAnimation, this));
 	return &m_AnimationStates.back();
 }
 
@@ -65,7 +63,9 @@ AnimationState* AnimatedModel::GetAnimationState(const StringHash hash)
 	for (AnimationState& state : m_AnimationStates)
 	{
 		if (state.GetAnimation()->GetNameHash() == hash)
+		{
 			return &state;
+		}
 	}
 	return nullptr;
 }

@@ -25,7 +25,7 @@ public:
 	void Render();
 
 private:
-	void HandleSDLEvent(SDL_Event* pEvent);
+	static void HandleSDLEvent(SDL_Event* pEvent);
 	static void SetStyle(bool dark, float alpha);
 
 	Graphics* m_pGraphics;

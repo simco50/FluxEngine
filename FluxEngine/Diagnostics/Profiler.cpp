@@ -166,7 +166,6 @@ void ProfilingThread::AddEvent(const std::string& name, const std::string& descr
 	case EventType::MAX:
 	default:
 		throw;
-		break;
 	}
 	ScopeLock lock(m_JobMutex);
 	m_Jobs.push(data);
@@ -220,7 +219,7 @@ void Profiler::Capture(int frameCount /*= 1*/)
 	}
 }
 
-void Profiler::BeginEvent(const std::string& name, const std::string& description)
+void Profiler::BeginEvent(const std::string& name, const std::string& description) const
 {
 	if (ShouldRecord())
 	{
@@ -228,7 +227,7 @@ void Profiler::BeginEvent(const std::string& name, const std::string& descriptio
 	}
 }
 
-void Profiler::EndEvent(const std::string& name, const std::string& description)
+void Profiler::EndEvent(const std::string& name, const std::string& description) const
 {
 	if (ShouldRecord())
 	{
@@ -236,7 +235,7 @@ void Profiler::EndEvent(const std::string& name, const std::string& description)
 	}
 }
 
-void Profiler::MarkEvent(const std::string& name, const std::string& description /*= ""*/)
+void Profiler::MarkEvent(const std::string& name, const std::string& description /*= ""*/) const
 {
 	if (ShouldRecord())
 	{
@@ -244,7 +243,7 @@ void Profiler::MarkEvent(const std::string& name, const std::string& description
 	}
 }
 
-void Profiler::MarkDuration(const std::string& name, const int64 startTime, const std::string& description /*= ""*/)
+void Profiler::MarkDuration(const std::string& name, const int64 startTime, const std::string& description /*= ""*/) const
 {
 	if (ShouldRecord())
 	{

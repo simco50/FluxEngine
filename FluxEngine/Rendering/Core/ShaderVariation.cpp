@@ -2,13 +2,10 @@
 #include "ShaderVariation.h"
 #include "Shader.h"
 #include "Graphics.h"
-#include "ConstantBuffer.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-ShaderVariation::ShaderVariation(Context* pContext, Shader* pShader, const ShaderType type) :
-	Object(pContext),
-	m_pParentShader(pShader),
-	m_ShaderType(type)
+ShaderVariation::ShaderVariation(Context* pContext, Shader* pOwner, ShaderType type)
+	: Object(pContext),	m_pParentShader(pOwner), m_ShaderType(type)
 {
 
 }
@@ -59,7 +56,7 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 		pFile->WriteSizedString(define);
 	}
 	pFile->WriteUByte((unsigned char)m_ShaderParameters.size());
-	for (const std::pair<std::string, ShaderParameter>& pair : m_ShaderParameters)
+	for (const auto& pair : m_ShaderParameters)
 	{
 		pFile->WriteSizedString(pair.first);
 		const ShaderParameter& parameter = pair.second;
@@ -91,7 +88,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
 
 	DateTime timeStamp = FileSystem::GetLastModifiedTime(filePathStream.str());
-	if (timeStamp.Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
+	if (timeStamp.m_Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
 	{
 		return false;
 	}

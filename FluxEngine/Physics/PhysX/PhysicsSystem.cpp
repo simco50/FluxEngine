@@ -38,10 +38,6 @@ PhysicsSystem::PhysicsSystem(Context* pContext) :
 	bool recordMemoryAllocations = false;
 #endif
 
-	PxTolerancesScale scale;
-	scale.length = 100;
-	scale.mass = 1000;
-	scale.speed = 981;
 	m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, PxTolerancesScale(), recordMemoryAllocations, m_pPvd);
 	if (m_pPhysics == nullptr)
 	{
@@ -108,11 +104,8 @@ bool PhysicsSystem::InitializeCuda()
 #endif
 }
 
-physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttributes attribute0, PxFilterData filterData0, PxFilterObjectAttributes attribute1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
+physx::PxFilterFlags PhysicsSystem::SimulationFilterShader(PxFilterObjectAttributes attribute0, PxFilterData filterData0, PxFilterObjectAttributes attribute1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
 {
-	UNREFERENCED_PARAMETER(constantBlock);
-	UNREFERENCED_PARAMETER(constantBlockSize);
-
 	// let triggers through
 	if (PxFilterObjectIsTrigger(attribute0) || PxFilterObjectIsTrigger(attribute1))
 	{

@@ -19,18 +19,19 @@ private:
 	HINTERNET m_InternetHandle = nullptr;
 	Mutex m_RequestMutex;
 
-	HttpConnection() {}
-	~HttpConnection() {}
+	HttpConnection() = default;
+	~HttpConnection() = default;
 };
 
 class RequestUrl
 {
 public:
 	RequestUrl()
+		: m_Components({})
 	{}
 
-	RequestUrl(const std::string& url) :
-		m_Url(url)
+	RequestUrl(const std::string& url)
+		: m_Url(url), m_Components({})
 	{}
 
 	bool CrackUrl();
@@ -40,8 +41,8 @@ public:
 
 	std::string GetHost();
 	INTERNET_PORT GetPort();
-	const std::string GetPath();
-	const std::string GetExtraInfo();
+	const char* GetPath();
+	const char* GetExtraInfo();
 
 private:
 	bool m_Cracked = false;

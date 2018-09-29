@@ -34,9 +34,13 @@ void FreeCamera::OnSceneRemoved()
 
 void FreeCamera::Update()
 {
-	if (m_UseMouseAndKeyboard)
+	//if (m_UseMouseAndKeyboard)
 	{
 		KeyboardMouse();
+	}
+	//else
+	{
+		Controller();
 	}
 }
 
@@ -70,5 +74,39 @@ void FreeCamera::KeyboardMouse()
 			GetTransform()->Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
 			GetTransform()->Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
 		}
+	}
+}
+
+void FreeCamera::Controller()
+{
+	const JoystickState* pState = m_pInput->GetJoystickStateFromIndex(0);
+	if (pState)
+	{
+
+		float dt = GameTimer::DeltaTime();
+
+		//Moving
+		Vector3 moveDirection(0, 0, 0);
+		moveDirection.x += pState->GetAxis(ControllerAxis::LEFT_X, 0.2f);
+		moveDirection.z -= pState->GetAxis(ControllerAxis::LEFT_Y, 0.2f);
+		moveDirection.y -= pState->GetButton(ControllerButton::BUTTON_LB);
+		moveDirection.y += pState->GetButton(ControllerButton::BUTTON_RB);
+
+
+		float moveSpeed = m_MoveSpeed;
+		if (pState->GetButton(ControllerButton::BUTTON_LEFT))
+		{
+			moveSpeed *= m_ShiftMultiplier;
+		}
+		moveDirection *= dt * moveSpeed;
+
+		if (moveDirection != Vector3())
+		{
+			GetTransform()->Translate(moveDirection, Space::SELF);
+		}
+
+		//Rotation
+		GetTransform()->Rotate(5 * pState->GetAxis(ControllerAxis::RIGHT_Y, 0.2f) * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
+		GetTransform()->Rotate(0.0f, 5 * pState->GetAxis(ControllerAxis::RIGHT_X, 0.2f) * dt * m_RotationSpeed, 0.0f, Space::WORLD);
 	}
 }

@@ -10,7 +10,7 @@ public:
 
 	DELETE_COPY(StructuredBuffer)
 
-	void Create(const int elementCount, const int elementStride, bool dynamic = false);
+	void Create(int elementCount, int elementStride, bool dynamic = false);
 	void SetData(void* pData);
 
 	template<typename T>
@@ -31,7 +31,7 @@ public:
 	unsigned int GetElementCount() const { return m_ElementCount; }
 
 private:
-	void SetElement_Internal(const size_t index, const void* pElement);
+	void SetElement_Internal(size_t index, const void* pElement);
 
 	void Release();
 

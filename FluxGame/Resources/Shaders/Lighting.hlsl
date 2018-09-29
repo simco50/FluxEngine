@@ -60,7 +60,7 @@ struct LightResult
 
 struct Light
 {
-	bool Enabled;
+	int Enabled;
 	float3 Position;
 	float3 Direction;
 	float4 Color;
@@ -136,7 +136,12 @@ LightResult DoLight(StructuredBuffer<Light> lights, float3 worldPosition, float3
 
 	for(uint i = 0; i < LIGHT_COUNT; ++i)
 	{
-		if(lights[i].Enabled == false)
+		if(lights[i].Enabled == 0)
+		{
+			continue;
+		}
+
+		if(lights[i].Type != DIRECTIONAL_LIGHT && distance(worldPosition, lights[i].Position) > lights[i].Range)
 		{
 			continue;
 		}

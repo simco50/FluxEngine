@@ -25,8 +25,9 @@ private:
 	InputEngine* m_pInput = nullptr;
 
 	void KeyboardMouse();
+	void Controller();
 
-	float m_MoveSpeed = 50.0f;
+	float m_MoveSpeed = 100.0f;
 	float m_ShiftMultiplier = 3.0f;
 	float m_RotationSpeed = 20.0f;
 	Camera *m_pCamera = nullptr;

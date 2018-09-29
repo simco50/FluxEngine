@@ -226,7 +226,7 @@ private:
 	static __int64 GetNewID();
 };
 
-template<typename size_t MaxStackSize>
+template<size_t MaxStackSize>
 class InlineAllocator
 {
 public:
@@ -319,7 +319,7 @@ public:
 	{
 		if (m_Size > MaxStackSize)
 		{
-			delete[] pPtr;
+			delete[] (char*)pPtr;
 		}
 		m_Size = 0;
 	}
@@ -367,7 +367,6 @@ public:
 
 	//Default constructor
 	constexpr Delegate() noexcept
-		: m_Allocator()
 	{
 	}
 
@@ -498,7 +497,7 @@ public:
 	{
 		if (m_Allocator.HasAllocation())
 		{
-			return m_Allocator->GetAllocation()->GetOwner();
+			return GetDelegate()->GetOwner();
 		}
 		return nullptr;
 	}
@@ -519,6 +518,15 @@ public:
 		Release();
 	}
 
+	inline bool IsBoundTo(void* pObject) const
+	{
+		if(pObject == nullptr || m_Allocator.HasAllocation() == false)
+		{
+			return false;
+		}
+		return GetDelegate()->GetOwner() == pObject;
+	}
+
 	//Determines the stack size the inline allocator can use
 	//This is a public function so it can easily be requested
 	constexpr static __int32 GetAllocatorStackSize()
@@ -527,12 +535,12 @@ public:
 	}
 
 private:
-	template<typename T, typename... Args>
-	void Bind(Args&&... args)
+	template<typename T, typename... Args3>
+	void Bind(Args3&&... args)
 	{
 		Release();
 		void* pAlloc = m_Allocator.Allocate(sizeof(T));
-		new (pAlloc) T(std::forward<Args>(args)...);
+		new (pAlloc) T(std::forward<Args3>(args)...);
 	}
 
 	void Release()

@@ -51,7 +51,7 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 		return;
 	}
 
-	if (m_pParticleSystem->ImagePath == "")
+	if (m_pParticleSystem->ImagePath.empty())
 	{
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	}
@@ -111,9 +111,9 @@ void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 
 void ParticleEmitter::FreeParticles()
 {
-	for (size_t i = 0; i < m_Particles.size(); i++)
+	for (Particle* pParticle : m_Particles)
 	{
-		delete m_Particles[i];
+		delete pParticle;
 	}
 	m_Particles.clear();
 }
@@ -154,7 +154,7 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 			return d1 < d2;
 		});
 	case ParticleSortingMode::OldestFirst:
-		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();
 			float lifeTimerB = b->GetLifeTimer();
@@ -162,14 +162,14 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 		});
 		break;
 	case ParticleSortingMode::YoungestFirst:
-		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();
 			float lifeTimerB = b->GetLifeTimer();
 			return lifeTimerA > lifeTimerB;
 		});
 		break;
-	default: 
+	default:
 		break;
 	}
 }
@@ -177,17 +177,17 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 void ParticleEmitter::CalculateBoundingBox()
 {
 	Vector3 max;
-	auto p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	auto p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.x < b->GetVertexInfo().Position.x;
 	});
 	max.x = abs((*p)->GetVertexInfo().Position.x);
-	p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.y < b->GetVertexInfo().Position.y;
 	});
 	max.y = abs((*p)->GetVertexInfo().Position.y);
-	p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.z < b->GetVertexInfo().Position.z;
 	});

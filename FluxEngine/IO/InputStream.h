@@ -9,7 +9,7 @@ public:
 	InputStream(const size_t size)
 		: m_Size(size), m_FilePointer(0)
 	{}
-	virtual ~InputStream() {}
+	virtual ~InputStream() = default;
 
 	virtual size_t Read(void* pDestination, const size_t size) = 0;
 

@@ -198,7 +198,7 @@ struct Math
 	//Helper class to easily convert between 4 float colors and unsigned int hex colors
 	struct HexColorConverter
 	{
-		Color operator()(HexColor color)
+		Color operator()(HexColor color) const
 		{
 			Color output;
 			//unsigned int layout: AAAA RRRR GGGG BBBB
@@ -209,7 +209,7 @@ struct Math
 			return output;
 		}
 
-		HexColor operator()(const Color& color)
+		HexColor operator()(const Color& color) const
 		{
 			HexColor output = 0;
 			//unsigned int layout: AAAA RRRR GGGG BBBB

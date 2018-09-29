@@ -1,13 +1,9 @@
 #include "FluxEngine.h"
 #include "../TextureCube.h"
 #include "../Graphics.h"
-
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
 #include "../RenderTarget.h"
-#include "../../Renderer.h"
-#include "Scenegraph/Transform.h"
-#include "../../Camera/Camera.h"
 #include "../Texture2D.h"
 
 TextureCube::TextureCube(Context* pContext) :
@@ -50,7 +46,7 @@ bool TextureCube::Load(InputStream& inputStream)
 	return true;
 }
 
-bool TextureCube::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
+bool TextureCube::SetSize(int width, int height, unsigned int format, TextureUsage usage, int multiSample, void* pTexture)
 {
 	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
 	{
@@ -90,7 +86,7 @@ bool TextureCube::SetSize(const int width, const int height, const unsigned int 
 	return true;
 }
 
-bool TextureCube::SetData(const CubeMapFace face, const unsigned int mipLevel, int x, int y, int width, int height, const void* pData)
+bool TextureCube::SetData(CubeMapFace face, unsigned int mipLevel, int x, int y, int width, int height, const void* pData)
 {
 	AUTOPROFILE(TextureCube_SetData);
 
@@ -120,11 +116,6 @@ bool TextureCube::SetData(const CubeMapFace face, const unsigned int mipLevel, i
 
 	if (m_Usage == TextureUsage::STATIC)
 	{
-		if (IsCompressed())
-		{
-			levelHeight = (levelHeight + 3) >> 2;
-		}
-
 		D3D11_BOX box;
 		box.back = 1;
 		box.front = 0;
@@ -150,7 +141,7 @@ bool TextureCube::SetData(const CubeMapFace face, const unsigned int mipLevel, i
 	return true;
 }
 
-bool TextureCube::SetImage(const CubeMapFace face, const Image& image)
+bool TextureCube::SetImage(CubeMapFace face, const Image& image)
 {
 	AUTOPROFILE(TextureCube_SetData_Image);
 
@@ -179,7 +170,7 @@ bool TextureCube::SetImageChain(const Image& image)
 	AUTOPROFILE(TextureCube_SetImageChain);
 
 	const Image* pCurrentImage = &image;
-	for (uint32 faceIdx = 0; faceIdx < (uint32)CubeMapFace::MAX, pCurrentImage != nullptr; ++faceIdx)
+	for (uint32 faceIdx = 0; faceIdx < (uint32)CubeMapFace::MAX && pCurrentImage != nullptr; ++faceIdx)
 	{
 		SetImage((CubeMapFace)faceIdx, *pCurrentImage);
 		pCurrentImage = pCurrentImage->GetNextImage();
@@ -192,7 +183,8 @@ bool TextureCube::Create()
 {
 	AUTOPROFILE(TextureCube_Create);
 
-	D3D11_TEXTURE2D_DESC desc = {};
+	D3D11_TEXTURE2D_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_TEXTURE2D_DESC));
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (m_Usage == TextureUsage::RENDERTARGET)
 	{
@@ -221,7 +213,7 @@ bool TextureCube::Create()
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 	srvDesc.TextureCube.MipLevels = m_MipLevels;
 	srvDesc.Format = (DXGI_FORMAT)GetSRVFormat(m_TextureFormat);
-	
+
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Texture2D*)m_pResource, &srvDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
 
 	if (m_Usage == TextureUsage::RENDERTARGET)

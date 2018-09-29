@@ -59,8 +59,10 @@ SceneNode* SceneNode::CreateChild(const std::string& name)
 
 void SceneNode::AddChild(SceneNode* pNode)
 {
-	m_pScene->AddChild(pNode);
+	m_Children.push_back(pNode);
 	pNode->m_pParent = this;
+	pNode->OnSceneSet(m_pScene);
+	m_pScene->TrackChild(pNode);
 }
 
 void SceneNode::AddComponent(Component* pComponent)
@@ -81,7 +83,7 @@ void SceneNode::AddComponent(Component* pComponent)
 	}
 }
 
-Component* SceneNode::GetComponent(StringHash type)
+Component* SceneNode::GetComponent(StringHash type) const
 {
 	for (Component* pComponent : m_Components)
 	{
@@ -98,5 +100,9 @@ void SceneNode::OnTransformDirty(const Transform* pTransform)
 	for (Component* pComponent : m_Components)
 	{
 		pComponent->OnMarkedDirty(pTransform);
+	}
+	for (SceneNode* pChild : m_Children)
+	{
+		pChild->OnTransformDirty(pChild->GetTransform());
 	}
 }

@@ -11,7 +11,7 @@ struct AnimationKeyState
 	const AnimationNode* pNode = nullptr;
 
 	void GetFrameIndex(float time, int& index) const;
-	void GetMatrix(const float time, Matrix& matrix);
+	void GetMatrix(float time, Matrix& matrix);
 };
 
 class AnimationState
@@ -19,8 +19,8 @@ class AnimationState
 public:
 	AnimationState(Animation* pAnimation, AnimatedModel* pModel);
 
-	void AddTime(const float time);
-	void SetTime(const float time);
+	void AddTime(float time);
+	void SetTime(float time);
 
 	void Apply(std::vector<Matrix>& skinMatrices);
 
@@ -30,12 +30,11 @@ public:
 
 private:
 	void CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
-	
+
 	float m_Time = 0.0f;
 	bool m_IsDirty = true;
 	bool m_Looped = true;
 	Animation* m_pAnimation = nullptr;
-	AnimatedModel* m_pModel = nullptr;
 	Bone* m_pRootBone = nullptr;
 	std::vector<AnimationKeyState> m_KeyStates;
 };

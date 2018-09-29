@@ -121,7 +121,7 @@ bool Config::PopulateConfigValues(const Type t)
 	if (pFile->OpenRead())
 	{
 		std::string line;
-		std::string currentSection = "";
+		std::string currentSection;
 		while (pFile->GetLine(line))
 		{
 			if (line.length() == 0)

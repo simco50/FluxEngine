@@ -25,7 +25,9 @@ public:
 		void CreateBuffer()
 		{
 			if (pData)
-				delete[] pData;
+			{
+				delete[] (char*)pData;
+			}
 			pData = new char[Stride * Count];
 		}
 

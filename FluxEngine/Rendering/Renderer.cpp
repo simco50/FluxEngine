@@ -14,7 +14,6 @@
 #include "Light.h"
 #include "Material.h"
 #include "Scenegraph/SceneNode.h"
-#include "Core/Texture2D.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -23,7 +22,7 @@ Renderer::Renderer(Context* pContext) :
 	CreateQuadGeometry();
 
 	m_pLightBuffer = std::make_unique<StructuredBuffer>(m_pGraphics);
-	m_pLightBuffer->Create(GraphicsConstants::MAX_LIGHTS, Light::GetDataStride(), true);
+	m_pLightBuffer->Create(GraphicsConstants::MAX_LIGHTS, (int)Light::GetDataStride(), true);
 }
 
 Renderer::~Renderer()

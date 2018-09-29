@@ -53,14 +53,16 @@ bool Shader::ReloadVariations()
 		for (auto& p : map)
 		{
 			if (p.second == nullptr)
+			{
 				continue;
+			}
 			p.second->Create();
 		}
 	}
 	return true;
 }
 
-ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::string& defines)
+ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string& defines)
 {
 	AUTOPROFILE(Shader_GetOrCreateVariation);
 
@@ -92,14 +94,17 @@ ShaderVariation* Shader::GetOrCreateVariation(const ShaderType type, const std::
 			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
 			return nullptr;
 		}
-		pVariation->SaveToCache(cacheName.str());
+		if(pVariation->SaveToCache(cacheName.str()) == false)
+		{
+			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to save shader variation to cache");
+		}
 	}
 
 	m_ShaderCache[(size_t)type][hash] = std::move(pVariation);
 	return m_ShaderCache[(size_t)type][hash].get();
 }
 
-std::string Shader::GetEntryPoint(const ShaderType type)
+const char* Shader::GetEntryPoint(ShaderType type)
 {
 	switch (type)
 	{
@@ -124,7 +129,7 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
 	}
 
-	DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
+	const DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
 	if (timestamp > m_LastModifiedTimestamp)
 	{
 		m_LastModifiedTimestamp = timestamp;

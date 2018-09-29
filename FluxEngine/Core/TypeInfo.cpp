@@ -4,8 +4,8 @@
 
 TypeInfo::TypeInfo(const char* typeName, const TypeInfo* baseTypeInfo)
 	: m_TypeName(typeName),
-	m_pBaseTypeInfo(baseTypeInfo),
-	m_Type(std::hash<std::string>{} (typeName))
+	m_Type(std::hash<std::string>{} (typeName)),
+	m_pBaseTypeInfo(baseTypeInfo)
 {
 }
 

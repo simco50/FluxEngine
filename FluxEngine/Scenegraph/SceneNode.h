@@ -45,8 +45,9 @@ public:
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
 
-	Component* GetComponent(StringHash type);
+	Component* GetComponent(StringHash type) const;
 	const std::vector<Component*>& GetComponents() const { return m_Components; }
+	const std::vector<SceneNode*>& GetChildren() const { return m_Children; }
 
 	template<typename T, typename ...Args>
 	T* GetOrCreateComponent(Args ...args)
@@ -66,16 +67,16 @@ public:
 protected:
 	//Constructor used for Scene to be able to initialize with "this"
 	SceneNode(Context* pContext, Scene* pScene);
+	void AddChild(SceneNode* pNode);
 
 	std::unique_ptr<Transform> m_pTransform;
 	std::vector<Component*> m_Components;
+	std::vector<SceneNode*> m_Children;
 
 	SceneNode* m_pParent = nullptr;
 	Scene* m_pScene = nullptr;
 
 private:
-	void AddChild(SceneNode* pNode);
 	void AddComponent(Component* pComponent);
-
 	std::string m_Name;
 };

@@ -52,7 +52,7 @@ private:
 
 	LogType m_Verbosity = LogType::Info;
 	File* m_pFileLog;
-	HANDLE m_ConsoleHandle;
+	HANDLE m_ConsoleHandle = nullptr;
 
 	std::deque<LogEntry> m_History;
 };

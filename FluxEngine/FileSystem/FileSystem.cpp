@@ -15,16 +15,20 @@ FileSystem::FileSystem()
 FileSystem::~FileSystem()
 {}
 
-bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, const ArchiveType type)
+bool FileSystem::Mount(const std::string& physicalPath, const std::string& virtualPath, const ArchiveType type)
 {
-	AUTOPROFILE_DESC(FileSystem_Mount, path);
+	AUTOPROFILE_DESC(FileSystem_Mount, physicalPath);
 
-	std::unique_ptr<IMountPoint> pPtr = CreateMountPoint(FixPath(path), type);
+	std::unique_ptr<IMountPoint> pPtr = CreateMountPoint(FixPath(physicalPath), type);
 	if (pPtr == nullptr)
+	{
 		return false;
+	}
 
 	if (!pPtr->OnMount())
+	{
 		return false;
+	}
 
 	m_MountPoints.push_back(MountPointPair(FixPath(virtualPath), std::move(pPtr)));
 
@@ -35,14 +39,14 @@ bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, 
 		return a.second->GetOrder() > b.second->GetOrder();
 	}
 	);
-	FLUX_LOG(Info, "[FileSystem::Mount] > Mounted '%s' on '%s'", path.c_str(), virtualPath.c_str());
+	FLUX_LOG(Info, "[FileSystem::Mount] > Mounted '%s' on '%s'", physicalPath.c_str(), virtualPath.c_str());
 
 	return true;
 }
 
-bool FileSystem::Mount(const std::string& path, const ArchiveType type /*= ArchiveType::Physical*/)
+bool FileSystem::Mount(const std::string& physicalPath, const ArchiveType type /*= ArchiveType::Physical*/)
 {
-	return Mount(path, "", type);
+	return Mount(physicalPath, "", type);
 }
 
 void FileSystem::AddPakLocation(const std::string& path, const std::string& virtualPath)
@@ -74,7 +78,7 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 			//If we didn't find the file, continue looking in the other mount points
 			if(pFile == nullptr)
 				continue;
-			return std::move(pFile);
+			return pFile;
 		}
 	}
 	return nullptr;
@@ -112,7 +116,6 @@ DateTime FileSystem::GetCreationTime(const std::string& fileName)
 
 int64 FileSystem::GetFileSize(const std::string& fileName)
 {
-	DateTime creationTime, accessTime, modifiedTime;
 	FileAttributes attibutes;
 	if (!GetFileAttributes(fileName, attibutes))
 	{
@@ -231,12 +234,14 @@ void FileSystem::GetFilesWithExtension(const std::string& directory, std::vector
 	struct SimpleVisitor : public FileVisitor
 	{
 		SimpleVisitor(std::vector<std::string>& files, const std::string& extension, const bool recursive) :
-			Files(files), Extension(extension), Recursive(recursive)
+			Files(files), pExtension(&extension), Recursive(recursive)
 		{}
 		virtual bool Visit(const std::string& fileName, const bool isDirectory) override
 		{
-			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == Extension)
+			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == *pExtension)
+			{
 				Files.push_back(fileName);
+			}
 			return true;
 		}
 		virtual bool IsRecursive() const override
@@ -244,7 +249,7 @@ void FileSystem::GetFilesWithExtension(const std::string& directory, std::vector
 			return Recursive;
 		}
 		std::vector<std::string>& Files;
-		const std::string& Extension;
+		const std::string* pExtension;
 		bool Recursive;
 	};
 	SimpleVisitor visitor(files, extension, recursive);

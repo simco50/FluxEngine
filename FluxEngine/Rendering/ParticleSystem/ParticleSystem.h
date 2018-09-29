@@ -31,10 +31,10 @@ class ParticleSystem : public Resource
 
 public:
 
-	ParticleSystem(Context* pContext):
-		Resource(pContext)
+	ParticleSystem(Context* pContext)
+		: Resource(pContext)
 	{}
-	virtual ~ParticleSystem() {}
+	virtual ~ParticleSystem() = default;
 
 	virtual bool Load(InputStream& inputStream) override;
 

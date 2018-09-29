@@ -6,7 +6,7 @@
 #include "Sound.h"
 
 AudioSource::AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode)
-	: Component(pContext), m_Mode(mode), m_FilePath(filePath)
+	: Component(pContext), m_FilePath(filePath), m_Mode(mode)
 {
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if (m_pSound == nullptr)

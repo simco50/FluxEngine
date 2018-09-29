@@ -46,7 +46,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 		return 0;
 	}
 
-	size_t read = 0;
+	size_t read;
 	if (m_pTableEntry->Compressed)
 	{
 		//If the file is compressed we have to cache the uncompressed data if we want to use it later

@@ -23,7 +23,7 @@ PostProcessing::PostProcessing(Context* pContext) :
 
 	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
 
-	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw(this, &PostProcessing::OnResize);
+	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw<PostProcessing>(this, &PostProcessing::OnResize);
 
 	m_pBlitVertexShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::VertexShader);
 	m_pBlitPixelShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::PixelShader);
@@ -35,8 +35,10 @@ PostProcessing::~PostProcessing()
 
 void PostProcessing::Draw()
 {
-	if (m_Materials.size() == 0)
+	if (m_Materials.empty())
+	{
 		return;
+	}
 
 	AUTOPROFILE(PostProcessing_Draw);
 
@@ -49,7 +51,7 @@ void PostProcessing::Draw()
 
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
 	int activeMaterials = 0;
-	for (std::pair<bool, Material*> pMaterial : m_Materials)
+	for (const auto& pMaterial : m_Materials)
 	{
 		if (pMaterial.first == false)
 		{

@@ -32,7 +32,4 @@ public:
 	bool Exists() const;
 	std::string GetDirectoryPath() const;
 	std::string GetFileName() const;
-
-protected:
-	std::string m_FileName;
 };

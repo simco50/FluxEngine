@@ -2,7 +2,7 @@
 
 struct Bone
 {
-	int Index;
+	int Index = 0;
 	std::string Name;
 	Matrix OffsetMatrix;
 	Bone* pParent = nullptr;
@@ -12,15 +12,17 @@ struct Bone
 class Skeleton
 {
 public:
-	Skeleton() {}
-	~Skeleton() {}
+	Skeleton() = default;
+	~Skeleton() = default;
 
 	Bone* GetBone(const std::string& name)
 	{
 		for (Bone& bone : m_Bones)
 		{
 			if (bone.Name == name)
+			{
 				return &bone;
+			}
 		}
 		return nullptr;
 	}
@@ -29,7 +31,9 @@ public:
 		for (Bone& bone : m_Bones)
 		{
 			if (bone.Index == index)
+			{
 				return &bone;
+			}
 		}
 		return nullptr;
 	}
@@ -39,7 +43,9 @@ public:
 		for (const Bone& bone : m_Bones)
 		{
 			if (bone.Index == index)
+			{
 				return &bone;
+			}
 		}
 		return nullptr;
 	}
@@ -58,6 +64,6 @@ public:
 	static const int MAX_BONE_COUNT = 100;
 
 private:
-	Bone * m_pParentBone = nullptr;
+	Bone* m_pParentBone = nullptr;
 	std::vector<Bone> m_Bones;
 };

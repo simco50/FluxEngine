@@ -2,31 +2,40 @@
 #include "AnimationState.h"
 #include "Animation.h"
 #include "AnimatedModel.h"
+#include "Skeleton.h"
 
 void AnimationKeyState::GetFrameIndex(float time, int& index) const
 {
 	if (time < 0.0f)
+	{
 		time = 0.0f;
+	}
 	if (index >= (int)pNode->Keys.size())
+	{
 		index = (int)pNode->Keys.size() - 1;
+	}
 
-	while (index && time < pNode->Keys[index].first)
+	while (index && time < pNode->Keys[index].Time)
+	{
 		--index;
-	while (index < (int)pNode->Keys.size() - 1 && time >= pNode->Keys[index + 1].first)
+	}
+	while (index < (int)pNode->Keys.size() - 1 && time >= pNode->Keys[index + 1].Time)
+	{
 		++index;
+	}
 }
 
-void AnimationKeyState::GetMatrix(const float time, Matrix& matrix)
+void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
 {
 	GetFrameIndex(time, KeyFrame);
 	int nextFrame = KeyFrame + 1;
 	if (nextFrame >= (int)pNode->Keys.size())
 		nextFrame = 0;
 
-	const AnimationKey& key = pNode->Keys[KeyFrame].second;
-	const AnimationKey& nextKey = pNode->Keys[nextFrame].second;
+	const AnimationKey& key = pNode->Keys[KeyFrame].Key;
+	const AnimationKey& nextKey = pNode->Keys[nextFrame].Key;
 
-	float t = time > 0.0f ? (time - pNode->Keys[KeyFrame].first) / (pNode->Keys[nextFrame].first - pNode->Keys[KeyFrame].first) : 1.0f;
+	float t = time > 0.0f ? (time - pNode->Keys[KeyFrame].Time) / (pNode->Keys[nextFrame].Time - pNode->Keys[KeyFrame].Time) : 1.0f;
 
 	const Vector3 position = Vector3::Lerp(key.Position, nextKey.Position, t);
 	const Vector3 scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
@@ -35,7 +44,7 @@ void AnimationKeyState::GetMatrix(const float time, Matrix& matrix)
 }
 
 AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel) :
-	m_pAnimation(pAnimation), m_pModel(pModel)
+	m_pAnimation(pAnimation)
 {
 	const Skeleton& skeleton = pModel->GetSkeleton();
 	m_pRootBone = skeleton.GetParentBone();
@@ -49,22 +58,30 @@ AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel) :
 	}
 }
 
-void AnimationState::AddTime(const float time)
+void AnimationState::AddTime(float time)
 {
 	float duration = GetDuration();
 	if (duration == 0.0f || time == 0.0f)
+	{
 		return;
+	}
 
 	if (m_Looped)
+	{
 		m_Time = fmodf(m_Time + time, duration / GetAnimation()->GetTicksPerSecond());
+	}
 	else if (m_Time > duration)
+	{
 		return;
+	}
 	else
+	{
 		m_Time += time;
+	}
 	m_IsDirty = true;
 }
 
-void AnimationState::SetTime(const float time)
+void AnimationState::SetTime(float time)
 {
 	m_Time = time;
 	m_IsDirty = false;

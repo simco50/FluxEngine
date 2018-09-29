@@ -12,6 +12,8 @@ class Light;
 class StructuredBuffer;
 struct Batch;
 
+DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
+
 class Renderer : public Subsystem
 {
 	FLUX_OBJECT(Renderer, Subsystem)
@@ -36,7 +38,7 @@ public:
 
 	void QueueCamera(Camera* pCamera);
 
-	MulticastDelegate<>& OnPreRender() { return m_OnPreRender; }
+	OnSceneUpdateDelegate& OnPreRender() { return m_OnPreRender; }
 
 private:
 	void CreateQuadGeometry();
@@ -48,7 +50,7 @@ private:
 
 	const Material* m_pCurrentMaterial = nullptr;
 
-	MulticastDelegate<> m_OnPreRender;
+	OnSceneUpdateDelegate m_OnPreRender;
 
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;

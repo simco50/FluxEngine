@@ -25,27 +25,27 @@ public:
 	void Initialize();
 
 	//Absolute
-	void SetPosition(const Vector3& newPosition, const Space space = Space::WORLD);
-	void SetPosition(const float x, const float y, const float z, const Space space = Space::WORLD);
+	void SetPosition(const Vector3& newPosition, Space space = Space::WORLD);
+	void SetPosition(float x, float y, float z, Space space = Space::WORLD);
 
-	void SetScale(const float uniformScale);
+	void SetScale(float uniformScale);
 	void SetScale(const Vector3& scale);
-	void SetScale(const float x, const float y, const float z);
+	void SetScale(float x, float y, float z);
 
-	void SetRotation(const Vector3& eulerAngles, const Space space = Space::WORLD);
-	void SetRotation(const float x, const float y, const float z, const Space space = Space::WORLD);
+	void SetRotation(const Vector3& eulerAngles, Space space = Space::WORLD);
+	void SetRotation(float x, float y, float z, Space space = Space::WORLD);
 
-	void SetRotation(const Quaternion& quaternion, const Space space = Space::WORLD);
+	void SetRotation(const Quaternion& quaternion, Space space = Space::WORLD);
 
 	//Relative
-	void Translate(const Vector3& translation, const Space space = Space::WORLD);
-	void Translate(const float x, const float y, const float z, const Space space = Space::WORLD);
+	void Translate(const Vector3& translation, Space space = Space::WORLD);
+	void Translate(float x, float y, float z, Space space = Space::WORLD);
 
-	void Rotate(const Vector3& eulerAngles, const Space space = Space::WORLD);
-	void Rotate(const float x, const float y, const float z, const Space space = Space::WORLD);
-	void Rotate(const Quaternion& quaternion, const Space space = Space::WORLD);
+	void Rotate(const Vector3& eulerAngles, Space space = Space::WORLD);
+	void Rotate(float x, float y, float z, Space space = Space::WORLD);
+	void Rotate(const Quaternion& quaternion, Space space = Space::WORLD);
 
-	Vector3 TransformVector(const Vector3& input, const TransformElement elements) const;
+	Vector3 TransformVector(const Vector3& input, TransformElement elements) const;
 
 	const Vector3& GetPosition() const { return m_Position; }
 	const Vector3& GetWorldPosition() const { return m_WorldPosition; }

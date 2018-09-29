@@ -8,7 +8,7 @@ void StructuredBuffer::Create(const int elementCount, const int elementStride, b
 	m_ElementCount = elementCount;
 	m_Stride = elementStride;
 
-	D3D11_BUFFER_DESC desc = {};
+	D3D11_BUFFER_DESC desc;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.ByteWidth = elementStride * elementCount;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -19,8 +19,6 @@ void StructuredBuffer::Create(const int elementCount, const int elementStride, b
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
-	viewDesc.Buffer.ElementOffset = 0;
-	viewDesc.Buffer.ElementWidth = elementStride;
 	viewDesc.Buffer.FirstElement = 0;
 	viewDesc.Buffer.NumElements = elementCount;
 	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;

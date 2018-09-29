@@ -3,7 +3,7 @@
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
 
-char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
+const char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
 {
 	switch (semantic)
 	{
@@ -25,9 +25,11 @@ char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
 		return "BLENDINDEX";
 	case VertexElementSemantic::OBJECTINDEX:
 		return "OBJECTINDEX";
+	case VertexElementSemantic::MAX_VERTEX_ELEMENT_SEMANTICS:
+	default:
+		FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+		return "INVALID";
 	}
-	FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
-	return "INVALID";
 }
 
 DXGI_FORMAT VertexElement::GetFormatOfType(VertexElementType type)
@@ -52,12 +54,14 @@ DXGI_FORMAT VertexElement::GetFormatOfType(VertexElementType type)
 		return DXGI_FORMAT_R32G32B32A32_UINT;
 	case VertexElementType::INT4:
 		return DXGI_FORMAT_R32G32B32A32_SINT;
+	case VertexElementType::MAX_VERTEX_ELEMENT_TYPES:
+	default:
+		FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
+		return (DXGI_FORMAT)0;
 	}
-	FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
-	return (DXGI_FORMAT)0;
 }
 
-void VertexBuffer::Create(const int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
+void VertexBuffer::Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
 {
 	AUTOPROFILE(VertexBuffer_Create);
 
@@ -105,7 +109,7 @@ void* VertexBuffer::Map(bool discard)
 	D3D11_MAPPED_SUBRESOURCE mappedData = {};
 	mappedData.pData = nullptr;
 
-	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
+	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData));
 	void* pBuffer = mappedData.pData;
 
 	m_Mapped = true;

@@ -11,7 +11,7 @@ Geometry::~Geometry()
 {
 	for (auto& vertexData : m_VertexData)
 	{
-		delete vertexData.second.pData;
+		delete (char*)vertexData.second.pData;
 	}
 }
 

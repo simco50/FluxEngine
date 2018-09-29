@@ -1,15 +1,14 @@
 #include "FluxGame.h"
 #include "Core/Application.h"
-#include "Core/Context.h"
 #include "Core/CommandLine.h"
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR lpCmdLine, _In_ int /*nShowCmd*/)
 {
-	
+
 #ifdef _DEBUG
-	HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+	HeapSetInformation(nullptr, HeapEnableTerminationOnCorruption, nullptr, 0);
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	//_CrtSetBreakAlloc(4322);
+	//_CrtSetBreakAlloc(2103);
 #endif
 	CommandLine::Parse(lpCmdLine);
 

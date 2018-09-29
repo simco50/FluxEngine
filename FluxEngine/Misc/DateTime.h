@@ -3,134 +3,46 @@
 
 struct DateTime
 {
-	DateTime() :
-		Ticks(0)
-	{}
+	DateTime();
+	DateTime(unsigned long long ticks);
+	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
-	DateTime(unsigned long long ticks) :
-		Ticks(ticks)
-	{}
+	void Split(TimeStamp& timestamp) const;
+	void GetDate(int& year, int& month, int& day) const;
 
-	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond)
-	{
-		int days = 0;
-		if (month > 2 && year % 4 == 0)
-		{
-			if (year % 100 != 0 || year % 400 == 0)
-			{
-				++days;
-			}
-		}
-		month--;
-		year--;
+	static int UtcNow();
+	static DateTime Now();
 
-		days += year * 365;
-		days += year / 4;
-		days -= year / 100;
-		days += year / 400;
-		days += Time::DaysToMonth[month];
-		days += day - 1;
+	std::string ToString(const char* pFormat) const;
+	std::string ToTimeString() const;
+	std::string ToDateString() const;
 
-		Ticks = days * Time::TicksPerDay
-			+ hour * Time::TicksPerHour
-			+ minute * Time::TicksPerMinute
-			+ second * Time::TicksPerSecond
-			+ millisecond * Time::TicksPerMillisecond;
-	}
+	int GetMilliSeconds() const;
+	int GetSeconds() const;
+	int GetMinutes() const;
+	int GetHours() const;
+	int GetHours12() const;
 
-	void Split(TimeStamp& timestamp)
-	{
-		GetDate(timestamp.Year, timestamp.Month, timestamp.Day);
-		timestamp.Hour = GetHours();
-		timestamp.Minute = GetMinutes();
-		timestamp.Second = GetSeconds();
-		timestamp.Millisecond = GetMilliSeconds();
-	}
+	int GetDay() const;
+	int GetMonth() const;
+	int GetYear() const;
+	bool IsMorning() const;
 
-	void GetDate(int& year, int& month, int& day) const
-	{
-		// Based on FORTRAN code in:
-		// Fliegel, H. F. and van Flandern, T. C.,
-		// Communications of the ACM, Vol. 11, No. 10 (October 1968).
+	std::string ToString() const;
 
-		int i, j, k, l, n;
+	bool operator==(const DateTime& other) const;
+	bool operator!=(const DateTime& other) const;
+	bool operator<(const DateTime& other) const;
+	bool operator>(const DateTime& other) const;
+	bool operator<=(const DateTime& other) const;
+	bool operator>=(const DateTime& other) const;
 
-		l = (int)floor(GetJulianDay() + 0.5) + 68569;
-		n = 4 * l / 146097;
-		l = l - (146097 * n + 3) / 4;
-		i = 4000 * (l + 1) / 1461001;
-		l = l - 1461 * i / 4 + 31;
-		j = 80 * l / 2447;
-		k = l - 2447 * j / 80;
-		l = j / 11;
-		j = j + 2 - 12 * l;
-		i = 100 * (n - 49) + i + l;
+	TimeSpan operator+(const DateTime& other) const;
+	TimeSpan operator-(const DateTime& other) const;
 
-		year = i;
-		month = j;
-		day = k;
-	}
-
-	static DateTime Now()
-	{
-		SYSTEMTIME st;
-		GetLocalTime(&st);
-		return DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-	}
-
-	static int UtcNow()
-	{
-		return (int)((DateTime::Now() - DateTime(1970, 1, 1, 0, 0, 0, 0)).Ticks / Time::TicksPerSecond);
-	}
-
-	int GetMilliSeconds() const { return Ticks / Time::TicksPerMillisecond % 1000; }
-	int GetSeconds() const { return Ticks / Time::TicksPerSecond % 60; }
-	int GetMinutes() const { return Ticks / Time::TicksPerMinute % 60; }
-	int GetHours() const { return (int)(Ticks / Time::TicksPerHour % 24); }
-	int GetDay() const
-	{
-		int year, month, day;
-		GetDate(year, month, day);
-		return day;
-	}
-	int GetMonth() const
-	{
-		int year, month, day;
-		GetDate(year, month, day);
-		return month;
-	}
-	int GetYear() const
-	{
-		int year, month, day;
-		GetDate(year, month, day);
-		return year;
-	}
-
-	std::string ToString() const
-	{
-		std::stringstream str;
-		int year, month, day;
-		GetDate(year, month, day);
-		str << year << "/" << month << "/" << day << " " << GetHours() << ":" << GetMinutes() << ":" << GetSeconds();
-		return str.str();
-	}
-
-	bool operator==(const DateTime& other) const { return Ticks == other.Ticks; }
-	bool operator!=(const DateTime& other) const { return Ticks != other.Ticks; }
-	bool operator<(const DateTime& other) const { return Ticks < other.Ticks; }
-	bool operator>(const DateTime& other) const { return Ticks > other.Ticks; }
-	bool operator<=(const DateTime& other) const { return Ticks <= other.Ticks; }
-	bool operator>=(const DateTime& other) const { return Ticks >= other.Ticks; }
-
-	TimeSpan operator+(const DateTime& other) const { return TimeSpan(Ticks + other.Ticks); }
-	TimeSpan operator-(const DateTime& other) const { return TimeSpan(Ticks - other.Ticks); }
-
-	unsigned long long Ticks;
+	unsigned long long m_Ticks;
 
 private:
 
-	double GetJulianDay() const
-	{
-		return (double)(1721425.5 + Ticks / Time::TicksPerDay);
-	}
+	double GetJulianDay() const;
 };

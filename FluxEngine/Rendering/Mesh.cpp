@@ -56,7 +56,7 @@ Matrix ToDXMatrix(const aiMatrix4x4& mat)
 }
 
 
-aiQuaternion GetRotation(const aiNodeAnim* pNode, const float time)
+aiQuaternion GetRotation(const aiNodeAnim* pNode, float time)
 {
 	if (pNode->mNumRotationKeys == 0)
 		return aiQuaternion();
@@ -75,7 +75,7 @@ aiQuaternion GetRotation(const aiNodeAnim* pNode, const float time)
 	return pNode->mRotationKeys[pNode->mNumRotationKeys - 1].mValue;
 }
 
-aiVector3D GetScale(const aiNodeAnim* pNode, const float time)
+aiVector3D GetScale(const aiNodeAnim* pNode, float time)
 {
 	if (pNode->mNumScalingKeys == 0)
 		return aiVector3D();
@@ -163,13 +163,13 @@ Animation* Mesh::GetAnimation(const std::string& name) const
 	return GetAnimation(hash);
 }
 
-Animation* Mesh::GetAnimation(const int index) const
+Animation* Mesh::GetAnimation(int index) const
 {
 	assert(index < (int)m_Animations.size());
 	return m_Animations[index].get();
 }
 
-Animation* Mesh::GetAnimation(const StringHash hash) const
+Animation* Mesh::GetAnimation(StringHash hash) const
 {
 	for (const std::unique_ptr<Animation>& pAnimation : m_Animations)
 	{
@@ -185,9 +185,8 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 
 	const std::string magic = inputStream.ReadSizedString();
 	const char minVersion = inputStream.ReadByte();
-	const char maxVersion = inputStream.ReadByte();
+	/*const char maxVersion =*/ inputStream.ReadByte();
 
-	UNREFERENCED_PARAMETER(maxVersion);
 	if (minVersion != MESH_VERSION)
 	{
 		std::stringstream stream;
@@ -277,7 +276,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.Count = pMesh->mNumVertices;
 			data.Stride = sizeof(aiVector3D);
 			data.CreateBuffer();
-			memcpy(data.pData, pMesh->mVertices, data.ByteSize());
+			memcpy(data.pData, &pMesh->mVertices[0].x, data.ByteSize());
 		}
 		if(pMesh->HasNormals())
 		{
@@ -285,7 +284,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.Count = pMesh->mNumVertices;
 			data.Stride = sizeof(aiVector3D);
 			data.CreateBuffer();
-			memcpy(data.pData, pMesh->mNormals, data.ByteSize());
+			memcpy(data.pData, &pMesh->mNormals[0].x, data.ByteSize());
 		}
 		if (pMesh->HasTangentsAndBitangents())
 		{
@@ -293,7 +292,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.Count = pMesh->mNumVertices;
 			data.Stride = sizeof(aiVector3D);
 			data.CreateBuffer();
-			memcpy(data.pData, pMesh->mTangents, data.ByteSize());
+			memcpy(data.pData, &pMesh->mTangents[0].x, data.ByteSize());
 		}
 		if(pMesh->HasTextureCoords(0))
 		{
@@ -303,7 +302,9 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.CreateBuffer();
 			Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
 			for (int j = 0; j < data.Count; j++)
+			{
 				pCurrent[j] = Vector2{ pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y };
+			}
 		}
 		if (pMesh->HasFaces())
 		{
@@ -313,7 +314,9 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.CreateBuffer();
 			unsigned int* pCurrent = reinterpret_cast<unsigned int*>(data.pData);
 			for (unsigned int j = 0; j < pMesh->mNumFaces; j++)
+			{
 				memcpy(pCurrent + j * 3, pMesh->mFaces[j].mIndices, sizeof(unsigned int) * 3);
+			}
 		}
 
 		if (pMesh->HasBones())
@@ -323,7 +326,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			indexData.Stride = sizeof(unsigned int) * 4;
 			indexData.CreateBuffer();
 			memset(indexData.pData, -1, indexData.ByteSize());
-			
+
 			Geometry::VertexData& weightData = pGeometry->GetVertexDataUnsafe("BLENDWEIGHT");
 			weightData.Count = pMesh->mNumVertices;
 			weightData.Stride = sizeof(float) * 4;
@@ -379,7 +382,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 		{
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
 			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
-			
+
 			AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
@@ -419,7 +422,7 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 						key.Rotation = TxDXQuaternion(GetRotation(pAnimNode, time));
 						key.Scale = ToDXVector3(GetScale(pAnimNode, time));
 						key.Position = ToDXVector3(GetPosition(pAnimNode, time));
-						animNode.Keys.push_back(std::pair<float, AnimationKey>(time, key));
+						animNode.Keys.push_back(AnimationNode::KeyPair(time, key));
 					}
 					pNewAnimation->SetNode(animNode);
 				});
@@ -468,7 +471,7 @@ void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 			pParentBone->Children.push_back(pBone);
 		pParentBone = pBone;
 	}
-	
+
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
 		ProcessNode(pNode->mChildren[i], globalTransform, pParentBone);
@@ -517,36 +520,36 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	};
 	std::vector<ElementInfo> elementInfo;
 	for (VertexElement& element : elementDesc)
+	{
 		elementInfo.push_back(element);
+	}
 
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-	const int taskCount = 4;
-	int vertexCountPerThread = pGeometry->GetVertexCount() / taskCount;
-	int remaining = pGeometry->GetVertexCount() % taskCount;
+	const int taskCount = (int)pQueue->GetThreadCount();
+	const int vertexCountPerThread = pGeometry->GetVertexCount() / taskCount;
+	const int remaining = pGeometry->GetVertexCount() % taskCount;
 
 	const std::map <std::string, Geometry::VertexData>& rawData = pGeometry->GetRawData();
 	for (int i = 0; i < taskCount; ++i)
 	{
 		int vertexCount = vertexCountPerThread;
 		if (i >= taskCount - 1)
+		{
 			vertexCount += remaining;
+		}
 		int startVertex = i * vertexCountPerThread;
 
 		AsyncTask* pTask = pQueue->GetFreeTask();
-		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* pTask, unsigned index)
+		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* /*pTask*/, unsigned /*index*/)
 		{
 			AUTOPROFILE(Mesh_CreateVertexBufferForGeometry);
 
-			UNREFERENCED_PARAMETER(pTask);
-			UNREFERENCED_PARAMETER(index);
 			char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
 			for (int i = 0; i < vertexCount; i++)
 			{
-				int currentVertex = startVertex + i;
-				for (size_t e = 0; e < elementInfo.size(); e++)
+				const int currentVertex = startVertex + i;
+				for (const ElementInfo& element : elementInfo)
 				{
-					const ElementInfo& element = elementInfo[e];
-
 					const void* pData = (const char*)rawData.at(element.semanticName).pData + element.elementSize * currentVertex;
 					memcpy(pDataStart, pData, element.elementSize);
 					pDataStart = (char*)pDataStart + element.elementSize;
@@ -578,9 +581,9 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 void Mesh::RefreshMemoryUsage()
 {
 	unsigned int memoryUsage = 0;
-	for (size_t i = 0; i < m_Geometries.size(); i++)
+	for(const auto& pGeometry : m_Geometries)
 	{
-		for (const auto& item : m_Geometries[i]->GetRawData())
+		for (const auto& item : pGeometry->GetRawData())
 		{
 			memoryUsage += item.second.ByteSize();
 		}
@@ -589,7 +592,7 @@ void Mesh::RefreshMemoryUsage()
 
 	for (const auto& pAnimation : m_Animations)
 	{
-		for (const auto node : pAnimation->GetNodes())
+		for (const auto& node : pAnimation->GetNodes())
 		{
 			memoryUsage += (unsigned int)node.Keys.size() * sizeof(AnimationKey);
 		}

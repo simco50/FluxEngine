@@ -49,7 +49,7 @@ Transform* Component::GetTransform()
 	return m_pNode->GetTransform();
 }
 
-Component* Component::GetComponent(StringHash type)
+Component* Component::GetComponent(StringHash type) const
 {
 	checkf(m_pNode, "[Component::GetComponent] > Component is not attached to a SceneNode");
 	return m_pNode->GetComponent(type);

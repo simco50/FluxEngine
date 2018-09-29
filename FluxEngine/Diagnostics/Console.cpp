@@ -4,6 +4,7 @@
 #include "Core\Config.h"
 
 static Console* consoleInstance = nullptr;
+
 Console::Console()
 {
 	AUTOPROFILE(Console_Initialize);
@@ -151,13 +152,13 @@ void Console::Log(const std::string &message, LogType type)
 		}
 
 		stream << message;
-		std::string output = stream.str();
-
+		const std::string output = stream.str();
 		std::cout << output << std::endl;
 		if (consoleInstance->m_ConsoleHandle)
+		{
 			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-
-		consoleInstance->m_pFileLog->WriteLine(output.c_str());
+		}
+		consoleInstance->m_pFileLog->WriteLine(output);
 
 		consoleInstance->m_History.push_back(LogEntry(message, type));
 		if (consoleInstance->m_History.size() > 50)

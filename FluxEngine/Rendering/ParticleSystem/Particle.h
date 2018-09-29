@@ -20,14 +20,13 @@ private:
 	void GetPositionAndDirection(Vector3& position, Vector3& direction);
 	ParticleVertex m_VertexInfo = ParticleVertex();
 	ParticleSystem* m_pEmitterSettings;
-	bool m_IsActive = false;
 	float m_LifeTimer = 0.0f;
-	float m_InitSize = 0.0f;
 	Vector3 m_Direction;
 	float m_StartRotation = 0.0f;
 
 	float m_LifeTime = 0;
 	float m_StartVelocity = 0;
 	float m_StartSize = 0;
+	bool m_IsActive = false;
 };
 

@@ -38,10 +38,10 @@ public:
 
 	virtual void Release() = 0;
 
-	virtual bool Load(InputStream& inputStream) override { UNREFERENCED_PARAMETER(inputStream); return true; }
+	virtual bool Load(InputStream& /*inputStream*/) override { return true; }
 	virtual bool Resolve(bool force) = 0;
 
-	void SetAddressMode(const TextureAddressMode addressMode);
+	void SetAddressMode(TextureAddressMode addressMode);
 	void SetMipLevels(const int mipLevels) { m_MipLevels = mipLevels; }
 	void SetResolveDirty(bool dirty) { m_ResolveTextureDirty = dirty; }
 	void RegenerateMips();
@@ -65,13 +65,13 @@ public:
 protected:
 	virtual bool Create() { return true; }
 
-	int GetLevelWidth(unsigned int mipLevel);
-	int GetLevelHeight(unsigned int mipLevel);
-	int GetLevelDepth(unsigned int mipLevel);
-	int GetRowDataSize(unsigned int width);
+	int GetLevelWidth(unsigned int mipLevel) const;
+	int GetLevelHeight(unsigned int mipLevel) const;
+	int GetLevelDepth(unsigned int mipLevel) const;
+	int GetRowDataSize(unsigned int width) const;
 
-	unsigned int GetSRVFormat(const unsigned int format);
-	unsigned int GetDSVFormat(const unsigned int format);
+	static unsigned int GetSRVFormat(unsigned int format);
+	static unsigned int GetDSVFormat(unsigned int format);
 
 	static unsigned int TextureFormatFromCompressionFormat(const ImageFormat& format, bool sRgb);
 

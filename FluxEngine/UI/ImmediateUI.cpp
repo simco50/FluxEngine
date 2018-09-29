@@ -5,7 +5,6 @@
 #include "Rendering\Core\IndexBuffer.h"
 #include "Rendering\Core\Shader.h"
 #include "Rendering\Core\ShaderVariation.h"
-#include "Rendering\Core\ConstantBuffer.h"
 #include "Rendering\Core\Texture.h"
 #include "Rendering\Core\DepthStencilState.h"
 #include "Rendering\Core\BlendState.h"
@@ -13,8 +12,8 @@
 #include "Input/InputEngine.h"
 #include "Rendering\Core\Texture2D.h"
 
-ImmediateUI::ImmediateUI(Context* pContext) :
-	Subsystem(pContext)
+ImmediateUI::ImmediateUI(Context* pContext)
+	: Subsystem(pContext)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
 
@@ -22,7 +21,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 
 	m_pInput = pContext->GetSubsystem<InputEngine>();
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
-	m_SDLEventHandle = m_pInput->OnHandleSDL().AddRaw(this, &ImmediateUI::HandleSDLEvent);
+	m_SDLEventHandle = m_pInput->OnHandleSDL().AddStatic(&ImmediateUI::HandleSDLEvent);
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
@@ -47,7 +46,6 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	io.KeyMap[ImGuiKey_X] = (int)KeyboardKey::KEY_X;
 	io.KeyMap[ImGuiKey_Y] = (int)KeyboardKey::KEY_Y;
 	io.KeyMap[ImGuiKey_Z] = (int)KeyboardKey::KEY_Z;
-	io.RenderDrawListsFn = nullptr;
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
 
 	SetStyle(true, 0.9f);
@@ -108,7 +106,7 @@ void ImmediateUI::NewFrame()
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
-	
+
 	Vector2 mousePos = m_pInput->GetMousePosition();
 	io.MousePos.x = mousePos.x;
 	io.MousePos.y = mousePos.y;
@@ -187,9 +185,9 @@ void ImmediateUI::Render()
 			else
 			{
 				m_pGraphics->SetScissorRect(true, {
-					(int)pcmd->ClipRect.x, 
-					(int)pcmd->ClipRect.y, 
-					(int)pcmd->ClipRect.z, 
+					(int)pcmd->ClipRect.x,
+					(int)pcmd->ClipRect.y,
+					(int)pcmd->ClipRect.z,
 					(int)pcmd->ClipRect.w });
 				m_pGraphics->SetTexture(TextureSlot::Diffuse, static_cast<Texture*>(pcmd->TextureId));
 				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
@@ -241,23 +239,26 @@ void ImmediateUI::HandleSDLEvent(SDL_Event* pEvent)
 		io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
 		return;
 	}
+	default:
+		return;
 	}
-	return;
 }
 
 void ImmediateUI::SetStyle(bool dark, float alpha)
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 
+	// light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
 	style.Alpha = 1.0f;
 	style.FrameRounding = 3.0f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 1.00f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
 	style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
 	style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
 	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
 	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
@@ -265,11 +266,12 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
 	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 0.80f);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.49f, 0.49f, 0.49f, 0.80f);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
+	//style.Colors[ImGuiCol_ComboBg] = ImVec4(0.86f, 0.86f, 0.86f, 0.99f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
@@ -280,9 +282,12 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
 	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+	//style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
+	//style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	//style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
 	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -292,7 +297,7 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 
 	if (dark)
 	{
-		for (int i = 0; i < ImGuiCol_COUNT; i++)
+		for (int i = 0; i <= ImGuiCol_COUNT; i++)
 		{
 			ImVec4& col = style.Colors[i];
 			float H, S, V;

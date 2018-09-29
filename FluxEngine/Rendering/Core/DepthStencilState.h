@@ -1,3 +1,4 @@
+#pragma once
 #include "GraphicsDefines.h"
 
 class Graphics;
@@ -14,10 +15,10 @@ public:
 	bool IsDirty() const { return m_IsDirty; }
 	unsigned int GetStencilRef() const { return m_StencilRef; }
 
-	void SetDepthEnabled(const bool enabled);
-	void SetDepthWrite(const bool enabled);
+	void SetDepthEnabled(bool enabled);
+	void SetDepthWrite(bool enabled);
 	void SetDepthTest(const CompareMode& comparison);
-	void SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, const unsigned char writeMask);
+	void SetStencilTest(bool stencilEnabled, CompareMode mode, StencilOperation pass, StencilOperation fail, StencilOperation zFail, unsigned int stencilRef, unsigned char compareMask, unsigned char writeMask);
 private:
 	bool m_IsDirty = true;
 

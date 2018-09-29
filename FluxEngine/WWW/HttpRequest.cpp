@@ -10,13 +10,13 @@ namespace WinInet
 	{
 		std::string errorString;
 		char buffer[1024];
-		uint32 length = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE,
+		const uint32 length = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE,
 			GetModuleHandle(TEXT("wininet.dll")),
 			errorCode,
 			0,
 			buffer,
 			ARRAYSIZE(buffer),
-			NULL);
+			nullptr);
 		if (length > 0)
 		{
 			errorString += buffer;
@@ -43,7 +43,7 @@ namespace WinInet
 	{
 		ScopeLock lock(HttpConnection::Get()->RequestLock());
 
-		int errorCode = Misc::GetLastErrorCode();
+		const int errorCode = Misc::GetLastErrorCode();
 		if (errorCode != 0 &&
 			errorCode != ERROR_HTTP_HEADER_NOT_FOUND &&
 			errorCode != ERROR_IO_PENDING)
@@ -103,7 +103,7 @@ namespace WinInet
 			FLUX_LOG_INFO(debugLog, VeryVerbose, "[WinInet::InternetCallback()] STATUS_REDIRECT: %p", context);
 			break;
 		case INTERNET_STATUS_REQUEST_COMPLETE:
-			if (statusInformation != NULL)
+			if (statusInformation != nullptr)
 			{
 				const INTERNET_ASYNC_RESULT* asyncResult = (const INTERNET_ASYNC_RESULT*)statusInformation;
 				if (asyncResult->dwResult == 0)
@@ -153,7 +153,7 @@ namespace WinInet
 		case INTERNET_STATUS_COOKIE_HISTORY:
 		{
 			const InternetCookieHistory* CookieHistory = (const InternetCookieHistory*)statusInformation;
-			FLUX_LOG_INFO(debugLog, VeryVerbose, "[WinInet::InternetCallback()] COOKIE_HISTORY: %p. Accepted: %u. Leashed: %u. Downgraded: %u. Rejected: %u.", 
+			FLUX_LOG_INFO(debugLog, VeryVerbose, "[WinInet::InternetCallback()] COOKIE_HISTORY: %p. Accepted: %u. Leashed: %u. Downgraded: %u. Rejected: %u.",
 				context
 				, CookieHistory->fAccepted
 				, CookieHistory->fLeashed
@@ -199,12 +199,12 @@ bool HttpRequest::StartRequest()
 	InternetSetOption(m_ConnectionHandle, INTERNET_OPTION_RECEIVE_TIMEOUT, &httpSendTimeout, sizeof(uint32));
 	uint32 httpReceiveTimeout = Config::GetInt("HttpReceiveTimeout", "HTTP", 360);
 	InternetSetOption(m_ConnectionHandle, INTERNET_OPTION_SEND_TIMEOUT, &httpReceiveTimeout, sizeof(uint32));
-	
+
 	uint32 requestFlags = m_Url.GetComponents().nScheme == INTERNET_SCHEME_HTTPS ? INTERNET_FLAG_SECURE : 0;
 	requestFlags |= INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_PRAGMA_NOCACHE;
 	requestFlags |= INTERNET_FLAG_KEEP_CONNECTION;
 
-	std::string fullPath = m_Url.GetPath() + m_Url.GetExtraInfo();
+	std::string fullPath = m_Url.GetPath() + std::string(m_Url.GetExtraInfo());
 	m_RequestHandle = HttpOpenRequest(m_ConnectionHandle, m_Verb.size() > 0 ? m_Verb.c_str() : nullptr, fullPath.c_str(), nullptr, nullptr, nullptr, requestFlags, (DWORD_PTR)this);
 	if (m_RequestHandle == nullptr)
 	{
@@ -215,7 +215,7 @@ bool HttpRequest::StartRequest()
 			return false;
 		}
 	}
-	
+
 	std::string headers = GenerateHeaderBuffer((uint32)m_RequestPayload.size());
 	BOOL requestSent = HttpSendRequest(m_RequestHandle, headers.c_str(), (uint32)headers.size(), m_RequestPayload.size() > 0 ? m_RequestPayload.data() : nullptr, (DWORD)m_RequestPayload.size());
 	int lastError = Misc::GetLastErrorCode();
@@ -268,7 +268,7 @@ void HttpRequest::SetHeader(const std::string& name, const std::string& data)
 std::string HttpRequest::GenerateHeaderBuffer(uint32 contentLength)
 {
 	std::stringstream result;
-	for (const std::pair<std::string, std::string>& header : m_RequestHeaders)
+	for (const auto& header : m_RequestHeaders)
 	{
 		result << header.first << ": " << header.second << "\r\n";
 	}
@@ -333,22 +333,22 @@ INTERNET_PORT RequestUrl::GetPort()
 	return m_Components.nPort;
 }
 
-const std::string RequestUrl::GetPath()
+const char* RequestUrl::GetPath()
 {
 	if (!m_Cracked)
 	{
 		CrackUrl();
 	}
-	return std::string(m_Components.lpszUrlPath);
+	return m_Components.lpszUrlPath;
 }
 
-const std::string RequestUrl::GetExtraInfo()
+const char* RequestUrl::GetExtraInfo()
 {
 	if (!m_Cracked)
 	{
 		CrackUrl();
 	}
-	return m_Components.lpszExtraInfo ? std::string(m_Components.lpszExtraInfo) : std::string();
+	return m_Components.lpszExtraInfo ? m_Components.lpszExtraInfo : "";
 }
 
 bool HttpResponse::ProcessResponse(bool& finished)
@@ -379,7 +379,7 @@ bool HttpResponse::ProcessResponse(bool& finished)
 	}
 	if (QueryHeaderString(HTTP_QUERY_CONTENT_LENGTH, "", headerLength))
 	{
-		contentLength = stoi(headerLength);
+		//contentLength = stoi(headerLength);
 	}
 
 	m_Success = true;
@@ -440,7 +440,7 @@ bool HttpResponse::QueryResponseCode()
 bool HttpResponse::QueryResponseHeaders()
 {
 	DWORD headerSize = 0;
-	if (!HttpQueryInfo(m_pOwner->GetRequestHandle(), HTTP_QUERY_RAW_HEADERS_CRLF, 0, &headerSize, 0))
+	if (!HttpQueryInfo(m_pOwner->GetRequestHandle(), HTTP_QUERY_RAW_HEADERS_CRLF, nullptr, &headerSize, nullptr))
 	{
 		int lastError = Misc::GetLastErrorCode();
 		if (lastError != ERROR_INSUFFICIENT_BUFFER)
@@ -526,8 +526,8 @@ bool HttpConnection::InitializeConnection()
 
 	m_InternetHandle = InternetOpen("test",
 		INTERNET_OPEN_TYPE_PRECONFIG,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		INTERNET_FLAG_ASYNC);
 
 	if (m_InternetHandle == nullptr)

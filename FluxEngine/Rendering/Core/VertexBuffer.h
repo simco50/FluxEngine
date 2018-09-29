@@ -61,7 +61,7 @@ struct VertexElement
 		return other.GetHash() == GetHash();
 	}
 
-	static char* GetSemanticOfType(VertexElementSemantic semantic);
+	static const char* GetSemanticOfType(VertexElementSemantic semantic);
 
 	static DXGI_FORMAT GetFormatOfType(VertexElementType type);
 
@@ -82,8 +82,10 @@ struct VertexElement
 		case VertexElementType::UINT4:
 		case VertexElementType::INT4:
 			return 4 * sizeof(float);
+		case VertexElementType::MAX_VERTEX_ELEMENT_TYPES:
+		default:
+			return 0;
 		}
-		return 0;
 	}
 };
 
@@ -95,7 +97,7 @@ public:
 
 	DELETE_COPY(VertexBuffer)
 
-	void Create(const int vertexCount, std::vector<VertexElement>& elements, bool dynamic = false);
+	void Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic = false);
 	void SetData(void* pData);
 
 	void* GetBuffer() const { return m_pBuffer; }
@@ -103,6 +105,7 @@ public:
 	void* Map(bool discard);
 	void Unmap();
 
+	unsigned int GetSize() const { return m_VertexCount * m_VertexStride; }
 	unsigned int GetVertexStride() const { return m_VertexStride; }
 	unsigned int GetVertexCount() const { return m_VertexCount; }
 	const std::vector<VertexElement>& GetElements() const { return m_Elements; }

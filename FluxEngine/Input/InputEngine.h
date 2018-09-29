@@ -4,19 +4,51 @@
 
 class Graphics;
 
-struct JoystickState
+class JoystickState
 {
+public:
+	static const int MAX_BUTTONS = SDL_CONTROLLER_BUTTON_MAX;
+	static const int MAX_AXIS = SDL_CONTROLLER_BUTTON_MAX;
+	static const int MAX_HATS = 4;
+
+	float GetButton(ControllerButton axis) const
+	{
+		return Buttons[(int)axis];
+	}
+	float GetButtonDown(ControllerButton axis) const
+	{
+		return ButtonsPressed[(int)axis];
+	}
+	float GetAxis(ControllerAxis axis) const
+	{
+		return Axes[(int)axis];
+	}
+	float GetAxis(ControllerAxis axis, float deadZone) const
+	{
+		if (abs(Axes[(int)axis]) < deadZone)
+		{
+			return 0;
+		}
+		return Axes[(int)axis];
+	}
+
+private:
+	friend class InputEngine;
+
 	std::string Name;
 	int Index = -1;
 	SDL_Joystick* pJoystick = nullptr;
 	SDL_GameController* pController = nullptr;
 	SDL_Haptic* pHaptic = nullptr;
 
-	std::vector<bool> Buttons;
-	std::vector<bool> ButtonsPressed;
-	std::vector<float> Axes;
-	std::vector<int> Hats;
+	bool Buttons[MAX_BUTTONS];
+	bool ButtonsPressed[MAX_BUTTONS];
+	float Axes[MAX_AXIS];
+	int Hats[MAX_HATS];
 };
+
+DECLARE_MULTICAST_DELEGATE(OnSDLEvent, SDL_Event*);
+DECLARE_MULTICAST_DELEGATE(OnWindowSizeChangedDelegate, int, int);
 
 class InputEngine : public Subsystem
 {
@@ -44,12 +76,12 @@ public:
 	bool IsMouseButtonDown(MouseKey button) const;
 	bool IsMouseButtonPressed(MouseKey button) const;
 
-	MulticastDelegate<SDL_Event*>& OnHandleSDL() { return m_OnHandleSDLEvent; }
-	MulticastDelegate<int, int>& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
+	OnSDLEvent& OnHandleSDL() { return m_OnHandleSDLEvent; }
+	OnWindowSizeChangedDelegate& OnWindowSizeChanged() { return m_OnWindowSizeChangedEvent; }
 
 	const JoystickState* GetJoystickStateFromIndex(int index) const;
 
-	void Rumble(int index);
+	bool Rumble(const int index, const float strength, const unsigned int length);
 
 	void DrawDebugJoysticks();
 
@@ -61,9 +93,10 @@ private:
 	void ResetGamepads();
 	bool OpenGamepad(int index);
 	bool CloseGamepad(int index);
+	void CloseAllGamepads();
 
-	MulticastDelegate<SDL_Event*> m_OnHandleSDLEvent;
-	MulticastDelegate<int, int> m_OnWindowSizeChangedEvent;
+	OnSDLEvent m_OnHandleSDLEvent;
+	OnWindowSizeChangedDelegate m_OnWindowSizeChangedEvent;
 
 	Graphics * m_pGraphics = nullptr;
 
@@ -82,5 +115,4 @@ private:
 	std::unordered_map<SDL_JoystickID, JoystickState> m_Joysticks;
 
 	bool m_Enabled;
-	bool m_ForceToCenter;
 };

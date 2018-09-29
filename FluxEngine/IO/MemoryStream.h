@@ -16,6 +16,6 @@ public:
 	virtual size_t Read(void* pDestination, const size_t size) override;
 
 private:
-	void* Current() { return (char*)m_pBuffer + m_FilePointer; }
+	void* Current() const;
 	void* m_pBuffer;
 };

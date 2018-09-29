@@ -25,8 +25,9 @@ inline D3D11_COMPARISON_FUNC D3D11ComparisonFunction(CompareMode mode)
 	case CompareMode::LESSEQUAL:		return D3D11_COMPARISON_LESS_EQUAL;
 	case CompareMode::GREATER:			return D3D11_COMPARISON_GREATER;
 	case CompareMode::GREATEREQUAL:		return D3D11_COMPARISON_GREATER_EQUAL;
+	case CompareMode::UNDEFINED:
+	default:							return D3D11_COMPARISON_LESS;
 	}
-	return D3D11_COMPARISON_LESS;
 }
 
 inline D3D11_FILL_MODE D3D11FillMode(FillMode mode)
@@ -35,8 +36,8 @@ inline D3D11_FILL_MODE D3D11FillMode(FillMode mode)
 	{
 	case FillMode::SOLID: return D3D11_FILL_SOLID;
 	case FillMode::WIREFRAME: return D3D11_FILL_WIREFRAME;
+	default: return D3D11_FILL_SOLID;
 	}
-	return D3D11_FILL_SOLID;
 }
 
 inline D3D11_CULL_MODE D3D11CullMode(CullMode mode)
@@ -46,8 +47,8 @@ inline D3D11_CULL_MODE D3D11CullMode(CullMode mode)
 	case CullMode::BACK: return D3D11_CULL_BACK;
 	case CullMode::NONE: return D3D11_CULL_NONE;
 	case CullMode::FRONT: return D3D11_CULL_FRONT;
+	default: return D3D11_CULL_BACK;
 	}
-	return D3D11_CULL_BACK;
 }
 
 inline D3D11_STENCIL_OP D3D11StencilOperation(StencilOperation operation)
@@ -187,6 +188,9 @@ inline D3D11_RENDER_TARGET_BLEND_DESC D3D11RenderTargetBlendDesc(BlendMode mode,
 		desc.DestBlendAlpha = D3D11_BLEND_ONE;
 		desc.BlendOpAlpha = D3D11_BLEND_OP_REV_SUBTRACT;
 		break;
+	case BlendMode::UNDEFINED:
+	default:
+		return desc;
 	}
 	return desc;
 }

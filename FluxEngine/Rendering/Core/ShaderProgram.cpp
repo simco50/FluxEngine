@@ -3,7 +3,7 @@
 #include "ShaderVariation.h"
 #include "ConstantBuffer.h"
 
-ShaderProgram::ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX> shaders)
+ShaderProgram::ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX>& shaders)
 {
 	std::hash<std::string> hasher;
 	for (ShaderVariation* pShader : shaders)

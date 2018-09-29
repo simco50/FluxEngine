@@ -5,7 +5,7 @@
 #include "../ShaderVariation.h"
 #include "../VertexBuffer.h"
 
-void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation)
+void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount, ShaderVariation* pVariation)
 {
 	AUTOPROFILE_DESC(InputLayout_Create, pVariation->GetName());
 
@@ -33,7 +33,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 		}
 	}
 	const std::vector<char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout));
 }
 
 void InputLayout::Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)

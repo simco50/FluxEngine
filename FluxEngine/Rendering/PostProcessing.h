@@ -21,7 +21,7 @@ public:
 	Material* GetMaterial(const uint32 index) const { return m_Materials[index].second; }
 	void SetMaterialActive(const uint32 index, const bool active) { m_Materials[index].first = active; }
 	bool& GetMaterialActive(const uint32 index) { return m_Materials[index].first; }
-	
+
 private:
 	void OnResize(const int width, const int height);
 

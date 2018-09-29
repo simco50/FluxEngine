@@ -13,11 +13,11 @@ public:
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 
-	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
-	bool CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
+	unsigned int GetMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
+	bool CheckMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
 
 private:
-	static bool GetPrimitiveType(const PrimitiveType primitiveType, const unsigned int elementCount, D3D11_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
+	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D11_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
 
 	ComPtr<IDXGIAdapter> m_pAdapter;
 	ComPtr<ID3D11Device> m_pDevice;

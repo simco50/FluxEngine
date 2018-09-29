@@ -9,12 +9,12 @@ enum class ShaderType;
 
 struct ShaderParameter
 {
-	ShaderType Type;
+	ShaderType Type = ShaderType::MAX;
 	std::string Name;
-	int Buffer;
-	int Size;
-	int Offset;
-	ConstantBuffer* pBuffer;
+	int Buffer = 0;
+	int Size = 0;
+	int Offset = 0;
+	ConstantBuffer* pBuffer = nullptr;
 };
 
 class ShaderVariation : public Object
@@ -22,7 +22,7 @@ class ShaderVariation : public Object
 	FLUX_OBJECT(ShaderVariation, Object)
 
 public:
-	ShaderVariation(Context* pContext, Shader* pOwner, const ShaderType type);
+	ShaderVariation(Context* pContext, Shader* pOwner, ShaderType type);
 	~ShaderVariation();
 
 	bool Create();

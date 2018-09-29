@@ -11,6 +11,7 @@
 #include "Mesh.h"
 #include "Geometry.h"
 #include "Light.h"
+#include "IO/MemoryStream.h"
 
 DebugRenderer::DebugRenderer(Context* pContext) :
 	Subsystem(pContext)
@@ -51,33 +52,23 @@ void DebugRenderer::Render()
 		m_pVertexBuffer->Create(totalPrimitives + 100, m_ElementDesc, true);
 	}
 
-	char* pData = (char*)m_pVertexBuffer->Map(true);
-	char* pDestination = pData;
+	void* pData = m_pVertexBuffer->Map(true);
+	MemoryStream memStream(pData, m_pVertexBuffer->GetSize());
 	for (const DebugLine& line : m_Lines)
 	{
-		memcpy(pDestination, &line.Start, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.ColorStart, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &line.End, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.ColorEnd, sizeof(Color));
-		pDestination += sizeof(Color);
+		memStream.Write(&line.Start, sizeof(Vector3));
+		memStream.Write(&line.ColorStart, sizeof(Color));
+		memStream.Write(&line.End, sizeof(Vector3));
+		memStream.Write(&line.ColorEnd, sizeof(Color));
 	}
 	for (const DebugTriangle& triangle : m_Triangles)
 	{
-		memcpy(pDestination, &triangle.A, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorA, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &triangle.B, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorB, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &triangle.C, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorC, sizeof(Color));
-		pDestination += sizeof(Color);
+		memStream.Write(&triangle.A, sizeof(Vector3));
+		memStream.Write(&triangle.ColorA, sizeof(Color));
+		memStream.Write(&triangle.B, sizeof(Vector3));
+		memStream.Write(&triangle.ColorB, sizeof(Color));
+		memStream.Write(&triangle.C, sizeof(Vector3));
+		memStream.Write(&triangle.ColorC, sizeof(Color));
 	}
 
 	m_pVertexBuffer->Unmap();
@@ -277,7 +268,7 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 
 void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& color)
 {
-	std::vector<XMFLOAT3> corners(frustrum.CORNER_COUNT);
+	std::vector<XMFLOAT3> corners(BoundingFrustum::CORNER_COUNT);
 	frustrum.GetCorners(corners.data());
 
 	AddLine(corners[0], corners[1], color);

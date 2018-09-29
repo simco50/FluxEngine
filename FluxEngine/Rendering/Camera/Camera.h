@@ -26,10 +26,10 @@ public:
 	void SetView(const Matrix& view);
 	void UpdateFrustum();
 
-	void SetFOW(const float fov);
+	void SetFOW(float fov);
 	void SetViewport(float x, float y, float width, float height);
 	FloatRect GetViewport() const { return GetAbsoluteViewport(); }
-	void SetClippingPlanes(const float nearPlane, const float farPlane);
+	void SetClippingPlanes(float nearPlane, float farPlane);
 
 	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
 
@@ -39,8 +39,8 @@ public:
 	float GetNearPlane() const { return m_NearPlane; }
 	float GetFarPlane() const { return m_FarPlane; }
 
-	void SetNearPlane(const float nearPlane);
-	void SetFarPlane(const float farPlane);
+	void SetNearPlane(float nearPlane);
+	void SetFarPlane(float farPlane);
 
 	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
 

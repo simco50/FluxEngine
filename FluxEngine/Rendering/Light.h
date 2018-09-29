@@ -16,14 +16,16 @@ public:
 		Directional = 0,
 		Point = 1,
 		Spot = 2,
+		MAX
 	};
 
+#pragma pack(16)
 	struct Data
 	{
-		bool Enabled = true;
+		int Enabled = true;
 		Vector3 Position;
 		Vector3 Direction;
-		Vector4 Color = Vector4(1, 1, 1, 1);
+		Color Colour = Color(1, 1, 1, 1);
 		float Intensity = 1.0f;
 		float Range = 1.0f;
 		float SpotLightAngle = 45.0f;
@@ -31,14 +33,15 @@ public:
 		Type Type = Light::Type::Directional;
 	};
 
-	void SetEnabled(const bool enabled) { m_Data.Enabled = enabled; }
+	void SetEnabled(const bool enabled) { m_Data.Enabled = (int)enabled; }
 	void SetType(const Type type);
 	void SetRange(const float range) { m_Data.Range = range; }
 	void SetIntesity(const float intensity) { m_Data.Intensity = intensity; }
-	void SetColor(const Vector4& color) { m_Data.Color = color; }
+	void SetColor(const Color& color) { m_Data.Colour = color; }
 	void SetShadowCasting(const bool enabled);
 
 	constexpr static size_t GetDataStride() { return sizeof(Data); }
+	Data* GetData() { return &m_Data; }
 	const Data* GetData() const { return &m_Data; }
 
 	virtual void OnSceneSet(Scene* pScene) override;

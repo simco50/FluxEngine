@@ -63,17 +63,6 @@ public:
 	operator bool() { return m_pPtr != nullptr; }
 	operator bool() const { return m_pPtr != nullptr; }
 
-	T** operator&()
-	{
-		return &m_pPtr;
-	}
-
-	T* const * operator&() const
-	{
-		return &m_pPtr;
-	}
-
-
 	T* operator*() const
 	{
 		return m_pPtr;

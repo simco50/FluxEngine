@@ -40,9 +40,8 @@ void Scene::Update()
 	m_pRenderer->Draw();
 }
 
-void Scene::AddChild(SceneNode* pNode)
+void Scene::TrackChild(SceneNode* pNode)
 {
-	pNode->OnSceneSet(this);
 	m_Nodes.push_back(pNode);
 }
 
@@ -63,8 +62,7 @@ SceneNode* Scene::FindNode(const std::string& name)
 	return nullptr;
 }
 
-void Scene::OnSceneSet(Scene* pScene)
+void Scene::OnSceneSet(Scene* /*pScene*/)
 {
-	UNREFERENCED_PARAMETER(pScene);
 	SceneNode::OnSceneSet(this);
 }

@@ -28,7 +28,7 @@ public:
 	virtual bool SetPointerFromEnd(const size_t position) override;
 
 private:
-	bool CreateDirectoryTree(const std::string& path);
+	static bool CreateDirectoryTree(const std::string& path);
 
 	FileHandle m_Handle = FILE_HANDLE_INVALID;
 };

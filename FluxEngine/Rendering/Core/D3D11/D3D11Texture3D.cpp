@@ -40,7 +40,7 @@ bool Texture3D::Load(InputStream& inputStream)
 	return true;
 }
 
-bool Texture3D::SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
+bool Texture3D::SetSize(int width, int height, int depth, unsigned int format, TextureUsage usage, int multiSample, void* pTexture)
 {
 	AUTOPROFILE(Texture3D_SetSize);
 
@@ -65,7 +65,7 @@ bool Texture3D::SetSize(const int width, const int height, const int depth, cons
 	return true;
 }
 
-bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData)
+bool Texture3D::SetData(unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData)
 {
 	AUTOPROFILE(Texture3D_SetData);
 
@@ -162,7 +162,8 @@ bool Texture3D::Create()
 {
 	AUTOPROFILE(Texture3D_Create);
 
-	D3D11_TEXTURE3D_DESC desc = {};
+	D3D11_TEXTURE3D_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_TEXTURE3D_DESC));
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = m_Usage == TextureUsage::DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Format = (DXGI_FORMAT)m_TextureFormat;

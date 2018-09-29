@@ -15,8 +15,8 @@ namespace Compression
 		const size_t BUFSIZE = 128 * 1024;
 
 		z_stream strm;
-		strm.zalloc = 0;
-		strm.zfree = 0;
+		strm.zalloc = nullptr;
+		strm.zfree = nullptr;
 		strm.next_in = reinterpret_cast<unsigned char*>(pInData);
 		strm.avail_in = (uInt)inDataSize;
 		strm.next_out = reinterpret_cast<unsigned char*>(outData.data());
@@ -28,7 +28,7 @@ namespace Compression
 
 		while (strm.avail_in != 0)
 		{
-			int res = inflate(&strm, Z_NO_FLUSH);
+			const int res = inflate(&strm, Z_NO_FLUSH);
 			if (res != Z_OK && res != Z_STREAM_END)
 			{
 				return false;
@@ -69,8 +69,8 @@ namespace Compression
 		unsigned char temp_buffer[BUFSIZE];
 
 		z_stream strm;
-		strm.zalloc = 0;
-		strm.zfree = 0;
+		strm.zalloc = nullptr;
+		strm.zfree = nullptr;
 		strm.next_in = reinterpret_cast<unsigned char*>(pInData);
 		strm.avail_in = (uInt)inDataSize;
 		strm.next_out = temp_buffer;
