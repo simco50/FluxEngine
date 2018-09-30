@@ -102,11 +102,7 @@ void FluxCore::InitGame()
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 
-	SceneNode* pLight = m_pScene->CreateChild("Light");
-	pLight->CreateComponent<Light>();
-	pLight->Rotate(45, 0, 0);
-
-	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -119,7 +115,7 @@ void FluxCore::InitGame()
 	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 	pPlaneModel->SetMesh(pPlaneMesh);
 	pPlaneModel->SetMaterial(pDefaultMaterial);
-	pPlaneNode->SetScale(5000);
+	pPlaneNode->SetScale(5000);*/
 
 	/*Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
 	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
@@ -164,7 +160,7 @@ void FluxCore::InitGame()
 		}
 	}*/
 
-	/*SceneNode* pLight = m_pScene->CreateChild("Light");
+	SceneNode* pLight = m_pScene->CreateChild("Light");
 	pLight->CreateComponent<Light>();
 	pLight->Rotate(45, 0, 0);
 
@@ -197,7 +193,7 @@ void FluxCore::InitGame()
 
 	pModel = pLastCube->CreateComponent<Model>();
 	pModel->SetMesh(pCubeMesh);
-	pModel->SetMaterial(pDefaultMaterial);*/
+	pModel->SetMaterial(pDefaultMaterial);
 }
 
 void FluxCore::ProcessFrame()
@@ -226,9 +222,9 @@ void FluxCore::ProcessFrame()
 	m_pGraphics->BeginFrame();
 
 	GameUpdate();
-	//m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
-	//m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
-	//m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
+	m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
+	m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
+	m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
 
 	m_pScene->Update();
 	m_pPostProcessing->Draw();
