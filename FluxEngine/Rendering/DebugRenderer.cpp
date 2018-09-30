@@ -413,14 +413,54 @@ void DebugRenderer::AddLight(const Light* pLight)
 	switch (pData->Type)
 	{
 	case Light::Type::Directional:
+		AddWireCylinder(pData->Position, pData->Direction, 200.0f, 50.0f, 10, Color(1.0f, 1.0f, 0.0f, 1.0f));
 		break;
 	case Light::Type::Point:
-		AddSphere(pData->Position, pData->Range, 8, 8, Color(1.0f, 0.0f, 0.0f, 1.0f), false);
+		AddSphere(pData->Position, pData->Range, 8, 8, Color(1.0f, 1.0f, 0.0f, 1.0f), false);
 		break;
 	case Light::Type::Spot:
+		AddWireCone(pData->Position, pData->Direction, pData->Range, pData->SpotLightAngle, 10, Color(1.0f, 1.0f, 0.0f, 1.0f));
 		break;
 	default:
 		break;
+	}
+}
+
+void DebugRenderer::AddWireCylinder(const Vector3& position, const Vector3& direction, const float height, const float radius, const int segments, const Color& color)
+{
+	Vector3 d;
+	direction.Normalize(d);
+
+	DebugSphere sphere(position, radius);
+	float t = XM_2PI / (segments + 1);
+
+	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position - d * (height / 2));
+	for (int i = 0; i < segments + 1; ++i)
+	{
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, i * t), world);
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, (i + 1) * t), world);
+		AddLine(a, b, color, color);
+		AddLine(a + d * height, b + d * height, color, color);
+		AddLine(a, a + d * height, color, color);
+	}
+}
+
+void DebugRenderer::AddWireCone(const Vector3& position, const Vector3& direction, const float height, const float angle, const int segments, const Color& color)
+{
+	Vector3 d;
+	direction.Normalize(d);
+
+	float radius = tan(Math::DegToRad(angle)) * height;
+	DebugSphere sphere(position, radius);
+	float t = XM_2PI / (segments + 1);
+
+	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position);
+	for (int i = 0; i < segments + 1; ++i)
+	{
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, i * t), world) + direction * height;
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, (i + 1) * t), world) + direction * height;
+		AddLine(a, b, color, color);
+		AddLine(a, position, color, color);
 	}
 }
 

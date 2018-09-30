@@ -70,8 +70,8 @@ void Rigidbody::UpdateBody()
 	if (m_pBody)
 	{
 		PxTransform transform = m_pBody->getGlobalPose();
-		m_pNode->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::WORLD);
-		m_pNode->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::WORLD);
+		m_pNode->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::World);
+		m_pNode->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::World);
 	}
 }
 

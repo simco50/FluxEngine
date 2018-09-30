@@ -138,6 +138,15 @@ struct Math
 			sqrtf(m._13 * m._13 + m._23 * m._23 + m._33 * m._33));
 	}
 
+	inline static Quaternion LookRotation(const Vector3& direction)
+	{
+		Vector3 v;
+		direction.Normalize(v);
+		float pitch = asin(-v.y);
+		float yaw = atan2(v.x, v.z);
+		return Quaternion::CreateFromYawPitchRoll(yaw, pitch, 0);
+	}
+
 	inline static std::string ToBinary(unsigned int number)
 	{
 		return Math::ToBase(number, 2);

@@ -102,7 +102,7 @@ void FluxCore::InitGame()
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));*/
 
-	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -158,9 +158,9 @@ void FluxCore::InitGame()
 			pLight->Rotate(45, 0, 0);
 			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
-	}*/
+	}
 
-	SceneNode* pLight = m_pScene->CreateChild("Light");
+	/*SceneNode* pLight = m_pScene->CreateChild("Light");
 	pLight->CreateComponent<Light>();
 	pLight->Rotate(45, 0, 0);
 
@@ -193,7 +193,7 @@ void FluxCore::InitGame()
 
 	pModel = pLastCube->CreateComponent<Model>();
 	pModel->SetMesh(pCubeMesh);
-	pModel->SetMaterial(pDefaultMaterial);
+	pModel->SetMaterial(pDefaultMaterial);*/
 }
 
 void FluxCore::ProcessFrame()
@@ -222,9 +222,9 @@ void FluxCore::ProcessFrame()
 	m_pGraphics->BeginFrame();
 
 	GameUpdate();
-	m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::SELF);
-	m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::SELF);
-	m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::SELF);
+	//m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
+	//m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
+	//m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
 
 	m_pScene->Update();
 	m_pPostProcessing->Draw();
@@ -251,7 +251,9 @@ void FluxCore::ObjectUI(SceneNode* pNode)
 
 	std::string name = pNode->GetName();
 	if (name.empty())
+	{
 		name = "SceneNode";
+	}
 	if (pChildren.empty() == false)
 	{
 		ImGui::PushID(pNode);
@@ -359,7 +361,7 @@ void FluxCore::RenderUI()
 					}, nullptr, (int)Light::Type::MAX);
 					if (ImGui::InputFloat3("Position", &pLight->GetData()->Position.x, 1))
 					{
-						pLight->GetNode()->SetPosition(pLight->GetData()->Position, Space::WORLD);
+						pLight->GetNode()->SetPosition(pLight->GetData()->Position, Space::World);
 					}
 					pLight->GetData()->Direction.Normalize();
 					if (ImGui::SliderFloat3("Direction", &pLight->GetData()->Direction.x, -1, 1))
@@ -368,9 +370,9 @@ void FluxCore::RenderUI()
 					}
 
 					ImGui::ColorEdit4("Color", &pLight->GetData()->Colour.x);
-					ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 100);
+					ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 3);
 					ImGui::SliderFloat("Range", &pLight->GetData()->Range, 0, 1000);
-					ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 180);
+					ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 90);
 					ImGui::SliderFloat("Attenuation", &pLight->GetData()->Attenuation, 0, 1);
 				}
 				ImGui::TreePop();

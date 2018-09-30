@@ -199,7 +199,7 @@ void SceneNode::UpdateWorld() const
 
 void SceneNode::Translate(const Vector3& translation, const Space space)
 {
-	if (space == Space::WORLD)
+	if (space == Space::World)
 	{
 		if (m_pParent && m_pParent != m_pScene)
 		{
@@ -234,7 +234,7 @@ void SceneNode::Rotate(const float x, const float y, const float z, const Space 
 
 void SceneNode::Rotate(const Quaternion& quaternion, const Space space)
 {
-	if (space == Space::WORLD)
+	if (space == Space::World)
 	{
 		Quaternion worldRotation = GetWorldRotation();
 		m_Rotation = XMQuaternionMultiply(worldRotation, XMQuaternionMultiply(XMQuaternionMultiply(quaternion, XMQuaternionInverse(worldRotation)), m_Rotation));
@@ -253,7 +253,7 @@ const Vector3& SceneNode::GetPosition() const
 
 void SceneNode::SetPosition(const Vector3& newPosition, const Space space)
 {
-	if (space == Space::WORLD)
+	if (space == Space::World)
 	{
 		if (m_pParent && m_pParent != m_pScene)
 		{
@@ -278,7 +278,7 @@ void SceneNode::SetPosition(const float x, const float y, const float z, const S
 
 void SceneNode::SetScale(const Vector3& scale, Space space)
 {
-	if (space == Space::WORLD)
+	if (space == Space::World)
 	{
 		if (m_pParent && m_pParent != m_pScene)
 		{
@@ -318,7 +318,7 @@ void SceneNode::SetRotation(const float x, const float y, const float z, const S
 
 void SceneNode::SetRotation(const Quaternion& quaternion, const Space space)
 {
-	if (space == Space::WORLD)
+	if (space == Space::World)
 	{
 		if (m_pParent && m_pParent != m_pScene)
 		{
@@ -343,11 +343,27 @@ void SceneNode::SetTransform(const Vector3& position, const Quaternion& rotation
 	SetScale(scale, space);
 }
 
+void SceneNode::SetTransform(const Matrix& transform, Space space /*= Space::World*/)
+{
+	if (space == Space::World)
+	{
+		Matrix temp = transform;
+		Vector3 wPos, wScale;
+		Quaternion wRot;
+		temp.Decompose(wScale, wRot, wPos);
+		SetPosition(wPos, Space::World);
+		SetRotation(wRot, Space::World);
+		SetScale(wScale, Space::World);
+	}
+	else
+	{
+		Matrix temp = transform;
+		temp.Decompose(m_Scale, m_Rotation, m_Position);
+		MarkDirty();
+	}
+}
+
 void SceneNode::LookInDirection(const Vector3& direction)
 {
-	Vector3 v;
-	direction.Normalize(v);
-	float pitch = asin(-v.y);
-	float yaw = atan2(v.x, v.z);
-	SetRotation(Math::RadToDeg(pitch), Math::RadToDeg(yaw), 0, Space::WORLD);
+	SetRotation(Math::LookRotation(direction), Space::World);
 }

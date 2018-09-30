@@ -39,7 +39,7 @@ void FreeCamera::Update()
 	}
 	//else
 	{
-		//Controller();
+		Controller();
 	}
 }
 
@@ -58,11 +58,13 @@ void FreeCamera::KeyboardMouse()
 
 	float moveSpeed = m_MoveSpeed;
 	if (m_pInput->IsKeyboardKeyDown(KeyboardKey::KEY_LEFT_SHIFT))
+	{
 		moveSpeed *= m_ShiftMultiplier;
+	}
 	moveDirection *= dt * moveSpeed;
 
 	if(moveDirection != Vector3())
-		Translate(moveDirection, Space::SELF);
+		Translate(moveDirection, Space::Self);
 
 	//Rotation
 	if ( m_pInput->IsMouseButtonDown(MouseKey::RIGHT_BUTTON))
@@ -70,8 +72,8 @@ void FreeCamera::KeyboardMouse()
 		Vector2 mouseMove =  m_pInput->GetMouseMovement();
 		if (mouseMove != Vector2())
 		{
-			Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
-			Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+			Rotate(mouseMove.y * dt * m_RotationSpeed, 0.0f, 0.0f, Space::Self);
+			Rotate(0.0f, mouseMove.x * dt * m_RotationSpeed, 0.0f, Space::World);
 		}
 	}
 }
@@ -101,11 +103,11 @@ void FreeCamera::Controller()
 
 		if (moveDirection != Vector3())
 		{
-			Translate(moveDirection, Space::SELF);
+			Translate(moveDirection, Space::Self);
 		}
 
 		//Rotation
-		Rotate(5 * pState->GetAxis(ControllerAxis::RIGHT_Y, 0.2f) * dt * m_RotationSpeed, 0.0f, 0.0f, Space::SELF);
-		Rotate(0.0f, 5 * pState->GetAxis(ControllerAxis::RIGHT_X, 0.2f) * dt * m_RotationSpeed, 0.0f, Space::WORLD);
+		Rotate(5 * pState->GetAxis(ControllerAxis::RIGHT_Y, 0.2f) * dt * m_RotationSpeed, 0.0f, 0.0f, Space::Self);
+		Rotate(0.0f, 5 * pState->GetAxis(ControllerAxis::RIGHT_X, 0.2f) * dt * m_RotationSpeed, 0.0f, Space::World);
 	}
 }

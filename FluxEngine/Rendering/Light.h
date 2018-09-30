@@ -5,7 +5,7 @@ class Texture;
 
 class Light : public Component
 {
-	FLUX_OBJECT(Light, Component);
+	FLUX_OBJECT(Light, Component)
 
 public:
 	Light(Context* pContext);
@@ -19,7 +19,6 @@ public:
 		MAX
 	};
 
-#pragma pack(16)
 	struct Data
 	{
 		int Enabled = true;

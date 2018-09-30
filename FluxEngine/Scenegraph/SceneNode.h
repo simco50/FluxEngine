@@ -4,17 +4,9 @@ class Component;
 
 enum class Space
 {
-	SELF,
-	WORLD
+	Self,
+	World
 };
-
-enum TransformElement
-{
-	SCALE = 1 << 0,
-	ROTATION = 1 << 1,
-	POSITION = 1 << 2
-};
-DEFINE_ENUM_FLAG_OPERATORS(TransformElement)
 
 class SceneNode : public Object
 {
@@ -75,27 +67,27 @@ public:
 	}
 
 	//Absolute
-	void SetPosition(const Vector3& newPosition, Space space = Space::WORLD);
-	void SetPosition(float x, float y, float z, Space space = Space::WORLD);
+	void SetPosition(const Vector3& newPosition, Space space = Space::World);
+	void SetPosition(float x, float y, float z, Space space = Space::World);
 
-	void SetScale(float uniformScale, Space space = Space::WORLD);
-	void SetScale(const Vector3& scale, Space space = Space::WORLD);
-	void SetScale(float x, float y, float z, Space space = Space::WORLD);
+	void SetScale(float uniformScale, Space space = Space::World);
+	void SetScale(const Vector3& scale, Space space = Space::World);
+	void SetScale(float x, float y, float z, Space space = Space::World);
 
-	void SetRotation(const Vector3& eulerAngles, Space space = Space::WORLD);
-	void SetRotation(float x, float y, float z, Space space = Space::WORLD);
-	void SetRotation(const Quaternion& quaternion, Space space = Space::WORLD);
-	void SetTransform(const Vector3& position, const Quaternion& rotation, const Vector3& scale, Space space = Space::WORLD);
-
+	void SetRotation(const Vector3& eulerAngles, Space space = Space::World);
+	void SetRotation(float x, float y, float z, Space space = Space::World);
+	void SetRotation(const Quaternion& quaternion, Space space = Space::World);
+	void SetTransform(const Vector3& position, const Quaternion& rotation, const Vector3& scale, Space space = Space::World);
+	void SetTransform(const Matrix& transform, Space space = Space::World);
 	void LookInDirection(const Vector3& direction);
 
 	//Relative
-	void Translate(const Vector3& translation, Space space = Space::WORLD);
-	void Translate(float x, float y, float z, Space space = Space::WORLD);
+	void Translate(const Vector3& translation, Space space = Space::World);
+	void Translate(float x, float y, float z, Space space = Space::World);
 
-	void Rotate(const Vector3& eulerAngles, Space space = Space::WORLD);
-	void Rotate(float x, float y, float z, Space space = Space::WORLD);
-	void Rotate(const Quaternion& quaternion, Space space = Space::WORLD);
+	void Rotate(const Vector3& eulerAngles, Space space = Space::World);
+	void Rotate(float x, float y, float z, Space space = Space::World);
+	void Rotate(const Quaternion& quaternion, Space space = Space::World);
 
 	const Vector3& GetPosition() const;
 	Vector3 GetWorldPosition() const;
