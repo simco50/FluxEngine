@@ -148,17 +148,32 @@ public:
 
 	virtual void* GetOwner() const override
 	{
-		return m_pObject.get();
+		if (m_pObject.expired() == false)
+		{
+			return nullptr;
+		}
+		else
+		{
+			return m_pObject.lock().get();
+		}
 	}
 
 private:
 	template<std::size_t... Is>
 	RetVal Execute_Internal(Args&&... args, std::index_sequence<Is...>)
 	{
-		return (m_pObject.get()->*m_pFunction)(std::forward<Args>(args)..., std::get<Is>(m_Payload)...);
+		if (m_pObject.expired())
+		{
+			return RetVal();
+		}
+		else
+		{
+			std::shared_ptr<T> pPinned = m_pObject.lock();
+			return (pPinned.get()->*m_pFunction)(std::forward<Args>(args)..., std::get<Is>(m_Payload)...);
+		}
 	}
 
-	std::shared_ptr<T> m_pObject;
+	std::weak_ptr<T> m_pObject;
 	DelegateFunction m_pFunction;
 	std::tuple<Args2...> m_Payload;
 };
