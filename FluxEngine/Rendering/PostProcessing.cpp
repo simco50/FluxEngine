@@ -46,10 +46,12 @@ void PostProcessing::Draw()
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
-	RenderTarget* pCurrentSource = m_pGraphics->GetRenderTarget();
+	RenderTarget* pOldTarget = m_pGraphics->GetRenderTarget();
+	RenderTarget* pCurrentSource = pOldTarget;
 	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
-
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
+	m_pGraphics->GetDepthStencilState()->SetDepthWrite(false);
+
 	int activeMaterials = 0;
 	for (const auto& pMaterial : m_Materials)
 	{
@@ -79,7 +81,7 @@ void PostProcessing::Draw()
 	}
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
 	m_pGraphics->FlushSRVChanges(false);
-	m_pGraphics->SetRenderTarget(0, nullptr);
+	m_pGraphics->SetRenderTarget(0, pOldTarget);
 
 	//Do an extra blit if the shader count is odd
 	if (activeMaterials % 2 == 1)

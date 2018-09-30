@@ -98,9 +98,13 @@ void FluxCore::InitGame()
 	m_pCamera->GetCamera()->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
-	/*m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));*/
+
+	SceneNode* pLight = m_pScene->CreateChild("Light");
+	pLight->CreateComponent<Light>();
+	pLight->Rotate(45, 0, 0);
 
 	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
@@ -117,7 +121,7 @@ void FluxCore::InitGame()
 	pPlaneModel->SetMaterial(pDefaultMaterial);
 	pPlaneNode->SetScale(5000);
 
-	Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
+	/*Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
 	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
 	std::vector<VertexElement> manDesc =
 	{
@@ -158,7 +162,7 @@ void FluxCore::InitGame()
 			pLight->Rotate(45, 0, 0);
 			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
-	}
+	}*/
 
 	/*SceneNode* pLight = m_pScene->CreateChild("Light");
 	pLight->CreateComponent<Light>();
