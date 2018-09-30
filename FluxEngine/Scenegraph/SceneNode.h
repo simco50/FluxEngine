@@ -85,6 +85,9 @@ public:
 	void SetRotation(const Vector3& eulerAngles, Space space = Space::WORLD);
 	void SetRotation(float x, float y, float z, Space space = Space::WORLD);
 	void SetRotation(const Quaternion& quaternion, Space space = Space::WORLD);
+	void SetTransform(const Vector3& position, const Quaternion& rotation, const Vector3& scale, Space space = Space::WORLD);
+
+	void LookInDirection(const Vector3& direction);
 
 	//Relative
 	void Translate(const Vector3& translation, Space space = Space::WORLD);

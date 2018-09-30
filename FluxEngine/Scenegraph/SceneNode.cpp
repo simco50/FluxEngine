@@ -114,11 +114,7 @@ Vector3 SceneNode::GetWorldScale() const
 	{
 		UpdateWorld();
 	}
-	return Vector3(
-		sqrtf(m_WorldMatrix._11 * m_WorldMatrix._11 + m_WorldMatrix._21 * m_WorldMatrix._21 + m_WorldMatrix._31 * m_WorldMatrix._31),
-		sqrtf(m_WorldMatrix._12 * m_WorldMatrix._12 + m_WorldMatrix._22 * m_WorldMatrix._22 + m_WorldMatrix._32 * m_WorldMatrix._32),
-		sqrtf(m_WorldMatrix._13 * m_WorldMatrix._13 + m_WorldMatrix._23 * m_WorldMatrix._23 + m_WorldMatrix._33 * m_WorldMatrix._33)
-	);
+	return Math::ScaleFromMatrix(m_WorldMatrix);
 }
 
 const Quaternion& SceneNode::GetRotation() const
@@ -338,4 +334,20 @@ void SceneNode::SetRotation(const Quaternion& quaternion, const Space space)
 		m_Rotation = quaternion;
 	}
 	MarkDirty();
+}
+
+void SceneNode::SetTransform(const Vector3& position, const Quaternion& rotation, const Vector3& scale, Space space /*= Space::WORLD*/)
+{
+	SetPosition(position, space);
+	SetRotation(rotation, space);
+	SetScale(scale, space);
+}
+
+void SceneNode::LookInDirection(const Vector3& direction)
+{
+	Vector3 v;
+	direction.Normalize(v);
+	float pitch = asin(-v.y);
+	float yaw = atan2(v.x, v.z);
+	SetRotation(Math::RadToDeg(pitch), Math::RadToDeg(yaw), 0, Space::WORLD);
 }

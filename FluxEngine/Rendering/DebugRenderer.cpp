@@ -12,6 +12,7 @@
 #include "Geometry.h"
 #include "Light.h"
 #include "IO/MemoryStream.h"
+#include "Scenegraph\SceneNode.h"
 
 DebugRenderer::DebugRenderer(Context* pContext) :
 	Subsystem(pContext)
@@ -287,13 +288,10 @@ void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& co
 
 void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLength)
 {
-	Matrix newMatrix = Matrix::CreateScale(
-		Vector3(transform._11, transform._21, transform._31).Length(),
-		Vector3(transform._12, transform._22, transform._32).Length(),
-		Vector3(transform._13, transform._23, transform._33).Length()
-	);
+	Matrix newMatrix = Matrix::CreateScale(Math::ScaleFromMatrix(transform));
 	newMatrix.Invert(newMatrix);
-	newMatrix = newMatrix * transform;
+	newMatrix *= Matrix::CreateScale(Vector3::Distance(m_pCamera->GetNode()->GetWorldPosition(), transform.Translation()) / 5.0f);
+	newMatrix *= transform;
 	Vector3 origin(Vector3::Transform(Vector3(), transform));
 	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), newMatrix));
 	Vector3 y(Vector3::Transform(Vector3(0, lineLength, 0), newMatrix));

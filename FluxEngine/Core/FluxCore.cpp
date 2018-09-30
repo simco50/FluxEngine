@@ -273,10 +273,12 @@ void FluxCore::ObjectUI(SceneNode* pNode)
 	else
 	{
 		ImGui::PushID(pNode);
-		if (ImGui::Button(pNode->GetName().c_str(), ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		if (ImGui::Button("    "))
 		{
 			m_pSelectedNode = pNode;
 		}
+		ImGui::SameLine();
+		ImGui::Text(pNode->GetName().c_str());
 		ImGui::PopID();
 	}
 }
@@ -315,45 +317,63 @@ void FluxCore::RenderUI()
 	if (m_pSelectedNode)
 	{
 		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
-		ImGui::Text("Components:");
+		if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::InputFloat3("Position", const_cast<float*>(&m_pSelectedNode->GetPosition().x), 1))
+			{
+				m_pSelectedNode->MarkDirty();
+			}
+			if (ImGui::InputFloat3("Scale", const_cast<float*>(&m_pSelectedNode->GetScale().x), 1))
+			{
+				m_pSelectedNode->MarkDirty();
+			}
+			ImGui::TreePop();
+		}
 		for (Component* pComponent : m_pSelectedNode->GetComponents())
 		{
-			std::string t = std::string("- ") + pComponent->GetTypeName();
-			ImGui::Text(t.c_str());
-
-			Light* pLight = DynamicCast<Light>(pComponent);
-			if (pLight)
+			if (ImGui::TreeNode(pComponent->GetTypeName().c_str()))
 			{
-				ImGui::Checkbox("Enabled", (bool*)&pLight->GetData()->Enabled);
-				static int selected = 0;
-				ImGui::Combo("Type", (int*)&pLight->GetData()->Type, [](void*, int selected, const char** pName)
+				Light* pLight = DynamicCast<Light>(pComponent);
+				if (pLight)
 				{
-					Light::Type type = (Light::Type)selected;
-					switch (type)
+					ImGui::Checkbox("Enabled", (bool*)&pLight->GetData()->Enabled);
+					static int selected = 0;
+					ImGui::Combo("Type", (int*)&pLight->GetData()->Type, [](void*, int selected, const char** pName)
 					{
-					case Light::Type::Directional:
-						*pName = "Directional";
-						break;
-					case Light::Type::Point:
-						*pName = "Point";
-						break;
-					case Light::Type::Spot:
-						*pName = "Spot";
-						break;
-					default:
-						break;
-
+						Light::Type type = (Light::Type)selected;
+						switch (type)
+						{
+						case Light::Type::Directional:
+							*pName = "Directional";
+							break;
+						case Light::Type::Point:
+							*pName = "Point";
+							break;
+						case Light::Type::Spot:
+							*pName = "Spot";
+							break;
+						default:
+							break;
+						}
+						return true;
+					}, nullptr, (int)Light::Type::MAX);
+					if (ImGui::InputFloat3("Position", &pLight->GetData()->Position.x, 1))
+					{
+						pLight->GetNode()->SetPosition(pLight->GetData()->Position, Space::WORLD);
 					}
-					return true;
-				}, nullptr, (int)Light::Type::MAX);
-				ImGui::InputFloat3("Position", &pLight->GetData()->Position.x, 1);
-				pLight->GetData()->Direction.Normalize();
-				ImGui::SliderFloat3("Direction", &pLight->GetData()->Direction.x, -1, 1);
-				ImGui::ColorEdit4("Color", &pLight->GetData()->Colour.x);
-				ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 100);
-				ImGui::SliderFloat("Range", &pLight->GetData()->Range, 0, 1000);
-				ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 180);
-				ImGui::SliderFloat("Attenuation", &pLight->GetData()->Attenuation, 0, 1);
+					pLight->GetData()->Direction.Normalize();
+					if (ImGui::SliderFloat3("Direction", &pLight->GetData()->Direction.x, -1, 1))
+					{
+						pLight->GetNode()->LookInDirection(pLight->GetData()->Direction);
+					}
+
+					ImGui::ColorEdit4("Color", &pLight->GetData()->Colour.x);
+					ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 100);
+					ImGui::SliderFloat("Range", &pLight->GetData()->Range, 0, 1000);
+					ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 180);
+					ImGui::SliderFloat("Attenuation", &pLight->GetData()->Attenuation, 0, 1);
+				}
+				ImGui::TreePop();
 			}
 		}
 	}
@@ -401,7 +421,7 @@ void FluxCore::GameUpdate()
 			if (pAnimatedModel)
 			{
 				m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), pAnimatedModel->GetSkinMatrices(), m_pSelectedNode->GetWorldMatrix(), Color(1, 0, 0, 1));
-				m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix(), 1.0f);
+				m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix());
 			}
 			Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
 			if (pModel)
@@ -413,7 +433,7 @@ void FluxCore::GameUpdate()
 			{
 				m_pDebugRenderer->AddLight(pLight);
 			}
-			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix(), 50.0f);
+			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix());
 		}
 	}
 }

@@ -130,6 +130,14 @@ struct Math
 		return (value - a) / (b - a);
 	}
 
+	inline static Vector3 ScaleFromMatrix(const Matrix& m)
+	{
+		return Vector3(
+			sqrtf(m._11 * m._11 + m._21 * m._21 + m._31 * m._31),
+			sqrtf(m._12 * m._12 + m._22 * m._22 + m._32 * m._32),
+			sqrtf(m._13 * m._13 + m._23 * m._23 + m._33 * m._33));
+	}
+
 	inline static std::string ToBinary(unsigned int number)
 	{
 		return Math::ToBase(number, 2);
