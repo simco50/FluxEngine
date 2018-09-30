@@ -101,6 +101,7 @@ void FluxCore::InitGame()
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/FXAA.xml"));
 
 	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
@@ -331,6 +332,7 @@ void FluxCore::RenderUI()
 			}
 			ImGui::TreePop();
 		}
+
 		for (Component* pComponent : m_pSelectedNode->GetComponents())
 		{
 			if (ImGui::TreeNode(pComponent->GetTypeName().c_str()))
