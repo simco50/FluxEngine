@@ -85,7 +85,7 @@ void PhysicsScene::Update()
 		pRigidbody->UpdateBody();
 }
 
-bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, RaycastResult& outResult, const float length) const
+bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float length) const
 {
 	outResult = RaycastResult();
 
@@ -94,8 +94,8 @@ bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, Rayc
 
 	PxRaycastBuffer buffer;
 	bool hit = m_pPhysicsScene->raycast(
-		*reinterpret_cast<const PxVec3*>(&origin),
-		*reinterpret_cast<const PxVec3*>(&direction),
+		*reinterpret_cast<const PxVec3*>(&ray.position),
+		*reinterpret_cast<const PxVec3*>(&ray.direction),
 		length,
 		buffer,
 		PxHitFlag::eDEFAULT,

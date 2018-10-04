@@ -29,6 +29,8 @@ public:
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
 
+	virtual void CreateUI() {};
+
 protected:
 	Scene* m_pScene = nullptr;
 	SceneNode* m_pNode = nullptr;

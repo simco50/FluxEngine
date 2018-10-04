@@ -3,6 +3,7 @@
 #include "SceneNode.h"
 #include "Rendering\Renderer.h"
 #include "Component.h"
+#include "Rendering\Model.h"
 
 Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 {
@@ -65,4 +66,23 @@ SceneNode* Scene::FindNode(const std::string& name)
 void Scene::OnSceneSet(Scene* /*pScene*/)
 {
 	SceneNode::OnSceneSet(this);
+}
+
+SceneNode* Scene::PickNode(const Ray& ray)
+{
+	std::vector<SceneNode*> sortedNodes = m_Nodes;
+	std::sort(sortedNodes.begin(), sortedNodes.end(), [&ray](SceneNode* pA, SceneNode* pB) { return Vector3::DistanceSquared(pA->GetWorldPosition(), ray.position) < Vector3::DistanceSquared(pB->GetWorldPosition(), ray.position); });
+	for (SceneNode* pNode : sortedNodes)
+	{
+		Drawable* pDrawable = pNode->GetComponent<Drawable>();
+		if (pDrawable)
+		{
+			float distance;
+			if (ray.Intersects(pDrawable->GetWorldBoundingBox(), distance))
+			{
+				return pNode;
+			}
+		}
+	}
+	return nullptr;
 }

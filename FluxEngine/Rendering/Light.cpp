@@ -80,3 +80,43 @@ void Light::OnMarkedDirty(const SceneNode* pNode)
 	}
 	m_ViewProjection = pNode->GetWorldMatrix() * projection;
 }
+
+void Light::CreateUI()
+{
+	ImGui::Checkbox("Enabled", (bool*)&m_Data.Enabled);
+	static int selected = 0;
+	ImGui::Combo("Type", (int*)&m_Data.Type, [](void*, int selected, const char** pName)
+	{
+		Light::Type type = (Light::Type)selected;
+		switch (type)
+		{
+		case Light::Type::Directional:
+			*pName = "Directional";
+			break;
+		case Light::Type::Point:
+			*pName = "Point";
+			break;
+		case Light::Type::Spot:
+			*pName = "Spot";
+			break;
+		default:
+			break;
+		}
+		return true;
+	}, nullptr, (int)Light::Type::MAX);
+	if (ImGui::InputFloat3("Position", &m_Data.Position.x))
+	{
+		m_pNode->SetPosition(m_Data.Position, Space::World);
+	}
+	m_Data.Direction.Normalize();
+	if (ImGui::SliderFloat3("Direction", &m_Data.Direction.x, -1, 1))
+	{
+		m_pNode->LookInDirection(m_Data.Direction);
+	}
+
+	ImGui::ColorEdit4("Color", &m_Data.Colour.x);
+	ImGui::SliderFloat("Intensity", &m_Data.Intensity, 0, 3);
+	ImGui::SliderFloat("Range", &m_Data.Range, 0, 1000);
+	ImGui::SliderFloat("SpotLightAngle", &m_Data.SpotLightAngle, 0, 90);
+	ImGui::SliderFloat("Attenuation", &m_Data.Attenuation, 0, 1);
+}

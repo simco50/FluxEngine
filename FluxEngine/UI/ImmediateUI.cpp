@@ -11,6 +11,7 @@
 #include "Rendering\Core\RasterizerState.h"
 #include "Input/InputEngine.h"
 #include "Rendering\Core\Texture2D.h"
+#include "FileSystem\File\PhysicalFile.h"
 
 ImmediateUI::ImmediateUI(Context* pContext)
 	: Subsystem(pContext)
@@ -47,6 +48,9 @@ ImmediateUI::ImmediateUI(Context* pContext)
 	io.KeyMap[ImGuiKey_Y] = (int)KeyboardKey::KEY_Y;
 	io.KeyMap[ImGuiKey_Z] = (int)KeyboardKey::KEY_Z;
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
+	io.IniFilename = nullptr;
+
+	LoadConfig();
 
 	SetStyle(true, 0.9f);
 
@@ -92,6 +96,7 @@ ImmediateUI::ImmediateUI(Context* pContext)
 
 ImmediateUI::~ImmediateUI()
 {
+	SaveConfig();
 	ImGui::DestroyContext();
 }
 
@@ -254,7 +259,7 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
-	style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	//style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
 	style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
@@ -279,9 +284,9 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
 	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
 	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
-	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	//style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+	//style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
+	//style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
@@ -293,7 +298,7 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-	style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+	//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
 	if (dark)
 	{
@@ -328,4 +333,35 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 			}
 		}
 	}
+}
+
+bool ImmediateUI::LoadConfig()
+{
+	std::unique_ptr<File> pFile = std::make_unique<PhysicalFile>(Paths::ConfigDir() + "imgui.ini");
+	if (pFile == nullptr)
+	{
+		return false;
+	}
+	if (pFile->OpenRead(false))
+	{
+		std::vector<unsigned char> buffer;
+		pFile->ReadAllBytes(buffer);
+		pFile->Close();
+		ImGui::LoadIniSettingsFromMemory((char*)buffer.data(), buffer.size());
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void ImmediateUI::SaveConfig()
+{
+	size_t iniFileSize = 0;
+	const char* pIniData = ImGui::SaveIniSettingsToMemory(&iniFileSize);
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(Paths::ConfigDir() + "imgui.ini");
+	pFile->OpenWrite(false, false);
+	pFile->Write(pIniData, iniFileSize);
+	pFile->Close();
 }

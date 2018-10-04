@@ -15,9 +15,8 @@
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/Texture2D.h"
 
-ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
-	Drawable(pContext),
-	m_pGeometry(std::make_unique<Geometry>())
+ParticleEmitter::ParticleEmitter(Context* pContext)
+	: Drawable(pContext), m_pGeometry(std::make_unique<Geometry>())
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
@@ -28,8 +27,6 @@ ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
 	m_pMaterial->SetDepthEnabled(true);
 	m_pMaterial->SetDepthWrite(false);
 	m_Batches[0].pMaterial = m_pMaterial;
-
-	SetSystem(pSystem);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -89,7 +86,6 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 
 	if (m_pParticleSystem)
 	{
-		m_Draw = true;
 		CreateVertexBuffer(m_BufferSize);
 		m_BurstIterator = m_pParticleSystem->Bursts.begin();
 		if (m_pParticleSystem->PlayOnAwake)
@@ -97,7 +93,6 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 	}
 	else
 	{
-		m_Draw = false;
 		Stop();
 	}
 }
@@ -272,4 +267,48 @@ void ParticleEmitter::Update()
 		CreateVertexBuffer(m_BufferSize);
 	}
 	m_pGeometry->SetDrawRange(PrimitiveType::POINTLIST, 0, m_ParticleCount);
+}
+
+void ParticleEmitter::CreateUI()
+{
+	if (m_pParticleSystem)
+	{
+		static const char* shapes[] =
+		{
+			"Circle",
+			"Sphere",
+			"Cone",
+			"Edge",
+		};
+
+		ImGui::SliderFloat("Duration", &m_pParticleSystem->Duration, 0.0f, 20.0f);
+		ImGui::Checkbox("Loop", &m_pParticleSystem->Loop);
+		ImGui::SliderFloat("Lifetime", &m_pParticleSystem->Lifetime, 0.0f, 20.0f);
+		ImGui::SliderFloat("Lifetime Variance", &m_pParticleSystem->LifetimeVariance, 0.0f, 10.0f);
+		ImGui::SliderFloat("Start Velocity", &m_pParticleSystem->StartVelocity, 0.0f, 20.0f);
+		ImGui::SliderFloat("Start Velocity Variance", &m_pParticleSystem->StartVelocityVariance, 0.0f, 10.0f);
+		ImGui::SliderFloat("Start Size", &m_pParticleSystem->StartSize, 0.0f, 20.0f);
+		ImGui::SliderFloat("Start Size Variance", &m_pParticleSystem->StartSizeVariance, 0.0f, 10.0f);
+		ImGui::Checkbox("Random Start Rotation", &m_pParticleSystem->RandomStartRotation);
+		ImGui::Checkbox("Loop", &m_pParticleSystem->Loop);
+		ImGui::Checkbox("Play On Awake", &m_pParticleSystem->PlayOnAwake);
+		ImGui::SliderInt("Max Particles", &m_pParticleSystem->MaxParticles, 0, 10000);
+		ImGui::SliderInt("Emission", &m_pParticleSystem->Emission, 0, 1000);
+		ImGui::Separator();
+		ImGui::Combo("Shape", (int*)&m_pParticleSystem->Shape.ShapeType, [](void*, int index, const char** pText)
+		{
+			*pText = shapes[index];
+			return true;
+		}, nullptr, 4);
+		ImGui::SliderFloat("Radius", &m_pParticleSystem->Shape.Radius, 0.0f, 20.0f);
+		ImGui::Checkbox("Emit From Shell", &m_pParticleSystem->Shape.EmitFromShell);
+		ImGui::Checkbox("Emit From Volume", &m_pParticleSystem->Shape.EmitFromVolume);
+		ImGui::SliderFloat("Angle", &m_pParticleSystem->Shape.Angle, 0.0f, 180.0f);
+	}
+	else
+	{
+		ImGui::Text("No Particle System assigned");
+	}
+
+	Drawable::CreateUI();
 }

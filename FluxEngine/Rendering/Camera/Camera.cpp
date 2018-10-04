@@ -137,8 +137,9 @@ void Camera::SetClippingPlanes(float nearPlane, float farPlane)
 	OnMarkedDirty(m_pNode);
 }
 
-void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
+Ray Camera::GetMouseRay() const
 {
+	Ray ray;
 	InputEngine* input = GetSubsystem<InputEngine>();
 	if (input)
 	{
@@ -154,11 +155,12 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 		Vector3 nearPoint, farPoint;
 		nearPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 0), m_ViewProjectionInverse);
 		farPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 1), m_ViewProjectionInverse);
-		startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
+		ray.position = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
 
-		direction = farPoint - nearPoint;
-		direction.Normalize();
+		ray.direction = farPoint - nearPoint;
+		ray.direction.Normalize();
 	}
+	return ray;
 }
 
 void Camera::SetNearPlane(float nearPlane)
@@ -178,17 +180,27 @@ bool Camera::Raycast(RaycastResult& result) const
 	result = RaycastResult();
 
 	if (m_pScene == nullptr)
+	{
 		return false;
+	}
 	PhysicsScene* pPhysicsScene = m_pScene->GetComponent<PhysicsScene>();
 	if (pPhysicsScene == nullptr)
+	{
 		return false;
+	}
+	return pPhysicsScene->Raycast(GetMouseRay(), result);
+}
 
-	Vector3 rayStart, rayDir;
-	GetMouseRay(rayStart, rayDir);
-
-	return pPhysicsScene->Raycast(
-		rayStart,
-		rayDir,
-		result
-	);
+void Camera::CreateUI()
+{
+	bool unchanged = true;
+	unchanged &= ImGui::SliderFloat("FoV", &m_FoV, 1, 179);
+	unchanged &= ImGui::SliderFloat("Orthographic Size", &m_Size, 1, 200);
+	unchanged &= ImGui::Checkbox("Perspective", &m_Perspective);
+	unchanged &= ImGui::SliderFloat("Near Plane", &m_NearPlane, 0.001f, 1000.0f);
+	unchanged &= ImGui::SliderFloat("Far Plane", &m_FarPlane, 10.0f, 100000.0f);
+	if (unchanged == false)
+	{
+		m_pNode->MarkDirty();
+	}
 }

@@ -20,6 +20,8 @@ public:
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
 
+	virtual void CreateUI() override;
+
 protected:
 	Mesh* m_pMesh = nullptr;
 };

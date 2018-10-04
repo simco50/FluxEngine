@@ -9,7 +9,6 @@ class IndexBuffer;
 class VertexBuffer;
 class Geometry;
 class Light;
-class StructuredBuffer;
 struct Batch;
 
 DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
@@ -65,5 +64,4 @@ private:
 	std::unique_ptr<VertexBuffer> m_pQuadVertexBuffer;
 	std::unique_ptr<IndexBuffer> m_pQuadIndexBuffer;
 	std::unique_ptr<Geometry> m_pQuadGeometry;
-	std::unique_ptr<StructuredBuffer> m_pLightBuffer;
 };

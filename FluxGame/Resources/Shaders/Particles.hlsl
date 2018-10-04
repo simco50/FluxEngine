@@ -1,5 +1,4 @@
-#define PI 3.141592f
-
+#include "Constants.hlsl"
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 

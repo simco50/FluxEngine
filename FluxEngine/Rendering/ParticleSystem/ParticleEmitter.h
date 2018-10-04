@@ -15,7 +15,7 @@ class ParticleEmitter : public Drawable
 	FLUX_OBJECT(ParticleEmitter, Drawable)
 
 public:
-	ParticleEmitter(Context* pContext, ParticleSystem* pSystem);
+	ParticleEmitter(Context* pContext);
 	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;
@@ -30,6 +30,8 @@ public:
 	void Stop() { m_Playing = false; }
 
 	int GetParticleCount() const { return m_ParticleCount; }
+
+	virtual void CreateUI() override;
 
 protected:
 	virtual void OnSceneSet(Scene* pScene) override;

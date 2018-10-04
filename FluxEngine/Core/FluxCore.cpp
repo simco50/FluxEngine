@@ -23,6 +23,9 @@
 #include "Rendering/Renderer.h"
 #include "Scenegraph/SceneNode.h"
 #include "Rendering/Light.h"
+#include "Rendering/ReflectionProbe.h"
+#include "Rendering/ParticleSystem/ParticleEmitter.h"
+#include "Rendering/ParticleSystem/ParticleSystem.h"
 
 bool FluxCore::m_Exiting;
 
@@ -103,7 +106,7 @@ void FluxCore::InitGame()
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
 	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/FXAA.xml"));
 
-	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -116,9 +119,9 @@ void FluxCore::InitGame()
 	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
 	pPlaneModel->SetMesh(pPlaneMesh);
 	pPlaneModel->SetMaterial(pDefaultMaterial);
-	pPlaneNode->SetScale(5000);*/
+	pPlaneNode->SetScale(5000);
 
-	/*Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
+	Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
 	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
 	std::vector<VertexElement> manDesc =
 	{
@@ -159,9 +162,9 @@ void FluxCore::InitGame()
 			pLight->Rotate(45, 0, 0);
 			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
-	}*/
+	}
 
-	SceneNode* pLight = m_pScene->CreateChild("Light");
+	/*SceneNode* pLight = m_pScene->CreateChild("Light");
 	pLight->CreateComponent<Light>();
 	pLight->Rotate(45, 0, 0);
 
@@ -194,7 +197,7 @@ void FluxCore::InitGame()
 
 	pModel = pLastCube->CreateComponent<Model>();
 	pModel->SetMesh(pCubeMesh);
-	pModel->SetMaterial(pDefaultMaterial);
+	pModel->SetMaterial(pDefaultMaterial);*/
 }
 
 void FluxCore::ProcessFrame()
@@ -206,26 +209,20 @@ void FluxCore::ProcessFrame()
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
 
-	if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::IsMouseHoveringAnyWindow())
+	if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::GetIO().WantCaptureMouse)
 	{
-		RaycastResult result;
-		if (m_pCamera->GetCamera()->Raycast(result))
-		{
-			m_pSelectedNode = result.pRigidbody->GetNode();
-		}
-		else
-		{
-			m_pSelectedNode = nullptr;
-		}
+		Vector3 position, direction;
+		Ray ray = m_pCamera->GetCamera()->GetMouseRay();
+		m_pSelectedNode = m_pScene->PickNode(ray);
 	}
 	m_pResourceManager->Update();
 	m_pAudioEngine->Update();
 	m_pGraphics->BeginFrame();
 
 	GameUpdate();
-	m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
-	m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
-	m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
+	//m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
+	//m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
+	//m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
 
 	m_pScene->Update();
 	m_pPostProcessing->Draw();
@@ -276,7 +273,7 @@ void FluxCore::ObjectUI(SceneNode* pNode)
 	else
 	{
 		ImGui::PushID(pNode);
-		if (ImGui::Button("    "))
+		if (ImGui::Button("   "))
 		{
 			m_pSelectedNode = pNode;
 		}
@@ -322,11 +319,11 @@ void FluxCore::RenderUI()
 		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
 		if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::InputFloat3("Position", const_cast<float*>(&m_pSelectedNode->GetPosition().x), 1))
+			if (ImGui::InputFloat3("Position", const_cast<float*>(&m_pSelectedNode->GetPosition().x)))
 			{
 				m_pSelectedNode->MarkDirty();
 			}
-			if (ImGui::InputFloat3("Scale", const_cast<float*>(&m_pSelectedNode->GetScale().x), 1))
+			if (ImGui::InputFloat3("Scale", const_cast<float*>(&m_pSelectedNode->GetScale().x)))
 			{
 				m_pSelectedNode->MarkDirty();
 			}
@@ -337,46 +334,7 @@ void FluxCore::RenderUI()
 		{
 			if (ImGui::TreeNode(pComponent->GetTypeName().c_str()))
 			{
-				Light* pLight = DynamicCast<Light>(pComponent);
-				if (pLight)
-				{
-					ImGui::Checkbox("Enabled", (bool*)&pLight->GetData()->Enabled);
-					static int selected = 0;
-					ImGui::Combo("Type", (int*)&pLight->GetData()->Type, [](void*, int selected, const char** pName)
-					{
-						Light::Type type = (Light::Type)selected;
-						switch (type)
-						{
-						case Light::Type::Directional:
-							*pName = "Directional";
-							break;
-						case Light::Type::Point:
-							*pName = "Point";
-							break;
-						case Light::Type::Spot:
-							*pName = "Spot";
-							break;
-						default:
-							break;
-						}
-						return true;
-					}, nullptr, (int)Light::Type::MAX);
-					if (ImGui::InputFloat3("Position", &pLight->GetData()->Position.x, 1))
-					{
-						pLight->GetNode()->SetPosition(pLight->GetData()->Position, Space::World);
-					}
-					pLight->GetData()->Direction.Normalize();
-					if (ImGui::SliderFloat3("Direction", &pLight->GetData()->Direction.x, -1, 1))
-					{
-						pLight->GetNode()->LookInDirection(pLight->GetData()->Direction);
-					}
-
-					ImGui::ColorEdit4("Color", &pLight->GetData()->Colour.x);
-					ImGui::SliderFloat("Intensity", &pLight->GetData()->Intensity, 0, 3);
-					ImGui::SliderFloat("Range", &pLight->GetData()->Range, 0, 1000);
-					ImGui::SliderFloat("SpotLightAngle", &pLight->GetData()->SpotLightAngle, 0, 90);
-					ImGui::SliderFloat("Attenuation", &pLight->GetData()->Attenuation, 0, 1);
-				}
+				pComponent->CreateUI();
 				ImGui::TreePop();
 			}
 		}

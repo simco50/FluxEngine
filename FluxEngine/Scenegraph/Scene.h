@@ -33,6 +33,8 @@ public:
 
 	OnSceneUpdateDelegate& OnSceneUpdate() { return m_OnSceneUpdate; }
 
+	SceneNode* PickNode(const Ray& ray);
+
 private:
 	void TrackChild(SceneNode* pNode);
 

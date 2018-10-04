@@ -22,3 +22,21 @@ cbuffer cPerObject : register(b2)
 	float4x4 cSkinMatrices[100];
 #endif
 }
+
+struct Light
+{
+	int Enabled;
+	float3 Position;
+	float3 Direction;
+	float Intensity;
+	float4 Color;
+	float Range;
+	float SpotLightAngle;
+	float Attenuation;
+	uint Type;
+};
+
+cbuffer cLights : register(b3)
+{
+	Light Lights[LIGHT_COUNT];
+}

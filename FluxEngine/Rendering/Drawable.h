@@ -35,6 +35,8 @@ public:
 
 	bool DrawEnabled() const { return m_Draw; }
 
+	virtual void CreateUI() override;
+
 protected:
 	bool m_Draw = true;
 	bool m_Cull = true;

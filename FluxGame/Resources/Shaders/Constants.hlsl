@@ -6,3 +6,5 @@
 #define DIRECTIONAL_LIGHT 0
 #define POINT_LIGHT 1
 #define SPOT_LIGHT 2
+
+#define PI 3.141592f

@@ -58,21 +58,6 @@ struct LightResult
 	float4 Specular;
 };
 
-struct Light
-{
-	int Enabled;
-	float3 Position;
-	float3 Direction;
-	float4 Color;
-	float Intensity;
-	float Range;
-	float SpotLightAngle;
-	float Attenuation;
-	uint Type;
-};
-
-StructuredBuffer<Light> cLights : register(t4);
-
 float4 DoDiffuse(Light light, float3 normal, float3 lightVector)
 {
 	return light.Color * max(dot(normal, lightVector), 0);
@@ -130,39 +115,39 @@ LightResult DoSpotLight(Light light, float3 worldPosition, float3 normal, float3
 	return result;
 }
 
-LightResult DoLight(StructuredBuffer<Light> lights, float3 worldPosition, float3 normal, float3 viewDirection)
+LightResult DoLight(float3 worldPosition, float3 normal, float3 viewDirection)
 {
 	LightResult totalResult = (LightResult)0;
 
 	for(uint i = 0; i < LIGHT_COUNT; ++i)
 	{
-		if(lights[i].Enabled == 0)
+		if(Lights[i].Enabled == 0)
 		{
 			continue;
 		}
 
-		if(lights[i].Type != DIRECTIONAL_LIGHT && distance(worldPosition, lights[i].Position) > lights[i].Range)
+		if(Lights[i].Type != DIRECTIONAL_LIGHT && distance(worldPosition, Lights[i].Position) > Lights[i].Range)
 		{
 			continue;
 		}
 
 		LightResult result;
 
-		switch(lights[i].Type)
+		switch(Lights[i].Type)
 		{
 		case DIRECTIONAL_LIGHT:
 		{
-			result = DoDirectionalLight(lights[i], normal, viewDirection);
+			result = DoDirectionalLight(Lights[i], normal, viewDirection);
 		}
 		break;
 		case POINT_LIGHT:
 		{
-			result = DoPointLight(lights[i], worldPosition, normal, viewDirection);
+			result = DoPointLight(Lights[i], worldPosition, normal, viewDirection);
 		}
 		break;
 		case SPOT_LIGHT:
 		{
-			result = DoSpotLight(lights[i], worldPosition, normal, viewDirection);
+			result = DoSpotLight(Lights[i], worldPosition, normal, viewDirection);
 		}
 		break;
 		}

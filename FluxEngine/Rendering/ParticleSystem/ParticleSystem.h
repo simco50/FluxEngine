@@ -28,7 +28,7 @@ enum class ParticleSortingMode
 class ParticleSystem : public Resource
 {
 	FLUX_OBJECT(ParticleSystem, Resource)
-
+	DELETE_COPY(ParticleSystem)
 public:
 
 	ParticleSystem(Context* pContext)

@@ -29,4 +29,3 @@ private:
 	float m_StartSize = 0;
 	bool m_IsActive = false;
 };
-

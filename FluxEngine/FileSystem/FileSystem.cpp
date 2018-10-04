@@ -76,8 +76,10 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 		{
 			std::unique_ptr<File> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
 			//If we didn't find the file, continue looking in the other mount points
-			if(pFile == nullptr)
+			if (pFile == nullptr)
+			{
 				continue;
+			}
 			return pFile;
 		}
 	}

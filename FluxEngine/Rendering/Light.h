@@ -24,8 +24,8 @@ public:
 		int Enabled = true;
 		Vector3 Position;
 		Vector3 Direction;
-		Color Colour = Color(1, 1, 1, 1);
 		float Intensity = 1.0f;
+		Color Colour = Color(1, 1, 1, 1);
 		float Range = 1.0f;
 		float SpotLightAngle = 45.0f;
 		float Attenuation = 0.5f;
@@ -49,6 +49,8 @@ public:
 
 	const Matrix& GetViewProjection() const { return m_ViewProjection; }
 	const Texture* GetShadowTexture() const { return m_pShadowTexture.get(); }
+
+	virtual void CreateUI() override;
 
 private:
 	Matrix m_ViewProjection;

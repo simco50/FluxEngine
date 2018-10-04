@@ -1,7 +1,7 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 
-cbuffer extraBuffer : register(b3)
+cbuffer extraBuffer : register(b4)
 {
 	float cAberrationAmount;
 }

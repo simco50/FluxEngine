@@ -28,6 +28,9 @@ private:
 	static void HandleSDLEvent(SDL_Event* pEvent);
 	static void SetStyle(bool dark, float alpha);
 
+	bool LoadConfig();
+	void SaveConfig();
+
 	Graphics* m_pGraphics;
 	InputEngine* m_pInput;
 

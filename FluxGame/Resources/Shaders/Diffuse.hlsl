@@ -84,7 +84,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 #endif
 
 	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
-	LightResult result = DoLight(cLights, input.worldPosition, normal, viewDirection);
+	LightResult result = DoLight(input.worldPosition, normal, viewDirection);
 	float4 diffuse = result.Diffuse;
 	float4 specular = result.Specular;
 

@@ -46,8 +46,7 @@ public:
 	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
 
 	bool Raycast(
-		const Vector3& origin,
-		const Vector3& direction,
+		const Ray& ray,
 		RaycastResult& outResult,
 		const float length = std::numeric_limits<float>::max()
 	) const;

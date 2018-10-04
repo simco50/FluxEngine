@@ -6,11 +6,6 @@
 #define SUBPIXEL_QUALITY 0.75f
 #define ITERATIONS 12
 
-cbuffer extraBuffer : register(b3)
-{
-	float cAberrationAmount;
-}
-
 struct VS_INPUT
 {
 	uint vertexId : SV_VertexID;

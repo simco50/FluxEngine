@@ -65,3 +65,12 @@ void Model::SetMaterial(int index, Material* pMaterial)
 	}
 	m_Batches[index].pMaterial = pMaterial;
 }
+
+void Model::CreateUI()
+{
+	if (m_pMesh)
+	{
+		ImGui::LabelText("Mesh", m_pMesh->GetFilePath().c_str());
+	}
+	Drawable::CreateUI();
+}

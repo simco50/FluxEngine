@@ -31,7 +31,7 @@ public:
 	FloatRect GetViewport() const { return GetAbsoluteViewport(); }
 	void SetClippingPlanes(float nearPlane, float farPlane);
 
-	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
+	Ray GetMouseRay() const;
 
 	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
 	void SetOrthographicSize(float size) { m_Size = size; }
@@ -59,6 +59,8 @@ public:
 	const Color& GetClearColor() const { return m_ClearColor; }
 
 	virtual void OnMarkedDirty(const SceneNode* pNode) override;
+
+	virtual void CreateUI() override;
 
 protected:
 	void OnSceneSet(Scene* pScene) override;

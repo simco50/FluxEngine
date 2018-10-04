@@ -104,7 +104,8 @@ enum class ShaderParameterType
 	PerFrame = 0,
 	PerView = 1,
 	PerObject = 2,
-	Custom = 3,
+	Lights = 3,
+	Custom = 4,
 	MAX
 };
 

@@ -7,7 +7,6 @@
 #include "Core/Graphics.h"
 #include "Core/IndexBuffer.h"
 #include "Core/RasterizerState.h"
-#include "Core/StructuredBuffer.h"
 #include "Core/VertexBuffer.h"
 #include "Drawable.h"
 #include "Geometry.h"
@@ -20,9 +19,6 @@ Renderer::Renderer(Context* pContext) :
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	CreateQuadGeometry();
-
-	m_pLightBuffer = std::make_unique<StructuredBuffer>(m_pGraphics);
-	m_pLightBuffer->Create(GraphicsConstants::MAX_LIGHTS, (int)Light::GetDataStride(), true);
 }
 
 Renderer::~Renderer()
@@ -50,16 +46,6 @@ void Renderer::Draw()
 	{
 		AUTOPROFILE(Renderer_PreRender);
 		m_OnPreRender.Broadcast();
-	}
-
-	{
-		AUTOPROFILE(Renderer_UploadLights);
-		m_pLightBuffer->Map(true);
-		for (size_t i = 0; i < m_Lights.size(); ++i)
-		{
-			m_pLightBuffer->SetElement<Light::Data>(i, *m_Lights[i]->GetData());
-		}
-		m_pLightBuffer->Unmap();
 	}
 
 	std::vector<Camera*> cameras = m_CameraQueue;
@@ -235,8 +221,12 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
 	}
 
-	m_pGraphics->SetStructuredBuffer(TextureSlot::Lights, m_pLightBuffer.get());
-
+	std::vector<Light::Data> lightData;
+	for (size_t i = 0; i < m_Lights.size(); ++i)
+	{
+		lightData.push_back(*m_Lights[i]->GetData());
+	}
+	m_pGraphics->SetShaderParameter("Lights", lightData.data());
 
 	//Blend state
 	m_pGraphics->GetBlendState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
