@@ -20,6 +20,7 @@ cbuffer cPerObject : register(b2)
 
 #ifdef SKINNED
 	float4x4 cSkinMatrices[100];
+	float2x4 cSkinDualQuaternions[100];
 #endif
 }
 

@@ -2,6 +2,7 @@
 #include "InputEngine.h"
 #include "Rendering/Core/Graphics.h"
 #include "Core/FluxCore.h"
+#include "Core/CommandLine.h"
 
 InputEngine::InputEngine(Context* pContext)
 	: Subsystem(pContext),
@@ -13,6 +14,8 @@ InputEngine::InputEngine(Context* pContext)
 	pContext->InitSDLSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 
 	ResetGamepads();
+
+	m_PauseOnInactive = !CommandLine::GetBool("NeverPause");
 }
 
 InputEngine::~InputEngine()
@@ -48,7 +51,10 @@ void InputEngine::Update()
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 			case SDL_WINDOWEVENT_MINIMIZED:
-				GameTimer::Stop();
+				if (m_PauseOnInactive)
+				{
+					GameTimer::Stop();
+				}
 				break;
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 			case SDL_WINDOWEVENT_MAXIMIZED:

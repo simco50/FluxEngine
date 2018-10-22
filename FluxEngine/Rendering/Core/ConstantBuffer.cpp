@@ -2,8 +2,8 @@
 #include "ConstantBuffer.h"
 #include "Graphics.h"
 
-ConstantBuffer::ConstantBuffer(Graphics* pGraphics) : 
-	m_pGraphics(pGraphics)
+ConstantBuffer::ConstantBuffer(Graphics* pGraphics)
+	: m_pGraphics(pGraphics)
 {
 
 }

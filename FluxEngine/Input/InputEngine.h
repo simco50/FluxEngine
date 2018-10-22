@@ -115,4 +115,5 @@ private:
 	std::unordered_map<SDL_JoystickID, JoystickState> m_Joysticks;
 
 	bool m_Enabled;
+	bool m_PauseOnInactive = true;
 };

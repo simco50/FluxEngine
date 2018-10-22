@@ -53,6 +53,7 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 #ifdef _DEBUG
 	flags |= D3DCOMPILE_DEBUG;
 	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
 #else
 	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
@@ -71,7 +72,6 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	case ShaderType::PixelShader:
 		defines.emplace_back("COMPILE_PS");
 		profile = "ps_4_0";
-		flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
 		break;
 	case ShaderType::GeometryShader:
 		defines.emplace_back("COMPILE_GS");

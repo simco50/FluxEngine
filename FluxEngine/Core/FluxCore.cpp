@@ -27,6 +27,9 @@
 #include "Rendering/ParticleSystem/ParticleEmitter.h"
 #include "Rendering/ParticleSystem/ParticleSystem.h"
 
+#include "Math/DualQuaternion.h"
+#include "CommandLine.h"
+
 bool FluxCore::m_Exiting;
 
 FluxCore::FluxCore(Context* pContext) :
@@ -49,7 +52,10 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	m_pConsole = std::make_unique<Console>();
 
 	//Register resource locations
-	FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
+	if (CommandLine::GetBool("NoPak") == false)
+	{
+		FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
+	}
 	if (!FileSystem::Mount(Paths::ResourcesDir(), "Resources", ArchiveType::Physical))
 	{
 		FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesDir().c_str());
@@ -121,7 +127,6 @@ void FluxCore::InitGame()
 	pPlaneModel->SetMaterial(pDefaultMaterial);
 	pPlaneNode->SetScale(5000);
 
-	Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated.xml");
 	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
 	std::vector<VertexElement> manDesc =
 	{
@@ -134,12 +139,15 @@ void FluxCore::InitGame()
 	};
 	pManMesh->CreateBuffers(manDesc);
 
-	SceneNode* pMan = m_pScene->CreateChild("Man");
-	AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
-	pManModel->SetMesh(pManMesh);
-	pManModel->SetMaterial(pManMaterial);
-	Animator* pAnimator = pMan->CreateComponent<Animator>();
-	pAnimator->Play();
+	{
+		Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated_DualQuaternion.xml");
+		SceneNode* pMan = m_pScene->CreateChild("Man - Matrix Skinning");
+		AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
+		pManModel->SetMesh(pManMesh);
+		pManModel->SetMaterial(pManMaterial);
+		Animator* pAnimator = pMan->CreateComponent<Animator>();
+		pAnimator->Play();
+	}
 
 	SceneNode* pLights = m_pScene->CreateChild("Lights");
 

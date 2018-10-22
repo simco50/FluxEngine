@@ -1,6 +1,7 @@
 #pragma once
 #include "Rendering/Model.h"
 #include "AnimationState.h"
+#include "Math/DualQuaternion.h"
 
 class Mesh;
 
@@ -16,6 +17,7 @@ public:
 	virtual void SetMesh(Mesh* pMesh) override;
 
 	Matrix* GetSkinMatrices() { return m_SkinMatrices.data(); }
+	DualQuaternion* GetSkinQuaternions() { return m_SkinQuaternions.data(); }
 	const Skeleton& GetSkeleton() const;
 
 	AnimationState* AddAnimationState(Animation* pAnimation);
@@ -24,5 +26,6 @@ public:
 
 private:
 	std::vector<Matrix> m_SkinMatrices;
+	std::vector<DualQuaternion> m_SkinQuaternions;
 	std::vector<AnimationState> m_AnimationStates;
 };

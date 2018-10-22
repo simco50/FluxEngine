@@ -27,12 +27,16 @@ void Animator::Play()
 	{
 		AnimationState* pState = pModel->GetAnimationState(m_pAnimation->GetNameHash());
 		if (pState == nullptr)
+		{
 			pModel->AddAnimationState(m_pAnimation);
+			m_Playing = true;
+		}
 	}
 }
 
 void Animator::Stop()
 {
+	m_Playing = false;
 }
 
 void Animator::Reset()
@@ -42,7 +46,7 @@ void Animator::Reset()
 void Animator::Update()
 {
 	AnimationState* pState = GetAnimationState(m_pAnimation->GetNameHash());
-	if (pState)
+	if (pState && m_Playing)
 	{
 		pState->AddTime(GameTimer::DeltaTime());
 	}

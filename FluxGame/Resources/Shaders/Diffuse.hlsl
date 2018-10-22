@@ -1,7 +1,10 @@
+#include "Constants.hlsl"
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
-#include "Constants.hlsl"
 #include "Lighting.hlsl"
+#ifdef SKINNED
+#include "Skinning.hlsl"
+#endif
 
 struct VS_INPUT
 {
@@ -35,34 +38,36 @@ PS_INPUT VSMain(VS_INPUT input)
 {
 	PS_INPUT output = (PS_INPUT)0;
 
-#ifdef NORMALMAP
-	output.tangent = input.tangent;
-#endif
-
 #ifdef SKINNED
 
-	float4x4 finalMatrix;
-	for(int i = 0; i < MAX_BONES_PER_VERTEX; ++i)
-	{
-		if(input.boneIndex[i] == -1)
-		{
-			break;
-		}
-		finalMatrix += input.vertexWeight[i] * cSkinMatrices[input.boneIndex[i]];
-	}
-
+#ifdef DUAL_QUATERNION
+	float2x4 dualQuaternion = BlendBoneTransformsToDualQuaternion(input.boneIndex, input.vertexWeight);
+	float4 transformedPosition = float4(DualQuatTransformPoint(input.position, dualQuaternion[0], dualQuaternion[1]), 1);
+	float3 transformedNormal = QuaternionRotateVector(input.normal, dualQuaternion[0]);
+	float3 transformedTangent = QuaternionRotateVector(input.tangent, dualQuaternion[0]);
+#else
+	float4x4 finalMatrix = BlendBoneTransformsToMatrix(input.boneIndex, input.vertexWeight);
 	float4 transformedPosition = mul(float4(input.position, 1.0f), finalMatrix);
 	float3 transformedNormal = mul(input.normal, (float3x3)finalMatrix);
+	float3 transformedTangent = mul(input.tangent, (float3x3)finalMatrix);
+#endif
 
 	output.position = mul(transformedPosition, cWorldViewProj);
 	output.worldPosition = mul(transformedPosition, cWorld);
 	output.normal = normalize(mul(transformedNormal, (float3x3)cWorld));
 
-#else
+#ifdef NORMALMAP
+	output.tangent = normalize(mul(transformedTangent, (float3x3)cWorld));
+#endif
 
+#else
 	output.position = mul(float4(input.position, 1.0f), cWorldViewProj);
 	output.worldPosition = mul(float4(input.position, 1.0f), cWorld);
 	output.normal = normalize(mul(input.normal, (float3x3)cWorld));
+
+#ifdef NORMALMAP
+	output.tangent = input.tangent;
+#endif
 
 #endif
 
@@ -102,6 +107,8 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 #ifdef ENVMAP
 	output += CubeMapReflection(normal, viewDirection, 1.0f, 0.4f, 0.0f);
 #endif
+
+	output.a = 0.9f;
 
 	return output;
 }

@@ -27,10 +27,18 @@ void AnimationKeyState::GetFrameIndex(float time, int& index) const
 
 void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
 {
+	if (pNode->Keys.size() == 0)
+	{
+		matrix = Matrix::Identity;
+		return;
+	}
+
 	GetFrameIndex(time, KeyFrame);
 	int nextFrame = KeyFrame + 1;
 	if (nextFrame >= (int)pNode->Keys.size())
+	{
 		nextFrame = 0;
+	}
 
 	const AnimationKey& key = pNode->Keys[KeyFrame].Key;
 	const AnimationKey& nextKey = pNode->Keys[nextFrame].Key;
@@ -84,7 +92,7 @@ void AnimationState::AddTime(float time)
 void AnimationState::SetTime(float time)
 {
 	m_Time = time;
-	m_IsDirty = false;
+	m_IsDirty = true;
 }
 
 void AnimationState::Apply(std::vector<Matrix>& skinMatrices)
@@ -104,7 +112,9 @@ float AnimationState::GetDuration() const
 void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices)
 {
 	if (m_pRootBone == nullptr)
+	{
 		return;
+	}
 	float time = m_Time * m_pAnimation->GetTicksPerSecond();
 	AnimationKeyState& state = m_KeyStates[pBone->Index];
 	Matrix m;
@@ -115,6 +125,8 @@ void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::
 	skinMatrices[pBone->Index] = pBone->OffsetMatrix * m * parentMatrix;
 
 	for (Bone* pChild : pBone->Children)
+	{
 		CalculateAnimations(pChild, m * parentMatrix, skinMatrices);
+	}
 }
 

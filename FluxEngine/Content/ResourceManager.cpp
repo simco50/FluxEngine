@@ -87,6 +87,7 @@ bool ResourceManager::Reload(const std::string& filePath)
 			{
 				if (Reload(resourcePair.second))
 				{
+					FLUX_LOG(Info, "[ResourceManager::Reload] Reloaded '%s'", Paths::GetFileName(filePath).c_str());
 					return true;
 				}
 				return false;

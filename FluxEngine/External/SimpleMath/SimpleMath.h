@@ -5,7 +5,7 @@
 // ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 // PARTICULAR PURPOSE.
-//  
+//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
@@ -13,9 +13,9 @@
 
 #pragma once
 
-#if !defined(__d3d11_h__) && !defined(__d3d11_x_h__) && !defined(__d3d12_h__) && !defined(__d3d12_x_h__)
+/*#if !defined(__d3d11_h__) && !defined(__d3d11_x_h__) && !defined(__d3d12_h__) && !defined(__d3d12_x_h__)
 #error include d3d11.h or d3d12.h before including SimpleMath.h
-#endif
+#endif*/
 
 #if !defined(_XBOX_ONE) || !defined(_TITLE)
 #include <dxgi1_2.h>
@@ -89,7 +89,7 @@ struct Rectangle
     bool Intersects(const RECT& rct) const { return (rct.left < (x + width)) && (x < rct.right) && (rct.top < (y + height)) && (y < rct.bottom); }
 
     void Offset(long ox, long oy) { x += ox; y += oy; }
-    
+
     // Static functions
     static Rectangle Intersect(const Rectangle& ra, const Rectangle& rb);
     static RECT Intersect(const RECT& rcta, const RECT& rctb);
@@ -139,7 +139,7 @@ struct Vector2 : public XMFLOAT2
     float Dot( const Vector2& V ) const;
     void Cross( const Vector2& V, Vector2& result ) const;
     Vector2 Cross( const Vector2& V ) const;
-    
+
     void Normalize();
     void Normalize( Vector2& result ) const;
 
@@ -713,7 +713,7 @@ struct Color : public XMFLOAT4
 
     explicit Color( const DirectX::PackedVector::XMCOLOR& Packed );
         // BGRA Direct3D 9 D3DCOLOR packed color
-    
+
     explicit Color( const DirectX::PackedVector::XMUBYTEN4& Packed );
         // RGBA XNA Game Studio packed color
 
@@ -774,10 +774,10 @@ struct Color : public XMFLOAT4
 
     void AdjustContrast( float contrast );
     void AdjustContrast( float contrast, Color& result ) const;
-    
+
     // Static functions
-    static void Modulate( const Color& c1, const Color& c2, Color& result ); 
-    static Color Modulate( const Color& c1, const Color& c2 ); 
+    static void Modulate( const Color& c1, const Color& c2, Color& result );
+    static Color Modulate( const Color& c1, const Color& c2 );
 
     static void Lerp( const Color& c1, const Color& c2, float t, Color& result );
     static Color Lerp( const Color& c1, const Color& c2, float t );

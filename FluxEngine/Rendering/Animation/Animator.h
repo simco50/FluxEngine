@@ -28,4 +28,5 @@ private:
 
 	AnimatedModel* m_pModel = nullptr;
 	Animation* m_pAnimation = nullptr;
+	bool m_Playing = false;
 };

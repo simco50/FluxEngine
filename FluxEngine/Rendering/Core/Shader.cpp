@@ -4,6 +4,7 @@
 #include "IO\InputStream.h"
 #include "Content\ResourceManager.h"
 #include "Graphics.h"
+#include "Core\CommandLine.h"
 
 #define USE_SHADER_LINE_DIRECTIVE
 
@@ -19,17 +20,18 @@ Shader::~Shader()
 bool Shader::Load(InputStream& inputStream)
 {
 	AUTOPROFILE_DESC(Shader_Load, m_Name);
-	GetSubsystem<ResourceManager>()->ResetDependencies(this);
 
 	std::string fileName = inputStream.GetSource();
 	m_Name = Paths::GetFileNameWithoutExtension(fileName);
+
+	std::vector<std::string> dependencies;
 
 	m_LastModifiedTimestamp = 0;
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
 		std::vector<size_t> processedIncludes;
-		if (!ProcessSource(inputStream, codeStream, processedIncludes))
+		if (!ProcessSource(inputStream, codeStream, processedIncludes, dependencies))
 		{
 			return false;
 		}
@@ -37,9 +39,19 @@ bool Shader::Load(InputStream& inputStream)
 		m_ShaderSource = codeStream.str();
 	}
 
-	ReloadVariations();
+	if (ReloadVariations() == false)
+	{
+		return false;
+	}
 
 	RefreshMemoryUsage();
+
+	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
+	pResourceManager->ResetDependencies(this);
+	for (const std::string& dependency : dependencies)
+	{
+		pResourceManager->AddResourceDependency(this, dependency);
+	}
 
 	return true;
 }
@@ -47,6 +59,9 @@ bool Shader::Load(InputStream& inputStream)
 bool Shader::ReloadVariations()
 {
 	AUTOPROFILE_DESC(ReloadVariations, m_Name);
+
+	bool success = true;
+
 	//Reload all shaders in the cache
 	for (auto& map : m_ShaderCache)
 	{
@@ -56,10 +71,10 @@ bool Shader::ReloadVariations()
 			{
 				continue;
 			}
-			p.second->Create();
+			success = p.second->Create() ? success : false;
 		}
 	}
-	return true;
+	return success;
 }
 
 ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string& defines)
@@ -77,7 +92,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 
 	std::stringstream cacheName;
 	cacheName << m_Name + Shader::GetEntryPoint(type) << "_" << hash;
-	if (pVariation->LoadFromCache(cacheName.str()))
+	if (CommandLine::GetBool("NoShaderCache") == false && pVariation->LoadFromCache(cacheName.str()))
 	{
 		if (!pVariation->CreateShader(GetSubsystem<Graphics>(), type))
 		{
@@ -121,12 +136,11 @@ const char* Shader::GetEntryPoint(ShaderType type)
 	}
 }
 
-bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes)
+bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes, std::vector<std::string>& dependencies)
 {
-	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	if (GetFilePath() != inputStream.GetSource())
 	{
-		pResourceManager->AddResourceDependency(this, inputStream.GetSource());
+		dependencies.push_back(inputStream.GetSource());
 	}
 
 	const DateTime timestamp = FileSystem::GetLastModifiedTime(inputStream.GetSource());
@@ -159,7 +173,7 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 					return false;
 				}
 
-				if (!ProcessSource(*newFile, output, processedIncludes))
+				if (!ProcessSource(*newFile, output, processedIncludes, dependencies))
 				{
 					return false;
 				}

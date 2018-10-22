@@ -13,6 +13,7 @@
 #include "Light.h"
 #include "Material.h"
 #include "Scenegraph/SceneNode.h"
+#include "Math/DualQuaternion.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -221,10 +222,10 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
 	}
 
-	std::vector<Light::Data> lightData;
+	std::vector<Light::Data> lightData(GraphicsConstants::MAX_LIGHTS);
 	for (size_t i = 0; i < m_Lights.size(); ++i)
 	{
-		lightData.push_back(*m_Lights[i]->GetData());
+		lightData[i] = *m_Lights[i]->GetData();
 	}
 	m_pGraphics->SetShaderParameter("Lights", lightData.data());
 
@@ -246,6 +247,7 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 	if (batch.NumSkinMatrices > 1)
 	{
 		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter("cSkinDualQuaternions", batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
 	}
 	m_pGraphics->SetShaderParameter("cWorld", *batch.pModelMatrix);
 	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();

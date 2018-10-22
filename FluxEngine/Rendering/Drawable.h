@@ -5,6 +5,7 @@ class Scene;
 class SceneNode;
 class Material;
 class Geometry;
+struct DualQuaternion;
 
 struct Batch
 {
@@ -12,6 +13,7 @@ struct Batch
 	const Geometry* pGeometry = nullptr;
 	const Matrix* pModelMatrix = nullptr;
 	const Matrix* pSkinMatrices = nullptr;
+	const DualQuaternion* pSkinDualQuaternions = nullptr;
 	int NumSkinMatrices = 1;
 };
 

@@ -16,6 +16,13 @@ AnimatedModel::~AnimatedModel()
 void AnimatedModel::Update()
 {
 	m_AnimationStates[0].Apply(m_SkinMatrices);
+	for (size_t i = 0; i < m_SkinMatrices.size(); ++i)
+	{
+		Vector3 position, scale;
+		Quaternion rotation;
+		m_SkinMatrices[i].Decompose(scale, rotation, position);
+		m_SkinQuaternions[i] = DualQuaternion(rotation, position);
+	}
 }
 
 void AnimatedModel::SetMesh(Mesh* pMesh)
@@ -29,12 +36,14 @@ void AnimatedModel::SetMesh(Mesh* pMesh)
 	const int geometries = pMesh->GetGeometryCount();
 	m_Batches.resize(geometries);
 	m_SkinMatrices.resize(pMesh->GetSkeleton().BoneCount());
+	m_SkinQuaternions.resize(pMesh->GetSkeleton().BoneCount());
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
 		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
 		m_Batches[i].pSkinMatrices = m_SkinMatrices.data();
 		m_Batches[i].NumSkinMatrices = (int)m_SkinMatrices.size();
+		m_Batches[i].pSkinDualQuaternions = m_SkinQuaternions.data();
 	}
 	m_BoundingBox = pMesh->GetBoundingBox();
 

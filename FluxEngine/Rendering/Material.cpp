@@ -167,6 +167,14 @@ bool Material::ParseProperties(tinyxml2::XMLElement* pElement)
 			else
 				FLUX_LOG(Warning, "[Material::Load()] > %s : Fill mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 		}
+		else if (propertyType == "DepthWrite")
+		{
+			std::string value = pProperty->Attribute("value");
+			if (value == "False")
+				m_DepthWrite = false;
+			else
+				m_DepthWrite = true;
+		}
 		else
 		{
 			FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
