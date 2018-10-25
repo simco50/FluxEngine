@@ -1,9 +1,8 @@
 #pragma once
 #include "GraphicsDefines.h"
-#include "Core\Object.h"
+#include "GraphicsObject.h"
 class Shader;
 class ConstantBuffer;
-class Graphics;
 
 enum class ShaderType;
 
@@ -17,12 +16,10 @@ struct ShaderParameter
 	ConstantBuffer* pBuffer = nullptr;
 };
 
-class ShaderVariation : public Object
+class ShaderVariation : public GraphicsObject
 {
-	FLUX_OBJECT(ShaderVariation, Object)
-
 public:
-	ShaderVariation(Context* pContext, Shader* pOwner, ShaderType type);
+	ShaderVariation(Graphics* pGraphics, Shader* pOwner, ShaderType type);
 	~ShaderVariation();
 
 	bool Create();
@@ -36,7 +33,6 @@ public:
 	const std::map<std::string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
-	const void* GetShaderObject() const { return m_pShaderObject; }
 	const std::vector<char>& GetByteCode() const { return m_ShaderByteCode; }
 
 	const std::string& GetName() const { return m_Name; }
@@ -51,7 +47,6 @@ private:
 
 	Shader* m_pParentShader;
 	ShaderType m_ShaderType;
-	void* m_pShaderObject = nullptr;
 
 	std::string m_Name;
 	std::vector<std::string> m_Defines;

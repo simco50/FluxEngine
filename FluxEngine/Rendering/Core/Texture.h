@@ -1,6 +1,7 @@
 #pragma once
 #include "Content/Resource.h"
 #include "GraphicsDefines.h"
+#include "GraphicsObject.h"
 
 class Graphics;
 class Image;
@@ -26,7 +27,7 @@ enum class TextureAddressMode
 	MAX
 };
 
-class Texture : public Resource
+class Texture : public Resource, public GraphicsObject
 {
 	FLUX_OBJECT(Texture, Resource)
 
@@ -47,7 +48,6 @@ public:
 	void RegenerateMips();
 	void UpdateParameters();
 
-	void* GetResource() const { return m_pResource; }
 	void* GetResolvedResource() const { return m_pResolvedResource; }
 	void* GetResourceView() const { return m_pShaderResourceView; }
 	void* GetSamplerState() const { return m_pSamplerState; }
@@ -80,7 +80,6 @@ protected:
 	unsigned int m_Depth = 0;
 	unsigned int m_MipLevels = 1;
 
-	void* m_pResource = nullptr;
 	void* m_pResolvedResource = nullptr;
 	void* m_pShaderResourceView = nullptr;
 
@@ -94,6 +93,5 @@ protected:
 	std::unique_ptr<Image> m_pImage;
 	TextureUsage m_Usage = TextureUsage::STATIC;
 	TextureAddressMode m_AddressMode = TextureAddressMode::WRAP;
-	Graphics* m_pGraphics = nullptr;
 };
 

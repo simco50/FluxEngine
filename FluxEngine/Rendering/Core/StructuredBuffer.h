@@ -1,8 +1,7 @@
 #pragma once
+#include "GraphicsObject.h"
 
-class Graphics;
-
-class StructuredBuffer
+class StructuredBuffer : public GraphicsObject
 {
 public:
 	StructuredBuffer(Graphics* pGraphics);
@@ -20,7 +19,6 @@ public:
 		SetElement_Internal(index, &element);
 	}
 
-	void* GetBuffer() const { return m_pBuffer; }
 	void* GetView() const { return m_pShaderResourceView; }
 
 	void* Map(bool discard);
@@ -35,7 +33,6 @@ private:
 
 	void Release();
 
-	void* m_pBuffer = nullptr;
 	void* m_pShaderResourceView = nullptr;
 
 	bool m_Dynamic = false;
@@ -44,6 +41,4 @@ private:
 
 	unsigned int m_ElementCount = 0;
 	unsigned int m_Stride = 0;
-
-	Graphics* m_pGraphics;
 };

@@ -3,11 +3,11 @@
 #include "Graphics.h"
 
 IndexBuffer::IndexBuffer(Graphics* pGraphics) :
-	m_pGraphics(pGraphics)
+	GraphicsObject(pGraphics)
 {
 }
 
 IndexBuffer::~IndexBuffer()
 {
-	SafeRelease(m_pBuffer);
+	SafeRelease(m_pResource);
 }

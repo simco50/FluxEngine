@@ -3,7 +3,7 @@
 #include "Graphics.h"
 
 StructuredBuffer::StructuredBuffer(Graphics* pGraphics)
-	: m_pGraphics(pGraphics)
+	: GraphicsObject(pGraphics)
 {
 
 }

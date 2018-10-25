@@ -141,7 +141,7 @@ void FluxCore::InitGame()
 
 	{
 		Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated_DualQuaternion.xml");
-		SceneNode* pMan = m_pScene->CreateChild("Man - Matrix Skinning");
+		SceneNode* pMan = m_pScene->CreateChild("Man - Dual Quaternion Skinning");
 		AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
 		pManModel->SetMesh(pManMesh);
 		pManModel->SetMaterial(pManMaterial);

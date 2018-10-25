@@ -69,7 +69,7 @@ bool TextureCube::SetSize(int width, int height, unsigned int format, TextureUsa
 	m_TextureFormat = format;
 	m_Usage = usage;
 	m_MultiSample = multiSample;
-	m_pResource = pTexture;
+	m_pResource = (ID3D11Resource*)pTexture;
 
 	if (usage == TextureUsage::RENDERTARGET)
 	{

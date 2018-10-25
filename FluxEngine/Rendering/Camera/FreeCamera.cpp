@@ -63,8 +63,10 @@ void FreeCamera::KeyboardMouse()
 	}
 	moveDirection *= dt * moveSpeed;
 
-	if(moveDirection != Vector3())
+	if (moveDirection != Vector3())
+	{
 		Translate(moveDirection, Space::Self);
+	}
 
 	//Rotation
 	if ( m_pInput->IsMouseButtonDown(MouseKey::RIGHT_BUTTON))

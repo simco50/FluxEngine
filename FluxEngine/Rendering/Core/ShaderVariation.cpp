@@ -4,8 +4,8 @@
 #include "Graphics.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-ShaderVariation::ShaderVariation(Context* pContext, Shader* pOwner, ShaderType type)
-	: Object(pContext),	m_pParentShader(pOwner), m_ShaderType(type)
+ShaderVariation::ShaderVariation(Graphics* pGraphics, Shader* pOwner, ShaderType type)
+	: GraphicsObject(pGraphics), m_pParentShader(pOwner), m_ShaderType(type)
 {
 
 }
@@ -18,7 +18,7 @@ ShaderVariation::~ShaderVariation()
 
 void ShaderVariation::Release()
 {
-	SafeRelease(m_pShaderObject);
+	SafeRelease(m_pResource);
 }
 
 void ShaderVariation::AddDefine(const std::string& define)
@@ -139,11 +139,10 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		return false;
 	}
 
-	Graphics* pGraphics = GetSubsystem<Graphics>();
 	for (size_t i = 0; i < m_ConstantBufferSizes.size() ; i++)
 	{
 		if (m_ConstantBufferSizes[i] > 0)
-			m_ConstantBuffers[i] = pGraphics->GetOrCreateConstantBuffer(ShaderType::VertexShader, (unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
+			m_ConstantBuffers[i] = m_pGraphics->GetOrCreateConstantBuffer(ShaderType::VertexShader, (unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
 		else
 			m_ConstantBuffers[i] = nullptr;
 	}

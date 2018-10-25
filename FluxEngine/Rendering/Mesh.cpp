@@ -236,12 +236,14 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 	const aiScene* pScene;
 
 	{
+		importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, GraphicsConstants::MAX_BONES_PER_VERTEX);
 		AUTOPROFILE(Mesh_ImportAssimp);
 		pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
 			aiProcess_Triangulate |
 			aiProcess_ConvertToLeftHanded |
 			aiProcess_GenSmoothNormals |
-			aiProcess_CalcTangentSpace
+			aiProcess_CalcTangentSpace |
+			aiProcess_LimitBoneWeights
 		);
 	}
 
@@ -270,7 +272,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 		std::unique_ptr<Geometry> pGeometry = std::make_unique<Geometry>();
 		pGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, pMesh->mNumFaces * 3, pMesh->mNumVertices);
 
-		if(pMesh->HasPositions())
+		if (pMesh->HasPositions())
 		{
 			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("POSITION");
 			data.Count = pMesh->mNumVertices;
@@ -278,7 +280,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.CreateBuffer();
 			memcpy(data.pData, &pMesh->mVertices[0].x, data.ByteSize());
 		}
-		if(pMesh->HasNormals())
+		if (pMesh->HasNormals())
 		{
 			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("NORMAL");
 			data.Count = pMesh->mNumVertices;
@@ -294,18 +296,23 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			data.CreateBuffer();
 			memcpy(data.pData, &pMesh->mTangents[0].x, data.ByteSize());
 		}
-		if(pMesh->HasTextureCoords(0))
+
+		for (int j = 0; j < GraphicsConstants::MAX_UV_CHANNELS; ++j)
 		{
-			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TEXCOORD");
-			data.Count = pMesh->mNumVertices;
-			data.Stride = sizeof(aiVector2D);
-			data.CreateBuffer();
-			Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
-			for (int j = 0; j < data.Count; j++)
+			if (pMesh->HasTextureCoords(j))
 			{
-				pCurrent[j] = Vector2{ pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y };
+				Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("TEXCOORD", j);
+				data.Count = pMesh->mNumVertices;
+				data.Stride = sizeof(aiVector2D);
+				data.CreateBuffer();
+				Vector2* pCurrent = reinterpret_cast<Vector2*>(data.pData);
+				for (int k = 0; k < data.Count; k++)
+				{
+					pCurrent[k] = Vector2{ pMesh->mTextureCoords[j][k].x, pMesh->mTextureCoords[j][k].y };
+				}
 			}
 		}
+
 		if (pMesh->HasFaces())
 		{
 			Geometry::VertexData& data = pGeometry->GetVertexDataUnsafe("INDEX");
@@ -406,11 +413,17 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 
 					std::vector<float> keyTimes;
 					for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
+					{
 						keyTimes.push_back((float)pAnimNode->mPositionKeys[k].mTime);
+					}
 					for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
+					{
 						keyTimes.push_back((float)pAnimNode->mScalingKeys[k].mTime);
+					}
 					for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
+					{
 						keyTimes.push_back((float)pAnimNode->mRotationKeys[k].mTime);
+					}
 					std::sort(keyTimes.begin(), keyTimes.end());
 					keyTimes.erase(std::unique(keyTimes.begin(), keyTimes.end()), keyTimes.end());
 
@@ -465,10 +478,14 @@ void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 	if (pBone)
 	{
 		if (m_Skeleton.GetParentBone() == nullptr)
+		{
 			m_Skeleton.SetParentBone(pBone);
+		}
 		pBone->pParent = pParentBone;
 		if (pParentBone)
+		{
 			pParentBone->Children.push_back(pBone);
+		}
 		pParentBone = pBone;
 	}
 
@@ -503,61 +520,37 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 		}
 	}
 	if (hasElements == false)
+	{
 		return;
+	}
 
 	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
 	char* pVertexDataStart = pDataLocation;
 
-	//Instead of getting the info every vertex, cache it in a local struct
-	struct ElementInfo
-	{
-		ElementInfo(const VertexElement& element) :
-			semanticName(VertexElement::GetSemanticOfType(element.Semantic)),
-			elementSize(VertexElement::GetSizeOfType(element.Type))
-		{ }
-		std::string semanticName;
-		unsigned int elementSize;
-	};
-	std::vector<ElementInfo> elementInfo;
-	for (VertexElement& element : elementDesc)
-	{
-		elementInfo.push_back(element);
-	}
-
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-	const int taskCount = (int)pQueue->GetThreadCount();
-	const int vertexCountPerThread = pGeometry->GetVertexCount() / taskCount;
-	const int remaining = pGeometry->GetVertexCount() % taskCount;
-
-	const std::map <std::string, Geometry::VertexData>& rawData = pGeometry->GetRawData();
-	for (int i = 0; i < taskCount; ++i)
+	for (size_t i = 0; i < elementDesc.size(); ++i)
 	{
-		int vertexCount = vertexCountPerThread;
-		if (i >= taskCount - 1)
-		{
-			vertexCount += remaining;
-		}
-		int startVertex = i * vertexCountPerThread;
+		const Geometry::VertexData* pData = &pGeometry->GetVertexData(VertexElement::GetSemanticOfType(elementDesc[i].Semantic));
+		checkf(pData, "[Mesh::CreateBufferForGeometry] Mesh does not have the appropriate data of semantic");
 
 		AsyncTask* pTask = pQueue->GetFreeTask();
-		pTask->Action.BindLambda([pVertexDataStart, vertexCount, startVertex, rawData, elementInfo, vertexStride](AsyncTask* /*pTask*/, unsigned /*index*/)
-		{
-			AUTOPROFILE(Mesh_CreateVertexBufferForGeometry);
 
-			char* pDataStart = (char*)pVertexDataStart + startVertex * vertexStride;
-			for (int i = 0; i < vertexCount; i++)
+		int elementSize = elementDesc[i].GetSizeOfType(elementDesc[i].Type);
+		pTask->Action.BindLambda([pGeometry, pData, pDataLocation, vertexStride, elementSize](AsyncTask*, int)
+		{
+			char* pStart = pDataLocation;
+			for (int j = 0; j < pGeometry->GetVertexCount(); ++j)
 			{
-				const int currentVertex = startVertex + i;
-				for (const ElementInfo& element : elementInfo)
-				{
-					const void* pData = (const char*)rawData.at(element.semanticName).pData + element.elementSize * currentVertex;
-					memcpy(pDataStart, pData, element.elementSize);
-					pDataStart = (char*)pDataStart + element.elementSize;
-				}
+				memcpy(pStart, (char*)pData->pData + j * elementSize, elementSize);
+				pStart += vertexStride;
 			}
-		});
+		}
+		);
 		pQueue->AddWorkItem(pTask);
+
+		pDataLocation += elementSize;
 	}
+
 	if (pGeometry->HasData("INDEX"))
 	{
 		AUTOPROFILE(Mesh_CreateIndexBufferForGeometry);
@@ -583,10 +576,7 @@ void Mesh::RefreshMemoryUsage()
 	unsigned int memoryUsage = 0;
 	for(const auto& pGeometry : m_Geometries)
 	{
-		for (const auto& item : pGeometry->GetRawData())
-		{
-			memoryUsage += item.second.ByteSize();
-		}
+		memoryUsage += pGeometry->GetSize();
 	}
 	memoryUsage += (unsigned int)m_Skeleton.BoneCount() * sizeof(Bone);
 

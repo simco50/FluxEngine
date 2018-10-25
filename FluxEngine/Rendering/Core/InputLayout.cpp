@@ -2,11 +2,11 @@
 #include "InputLayout.h"
 
 InputLayout::InputLayout(Graphics* pGraphics)
-	: m_pGraphics(pGraphics)
+	: GraphicsObject(pGraphics)
 {
 }
 
 InputLayout::~InputLayout()
 {
-	SafeRelease(m_pInputLayout);
+	SafeRelease(m_pResource);
 }

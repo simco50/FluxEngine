@@ -12,8 +12,7 @@ bool ShaderVariation::Create()
 {
 	AUTOPROFILE_DESC(ShaderVariation_Create, m_pParentShader->GetFilePath());
 	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
-	Graphics* pGraphics = GetSubsystem<Graphics>();
-	if (!Compile(pGraphics))
+	if (!Compile(m_pGraphics))
 	{
 		FLUX_LOG(Warning, "[ShaderVariation::Create()] > Failed to compile shader");
 		return false;
@@ -25,9 +24,9 @@ bool ShaderVariation::Create()
 		return false;
 	}
 
-	SafeRelease(m_pShaderObject);
+	SafeRelease(m_pResource);
 
-	if (!CreateShader(pGraphics, m_ShaderType))
+	if (!CreateShader(m_pGraphics, m_ShaderType))
 	{
 		return false;
 	}
@@ -202,16 +201,16 @@ bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
 	switch (type)
 	{
 	case ShaderType::VertexShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject));
+		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pResource));
 		break;
 	case ShaderType::PixelShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject));
+		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pResource));
 		break;
 	case ShaderType::GeometryShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pShaderObject));
+		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pResource));
 		break;
 	case ShaderType::ComputeShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pShaderObject));
+		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pResource));
 		break;
 	case ShaderType::MAX:
 	default:

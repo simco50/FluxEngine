@@ -37,6 +37,7 @@ public:
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>
 	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
+	Context* GetContext() const { return m_pContext; }
 
 protected:
 	//This enforces the FLUX_OBJECT on all classes that inherit from Object

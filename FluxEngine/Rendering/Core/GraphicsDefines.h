@@ -4,7 +4,12 @@ namespace GraphicsConstants
 {
 	const int MAX_VERTEX_BUFFERS = 2;
 	const int MAX_RENDERTARGETS = 2;
+
 	const int MAX_LIGHTS = 20;
+	const int MAX_BONES = 50;
+	const int MAX_BONES_PER_VERTEX = 4;
+
+	const int MAX_UV_CHANNELS = 3;
 }
 
 enum class ShaderType

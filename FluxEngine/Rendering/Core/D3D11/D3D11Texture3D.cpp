@@ -5,8 +5,8 @@
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
 
-Texture3D::Texture3D(Context* pContext) :
-	Texture(pContext)
+Texture3D::Texture3D(Context* pContext)
+	: Texture(pContext)
 {
 
 }
@@ -37,6 +37,9 @@ bool Texture3D::Load(InputStream& inputStream)
 	{
 		return false;
 	}
+
+	GRAPHICS_SET_NAME(inputStream.GetSource());
+
 	return true;
 }
 
@@ -58,7 +61,7 @@ bool Texture3D::SetSize(int width, int height, int depth, unsigned int format, T
 	m_TextureFormat = format;
 	m_Usage = usage;
 	m_MultiSample = multiSample;
-	m_pResource = pTexture;
+	m_pResource = (ID3D11Resource*)pTexture;
 
 	if (!Create())
 		return false;

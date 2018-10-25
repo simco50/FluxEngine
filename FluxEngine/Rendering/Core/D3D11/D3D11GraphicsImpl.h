@@ -11,6 +11,7 @@ public:
 	friend class Graphics;
 
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
+	ComPtr<ID3D11Device>& GetDeviceCom() { return m_pDevice; }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 
 	unsigned int GetMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;

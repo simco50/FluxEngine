@@ -5,9 +5,8 @@
 #include "Content/Image.h"
 
 Texture::Texture(Context* pContext) :
-	Resource(pContext)
+	Resource(pContext), GraphicsObject(pContext->GetSubsystem<Graphics>())
 {
-	m_pGraphics = pContext->GetSubsystem<Graphics>();
 }
 
 Texture::~Texture()

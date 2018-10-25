@@ -3,6 +3,7 @@
 #include "Rendering/Mesh.h"
 #include "Scenegraph/SceneNode.h"
 #include "Animation.h"
+#include "Rendering/Core/GraphicsDefines.h"
 
 AnimatedModel::AnimatedModel(Context* pContext):
 	Model(pContext)
@@ -27,11 +28,8 @@ void AnimatedModel::Update()
 
 void AnimatedModel::SetMesh(Mesh* pMesh)
 {
-	if (m_pNode == nullptr)
-	{
-		FLUX_LOG(Warning, "[AnimatedModel::SetMesh] Cannot set mesh when component is not attached to a node");
-		return;
-	}
+	checkf(m_pNode, "[AnimatedModel::SetMesh] Cannot set mesh when component is not attached to a node");
+	checkf(pMesh->GetSkeleton().BoneCount() < GraphicsConstants::MAX_BONES, "[AnimatedModel::SetMesh] The given skeleton has more bones than allowed");
 
 	const int geometries = pMesh->GetGeometryCount();
 	m_Batches.resize(geometries);

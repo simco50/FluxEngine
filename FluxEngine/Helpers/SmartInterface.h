@@ -60,6 +60,13 @@ public:
 		return ptr;
 	}
 
+	T* Release()
+	{
+		T* pPtr = m_pPtr;
+		m_pPtr = nullptr;
+		return pPtr;
+	}
+
 	operator bool() { return m_pPtr != nullptr; }
 	operator bool() const { return m_pPtr != nullptr; }
 

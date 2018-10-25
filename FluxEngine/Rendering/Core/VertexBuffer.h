@@ -1,6 +1,5 @@
 #pragma once
-
-class Graphics;
+#include "GraphicsObject.h"
 
 enum class VertexElementType : unsigned char
 {
@@ -89,7 +88,7 @@ struct VertexElement
 	}
 };
 
-class VertexBuffer
+class VertexBuffer : public GraphicsObject
 {
 public:
 	VertexBuffer(Graphics* pGraphics);
@@ -99,8 +98,6 @@ public:
 
 	void Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic = false);
 	void SetData(void* pData);
-
-	void* GetBuffer() const { return m_pBuffer; }
 
 	void* Map(bool discard);
 	void Unmap();
@@ -118,16 +115,12 @@ private:
 	void SetVertexSize(const std::vector<VertexElement>& elements);
 	void UpdateOffsets(std::vector<VertexElement>& elements);
 
-	void* m_pBuffer = nullptr;
-
 	bool m_Dynamic = false;
 	bool m_Mapped = false;
 	std::vector<VertexElement> m_Elements;
 
 	unsigned int m_VertexCount = 0;
 	unsigned int m_VertexStride = 0;
-
-	Graphics* m_pGraphics;
 
 	unsigned long long m_BufferHash = 0;
 };

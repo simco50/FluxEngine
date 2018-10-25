@@ -18,16 +18,16 @@ void ConstantBuffer::SetSize(const unsigned int size)
 	desc.CPUAccessFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pResource));
 }
 
 void ConstantBuffer::Apply()
 {
-	if (m_IsDirty && m_pBuffer)
+	if (m_IsDirty && m_pResource)
 	{
 		AUTOPROFILE(ConstantBuffer_Apply);
 
-		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, nullptr, (void*)m_pShadowData, 0, 0);
+		m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, nullptr, (void*)m_pShadowData, 0, 0);
 		m_IsDirty = false;
 	}
 }

@@ -2,8 +2,8 @@
 #include "VertexBuffer.h"
 #include "Graphics.h"
 
-VertexBuffer::VertexBuffer(Graphics* pGraphics) :
-	m_pGraphics(pGraphics)
+VertexBuffer::VertexBuffer(Graphics* pGraphics)
+	: GraphicsObject(pGraphics)
 {
 }
 
@@ -37,5 +37,5 @@ void VertexBuffer::UpdateOffsets(std::vector<VertexElement>& elements)
 
 void VertexBuffer::Release()
 {
-	SafeRelease(m_pBuffer);
+	SafeRelease(m_pResource);
 }

@@ -206,3 +206,10 @@ std::string Paths::EngineIniFile()
 {
 	return ConfigDir() + "Engine.ini";
 }
+
+std::string Paths::WorkingDirectory()
+{
+	char path[256];
+	GetModuleFileName(nullptr, path, 256);
+	return path;
+}

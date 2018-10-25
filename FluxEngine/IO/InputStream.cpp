@@ -9,6 +9,7 @@ size_t InputStream::ReadFrom(void* pDestination, const size_t from, const size_t
 
 bool InputStream::ReadAllBytes(std::vector<unsigned char>& buffer)
 {
+	SetPointer(0);
 	const size_t size = GetSize();
 	buffer.resize(size);
 	return Read(buffer.data(), buffer.size()) == size;

@@ -49,8 +49,8 @@ Graphics::~Graphics()
 
 #if 0
 	ComPtr<ID3D11Debug> pDebug;
-	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
-	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_SUMMARY);
+	HR(pDevice->QueryInterface(IID_PPV_ARGS(pDebug.GetAddressOf())));
+	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 #endif
 }
 
@@ -225,7 +225,7 @@ void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsi
 			m_CurrentVertexBuffers[i] = pBuffer;
 			m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
 			m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
-			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetBuffer();
+			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetResource();
 			changed = true;
 		}
 		else if (m_CurrentVertexBuffers[i])
@@ -253,7 +253,7 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	{
 		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
-			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetResource(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 		else
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer(nullptr, (DXGI_FORMAT)0, 0);
 		m_pCurrentIndexBuffer = pIndexBuffer;
@@ -269,16 +269,16 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		switch (type)
 		{
 		case ShaderType::VertexShader:
-			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
 		case ShaderType::PixelShader:
-			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
 		case ShaderType::GeometryShader:
-			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
 		case ShaderType::ComputeShader:
-			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
 		default:
 			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
@@ -296,7 +296,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		{
 			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
 			{
-				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
+				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
 				buffersChanged = true;
 			}
 		}
@@ -741,12 +741,12 @@ void Graphics::PrepareDraw()
 		{
 			auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
 			if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
-				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetResource());
 			else
 			{
 				std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
 				pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
-				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetResource());
 				m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
 			}
 		}

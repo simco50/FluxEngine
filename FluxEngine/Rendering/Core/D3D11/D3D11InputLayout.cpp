@@ -9,7 +9,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount,
 {
 	AUTOPROFILE_DESC(InputLayout_Create, pVariation->GetName());
 
-	SafeRelease(m_pInputLayout);
+	SafeRelease(m_pResource);
 
 	std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
 
@@ -33,7 +33,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount,
 		}
 	}
 	const std::vector<char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout));
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pResource));
 }
 
 void InputLayout::Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)
