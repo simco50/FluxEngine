@@ -72,6 +72,19 @@ void AsyncTaskQueue::JoinAll()
 	m_RunningTasks.clear();
 }
 
+void AsyncTaskQueue::WaitForCounter(AtomicCounter& counter, int value /*= 0*/)
+{
+#ifdef THREADING
+	while (counter > value)
+	{
+		Sleep(0);
+	}
+#else
+	JoinAll();
+	counter = value;
+#endif
+}
+
 void AsyncTaskQueue::ProcessItems(int index)
 {
 	bool wasActive = false;
@@ -99,6 +112,10 @@ void AsyncTaskQueue::ProcessItems(int index)
 
 			pItem->Action.ExecuteIfBound(pItem, index);
 			pItem->IsCompleted = true;
+			if (pItem->Counter)
+			{
+				pItem->Counter->fetch_sub(1);
+			}
 		}
 		else
 		{
@@ -127,51 +144,44 @@ AsyncTask* AsyncTaskQueue::GetFreeTask()
 	}
 }
 
-void AsyncTaskQueue::AddWorkItem(AsyncTask* pItem)
+void AsyncTaskQueue::AddWorkItem(const AsyncTaskDelegate& action, AtomicCounter* pCounter, int priority /*= 0*/)
 {
-	if (pItem == nullptr)
+	AsyncTask* pTask = GetFreeTask();
+	pTask->Action = action;
+	pTask->Priority = priority;
+	pTask->Counter = pCounter;
+
+	if (pCounter)
 	{
-		return;
+		pTask->Counter->fetch_add(1);
 	}
 
-	auto pIt = std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pItem](AsyncTask* pOther) {return pOther == pItem; });
-	if (pIt != m_TaskPool.end())
-	{
-		FLUX_LOG(Warning, "[AsyncTaskQueue::AddWorkItem] > Task is still in the pool");
-		return;
-	}
-	m_RunningTasks.push_back(pItem);
+	checkf(std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pTask](AsyncTask* pOther) {return pOther == pTask; }) == m_TaskPool.end(), "[AsyncTaskQueue::AddWorkItem] > Task is still in the pool");
+
+	m_RunningTasks.push_back(pTask);
 
 	ScopeLock lock(m_QueueMutex);
 	if (m_Queue.empty())
 	{
-		m_Queue.push_back(pItem);
+		m_Queue.push_back(pTask);
 	}
 	else
 	{
 		bool isInserted = false;
 		for (auto it = m_Queue.begin(); it != m_Queue.end(); ++it)
 		{
-			if ((*it)->Priority < pItem->Priority)
+			if ((*it)->Priority < pTask->Priority)
 			{
-				m_Queue.insert(it, pItem);
+				m_Queue.insert(it, pTask);
 				isInserted = true;
 				break;
 			}
 		}
 		if (isInserted == false)
 		{
-			m_Queue.push_back(pItem);
+			m_Queue.push_back(pTask);
 		}
 	}
-}
-
-void AsyncTaskQueue::AddWorkItem(const AsyncTaskDelegate& action, int priority /*= 0*/)
-{
-	AsyncTask* pTask = GetFreeTask();
-	pTask->Action = action;
-	pTask->Priority = priority;
-	AddWorkItem(pTask);
 }
 
 void AsyncTaskQueue::Stop()
@@ -190,13 +200,12 @@ void AsyncTaskQueue::ParallelFor(int count, const ParallelForDelegate& function,
 	}
 	else
 	{
+		AtomicCounter counter;
 		for (int i = 0; i < count; ++i)
 		{
-			AsyncTask* pTask = GetFreeTask();
-			pTask->Action.BindLambda([function, i](AsyncTask*, int) { function.ExecuteIfBound(i); });
-			AddWorkItem(pTask);
+			AddWorkItem(AsyncTaskDelegate::CreateLambda([function, i](AsyncTask*, int) { function.ExecuteIfBound(i); }), &counter);
 		}
-		JoinAll();
+		WaitForCounter(counter);
 	}
 }
 

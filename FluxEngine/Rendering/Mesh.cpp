@@ -390,13 +390,12 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
 			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 
+			AtomicCounter counter;
 			AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
-				AsyncTask* pTask = pQueue->GetFreeTask();
-
 				const aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
-				pTask->Action.BindLambda([this, &pNewAnimation, pAnimNode](AsyncTask*, int)
+				AsyncTaskDelegate taskFunction = AsyncTaskDelegate::CreateLambda([this, &pNewAnimation, pAnimNode](AsyncTask*, int)
 				{
 					AUTOPROFILE(Mesh_ProcessAssimpAnimations_Channel);
 
@@ -440,9 +439,9 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					pNewAnimation->SetNode(animNode);
 				});
 
-				pQueue->AddWorkItem(pTask);
+				pQueue->AddWorkItem(taskFunction, &counter);
 			}
-			pQueue->JoinAll();
+			pQueue->WaitForCounter(counter, 0);
 			m_Animations.push_back(std::move(pNewAnimation));
 		}
 	}
@@ -527,16 +526,15 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
 	char* pVertexDataStart = pDataLocation;
 
+	AtomicCounter counter;
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 	for (size_t i = 0; i < elementDesc.size(); ++i)
 	{
 		const Geometry::VertexData* pData = &pGeometry->GetVertexData(VertexElement::GetSemanticOfType(elementDesc[i].Semantic));
 		checkf(pData, "[Mesh::CreateBufferForGeometry] Mesh does not have the appropriate data of semantic");
 
-		AsyncTask* pTask = pQueue->GetFreeTask();
-
 		int elementSize = elementDesc[i].GetSizeOfType(elementDesc[i].Type);
-		pTask->Action.BindLambda([pGeometry, pData, pDataLocation, vertexStride, elementSize](AsyncTask*, int)
+		AsyncTaskDelegate taskFunction = AsyncTaskDelegate::CreateLambda([pGeometry, pData, pDataLocation, vertexStride, elementSize](AsyncTask*, int)
 		{
 			char* pStart = pDataLocation;
 			for (int j = 0; j < pGeometry->GetVertexCount(); ++j)
@@ -546,7 +544,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 			}
 		}
 		);
-		pQueue->AddWorkItem(pTask);
+		pQueue->AddWorkItem(taskFunction, &counter);
 
 		pDataLocation += elementSize;
 	}
@@ -562,7 +560,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 		m_IndexBuffers.push_back(std::move(pIndexBuffer));
 	}
 
-	pQueue->JoinAll();
+	pQueue->WaitForCounter(counter, 0);
 
 	pVertexBuffer->SetData(pVertexDataStart);
 	pGeometry->SetVertexBuffer(pVertexBuffer.get());

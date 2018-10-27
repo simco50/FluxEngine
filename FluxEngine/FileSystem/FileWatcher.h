@@ -2,7 +2,7 @@
 #include "Async\Thread.h"
 #include "Diagnostics\Timer.h"
 
-class FileWatcher : public Thread
+class FileWatcher : public HookableThread
 {
 public:
 	FileWatcher();

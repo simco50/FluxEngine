@@ -17,12 +17,14 @@ Thread::~Thread()
 	StopThread();
 }
 
-bool Thread::RunThread()
+bool Thread::RunThread(ThreadFunction function, void* pArgs)
 {
 #ifdef WIN32
 	if (m_pHandle)
+	{
 		return false;
-	m_pHandle = CreateThread(nullptr, 0, ThreadFunctionStatic, this, 0, &m_ThreadId);
+	}
+	m_pHandle = CreateThread(nullptr, 0, function, pArgs, 0, &m_ThreadId);
 	if (m_pHandle == nullptr)
 	{
 		auto error = GetLastError();
@@ -31,7 +33,7 @@ bool Thread::RunThread()
 	}
 	return true;
 #else
-	m_pHandle = new std::thread(ThreadFunctionStatic, this);
+	m_pHandle = new std::thread(ThreadFunctionStatic, pArgs);
 	return true;
 #endif
 }
@@ -84,13 +86,6 @@ unsigned int Thread::GetCurrentId()
 #endif
 }
 
-DWORD WINAPI Thread::ThreadFunctionStatic(void* pData)
-{
-	Thread* pThread = static_cast<Thread*>(pData);
-	return pThread->ThreadFunction();
-}
-
-
 void Thread::SetMainThread()
 {
 	m_MainThread = GetCurrentId();
@@ -106,10 +101,56 @@ bool Thread::IsMainThread(unsigned int id)
 	return m_MainThread == id;
 }
 
+void Thread::SetName(unsigned int id, const std::string& name)
+{
+#if _MSC_VER
+	const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType; // Must be 0x1000.
+		LPCSTR szName; // Pointer to name (in user addr space).
+		DWORD dwThreadID; // Thread ID (-1=caller thread).
+		DWORD dwFlags; // Reserved for future use, must be zero.
+	} THREADNAME_INFO;
+#pragma pack(pop)
+
+		THREADNAME_INFO info;
+		info.dwType = 0x1000;
+		info.szName = name.c_str();
+		info.dwThreadID = id;
+		info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+		__try {
+			RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+		}
+#pragma warning(pop)
+#else
+	UNREFERENCED_PARAMETER(id);
+	UNREFERENCED_PARAMETER(name);
+#endif
+}
+
+bool HookableThread::RunThread()
+{
+	return Thread::RunThread(&HookableThread::ThreadFunctionStatic, this);
+}
+
+//HOOKABLE THREAD
+
+DWORD WINAPI HookableThread::ThreadFunctionStatic(void* pData)
+{
+	HookableThread* pThread = static_cast<HookableThread*>(pData);
+	return pThread->ThreadFunction();
+}
+
 //WORKER THREAD
 
-WorkerThread::WorkerThread(AsyncTaskQueue* pOwner, int index) :
-	m_pOwner(pOwner), m_Index(index)
+WorkerThread::WorkerThread(AsyncTaskQueue* pOwner, int index)
+	: m_pOwner(pOwner), m_Index(index)
 {
 }
 

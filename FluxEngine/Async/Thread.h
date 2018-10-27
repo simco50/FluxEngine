@@ -5,6 +5,8 @@ class AsyncTaskQueue;
 class Thread
 {
 public:
+	using ThreadFunction = DWORD(*)(void*);
+
 	Thread();
 	virtual ~Thread();
 
@@ -21,20 +23,26 @@ public:
 	static void SetMainThread();
 	static bool IsMainThread();
 	static bool IsMainThread(unsigned int id);
+	static void SetName(unsigned int id, const std::string& name);
 
-protected:
-	bool RunThread();
+	bool RunThread(ThreadFunction function, void* pArgs);
 	void StopThread();
 
 private:
-	virtual int ThreadFunction() = 0;
-	static DWORD WINAPI ThreadFunctionStatic(void* pData);
 	static unsigned int m_MainThread;
 	unsigned long m_ThreadId = 0;
 	void* m_pHandle = nullptr;
 };
 
-class WorkerThread : public Thread
+class HookableThread : public Thread
+{
+protected:
+	bool RunThread();
+	virtual int ThreadFunction() = 0;
+	static DWORD WINAPI ThreadFunctionStatic(void* pData);
+};
+
+class WorkerThread : public HookableThread
 {
 public:
 	WorkerThread(AsyncTaskQueue* pOwner, int index);

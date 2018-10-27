@@ -1,9 +1,12 @@
 #pragma once
 #include "Mutex.h"
 #include "Core\Subsystem.h"
+#include <atomic>
 
 class WorkerThread;
 struct AsyncTask;
+
+using AtomicCounter = std::atomic<int>;
 
 DECLARE_DELEGATE(AsyncTaskDelegate, AsyncTask*, unsigned int);
 DECLARE_DELEGATE(ParallelForDelegate, int);
@@ -13,6 +16,7 @@ struct AsyncTask
 	unsigned Priority = 0;
 	bool IsCompleted = false;
 	AsyncTaskDelegate Action;
+	AtomicCounter* Counter;
 };
 
 class AsyncTaskQueue : public Subsystem
@@ -25,10 +29,9 @@ public:
 	~AsyncTaskQueue();
 
 	void JoinAll();
+	void WaitForCounter(AtomicCounter& counter, int value = 0);
 	void ProcessItems(int index);
-	AsyncTask* GetFreeTask();
-	void AddWorkItem(const AsyncTaskDelegate& action, int priority = 0);
-	void AddWorkItem(AsyncTask* pItem);
+	void AddWorkItem(const AsyncTaskDelegate& action, AtomicCounter* pCounter, int priority = 0);
 	void Stop();
 	size_t GetThreadCount() const { return m_Threads.size(); }
 
@@ -37,6 +40,7 @@ public:
 	bool IsCompleted() const;
 
 private:
+	AsyncTask* GetFreeTask();
 	void PreAllocateJobs(size_t count);
 	void CreateThreads(size_t count);
 
