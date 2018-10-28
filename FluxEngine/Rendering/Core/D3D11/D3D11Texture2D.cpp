@@ -98,7 +98,9 @@ bool Texture2D::SetSize(int width, int height, unsigned int format, TextureUsage
 	}
 
 	if (!Create())
+	{
 		return false;
+	}
 	return true;
 }
 

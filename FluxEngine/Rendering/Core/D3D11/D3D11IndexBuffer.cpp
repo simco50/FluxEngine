@@ -23,6 +23,8 @@ void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*=
 
 void IndexBuffer::SetData(void* pData)
 {
+	check(m_pResource);
+
 	AUTOPROFILE(IndexBuffer_SetData);
 
 	D3D11_BOX destBox;
@@ -38,6 +40,8 @@ void IndexBuffer::SetData(void* pData)
 
 void* IndexBuffer::Map(bool discard)
 {
+	check(m_pResource);
+
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	mappedData.pData = nullptr;
 

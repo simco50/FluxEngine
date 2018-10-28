@@ -32,7 +32,9 @@ bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
 {
 	auto pParameter = m_ShaderParameters.find(hash);
 	if (pParameter == m_ShaderParameters.end())
+	{
 		return false;
+	}
 	return pParameter->second->pBuffer->SetParameter(pParameter->second->Offset, pParameter->second->Size, pData);
 }
 
@@ -45,6 +47,8 @@ const ShaderParameter* ShaderProgram::GetShaderParameter(StringHash hash) const
 {
 	auto pParameter = m_ShaderParameters.find(hash);
 	if (pParameter == m_ShaderParameters.end())
+	{
 		return nullptr;
+	}
 	return pParameter->second;
 }

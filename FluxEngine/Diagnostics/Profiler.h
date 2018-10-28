@@ -3,12 +3,11 @@
 #include "External/NlohmannJson/json.hpp"
 #include "Async/Thread.h"
 
-class ProfilingThread : public Thread
+class ProfilingThread : public HookableThread
 {
 public:
 	ProfilingThread();
 
-	void Run();
 	void Shutdown();
 
 	void BeginEvent(const std::string& name, const std::string& description);

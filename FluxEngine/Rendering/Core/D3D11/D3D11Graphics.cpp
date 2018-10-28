@@ -9,7 +9,7 @@
 #include "../VertexBuffer.h"
 #include "../Texture2D.h"
 #include "../DepthStencilState.h"
-#include "../InputLayout.h"
+#include "../D3D11/D3D11InputLayout.h"
 #include "../BlendState.h"
 #include "../ShaderProgram.h"
 #include "../../../FileSystem/File/PhysicalFile.h"
@@ -92,7 +92,9 @@ bool Graphics::SetMode(
 	if (!m_pImpl->m_pDevice.IsValid() || m_Multisample != multiSample)
 	{
 		if (!CreateDevice(m_WindowWidth, m_WindowHeight))
+		{
 			return false;
+		}
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
@@ -118,7 +120,9 @@ bool Graphics::OpenWindow()
 
 	unsigned flags = 0;
 	if (m_Resizable)
+	{
 		flags |= SDL_WINDOW_RESIZABLE;
+	}
 	switch (m_WindowType)
 	{
 	case WindowType::BORDERLESS:
@@ -253,9 +257,13 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	{
 		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
+		{
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetResource(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		}
 		else
+		{
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer(nullptr, (DXGI_FORMAT)0, 0);
+		}
 		m_pCurrentIndexBuffer = pIndexBuffer;
 	}
 }
@@ -481,7 +489,9 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	}
 
 	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_SamplerStates[(unsigned int)slot]))
+	{
 		return;
+	}
 
 	if (pTexture)
 	{

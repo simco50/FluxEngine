@@ -9,11 +9,6 @@ ProfilingThread::ProfilingThread()
 	QueryPerformanceFrequency((LARGE_INTEGER*)&m_Frequency);
 }
 
-void ProfilingThread::Run()
-{
-	RunThread();
-}
-
 void ProfilingThread::Shutdown()
 {
 	m_Shutdown = true;
@@ -180,7 +175,7 @@ Profiler::Profiler()
 	}
 
 	m_Thread = std::make_unique<ProfilingThread>();
-	m_Thread->Run();
+	m_Thread->RunThread();
 }
 
 Profiler::~Profiler()

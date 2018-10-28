@@ -37,7 +37,7 @@ void AsyncTaskQueue::CreateThreads(size_t count)
 	for (size_t i = m_Threads.size(); i < count; ++i)
 	{
 		std::unique_ptr<WorkerThread> pThread = std::make_unique<WorkerThread>(this, (int)i);
-		pThread->Run();
+		pThread->RunThread();
 		m_Threads.push_back(std::move(pThread));
 	}
 }
@@ -72,19 +72,6 @@ void AsyncTaskQueue::JoinAll()
 	m_RunningTasks.clear();
 }
 
-void AsyncTaskQueue::WaitForCounter(AtomicCounter& counter, int value /*= 0*/)
-{
-#ifdef THREADING
-	while (counter > value)
-	{
-		Sleep(0);
-	}
-#else
-	JoinAll();
-	counter = value;
-#endif
-}
-
 void AsyncTaskQueue::ProcessItems(int index)
 {
 	bool wasActive = false;
@@ -112,10 +99,6 @@ void AsyncTaskQueue::ProcessItems(int index)
 
 			pItem->Action.ExecuteIfBound(pItem, index);
 			pItem->IsCompleted = true;
-			if (pItem->Counter)
-			{
-				pItem->Counter->fetch_sub(1);
-			}
 		}
 		else
 		{
@@ -144,17 +127,11 @@ AsyncTask* AsyncTaskQueue::GetFreeTask()
 	}
 }
 
-void AsyncTaskQueue::AddWorkItem(const AsyncTaskDelegate& action, AtomicCounter* pCounter, int priority /*= 0*/)
+void AsyncTaskQueue::AddWorkItem(const AsyncTaskDelegate& action, int priority /*= 0*/)
 {
 	AsyncTask* pTask = GetFreeTask();
 	pTask->Action = action;
 	pTask->Priority = priority;
-	pTask->Counter = pCounter;
-
-	if (pCounter)
-	{
-		pTask->Counter->fetch_add(1);
-	}
 
 	checkf(std::find_if(m_TaskPool.begin(), m_TaskPool.end(), [pTask](AsyncTask* pOther) {return pOther == pTask; }) == m_TaskPool.end(), "[AsyncTaskQueue::AddWorkItem] > Task is still in the pool");
 
@@ -200,12 +177,10 @@ void AsyncTaskQueue::ParallelFor(int count, const ParallelForDelegate& function,
 	}
 	else
 	{
-		AtomicCounter counter;
 		for (int i = 0; i < count; ++i)
 		{
-			AddWorkItem(AsyncTaskDelegate::CreateLambda([function, i](AsyncTask*, int) { function.ExecuteIfBound(i); }), &counter);
+			AddWorkItem(AsyncTaskDelegate::CreateLambda([function, i](AsyncTask*, int) { function.ExecuteIfBound(i); }));
 		}
-		WaitForCounter(counter);
 	}
 }
 

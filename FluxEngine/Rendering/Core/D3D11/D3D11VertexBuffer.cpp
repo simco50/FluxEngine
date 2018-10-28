@@ -27,7 +27,7 @@ const char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
 		return "OBJECTINDEX";
 	case VertexElementSemantic::MAX_VERTEX_ELEMENT_SEMANTICS:
 	default:
-		FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+		checkf(false, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
 		return "INVALID";
 	}
 }
@@ -56,7 +56,7 @@ DXGI_FORMAT VertexElement::GetFormatOfType(VertexElementType type)
 		return DXGI_FORMAT_R32G32B32A32_SINT;
 	case VertexElementType::MAX_VERTEX_ELEMENT_TYPES:
 	default:
-		FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
+		checkf(false, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
 		return (DXGI_FORMAT)0;
 	}
 }
@@ -85,6 +85,7 @@ void VertexBuffer::Create(int vertexCount, std::vector<VertexElement>& elements,
 
 void VertexBuffer::SetData(void* pData)
 {
+	check(m_pResource);
 	AUTOPROFILE(VertexBuffer_SetData);
 
 	D3D11_BOX destBox;
@@ -100,11 +101,8 @@ void VertexBuffer::SetData(void* pData)
 
 void* VertexBuffer::Map(bool discard)
 {
-	if (!m_Dynamic)
-	{
-		FLUX_LOG(Error, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
-		return nullptr;
-	}
+	check(m_pResource);
+	checkf(m_Dynamic, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
 
 	D3D11_MAPPED_SUBRESOURCE mappedData = {};
 	mappedData.pData = nullptr;

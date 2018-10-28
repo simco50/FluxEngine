@@ -15,10 +15,8 @@ ConstantBuffer::~ConstantBuffer()
 
 bool ConstantBuffer::SetParameter(unsigned int offset, const unsigned int size, const void* pData)
 {
-	if (m_Size < offset + size)
-	{
-		return false;
-	}
+	check(m_pShadowData);
+	checkf(m_Size >= offset + size, "Trying to modify data outside of bounds!");
 	memcpy(&m_pShadowData[offset], pData, size);
 	m_IsDirty = true;
 	return true;

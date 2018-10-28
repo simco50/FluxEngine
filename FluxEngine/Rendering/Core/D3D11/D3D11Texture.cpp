@@ -6,7 +6,8 @@
 
 void Texture::UpdateParameters()
 {
-	if ((m_pSamplerState && !m_ParametersDirty) || m_pResource == nullptr)
+	check(m_pResource);
+	if (m_pSamplerState && !m_ParametersDirty)
 	{
 		return;
 	}
@@ -107,6 +108,7 @@ int Texture::GetRowDataSize(unsigned int width) const
 		return (unsigned)(((width + 3) >> 2) * 16);
 
 	default:
+		checkf(false, "Texture format not supported");
 		return 0;
 	}
 }
@@ -168,6 +170,7 @@ unsigned int Texture::TextureFormatFromCompressionFormat(const ImageFormat& form
 			return DXGI_FORMAT_BC7_UNORM_SRGB;
 		return DXGI_FORMAT_BC7_UNORM;
 	default:
+		checkf(false, "Texture format not supported");
 		return 0;
 	}
 }

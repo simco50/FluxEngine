@@ -13,31 +13,39 @@ public:
 	DELETE_COPY(Thread)
 
 	bool SetPriority(const int priority);
+	void SetAffinity(const uint64 affinity);
+	void LockToCore(const uint32 core);
+
+	static void SetCurrentAffinity(const uint64 affinity);
+	static void LockCurrentToCore(const uint32 core);
 
 	//Get the given thread ID
 	unsigned long GetId() const { return m_ThreadId; }
 	bool IsCurrentThread() const { return GetId() == GetCurrentId(); }
-	static unsigned int GetCurrentId();
+	static uint32 GetCurrentId();
 	bool IsRunning() const { return m_pHandle != nullptr; }
 
 	static void SetMainThread();
 	static bool IsMainThread();
-	static bool IsMainThread(unsigned int id);
-	static void SetName(unsigned int id, const std::string& name);
+	static bool IsMainThread(uint32 id);
+	static void SetName(uint32 id, const std::string& name);
 
 	bool RunThread(ThreadFunction function, void* pArgs);
 	void StopThread();
 
 private:
+	static void SetAffinity(void* pHandle, const uint64 affinity);
+
 	static unsigned int m_MainThread;
-	unsigned long m_ThreadId = 0;
+	uint32 m_ThreadId = 0;
 	void* m_pHandle = nullptr;
 };
 
 class HookableThread : public Thread
 {
-protected:
+public:
 	bool RunThread();
+protected:
 	virtual int ThreadFunction() = 0;
 	static DWORD WINAPI ThreadFunctionStatic(void* pData);
 };
@@ -51,7 +59,6 @@ public:
 	DELETE_COPY(WorkerThread)
 
 	virtual int ThreadFunction() override;
-	bool Run();
 	int GetIndex() const;
 private:
 	AsyncTaskQueue* m_pOwner;

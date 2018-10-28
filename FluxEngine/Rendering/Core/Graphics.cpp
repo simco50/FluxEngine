@@ -4,7 +4,6 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "ShaderVariation.h"
-#include "InputLayout.h"
 #include "Texture.h"
 #include "ConstantBuffer.h"
 #include "RasterizerState.h"
@@ -43,7 +42,9 @@ ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderTy
 {
 	Shader* pShader = GetShader(filePath);
 	if (pShader)
+	{
 		return pShader->GetOrCreateVariation(type, defines);
+	}
 	return nullptr;
 }
 

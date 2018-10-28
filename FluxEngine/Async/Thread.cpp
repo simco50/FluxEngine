@@ -6,7 +6,7 @@
 #include <thread>
 #endif
 
-unsigned int Thread::m_MainThread;
+unsigned int Thread::m_MainThread = 0;
 
 Thread::Thread()
 {
@@ -24,7 +24,7 @@ bool Thread::RunThread(ThreadFunction function, void* pArgs)
 	{
 		return false;
 	}
-	m_pHandle = CreateThread(nullptr, 0, function, pArgs, 0, &m_ThreadId);
+	m_pHandle = CreateThread(nullptr, 0, function, pArgs, 0, (DWORD*)&m_ThreadId);
 	if (m_pHandle == nullptr)
 	{
 		auto error = GetLastError();
@@ -41,7 +41,9 @@ bool Thread::RunThread(ThreadFunction function, void* pArgs)
 void Thread::StopThread()
 {
 	if (!m_pHandle)
+	{
 		return;
+	}
 #ifdef WIN32
 	WaitForSingleObject((HANDLE)m_pHandle, INFINITE);
 	if (CloseHandle((HANDLE)m_pHandle) == 0)
@@ -77,12 +79,40 @@ bool Thread::SetPriority(const int priority)
 #endif
 }
 
-unsigned int Thread::GetCurrentId()
+void Thread::SetAffinity(const uint64 affinity)
+{
+	SetAffinity(m_pHandle, affinity);
+}
+
+void Thread::SetAffinity(void* pHandle, const uint64 affinity)
+{
+	check(pHandle);
+	::SetThreadAffinityMask((HANDLE*)pHandle, affinity);
+}
+
+void Thread::LockToCore(const uint32 core)
+{
+	uint32 affinity = 1 << core;
+	SetAffinity(m_pHandle, (uint64)affinity);
+}
+
+void Thread::SetCurrentAffinity(const uint64 affinity)
+{
+	SetAffinity(GetCurrentThread(), affinity);
+}
+
+void Thread::LockCurrentToCore(const uint32 core)
+{
+	uint32 affinity = 1 << core;
+	SetAffinity(GetCurrentThread(), (uint64)affinity);
+}
+
+uint32 Thread::GetCurrentId()
 {
 #ifdef WIN32
-	return ::GetCurrentThreadId();
+	return (uint32)::GetCurrentThreadId();
 #else
-	return (unsigned int)std::hash<std::thread::id>{}(std::this_thread::get_id());
+	return (uint32)std::hash<std::thread::id>{}(std::this_thread::get_id());
 #endif
 }
 
@@ -96,12 +126,12 @@ bool Thread::IsMainThread()
 	return m_MainThread == GetCurrentId();
 }
 
-bool Thread::IsMainThread(unsigned int id)
+bool Thread::IsMainThread(uint32 id)
 {
 	return m_MainThread == id;
 }
 
-void Thread::SetName(unsigned int id, const std::string& name)
+void Thread::SetName(uint32 id, const std::string& name)
 {
 #if _MSC_VER
 	const DWORD MS_VC_EXCEPTION = 0x406D1388;
@@ -158,11 +188,6 @@ int WorkerThread::ThreadFunction()
 {
 	m_pOwner->ProcessItems(m_Index);
 	return 0;
-}
-
-bool WorkerThread::Run()
-{
-	return RunThread();
 }
 
 int WorkerThread::GetIndex() const

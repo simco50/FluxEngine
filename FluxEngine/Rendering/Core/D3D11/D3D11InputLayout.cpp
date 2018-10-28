@@ -1,9 +1,19 @@
 #include "FluxEngine.h"
-#include "../InputLayout.h"
+#include "D3D11InputLayout.h"
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
 #include "../ShaderVariation.h"
 #include "../VertexBuffer.h"
+
+InputLayout::InputLayout(Graphics* pGraphics)
+	: GraphicsObject(pGraphics)
+{
+}
+
+InputLayout::~InputLayout()
+{
+	SafeRelease(m_pResource);
+}
 
 void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount, ShaderVariation* pVariation)
 {

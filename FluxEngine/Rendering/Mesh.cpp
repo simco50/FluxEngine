@@ -390,7 +390,6 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 			const aiAnimation* pAnimation = pScene->mAnimations[i];
 			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
 
-			AtomicCounter counter;
 			AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
 			{
@@ -439,9 +438,9 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					pNewAnimation->SetNode(animNode);
 				});
 
-				pQueue->AddWorkItem(taskFunction, &counter);
+				pQueue->AddWorkItem(taskFunction);
 			}
-			pQueue->WaitForCounter(counter, 0);
+			pQueue->JoinAll();
 			m_Animations.push_back(std::move(pNewAnimation));
 		}
 	}
@@ -526,7 +525,6 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
 	char* pVertexDataStart = pDataLocation;
 
-	AtomicCounter counter;
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 	for (size_t i = 0; i < elementDesc.size(); ++i)
 	{
@@ -544,7 +542,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 			}
 		}
 		);
-		pQueue->AddWorkItem(taskFunction, &counter);
+		pQueue->AddWorkItem(taskFunction);
 
 		pDataLocation += elementSize;
 	}
@@ -560,7 +558,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 		m_IndexBuffers.push_back(std::move(pIndexBuffer));
 	}
 
-	pQueue->WaitForCounter(counter, 0);
+	pQueue->JoinAll();
 
 	pVertexBuffer->SetData(pVertexDataStart);
 	pGeometry->SetVertexBuffer(pVertexBuffer.get());
