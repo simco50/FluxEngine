@@ -1,5 +1,8 @@
 #pragma once
 
+#define STR(x) #x
+#define STRINGIFY(x) STR(x)
+
 #define FLUX_LOG_FMOD(fmod) \
 Console::LogFmodResult(fmod)
 
@@ -23,11 +26,7 @@ else \
 
 #define HR(command)\
 {HRESULT r = command;\
-std::stringstream stream;\
-stream << __FILE__ << __func__ << "()" << std::endl;\
-stream << "Line: " << __LINE__  << std::endl;\
-stream << "Action: " << #command ;\
-Console::LogHRESULT(stream.str(), r);}
+Console::LogHRESULT(__FILE__ "\n" __FUNCTION__ "()\nLine:" STRINGIFY(__LINE__) "\nAction: " #command, r);}
 
 #else
 

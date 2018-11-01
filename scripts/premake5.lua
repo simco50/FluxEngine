@@ -66,6 +66,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PxShared/include",
 			"../Libraries/SDL2-2.0.7/include",
 			"../Libraries/Assimp/include",
+			"../Libraries/SQLite/include",
 		}
 
 		libdirs
@@ -76,6 +77,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
 			"../Libraries/Assimp/lib/%{cfg.platform}",
+			"../Libraries/SQLite/lib/%{cfg.platform}",
 		}
 
 		filter "files:**/External/**.*"
@@ -110,6 +112,7 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PxShared/include",
 			"../Libraries/SDL2-2.0.7/include",
 			"../Libraries/Assimp/include",
+			"../Libraries/SQLite/include",
 		}
 
 		libdirs
@@ -120,12 +123,14 @@ workspace "FluxEngine"
 			"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}",
 			"../Libraries/SDL2-2.0.7/lib/%{cfg.platform}",
 			"../Libraries/Assimp/lib/%{cfg.platform}",
+			"../Libraries/SQLite/lib/%{cfg.platform}",
 		}
 
 		postbuildcommands
 		{ 
 			"{COPY} \"$(SolutionDir)Libraries\\SDL2-2.0.7\\lib\\%{cfg.platform}\\SDL2.dll\" \"$(OutDir)\"",
 			"{COPY} \"$(SolutionDir)Libraries\\Assimp\\bin\\%{cfg.platform}\\assimp-vc140-mt.dll\" \"$(OutDir)\"",
+			"{COPY} \"$(SolutionDir)Libraries\\SQLite\\bin\\%{cfg.platform}\\SQlite3.dll\" \"$(OutDir)\"",
 		}
 
 		filter { "configurations:Debug" }

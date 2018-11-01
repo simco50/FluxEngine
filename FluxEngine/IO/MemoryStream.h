@@ -5,6 +5,10 @@
 class MemoryStream : public InputStream, public OutputStream
 {
 public:
+	MemoryStream()
+		: InputStream(0), m_pBuffer(nullptr)
+	{}
+
 	MemoryStream(void* pData, const size_t size)
 		: InputStream(size), m_pBuffer(pData)
 	{}
