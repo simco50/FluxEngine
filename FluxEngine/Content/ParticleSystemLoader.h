@@ -1,5 +1,6 @@
 #pragma once
 #include "ResourceLoader.h"
+#include "Graphics/ParticleSystem.h"
 
 struct ParticleSystem;
 

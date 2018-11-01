@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FlexSoftbody.h"
-#include "../Physics/Flex/FlexHelper.h"
-#include "../Graphics/Texture.h"
+#include "../../Physics/Flex/FlexHelper.h"
+#include "../../Graphics/Texture.h"
 #include "../../Materials/Flex/FlexSoftbodyMaterial.h"
 #include "../../Graphics/MeshFilter.h"
 

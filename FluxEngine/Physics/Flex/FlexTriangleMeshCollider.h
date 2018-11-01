@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Components\ComponentBase.h"
+#include "../..\Components\ComponentBase.h"
 
 class FlexSystem;
 

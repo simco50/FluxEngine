@@ -1,18 +1,18 @@
 #include "stdafx.h"
 #include "ParticleScene.h"
-#include "../Scenegraph/GameObject.h"
-#include "../Components/MeshComponent.h"
+#include "../../Scenegraph/GameObject.h"
+#include "../../Components/MeshComponent.h"
 
-#include "../Materials/Forward/DefaultMaterial.h"
-#include "../Components/TransformComponent.h"
+#include "../../Materials/Forward/DefaultMaterial.h"
+#include "../../Components/TransformComponent.h"
 #include <ctime>
-#include "../Game/GameManager.h"
-#include "../Managers/SoundManager.h"
-#include "../Physics/Flex/FlexMousePicker.h"
-#include "../Physics/Flex/FlexDebugRenderer.h"
-#include "../Materials/Deferred/BasicMaterial_Deferred.h"
-#include "../Physics/Flex/FlexSystem.h"
-#include "../UI/ImgUI/imgui.h"
+#include "../../Game/GameManager.h"
+#include "../../Managers/SoundManager.h"
+#include "../../Physics/Flex/FlexMousePicker.h"
+#include "../../Physics/Flex/FlexDebugRenderer.h"
+#include "../../Materials/Deferred/BasicMaterial_Deferred.h"
+#include "../../Physics/Flex/FlexSystem.h"
+#include "../../UI/ImgUI/imgui.h"
 #include "../../Helpers/MathHelp.h"
 
 class FlexTriangleMeshCollider;
@@ -84,7 +84,7 @@ void ParticleScene::Initialize()
 	m_pFlexDebugRenderer->ToggleDebugging();
 
 	m_pFlexMousePicker = new FlexMousePicker(m_pGameContext, m_pFlexSystem);
-	
+
 }
 
 void ParticleScene::Update()

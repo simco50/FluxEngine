@@ -1,20 +1,21 @@
 #include "stdafx.h"
 #include "StressTestScene.h"
-#include "../Scenegraph/GameObject.h"
-#include "../Components/MeshComponent.h"
-#include "../Prefabs/Skybox.h"
-#include "../Materials/Forward/DefaultMaterial.h"
+#include "../../Scenegraph/GameObject.h"
+#include "../../Components/MeshComponent.h"
+#include "../../Prefabs/Skybox.h"
+#include "../../Materials/Forward/DefaultMaterial.h"
 #include <ctime>
-#include "../Game/GameManager.h"
-#include "../Physics/Flex/FlexSoftbody.h"
-#include "../Managers/SoundManager.h"
-#include "../Physics/Flex/FlexMousePicker.h"
-#include "../Physics/Flex/FlexDebugRenderer.h"
-#include "../Materials/Deferred/BasicMaterial_Deferred.h"
-#include "../Physics/Flex/FlexSystem.h"
-#include "../Physics/Flex/FlexTriangleMeshCollider.h"
-#include "../Physics/Flex/FlexRigidbody.h"
-#include "../UI/ImgUI/imgui.h"
+#include "../../Game/GameManager.h"
+#include "../../Physics/Flex/FlexSoftbody.h"
+#include "../../Managers/SoundManager.h"
+#include "../../Physics/Flex/FlexMousePicker.h"
+#include "../../Physics/Flex/FlexDebugRenderer.h"
+#include "../../Materials/Deferred/BasicMaterial_Deferred.h"
+#include "../../Physics/Flex/FlexSystem.h"
+#include "../../Physics/Flex/FlexTriangleMeshCollider.h"
+#include "../../Physics/Flex/FlexRigidbody.h"
+#include "../../UI/ImgUI/imgui.h"
+#include "Graphics/Texture.h"
 
 StressTestScene::StressTestScene()
 {}
@@ -156,8 +157,8 @@ void StressTestScene::Render()
 	ImGui::Text("Particle Count: %i", m_pFlexSystem->Positions.size());
 	ImGui::Text("Rigid Count: %i", m_pFlexSystem->RigidTranslations.size());
 	ImGui::Text("Collision Meshes: %i", m_pFlexSystem->ShapeGeometry.size());
-		
-	ImGui::PlotLines("Frame times", GameTimer::GetFrameTimes().data() , 
+
+	ImGui::PlotLines("Frame times", GameTimer::GetFrameTimes().data() ,
 		GameTimer::GetFrameTimes().size(), 1, nullptr, 0.0f, 0.05f, ImVec2(0, 80));
 
 	ImGui::Checkbox("Simulate", &m_FlexUpdate);

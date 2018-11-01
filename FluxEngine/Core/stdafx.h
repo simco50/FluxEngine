@@ -48,18 +48,18 @@ using namespace DirectX;
 #include "d3dx11effect.h" //[AdditionalLibraries/DX_Effects11/include/d3dx11effect.h]
 
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxEffects11_vc14_Debug.lib")
-#else 
-#pragma comment(lib, "DxEffects11_vc14_Release.lib")
+#pragma comment(lib, "DxEffects11_Debug.lib")
+#else
+#pragma comment(lib, "DxEffects11_Release.lib")
 #endif
 
 //*DXTEX (Helper for loading Textures (D3DX11))
 //http://directxtex.codeplex.com/
 #include "DirectXTex.h"
 #if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "DxTex_vc14_Debug.lib")
-#else 
-#pragma comment(lib, "DxTex_vc14_Release.lib")
+#pragma comment(lib, "DirectXTex_Debug.lib")
+#else
+#pragma comment(lib, "DirectXTex_Release.lib")
 #endif
 
 #pragma endregion D3D
@@ -68,6 +68,8 @@ using namespace DirectX;
 #include <flex.h>
 #include <flexExt.h>
 
+#ifdef x86
+
 #ifdef _DEBUG
 #pragma comment(lib, "flexDebug_x86.lib")
 #pragma comment(lib, "flexExtDebug_x86.lib")
@@ -75,6 +77,19 @@ using namespace DirectX;
 #pragma comment(lib, "flexExtRelease_x86.lib")
 #pragma comment(lib, "flexRelease_x86.lib")
 #endif
+
+#else
+
+#ifdef _DEBUG
+#pragma comment(lib, "flexDebug_x64.lib")
+#pragma comment(lib, "flexExtDebug_x64.lib")
+#else
+#pragma comment(lib, "flexExtRelease_x64.lib")
+#pragma comment(lib, "flexRelease_x64.lib")
+#endif
+
+#endif
+
 #pragma endregion FLEX
 
 #pragma region
@@ -86,9 +101,20 @@ using namespace DirectX;
 #include "fmod_errors.h"
 #pragma warning(pop)
 
+#ifdef x86
+
 #pragma comment(lib, "fmod_vc.lib")
 #if defined(DEBUG) || defined(_DEBUG)
 #pragma comment(lib, "fmodL_vc.lib")
+#endif
+
+#else
+
+#pragma comment(lib, "fmod64_vc.lib")
+#if defined(DEBUG) || defined(_DEBUG)
+#pragma comment(lib, "fmodL64_vc.lib")
+#endif
+
 #endif
 
 #pragma endregion FMOD

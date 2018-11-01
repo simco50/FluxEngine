@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FluidRenderer.h"
-#include "../Components/CameraComponent.h"
+#include "../../Components/CameraComponent.h"
 #include "FlexSystem.h"
 #include "../../Graphics/RenderTarget.h"
 #include <minwinbase.h>

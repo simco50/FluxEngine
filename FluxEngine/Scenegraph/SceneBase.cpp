@@ -19,7 +19,7 @@ SceneBase::~SceneBase()
 	for (size_t i = 0; i < m_pChildren.size(); i++)
 		SafeDelete(m_pChildren[i]);
 
-	if(m_GameContext.Scene)
+	if(m_pGameContext && m_GameContext.Scene)
 		SafeDelete(m_GameContext.Scene->Input);
 	SafeDelete(m_SceneContext.ShadowMapper);
 	SafeDelete(m_pDeferredRenderer);
@@ -28,7 +28,7 @@ SceneBase::~SceneBase()
 
 void SceneBase::BaseInitialize(EngineContext* pEngineContext)
 {
-	if (m_Initialized) 
+	if (m_Initialized)
 		return;
 
 	PerfTimer timer(L"Scene Initialization");
@@ -81,7 +81,7 @@ void SceneBase::BaseUpdate()
 }
 
 void SceneBase::BaseRender()
-{	
+{
 	for (CameraComponent* pCamera : m_pGameContext->Scene->Cameras)
 	{
 		m_pGameContext->Engine->D3DeviceContext->RSSetViewports(1, &pCamera->GetViewport());

@@ -2,6 +2,7 @@
 #include "Skybox.h"
 #include "../Components/MeshComponent.h"
 #include "../Materials/SkyboxMaterial.h"
+#include "Graphics/MeshFilter.h"
 
 Skybox::Skybox()
 {

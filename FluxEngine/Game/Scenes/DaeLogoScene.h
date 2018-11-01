@@ -1,5 +1,5 @@
 #pragma once
-#include "../Scenegraph/SceneBase.h"
+#include "../../Scenegraph/SceneBase.h"
 
 class DefaultMaterial;
 class GameObject;

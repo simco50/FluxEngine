@@ -354,7 +354,7 @@ void FluxCore::OnResize()
 {
 	assert(m_pDevice);
 	assert(m_pSwapChain);
-	
+
 	m_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 	m_pDefaultRenderTarget.reset();
 
@@ -399,14 +399,14 @@ void FluxCore::SetMSAA(bool value)
 
 LRESULT CALLBACK FluxCore::WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (message == WM_CREATE)
+	if (message == WM_NCCREATE)
 	{
 		CREATESTRUCT *pCS = reinterpret_cast<CREATESTRUCT*>(lParam);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG>(pCS->lpCreateParams));
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCS->lpCreateParams));
 	}
 	else
 	{
-		FluxCore* pThisGame = reinterpret_cast<FluxCore*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+		FluxCore* pThisGame = reinterpret_cast<FluxCore*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 		if (pThisGame) return pThisGame->WndProc(hWnd, message, wParam, lParam);
 	}
 
@@ -418,9 +418,9 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	ImGuiIO& io = ImGui::GetIO();
 	switch (message)
 	{
-		// WM_ACTIVATE is sent when the window is activated or deactivated.  
-		// We pause the game when the window is deactivated and unpause it 
-		// when it becomes active.  
+		// WM_ACTIVATE is sent when the window is activated or deactivated.
+		// We pause the game when the window is deactivated and unpause it
+		// when it becomes active.
 	case WM_ACTIVATE:
 		if(LOWORD(wParam) == WA_INACTIVE)
 		{
@@ -596,8 +596,8 @@ LRESULT FluxCore::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void FluxCore::CalculateFrameStats() const
 {
-	// Code computes the average frames per second, and also the 
-	// average time it takes to render one frame.  These stats 
+	// Code computes the average frames per second, and also the
+	// average time it takes to render one frame.  These stats
 	// are appended to the window caption bar.
 
 	static int frameCnt = 0;

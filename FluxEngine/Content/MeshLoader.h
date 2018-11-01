@@ -1,5 +1,6 @@
 #pragma once
 #include "ResourceLoader.h"
+#include "Graphics/MeshFilter.h"
 class MeshFilter;
 
 class MeshLoader : public ResourceLoader<MeshFilter>

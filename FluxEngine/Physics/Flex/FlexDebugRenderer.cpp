@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FlexDebugRenderer.h"
-#include "../Graphics/MeshFilter.h"
-#include "../Components/CameraComponent.h"
+#include "../../Graphics/MeshFilter.h"
+#include "../../Components/CameraComponent.h"
 #include "FlexHelper.h"
 #include "FlexSystem.h"
 
