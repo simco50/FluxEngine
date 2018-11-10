@@ -13,8 +13,11 @@ struct PreparedStatement
 {
 public:
 	PreparedStatement(Database* pDb, const std::string& query);
+	~PreparedStatement();
 
 	bool Step();
+	bool Reset(bool resetParameters);
+	bool ResetParameters();
 	void GetColumn(int index, const char** pText) const;
 	void GetColumn(int index, int* pValue) const;
 	void GetColumn(int index, float* pValue) const;

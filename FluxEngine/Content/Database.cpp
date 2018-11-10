@@ -35,7 +35,7 @@ namespace SQLiteFunctions
 	static int Read(sqlite3_file* pFile, void* zBuf, int iAmt, sqlite_int64 iOfst)
 	{
 		SQLiteFile *p = (SQLiteFile*)pFile;
-		p->pFile->SetPointer(iOfst);
+		p->pFile->SetPointer((size_t)iOfst);
 		p->pFile->Read(zBuf, iAmt);
 		return SQLITE_OK;
 	}
@@ -150,6 +150,14 @@ PreparedStatement::PreparedStatement(Database* pDb, const std::string& query)
 	}
 }
 
+PreparedStatement::~PreparedStatement()
+{
+	if (pStatement)
+	{
+		sqlite3_finalize(pStatement);
+	}
+}
+
 Database::Database(Context* pContext)
 	: Resource(pContext)
 {
@@ -240,6 +248,40 @@ bool PreparedStatement::Step()
 	default:
 		return false;
 	}
+}
+
+bool PreparedStatement::Reset(bool resetParameters)
+{
+	check(pStatement);
+	switch (m_State)
+	{
+	case State::BindState:
+	case State::BindComplete:
+		return true;
+	case State::Stepping:
+	case State::Done:
+
+		if (CheckError(sqlite3_reset(pStatement)) == false)
+		{
+			return false;
+		}
+
+		if (resetParameters)
+		{
+			return ResetParameters();
+		}
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool PreparedStatement::ResetParameters()
+{
+	check(pStatement);
+	m_ParametersSet = 0;
+	m_State = State::BindState;
+	return CheckError(sqlite3_clear_bindings(pStatement));
 }
 
 void PreparedStatement::GetColumn(int index, const char** pText) const
