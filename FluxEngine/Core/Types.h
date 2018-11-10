@@ -29,3 +29,6 @@ using StringHash = size_t;
 
 #define PRAGMA_DISABLE_OPTIMIZATION __pragma(optimize("",off))
 #define PRAGMA_ENABLE_OPTIMIZATION  __pragma(optimize("",on))
+
+#define STD_CALL __stdcall
+#define CDECL_CALL __cdecl

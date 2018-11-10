@@ -2,8 +2,6 @@
 #include "HttpRequest.h"
 #include "Core\Config.h"
 
-#pragma comment(lib, "wininet.lib")
-
 namespace WinInet
 {
 	std::string TranslateError(int errorCode)

@@ -2,7 +2,6 @@
 #include "Database.h"
 
 #include <sqlite3.h>
-#pragma comment(lib, "sqlite3.lib")
 
 struct SQLiteFile : public sqlite3_file
 {

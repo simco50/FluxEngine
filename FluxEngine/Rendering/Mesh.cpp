@@ -12,7 +12,6 @@
 #include <assimp\Importer.hpp>
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
-#pragma comment(lib, "assimp-vc140-mt.lib")
 
 Vector3 ToDXVector3(const aiVector3D& vec)
 {
@@ -401,6 +400,12 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					AnimationNode animNode;
 
 					animNode.Name = pAnimNode->mNodeName.C_Str();
+					size_t fbxSuffix = animNode.Name.find("_$AssimpFbx$");
+					if (fbxSuffix != std::string::npos)
+					{
+						animNode.Name = animNode.Name.substr(0, fbxSuffix);
+					}
+
 					auto pIt = m_BoneMap.find(animNode.Name);
 					if (pIt == m_BoneMap.end())
 					{
@@ -412,15 +417,18 @@ bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
 					std::vector<float> keyTimes;
 					for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
 					{
-						keyTimes.push_back((float)pAnimNode->mPositionKeys[k].mTime);
+						float time = Math::Max<float>(0, (float)pAnimNode->mPositionKeys[k].mTime);
+						keyTimes.push_back(time);
 					}
 					for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
 					{
-						keyTimes.push_back((float)pAnimNode->mScalingKeys[k].mTime);
+						float time = Math::Max<float>(0, (float)pAnimNode->mScalingKeys[k].mTime);
+						keyTimes.push_back(time);
 					}
 					for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
 					{
-						keyTimes.push_back((float)pAnimNode->mRotationKeys[k].mTime);
+						float time = Math::Max<float>(0, (float)pAnimNode->mRotationKeys[k].mTime);
+						keyTimes.push_back(time);
 					}
 					std::sort(keyTimes.begin(), keyTimes.end());
 					keyTimes.erase(std::unique(keyTimes.begin(), keyTimes.end()), keyTimes.end());

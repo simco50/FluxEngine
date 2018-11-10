@@ -41,7 +41,7 @@ void Model::SetMesh(Mesh* pMesh)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
 		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
-		m_Batches[i].NumSkinMatrices = 1;
+		m_Batches[i].NumSkinMatrices = 0;
 	}
 	m_BoundingBox = pMesh->GetBoundingBox();
 

@@ -25,75 +25,37 @@
 #include <limits>
 #pragma endregion STL
 
+#ifdef MODULE_SDL2
 #include <SDL.h>
-#pragma comment(lib, "sdl2.lib")
-#pragma comment(lib, "sdl2main.lib")
-
-#ifdef PHYSX
-#include <PxPhysicsAPI.h>
-#if defined(x64) && defined(_DEBUG)
-#pragma comment(lib, "PhysX3DEBUG_x64.lib")
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PxFoundationDEBUG_x64.lib")
-#pragma comment(lib, "PxTaskDEBUG_x64.lib")
-#pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
-#elif defined(x64) && defined(NDEBUG)
-#pragma comment(lib, "PhysX3_x64.lib")
-#pragma comment(lib, "PhysX3Extensions.lib")
-#pragma comment(lib, "PxFoundation_x64.lib")
-#pragma comment(lib, "PxTask_x64.lib")
-#pragma comment(lib, "PxPvdSDK_x64.lib")
-#elif defined(x86) && defined(_DEBUG)
-#pragma comment(lib, "PhysX3DEBUG_x86.lib")
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PxFoundationDEBUG_x86.lib")
-#pragma comment(lib, "PxTaskDEBUG_x86.lib")
-#pragma comment(lib, "PxPvdSDKDEBUG_x86.lib")
-#elif defined(x86) && defined(NDEBUG)
-#pragma comment(lib, "PhysX3_x86.lib")
-#pragma comment(lib, "PhysX3Extensions.lib")
-#pragma comment(lib, "PxFoundation_x86.lib")
-#pragma comment(lib, "PxTask_x86.lib")
-#pragma comment(lib, "PxPvdSDK_x86.lib")
 #endif
+
+#ifdef MODULE_PHYSX
+#include <PxPhysicsAPI.h>
 #endif
 
 #pragma region
 #include "External/Imgui/imgui.h"
 #pragma endregion IMGUI
 
-#pragma region
+#ifdef MODULE_D3D11
 //DirectXMath
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <dxgi.h>
 #include <d3d11.h>
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "d3d11.lib")
 #include <DirectXColors.h>
 using namespace DirectX;
 #include "External/SimpleMath/SimpleMath.h"
 using namespace DirectX::SimpleMath;
-#pragma endregion D3D
+#endif
 
-#pragma region
+#ifdef MODULE_FMOD
 #include "fmod.hpp"
 #pragma warning(push)
 #pragma warning(disable: 4505) //Unreferenced local function removed (FMOD_ErrorString)
 #include "fmod_errors.h"
 #pragma warning(pop)
-#if x64
-#pragma comment(lib, "fmod64_vc.lib")
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "fmodL64_vc.lib")
 #endif
-#elif defined(x86)
-#pragma comment(lib, "fmod_vc.lib")
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "fmodL_vc.lib")
-#endif
-#endif
-#pragma endregion FMOD
 
 #pragma region
 //Engine core include

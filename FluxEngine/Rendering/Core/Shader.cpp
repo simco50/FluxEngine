@@ -164,9 +164,11 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 			{
 				processedIncludes.push_back(includeHash);
 				std::string basePath = Paths::GetDirectoryPath(inputStream.GetSource());
-				std::unique_ptr<File> newFile = FileSystem::GetFile(basePath + includeFilePath);
+				std::string filePath = basePath + includeFilePath;
+				std::unique_ptr<File> newFile = FileSystem::GetFile(filePath);
 				if (newFile == nullptr)
 				{
+					FLUX_LOG(Warning, "[Shader::ProcessSource] Failed to find include file '%s'", filePath.c_str());
 					return false;
 				}
 				if (!newFile->OpenRead())

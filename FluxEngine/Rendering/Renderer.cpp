@@ -244,7 +244,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
-	if (batch.NumSkinMatrices > 1)
+	if (batch.NumSkinMatrices > 0)
 	{
 		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
 		m_pGraphics->SetShaderParameter("cSkinDualQuaternions", batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);

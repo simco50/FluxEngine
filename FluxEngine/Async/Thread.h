@@ -5,7 +5,7 @@ class AsyncTaskQueue;
 class Thread
 {
 public:
-	using ThreadFunction = DWORD(*)(void*);
+	using ThreadFunction = DWORD(STD_CALL *)(void*);
 
 	Thread();
 	virtual ~Thread();
@@ -47,7 +47,7 @@ public:
 	bool RunThread();
 protected:
 	virtual int ThreadFunction() = 0;
-	static DWORD WINAPI ThreadFunctionStatic(void* pData);
+	static unsigned long STD_CALL ThreadFunctionStatic(void* pData);
 };
 
 class WorkerThread : public HookableThread

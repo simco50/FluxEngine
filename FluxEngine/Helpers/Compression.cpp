@@ -2,11 +2,6 @@
 #include "Compression.h"
 
 #include <Zlib.h>
-#if defined(DEBUG) || defined(_DEBUG)
-#pragma comment(lib, "zlib_DEBUG.lib")
-#else
-#pragma comment(lib, "zlib.lib")
-#endif
 
 namespace Compression
 {

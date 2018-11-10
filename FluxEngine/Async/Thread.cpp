@@ -87,7 +87,7 @@ void Thread::SetAffinity(const uint64 affinity)
 void Thread::SetAffinity(void* pHandle, const uint64 affinity)
 {
 	check(pHandle);
-	::SetThreadAffinityMask((HANDLE*)pHandle, affinity);
+	::SetThreadAffinityMask((HANDLE*)pHandle, (DWORD)affinity);
 }
 
 void Thread::LockToCore(const uint32 core)
