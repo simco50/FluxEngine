@@ -5,7 +5,7 @@
 
 struct ParticleVertex
 {
-	ParticleVertex(Vector3 pos = Vector3(), Vector4 col = (Vector4)Colors::White, float size = 5.0f, float rotation = 0) :
+	ParticleVertex(Vector3 pos = Vector3(), Vector4 col = Vector4(1, 1, 1, 1), float size = 5.0f, float rotation = 0) :
 		Position(pos),
 		Color(col),
 		Size(size),

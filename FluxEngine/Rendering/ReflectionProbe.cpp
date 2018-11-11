@@ -19,7 +19,7 @@ ReflectionProbe::~ReflectionProbe()
 
 void ReflectionProbe::Capture(const CubeMapFace face)
 {
-	Matrix projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, m_NearClip, m_FarClip);
+	Matrix projection = DirectX::XMMatrixPerspectiveFovLH(Math::PIDIV2, 1.0f, m_NearClip, m_FarClip);
 	std::unique_ptr<Camera>& pCamera = m_Cameras[(int)face];
 	pCamera->SetProjection(projection);
 

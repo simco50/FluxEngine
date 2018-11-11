@@ -44,8 +44,8 @@ void Texture::UpdateParameters()
 	desc.ComparisonFunc = D3D11ComparisonFunction(CompareMode::LESSEQUAL);
 	desc.Filter = D3D11Filter(TextureFilter::MIN_MAG_MIP_LINEAR);
 	desc.MaxAnisotropy = 1;
-	desc.MinLOD = std::numeric_limits<float>::min();
-	desc.MaxLOD = std::numeric_limits<float>::max();
+	desc.MinLOD = FLT_MIN;
+	desc.MaxLOD = FLT_MAX;
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateSamplerState(&desc, (ID3D11SamplerState**)&m_pSamplerState));
 

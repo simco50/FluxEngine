@@ -25,7 +25,7 @@ public:
 	void Render();
 
 private:
-	static void HandleSDLEvent(SDL_Event* pEvent);
+	static void HandleSDLEvent(void* pEvent);
 	static void SetStyle(bool dark, float alpha);
 
 	bool LoadConfig();

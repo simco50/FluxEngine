@@ -17,11 +17,11 @@
 Camera::Camera(Context* pContext)
 	: Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
 {
-	m_Projection = XMMatrixIdentity();
-	m_View = XMMatrixIdentity();
-	m_ViewInverse = XMMatrixIdentity();
-	m_ViewProjection = XMMatrixIdentity();
-	m_ViewProjectionInverse = XMMatrixIdentity();
+	m_Projection = DirectX::XMMatrixIdentity();
+	m_View = DirectX::XMMatrixIdentity();
+	m_ViewInverse = DirectX::XMMatrixIdentity();
+	m_ViewProjection = DirectX::XMMatrixIdentity();
+	m_ViewProjectionInverse = DirectX::XMMatrixIdentity();
 
 	m_pGraphics = GetSubsystem<Graphics>();
 }
@@ -72,13 +72,13 @@ void Camera::OnMarkedDirty(const SceneNode* pNode)
 
 	if (m_Perspective)
 	{
-		m_Projection = XMMatrixPerspectiveFovLH(m_FoV * (XM_PI / 180.0f), viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
+		m_Projection = DirectX::XMMatrixPerspectiveFovLH(m_FoV * (Math::PI / 180.0f), viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
 	}
 	else
 	{
 		float viewWidth = m_Size * viewportWidth / viewportHeight;
 		float viewHeight = m_Size;
-		m_Projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
+		m_Projection = DirectX::XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
 
 	m_View = XMMatrixLookAtLH(

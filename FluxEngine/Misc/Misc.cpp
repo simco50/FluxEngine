@@ -1,6 +1,7 @@
 #include "FluxEngine.h"
 #include "Misc.h"
 #include <shellapi.h>
+#include <intrin.h>
 
 namespace BuildConfiguration
 {

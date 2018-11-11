@@ -30,7 +30,6 @@ public:
 
 	void FlushThreadedMessages();
 
-	static bool LogFmodResult(FMOD_RESULT result);
 	static bool LogHRESULT(const std::string &source, HRESULT hr);
 	static bool LogHRESULT(char* source, HRESULT hr);
 	static void Log(const std::string &message, LogType type = LogType::Info);

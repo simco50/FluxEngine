@@ -8,6 +8,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
 
+#include <SDL_surface.h>
+
 namespace STBI
 {
 	int ReadCallback(void* pUser, char* pData, int size)

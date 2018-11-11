@@ -7,7 +7,7 @@ class PakFile;
 class IMountPoint
 {
 public:
-	IMountPoint(const std::string& physicalPath, const int order = std::numeric_limits<int>::max());
+	IMountPoint(const std::string& physicalPath, const int order = INT_MAX);
 	virtual ~IMountPoint() {}
 
 	virtual bool OnMount() = 0;

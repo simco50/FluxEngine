@@ -7,7 +7,7 @@ SceneNode::SceneNode(Context* pContext, const std::string& name)
 	: Object(pContext), m_Name(name)
 {
 	m_Position = Vector3(0, 0, 0);
-	m_Rotation = XMQuaternionIdentity();
+	m_Rotation = Quaternion::Identity;
 	m_Scale = Vector3(1, 1, 1);
 }
 
@@ -15,7 +15,7 @@ SceneNode::SceneNode(Context* pContext, Scene* pScene)
 	: Object(pContext),	m_pScene(pScene)
 {
 	m_Position = Vector3(0, 0, 0);
-	m_Rotation = XMQuaternionIdentity();
+	m_Rotation = Quaternion::Identity;
 	m_Scale = Vector3(1, 1, 1);
 }
 

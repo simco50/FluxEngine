@@ -172,7 +172,7 @@ PlaneCollider::PlaneCollider(Context* pContext, PxMaterial* pMaterial /*= nullpt
 void PlaneCollider::CreateGeometry()
 {
 	m_pGeometry = new PxPlaneGeometry();
-	m_LocalPose = PxTransform(PxVec3(0, 0, 0), PxQuat(XM_PIDIV2, PxVec3(0, 0, 1)));
+	m_LocalPose = PxTransform(PxVec3(0, 0, 0), PxQuat(Math::PIDIV2, PxVec3(0, 0, 1)));
 }
 
 //CAPSULE
@@ -200,7 +200,7 @@ void CapsuleCollider::CreateGeometry()
 			const BoundingBox& bb = pDrawable->GetBoundingBox();
 			m_Radius = Math::Average(bb.Extents.x, bb.Extents.z);
 			m_Height = bb.Extents.y / 2;
-			m_LocalPose = PxTransform(PxVec3(bb.Center.x, bb.Center.y, bb.Center.z), PxQuat(XM_PIDIV2, PxVec3(0, 0, 1)));
+			m_LocalPose = PxTransform(PxVec3(bb.Center.x, bb.Center.y, bb.Center.z), PxQuat(Math::PIDIV2, PxVec3(0, 0, 1)));
 		}
 	}
 	m_pGeometry = new PxCapsuleGeometry(m_Radius, m_Height);

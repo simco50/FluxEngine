@@ -1,21 +1,27 @@
 #pragma once
 
-struct Math
+namespace Math
 {
+	const float PI = 3.141592654f;
+	const float INVPI = 0.318309886f;
+	const float INV2PI = 0.159154943f;
+	const float PIDIV2 = 1.570796327f;
+	const float PIDIV4 = 0.785398163f;
+
 	template<typename T>
-	inline static T Max(const T& a, const T& b)
+	T Max(const T& a, const T& b)
 	{
 		return a < b ? b : a;
 	}
 
 	template<typename T>
-	inline static T Min(const T& a, const T& b)
+	T Min(const T& a, const T& b)
 	{
 		return a < b ? a : b;
 	}
 
 	template<typename T>
-	inline static T Max3(const T& a, const T& b, const T& c)
+	T Max3(const T& a, const T& b, const T& c)
 	{
 		if (a < b)
 			return b < c ? c : b;
@@ -23,28 +29,19 @@ struct Math
 	}
 
 	template<typename T>
-	inline static T Min3(const T& a, const T& b, const T& c)
+	T Min3(const T& a, const T& b, const T& c)
 	{
 		if (a < b)
 			return a < c ? a : c;
 		return b < c ? b : c;
 	}
 
-	inline static float RandomRange(float min, float max)
-	{
-		float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		float diff = max - min;
-		float r = random * diff;
-		return min + r;
-	}
+	float RandomRange(float min, float max);
 
-	inline static int RandomRange(int min, int max)
-	{
-		return min + rand() % (max - min + 1);
-	}
+	int RandomRange(int min, int max);
 
 	template<typename T>
-	inline static T Clamp(const T value, const T hi, const T lo)
+	T Clamp(const T value, const T hi, const T lo)
 	{
 		if (value > hi)
 			return hi;
@@ -54,45 +51,45 @@ struct Math
 	}
 
 	template<typename T>
-	inline static void ClampMin(T& value, const T lo)
+	void ClampMin(T& value, const T lo)
 	{
 		if (value < lo)
 			value = lo;
 	}
 
 	template<typename T>
-	inline static T ClampMin(const T value, const T lo)
+	T ClampMin(const T value, const T lo)
 	{
 		return value < lo ? lo : value;
 	}
 
 	template<typename T>
-	inline static void ClampMax(T& value, const T hi)
+	void ClampMax(T& value, const T hi)
 	{
 		if (value > hi)
 			value = hi;
 	}
 
 	template<typename T>
-	inline static T ClampMax(const T value, const T hi)
+	T ClampMax(const T value, const T hi)
 	{
 		return value > hi ? hi : value;
 	}
 
 	template<typename T>
-	inline static T Average(const T& a, const T& b)
+	T Average(const T& a, const T& b)
 	{
 		return (a + b) / (T)2;
 	}
 
 	template<typename T>
-	inline static T Average3(const T& a, const T& b, const T& c)
+	T Average3(const T& a, const T& b, const T& c)
 	{
 		return (a + b + c) / (T)3;
 	}
 
 	template<typename T>
-	inline static void Clamp01(T& value)
+	void Clamp01(T& value)
 	{
 		if (value > 1)
 			value = 1;
@@ -101,7 +98,7 @@ struct Math
 	}
 
 	template<typename T>
-	inline static T Clamp01(const T value)
+	T Clamp01(const T value)
 	{
 		if (value > 1)
 			return 1;
@@ -110,106 +107,27 @@ struct Math
 		return value;
 	}
 
-	inline static float RadToDeg(float rad)
-	{
-		return rad * 57.2957795131f;
-	}
+	float RadToDeg(float rad);
 
-	inline static float DegToRad(float deg)
-	{
-		return deg * 0.01745329251f;
-	}
+	float DegToRad(float deg);
 
-	inline static float Lerp(float a, float b, float t)
-	{
-		return a + t * (b - a);
-	}
+	float Lerp(float a, float b, float t);
 
-	inline static float InverseLerp(float a, float b, float value)
-	{
-		return (value - a) / (b - a);
-	}
+	float InverseLerp(float a, float b, float value);
 
-	inline static Vector3 ScaleFromMatrix(const Matrix& m)
-	{
-		return Vector3(
-			sqrtf(m._11 * m._11 + m._21 * m._21 + m._31 * m._31),
-			sqrtf(m._12 * m._12 + m._22 * m._22 + m._32 * m._32),
-			sqrtf(m._13 * m._13 + m._23 * m._23 + m._33 * m._33));
-	}
+	Vector3 ScaleFromMatrix(const Matrix& m);
 
-	inline static Quaternion LookRotation(const Vector3& direction)
-	{
-		Vector3 v;
-		direction.Normalize(v);
-		float pitch = asin(-v.y);
-		float yaw = atan2(v.x, v.z);
-		return Quaternion::CreateFromYawPitchRoll(yaw, pitch, 0);
-	}
+	Quaternion LookRotation(const Vector3& direction);
 
-	inline static std::string ToBinary(unsigned int number)
-	{
-		return Math::ToBase(number, 2);
-	}
+	std::string ToBase(unsigned int number, unsigned int base);
 
-	inline static std::string ToHex(unsigned int number)
-	{
-		return Math::ToBase(number, 16);
-	}
+	std::string ToBinary(unsigned int number);
 
-	inline static std::string ToBase(unsigned int number, unsigned int base)
-	{
-		std::stringstream nr;
-		unsigned int count = 0;
-		while (number != 0)
-		{
-			unsigned int mod = number % base;
-			if (mod > 9)
-			{
-				nr << (char)('A' + mod - 10);
-			}
-			else
-			{
-				nr << mod;
-			}
-			number /= base;
-			++count;
-		}
-		for (count; count <= 8; ++count)
-		{
-			nr << '0';
-		}
-		if (base == 2)
-		{
-			nr << "b0";
-		}
-		else if (base == 8)
-		{
-			nr << "c0";
-		}
-		else if (base == 16)
-		{
-			nr << "x0";
-		}
-		std::string out = nr.str();
-		std::reverse(out.begin(), out.end());
-		return out;
-	}
+	std::string ToHex(unsigned int number);
 
-	static Vector3 RandVector()
-	{
-		Matrix randomMatrix = XMMatrixRotationRollPitchYaw(Math::RandomRange(-XM_PI, XM_PI), Math::RandomRange(-XM_PI, XM_PI), Math::RandomRange(-XM_PI, XM_PI));
-		return Vector3::Transform(Vector3(1, 0, 0), randomMatrix);
-	}
+	Vector3 RandVector();
 
-	static Vector3 RandCircleVector()
-	{
-		Vector3 output;
-		output.z = 0;
-		output.y = cos(RandomRange(-XM_PI, XM_PI));
-		output.x = sin(RandomRange(-XM_PI, XM_PI));
-		return output;
-	}
+	Vector3 RandCircleVector();
 
 	using HexColor = unsigned int;
 	//Helper class to easily convert between 4 float colors and unsigned int hex colors

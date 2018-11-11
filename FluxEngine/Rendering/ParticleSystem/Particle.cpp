@@ -97,7 +97,7 @@ void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
 
 		direction = Vector3();
 		direction.y += Math::RandomRange(0.0f, m_pEmitterSettings->Lifetime);
-		float offset = direction.y * tan(m_pEmitterSettings->Shape.Angle * XM_PI / 180.0f);
+		float offset = direction.y * tan(m_pEmitterSettings->Shape.Angle * Math::PI / 180.0f);
 		direction.x += offset * position.x;
 		direction.z += offset * position.z;
 

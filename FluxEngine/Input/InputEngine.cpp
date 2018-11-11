@@ -4,6 +4,8 @@
 #include "Core/FluxCore.h"
 #include "Core/CommandLine.h"
 
+#include <SDL.h>
+
 InputEngine::InputEngine(Context* pContext)
 	: Subsystem(pContext),
 	m_Enabled(false)

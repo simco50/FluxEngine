@@ -1,4 +1,8 @@
 #pragma once
+
+#include <dxgi.h>
+#include <d3d11.h>
+
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/D3DCommon/D3DHelpers.h"
 
@@ -49,7 +53,7 @@ private:
 	std::array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
 	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets = {};
 	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides = {};
-	unsigned int m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
+	unsigned int m_FirstDirtyVertexBuffer = UINT_MAX;
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
 

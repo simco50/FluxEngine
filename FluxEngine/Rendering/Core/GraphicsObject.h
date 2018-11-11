@@ -15,12 +15,17 @@ public:
     void SetName(const std::string& name);
 
 #ifdef GRAPHICS_D3D11
-	ID3D11Resource* GetResource() const { return m_pResource; }
+	void* GetResource() const { return m_pResource; }
+#else
+	unsigned int GetResource() const { return m_Handle; }
 #endif
 
 protected:
 	Graphics* m_pGraphics;
-#ifdef GRAPHICS_D3D11
-    ID3D11Resource* m_pResource = nullptr;
-#endif
+
+	union
+	{
+		void* m_pResource;
+		unsigned int m_Handle;
+	};
 };

@@ -67,13 +67,13 @@ void Light::OnMarkedDirty(const SceneNode* pNode)
 	switch (m_Data.Type)
 	{
 	case Type::Directional:
-		projection = XMMatrixOrthographicLH(512, 512, 0.1f, 1000);
+		projection = DirectX::XMMatrixOrthographicLH(512, 512, 0.1f, 1000);
 		break;
 	case Type::Point:
-		projection = XMMatrixPerspectiveFovLH(XM_PI, 1.0f, 0.1f, 1000);
+		projection = DirectX::XMMatrixPerspectiveFovLH(Math::PI, 1.0f, 0.1f, 1000);
 		break;
 	case Type::Spot:
-		projection = XMMatrixPerspectiveFovLH(m_Data.SpotLightAngle * (XM_PI / 180.0f), 1.0f, 0.1f, 1000);
+		projection = DirectX::XMMatrixPerspectiveFovLH(m_Data.SpotLightAngle * (Math::PI / 180.0f), 1.0f, 0.1f, 1000);
 		break;
 	default:
 		break;

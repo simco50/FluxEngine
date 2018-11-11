@@ -344,7 +344,7 @@ void Graphics::UpdateShaderProgram()
 			hash <<= 16;
 			if (pVariation == nullptr)
 				continue;
-			hash |= (int)pVariation->GetByteCode().size() % std::numeric_limits<uint16>::max();
+			hash |= (int)pVariation->GetByteCode().size() % UINT16_MAX;
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -713,7 +713,7 @@ void Graphics::PrepareDraw()
 	{
 		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
+		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, UINT_MAX);
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)
@@ -761,7 +761,7 @@ void Graphics::PrepareDraw()
 			}
 		}
 
-		m_pImpl->m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_FirstDirtyVertexBuffer = UINT_MAX;
 		m_pImpl->m_LastDirtyVertexBuffer = 0;
 		m_pImpl->m_VertexBuffersDirty = false;
 	}

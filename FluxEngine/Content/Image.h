@@ -2,6 +2,8 @@
 
 #include "Resource.h"
 
+struct SDL_Surface;
+
 enum class ImageFormat
 {
 	RGBA = 0,

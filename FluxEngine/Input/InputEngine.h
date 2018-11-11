@@ -47,7 +47,7 @@ private:
 	int Hats[MAX_HATS];
 };
 
-DECLARE_MULTICAST_DELEGATE(OnSDLEvent, SDL_Event*);
+DECLARE_MULTICAST_DELEGATE(OnSDLEvent, void*);
 DECLARE_MULTICAST_DELEGATE(OnWindowSizeChangedDelegate, int, int);
 
 class InputEngine : public Subsystem

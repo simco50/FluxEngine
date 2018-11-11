@@ -229,14 +229,14 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 {
 	DebugSphere sphere(position, radius);
 
-	float jStep = XM_PI / slices;
-	float iStep = XM_PI / stacks;
+	float jStep = Math::PI / slices;
+	float iStep = Math::PI / stacks;
 
 	if (!solid)
 	{
-		for (float j = 0; j < XM_PI; j += jStep)
+		for (float j = 0; j < Math::PI; j += jStep)
 		{
-			for (float i = 0; i < XM_2PI; i += iStep)
+			for (float i = 0; i < Math::PI * 2; i += iStep)
 			{
 				Vector3 p1 = sphere.GetPoint(i, j);
 				Vector3 p2 = sphere.GetPoint(i + iStep, j);
@@ -252,16 +252,16 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 	}
 	else
 	{
-		for (float j = 0; j < XM_PI; j += jStep)
+		for (float j = 0; j < Math::PI; j += jStep)
 		{
-			for (float i = 0; i < XM_2PI; i += iStep)
+			for (float i = 0; i < Math::PI * 2; i += iStep)
 			{
 				Vector3 p1 = sphere.GetPoint(i, j);
 				Vector3 p2 = sphere.GetPoint(i + iStep, j);
 				Vector3 p3 = sphere.GetPoint(i, j + jStep);
 				Vector3 p4 = sphere.GetPoint(i + iStep, j + jStep);
 
-				AddPolygon(p2, p1, p3, p4, (Color)Colors::Blue);
+				AddPolygon(p2, p1, p3, p4, Color(0, 0, 1, 1));
 			}
 		}
 	}
@@ -269,7 +269,7 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 
 void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& color)
 {
-	std::vector<XMFLOAT3> corners(BoundingFrustum::CORNER_COUNT);
+	std::vector<Vector3> corners(BoundingFrustum::CORNER_COUNT);
 	frustrum.GetCorners(corners.data());
 
 	AddLine(corners[0], corners[1], color);
@@ -432,13 +432,13 @@ void DebugRenderer::AddWireCylinder(const Vector3& position, const Vector3& dire
 	direction.Normalize(d);
 
 	DebugSphere sphere(position, radius);
-	float t = XM_2PI / (segments + 1);
+	float t = Math::PI * 2 / (segments + 1);
 
 	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position - d * (height / 2));
 	for (int i = 0; i < segments + 1; ++i)
 	{
-		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, i * t), world);
-		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, (i + 1) * t), world);
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, i * t), world);
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, (i + 1) * t), world);
 		AddLine(a, b, color, color);
 		AddLine(a + d * height, b + d * height, color, color);
 		AddLine(a, a + d * height, color, color);
@@ -452,13 +452,13 @@ void DebugRenderer::AddWireCone(const Vector3& position, const Vector3& directio
 
 	float radius = tan(Math::DegToRad(angle)) * height;
 	DebugSphere sphere(position, radius);
-	float t = XM_2PI / (segments + 1);
+	float t = Math::PI * 2 / (segments + 1);
 
 	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position);
 	for (int i = 0; i < segments + 1; ++i)
 	{
-		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, i * t), world) + direction * height;
-		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(XM_PIDIV2, (i + 1) * t), world) + direction * height;
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, i * t), world) + direction * height;
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, (i + 1) * t), world) + direction * height;
 		AddLine(a, b, color, color);
 		AddLine(a, position, color, color);
 	}

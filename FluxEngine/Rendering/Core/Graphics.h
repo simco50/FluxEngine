@@ -19,6 +19,8 @@ class StructuredBuffer;
 
 class GraphicsImpl;
 
+struct SDL_Window;
+
 struct AdapterInfo
 {
 	std::string Name;

@@ -48,7 +48,7 @@ public:
 	bool Raycast(
 		const Ray& ray,
 		RaycastResult& outResult,
-		const float length = std::numeric_limits<float>::max()
+		const float length = FLT_MAX
 	) const;
 
 	void SetGravity(const float x, const float y, const float z);

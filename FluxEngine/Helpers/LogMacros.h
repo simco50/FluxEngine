@@ -4,7 +4,9 @@
 #define STRINGIFY(x) STR(x)
 
 #define FLUX_LOG_FMOD(fmod) \
-Console::LogFmodResult(fmod)
+{std::string msg; \
+if (AudioEngine::ErrorString(fmod, msg)) {} \
+else { Console::Log(msg, LogType::Info); }} \
 
 #define FLUX_LOG_HR(description, hr) \
 Console::LogHRESULT(description, hr)

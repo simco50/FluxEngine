@@ -471,7 +471,7 @@ void Mesh::CalculateBoundingBox()
 	for (auto& pGeometry : m_Geometries)
 	{
 		BoundingBox bb;
-		BoundingBox::CreateFromPoints(bb, pGeometry->GetVertexCount(), (const XMFLOAT3*)pGeometry->GetVertexData("POSITION").pData, (int)sizeof(Vector3));
+		BoundingBox::CreateFromPoints(bb, pGeometry->GetVertexCount(), (const Vector3*)pGeometry->GetVertexData("POSITION").pData, (int)sizeof(Vector3));
 		m_BoundingBox.CreateMerged(m_BoundingBox, m_BoundingBox, bb);
 	}
 }

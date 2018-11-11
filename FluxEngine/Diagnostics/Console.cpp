@@ -73,16 +73,6 @@ void Console::FlushThreadedMessages()
 	}
 }
 
-bool Console::LogFmodResult(FMOD_RESULT result)
-{
-	if (result != FMOD_OK)
-	{
-		Log(Printf("FMOD Error (%d) %s", result, FMOD_ErrorString(result)), LogType::Error);
-		return true;
-	}
-	return false;
-}
-
 bool Console::LogHRESULT(const std::string &source, HRESULT hr)
 {
 	if (FAILED(hr))

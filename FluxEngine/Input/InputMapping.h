@@ -1,5 +1,11 @@
 #pragma once
 
+#include <SDL_joystick.h>
+#include <SDL_gamecontroller.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
+#include <SDL_haptic.h>
+
 enum class ControllerAxis
 {
 	LEFT_X = 0,

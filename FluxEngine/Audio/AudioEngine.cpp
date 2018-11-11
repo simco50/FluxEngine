@@ -1,6 +1,8 @@
 #include "FluxEngine.h"
 #include "AudioEngine.h"
 
+#include <fmod_errors.h>
+
 namespace FmodCallbacks
 {
 	FMOD_RESULT F_CALLBACK FileOpenCallback(const char* name, unsigned int* fileSize, void** handle, void* /*userData*/)
@@ -82,4 +84,14 @@ void AudioEngine::Update()
 {
 	AUTOPROFILE(AudioEngine_Update);
 	m_pSystem->update();
+}
+
+bool AudioEngine::ErrorString(FMOD_RESULT result, std::string& message)
+{
+	if (result != FMOD_OK)
+	{
+		message = Printf("FMOD Error (%d) %s", result, FMOD_ErrorString(result));
+		return false;
+	}
+	return true;
 }

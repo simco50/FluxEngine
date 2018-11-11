@@ -22,40 +22,29 @@
 #include <memory>
 #include <iomanip>
 #include <queue>
-#include <limits>
 #pragma endregion STL
 
-#ifdef MODULE_SDL2
-#include <SDL.h>
-#endif
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 
 #ifdef MODULE_PHYSX
 #include <PxPhysicsAPI.h>
 #endif
 
-#pragma region
-#include "External/Imgui/imgui.h"
-#pragma endregion IMGUI
-
 #ifdef MODULE_D3D11
-//DirectXMath
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <dxgi.h>
-#include <d3d11.h>
-#include <DirectXColors.h>
-using namespace DirectX;
 #include "External/SimpleMath/SimpleMath.h"
-using namespace DirectX::SimpleMath;
+using BoundingBox = DirectX::BoundingBox;
+using BoundingFrustum = DirectX::BoundingFrustum;
+using Vector2 = DirectX::SimpleMath::Vector2;
+using Vector3 = DirectX::SimpleMath::Vector3;
+using Vector4 = DirectX::SimpleMath::Vector4;
+using Matrix = DirectX::SimpleMath::Matrix;
+using Quaternion = DirectX::SimpleMath::Quaternion;
+using Color = DirectX::SimpleMath::Color;
+using Ray = DirectX::SimpleMath::Ray;
 #endif
 
-#ifdef MODULE_FMOD
-#include "fmod.hpp"
-#pragma warning(push)
-#pragma warning(disable: 4505) //Unreferenced local function removed (FMOD_ErrorString)
-#include "fmod_errors.h"
-#pragma warning(pop)
-#endif
+#include "External/Imgui/imgui.h"
 
 #pragma region
 //Engine core include

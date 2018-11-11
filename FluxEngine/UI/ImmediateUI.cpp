@@ -13,6 +13,8 @@
 #include "Rendering\Core\Texture2D.h"
 #include "FileSystem\File\PhysicalFile.h"
 
+#include <SDL_events.h>
+
 ImmediateUI::ImmediateUI(Context* pContext)
 	: Subsystem(pContext)
 {
@@ -174,7 +176,7 @@ void ImmediateUI::Render()
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
-	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
+	Matrix projectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
 
 	int vertexOffset = 0;
@@ -203,9 +205,12 @@ void ImmediateUI::Render()
 	}
 }
 
-void ImmediateUI::HandleSDLEvent(SDL_Event* pEvent)
+void ImmediateUI::HandleSDLEvent(void* pEventData)
 {
 	ImGuiIO& io = ImGui::GetIO();
+
+	SDL_Event* pEvent = (SDL_Event*)pEventData;
+
 	switch (pEvent->type)
 	{
 	case SDL_MOUSEWHEEL:
