@@ -10,6 +10,7 @@ enum class ArchiveType
 {
 	Physical,
 	Pak,
+	Zip,
 };
 
 using MountPointPair = std::pair<std::string, std::unique_ptr<IMountPoint>>;

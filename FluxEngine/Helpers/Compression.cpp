@@ -5,7 +5,7 @@
 
 namespace Compression
 {
-	bool Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData)
+	bool Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData, bool zlibHeader)
 	{
 		const size_t BUFSIZE = 128 * 1024;
 
@@ -19,7 +19,14 @@ namespace Compression
 
 		unsigned int currSize = 0;
 
-		inflateInit(&strm);
+		if (zlibHeader)
+		{
+			inflateInit(&strm);
+		}
+		else
+		{
+			inflateInit2(&strm, -MAX_WBITS);
+		}
 
 		while (strm.avail_in != 0)
 		{

@@ -4,6 +4,7 @@
 #include "FileSystem/MountPoint/PhysicalMountPoint.h"
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystemHelpers.h"
+#include "MountPoint/ZipMountPoint.h"
 
 std::vector<MountPointPair> FileSystem::m_MountPoints;
 
@@ -80,6 +81,7 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 			{
 				continue;
 			}
+			pFile->SetSource(fileName);
 			return pFile;
 		}
 	}
@@ -285,6 +287,9 @@ std::unique_ptr<IMountPoint> FileSystem::CreateMountPoint(const std::string& phy
 	{
 	case ArchiveType::Physical: return std::make_unique<PhysicalMountPoint>(physicalPath);
 	case ArchiveType::Pak: return std::make_unique<PakMountPoint>(physicalPath);
+	case ArchiveType::Zip: return std::make_unique<ZipMountPoint>(physicalPath);
+	default:
+		checkNoEntry();
 	}
 	return nullptr;
 }

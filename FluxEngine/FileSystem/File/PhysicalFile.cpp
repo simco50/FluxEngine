@@ -193,11 +193,14 @@ bool PhysicalFile::SetPointer(const size_t position)
 	{
 		return false;
 	}
-	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+	LARGE_INTEGER li;
+	li.QuadPart = position;
+	li.LowPart = SetFilePointer(m_Handle, li.LowPart, &li.HighPart, FILE_BEGIN);
+	if (li.LowPart == INVALID_SET_FILE_POINTER)
 	{
 		return false;
 	}
-	m_FilePointer = position;
+	m_FilePointer = li.QuadPart;
 	return true;
 }
 
@@ -207,8 +210,13 @@ bool PhysicalFile::SetPointerFromEnd(const size_t position)
 	{
 		return false;
 	}
-	if (SetFilePointer(m_Handle, (LONG)position, nullptr, FILE_END) == INVALID_SET_FILE_POINTER)
+	LARGE_INTEGER li;
+	li.QuadPart = position;
+	li.LowPart = SetFilePointer(m_Handle, li.LowPart, &li.HighPart, FILE_END);
+	if (li.LowPart == INVALID_SET_FILE_POINTER)
+	{
 		return false;
-	m_FilePointer = position;
+	}
+	m_FilePointer = li.QuadPart;
 	return true;
 }

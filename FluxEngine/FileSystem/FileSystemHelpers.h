@@ -8,6 +8,15 @@ inline void ToLower(std::string& str)
 	}
 }
 
+inline void ToLower(char* str)
+{
+	while (*str != '\0')
+	{
+		*str = (char)tolower(*str);
+		++str;
+	}
+}
+
 inline std::string ToLower(const std::string& str)
 {
 	std::string output = str;
