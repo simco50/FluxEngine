@@ -25,7 +25,7 @@ protected:
 
 	union
 	{
-		void* m_pResource;
+		void* m_pResource = nullptr;
 		unsigned int m_Handle;
 	};
 };
