@@ -1,8 +1,8 @@
 #include "FluxEngine.h"
 #include "PhysicalFile.h"
 
-PhysicalFile::PhysicalFile(const std::string& fileName)
-	: File(fileName)
+PhysicalFile::PhysicalFile(const std::string& physicalPath)
+	: File(physicalPath), m_PhysicalPath(physicalPath)
 {
 
 }
@@ -22,7 +22,7 @@ bool PhysicalFile::OpenRead(bool allowWrite)
 	DWORD creation_disposition = allowWrite ? CREATE_NEW : OPEN_EXISTING;
 
 	m_Handle = CreateFile(
-		m_Source.c_str(),
+		m_PhysicalPath.c_str(),
 		access,
 		0,
 		nullptr,
@@ -57,7 +57,7 @@ bool PhysicalFile::OpenWrite(bool append, bool allowRead)
 	}
 	else
 	{
-		if (!CreateDirectoryTree(m_Source))
+		if (!CreateDirectoryTree(m_PhysicalPath))
 		{
 			return false;
 		}
@@ -65,7 +65,7 @@ bool PhysicalFile::OpenWrite(bool append, bool allowRead)
 	const DWORD creationDisposition = allowRead ? CREATE_NEW : CREATE_ALWAYS;
 
 	m_Handle = CreateFile(
-		m_Source.c_str(),
+		m_PhysicalPath.c_str(),
 		access,
 		0,
 		nullptr,
@@ -189,30 +189,27 @@ size_t PhysicalFile::Read(void* pBuffer, const size_t size)
 
 bool PhysicalFile::SetPointer(const size_t position)
 {
-	if (m_Handle == INVALID_HANDLE_VALUE)
-	{
-		return false;
-	}
-	LARGE_INTEGER li;
-	li.QuadPart = position;
-	li.LowPart = SetFilePointer(m_Handle, li.LowPart, &li.HighPart, FILE_BEGIN);
-	if (li.LowPart == INVALID_SET_FILE_POINTER)
-	{
-		return false;
-	}
-	m_FilePointer = li.QuadPart;
-	return true;
+	return SetPointerInternal(position, false);
 }
 
 bool PhysicalFile::SetPointerFromEnd(const size_t position)
+{
+	return SetPointerInternal(position, true);
+}
+
+bool PhysicalFile::SetPointerInternal(const size_t position, bool fromEnd)
 {
 	if (m_Handle == INVALID_HANDLE_VALUE)
 	{
 		return false;
 	}
+	if (m_FilePointer == position)
+	{
+		return true;
+	}
 	LARGE_INTEGER li;
 	li.QuadPart = position;
-	li.LowPart = SetFilePointer(m_Handle, li.LowPart, &li.HighPart, FILE_END);
+	li.LowPart = SetFilePointer(m_Handle, li.LowPart, &li.HighPart, fromEnd ? FILE_END : FILE_BEGIN);
 	if (li.LowPart == INVALID_SET_FILE_POINTER)
 	{
 		return false;

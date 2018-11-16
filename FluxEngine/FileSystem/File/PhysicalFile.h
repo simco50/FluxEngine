@@ -29,6 +29,8 @@ public:
 
 private:
 	static bool CreateDirectoryTree(const std::string& path);
+	bool SetPointerInternal(const size_t position, bool fromEnd);
 
 	FileHandle m_Handle = FILE_HANDLE_INVALID;
+	std::string m_PhysicalPath;
 };

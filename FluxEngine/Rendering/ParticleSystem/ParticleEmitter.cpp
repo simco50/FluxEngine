@@ -22,7 +22,7 @@ ParticleEmitter::ParticleEmitter(Context* pContext)
 
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
-	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");
+	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Materials/Particles.xml");
 	m_pMaterial->SetDepthTestMode(CompareMode::LESSEQUAL);
 	m_pMaterial->SetDepthEnabled(true);
 	m_pMaterial->SetDepthWrite(false);

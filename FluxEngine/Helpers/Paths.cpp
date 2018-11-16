@@ -38,7 +38,7 @@ std::string Paths::GetFileExtenstion(const std::string& filePath)
 	size_t dotPos = filePath.rfind('.');
 	if (dotPos == std::string::npos)
 	{
-		return filePath;
+		return "";
 	}
 	return filePath.substr(dotPos + 1);
 }

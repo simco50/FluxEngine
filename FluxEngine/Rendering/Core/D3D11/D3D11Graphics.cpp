@@ -640,8 +640,8 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 
 		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
 
-		SetShader(ShaderType::VertexShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::VertexShader));
-		SetShader(ShaderType::PixelShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::PixelShader));
+		SetShader(ShaderType::VertexShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::VertexShader));
+		SetShader(ShaderType::PixelShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::PixelShader));
 
 		Matrix worldMatrix = Matrix::CreateTranslation(Vector3(0, 0, depth));
 

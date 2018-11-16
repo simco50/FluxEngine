@@ -45,8 +45,9 @@ std::unique_ptr<File> PhysicalMountPoint::GetFile(const std::string& filePath)
 	{
 		return nullptr;
 	}
-
-	return std::make_unique<PhysicalFile>(resolvedPath);
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(resolvedPath);
+	pFile->SetSource(filePath);
+	return pFile;
 }
 
 bool PhysicalMountPoint::RegisterDirectory(const std::string& path)

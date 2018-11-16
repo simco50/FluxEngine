@@ -24,8 +24,8 @@ DebugRenderer::DebugRenderer(Context* pContext) :
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 	};
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Shaders/DebugRenderer", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Shaders/DebugRenderer", ShaderType::PixelShader);
 	m_pVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 }
 

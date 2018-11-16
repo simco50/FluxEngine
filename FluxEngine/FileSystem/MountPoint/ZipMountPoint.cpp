@@ -26,6 +26,8 @@ bool ZipMountPoint::OnMount()
 		return false;
 	}
 
+	m_Order = 100;
+
 	//We're going to try and find the central directory
 	std::vector<unsigned char> searchText(64);
 	m_pZipFile->SetPointer(m_pZipFile->GetSize() - searchText.size());

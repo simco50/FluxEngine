@@ -57,8 +57,8 @@ ImmediateUI::ImmediateUI(Context* pContext)
 	SetStyle(true, 0.9f);
 
 	//Load shader
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Shaders/Imgui", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Shaders/Imgui", ShaderType::PixelShader);
 
 	//Create vertex buffer
 	m_pVertexBuffer.reset();
@@ -73,7 +73,7 @@ ImmediateUI::ImmediateUI(Context* pContext)
 	m_pIndexBuffer = std::make_unique<IndexBuffer>(m_pGraphics);
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
-	const char fontPath[] = "Resources/OpenSans-Regular.ttf";
+	const char fontPath[] = "OpenSans-Regular.ttf";
 	std::unique_ptr<File> pFile = FileSystem::GetFile(fontPath);
 	if (pFile && pFile->OpenRead())
 	{

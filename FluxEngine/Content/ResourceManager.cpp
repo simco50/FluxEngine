@@ -29,9 +29,9 @@ void ResourceManager::Update()
 		std::string resource;
 		while (m_pResourceWatcher->GetNextChange(resource))
 		{
-			std::string filePath = Paths::Normalize("Resources/" + resource);
-			Reload(filePath);
-			ReloadDependencies(filePath);
+			Paths::NormalizeInline(resource);
+			Reload(resource);
+			ReloadDependencies(resource);
 		}
 	}
 }

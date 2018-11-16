@@ -35,6 +35,7 @@ bool FluxCore::m_Exiting;
 FluxCore::FluxCore(Context* pContext) :
 	Object(pContext)
 {
+
 }
 
 FluxCore::~FluxCore()
@@ -54,9 +55,9 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	//Register resource locations
 	if (CommandLine::GetBool("NoPak") == false)
 	{
-		FileSystem::AddPakLocation(Paths::PakFilesDir(), "Resources");
+		FileSystem::AddPakLocation(Paths::PakFilesDir());
 	}
-	if (!FileSystem::Mount(Paths::ResourcesDir(), "Resources", ArchiveType::Physical))
+	if (!FileSystem::Mount(Paths::ResourcesDir()))
 	{
 		FLUX_LOG(Warning, "Failed to mount '%s'", Paths::ResourcesDir().c_str());
 	}
@@ -107,13 +108,13 @@ void FluxCore::InitGame()
 	m_pCamera->GetCamera()->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/LUT.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/Vignette.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/ChromaticAberration.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Resources/Materials/FXAA.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/Vignette.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
+	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
 
 	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
-	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/UnitPlane.flux");
+	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -122,12 +123,14 @@ void FluxCore::InitGame()
 	};
 	pPlaneMesh->CreateBuffers(planeDesc);
 	Model* pPlaneModel = pPlaneNode->CreateComponent<Model>();
-	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Materials/Default.xml");
 	pPlaneModel->SetMesh(pPlaneMesh);
 	pPlaneModel->SetMaterial(pDefaultMaterial);
 	pPlaneNode->SetScale(5000);
+	pPlaneNode->CreateComponent<Rigidbody>();
+	pPlaneNode->CreateComponent<PlaneCollider>();
 
-	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/obj/Man_Walking.dae");
+	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Man_Walking.dae");
 	std::vector<VertexElement> manDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -140,7 +143,7 @@ void FluxCore::InitGame()
 	pManMesh->CreateBuffers(manDesc);
 
 	{
-		Material* pManMaterial = m_pResourceManager->Load<Material>("Resources/Materials/ManAnimated_DualQuaternion.xml");
+		Material* pManMaterial = m_pResourceManager->Load<Material>("Materials/ManAnimated_DualQuaternion.xml");
 		SceneNode* pMan = m_pScene->CreateChild("Man - Dual Quaternion Skinning");
 		AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
 		pManModel->SetMesh(pManMesh);
@@ -176,7 +179,7 @@ void FluxCore::InitGame()
 	pLight->CreateComponent<Light>();
 	pLight->Rotate(45, 0, 0);
 
-	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Resources/Meshes/Cube.flux");
+	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/Cube.flux");
 	std::vector<VertexElement> cubeDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -184,7 +187,7 @@ void FluxCore::InitGame()
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 	};
 	pCubeMesh->CreateBuffers(cubeDesc);
-	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Resources/Materials/Default.xml");
+	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Materials/Default.xml");
 
 	SceneNode* pMainCube = m_pScene->CreateChild("MainCube");
 	pMainCube->SetScale(5);

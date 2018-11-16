@@ -25,8 +25,8 @@ PostProcessing::PostProcessing(Context* pContext) :
 
 	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw<PostProcessing>(this, &PostProcessing::OnResize);
 
-	m_pBlitVertexShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::VertexShader);
-	m_pBlitPixelShader = m_pGraphics->GetShader("Resources/Shaders/Blit", ShaderType::PixelShader);
+	m_pBlitVertexShader = m_pGraphics->GetShader("Shaders/Blit", ShaderType::VertexShader);
+	m_pBlitPixelShader = m_pGraphics->GetShader("Shaders/Blit", ShaderType::PixelShader);
 }
 
 PostProcessing::~PostProcessing()
