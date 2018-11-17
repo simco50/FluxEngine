@@ -29,6 +29,7 @@
 
 #include "Math/DualQuaternion.h"
 #include "CommandLine.h"
+#include "Physics/PhysX/Collider.h"
 
 bool FluxCore::m_Exiting;
 

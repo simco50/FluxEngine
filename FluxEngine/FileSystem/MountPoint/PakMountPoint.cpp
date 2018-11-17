@@ -69,7 +69,6 @@ bool PakMountPoint::HasFile(const std::string& filePath) const
 std::unique_ptr<File> PakMountPoint::GetFile(const std::string& filePath)
 {
 	//Even if we are sure the file created exists, we still need to do a find to create the file.
-	std::string fileName = m_PhysicalPath + filePath;
 	auto pIt = std::find_if(m_FileEntries.begin(), m_FileEntries.end(), [&filePath](const PakFileEntry& entry)
 	{
 		return entry.FilePath == filePath;
@@ -78,5 +77,5 @@ std::unique_ptr<File> PakMountPoint::GetFile(const std::string& filePath)
 	{
 		return nullptr;
 	}
-	return std::make_unique<PakFile>(fileName, this, pIt._Ptr);
+	return std::make_unique<PakFile>(filePath, this, pIt._Ptr);
 }

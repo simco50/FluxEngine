@@ -6,14 +6,14 @@ float GetSpecularBlinnPhong(float3 viewDirection, float3 normal, float3 lightVec
 {
 	float3 halfVector = normalize(lightVector + viewDirection);
 	float specularStrength = dot(normal, halfVector);
-	return saturate(pow(specularStrength, shininess));
+	return pow(saturate(specularStrength), shininess);
 }
 
 float GetSpecularPhong(float3 viewDirection, float3 normal, float3 lightVector, float shininess)
 {
 	float3 reflectedLight = reflect(-lightVector, normal);
 	float specularStrength = dot(reflectedLight, -viewDirection);
-	return saturate(pow(specularStrength, shininess));
+	return pow(saturate(specularStrength), shininess);
 }
 
 float GetFresnelFalloff(float3 normal, float3 viewDirection, float fresnelPower, float fresnelMultiplier, float fresnelHardness)
@@ -65,7 +65,7 @@ float4 DoDiffuse(Light light, float3 normal, float3 lightVector)
 
 float4 DoSpecular(Light light, float3 normal, float3 lightVector, float3 viewDirection)
 {
-	return light.Color * GetSpecularPhong(viewDirection, normal, lightVector, 50.0f);
+	return light.Color * GetSpecularPhong(viewDirection, normal, lightVector, 15.0f);
 }
 
 float DoAttenuation(Light light, float d)
@@ -111,7 +111,6 @@ LightResult DoSpotLight(Light light, float3 worldPosition, float3 normal, float3
 
 	result.Diffuse = light.Intensity * attenuation * spotIntensity * DoDiffuse(light, normal, L);
 	result.Specular = light.Intensity * attenuation * spotIntensity * DoSpecular(light, normal, L, viewDirection);
-
 	return result;
 }
 
