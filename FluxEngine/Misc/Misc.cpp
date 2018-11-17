@@ -173,7 +173,7 @@ void Misc::GetCpuId(CpuId* pCpuId)
 	pCpuId->CacheLineSize = cpuId[2] & 0xFF;
 }
 
-bool Misc::MessageBox(const std::string& title, const std::string& description)
+bool Misc::ShowMessageBox(const std::string& title, const std::string& description)
 {
 	::MessageBox(nullptr,description.c_str(), title.c_str(), MB_OK | MB_SYSTEMMODAL);
 	return true;
@@ -224,7 +224,7 @@ uint32 Misc::GetProcessId()
 	return ::GetCurrentProcessId();
 }
 
-std::string Misc::GetComputerName()
+std::string Misc::ComputerName()
 {
 	char buffer[256];
 	uint32 size = sizeof(buffer);
@@ -232,7 +232,7 @@ std::string Misc::GetComputerName()
 	return buffer;
 }
 
-std::string Misc::GetUserName()
+std::string Misc::UserName()
 {
 	char buffer[256];
 	uint32 size = sizeof(buffer);

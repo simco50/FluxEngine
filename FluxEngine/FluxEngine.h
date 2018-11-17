@@ -31,25 +31,14 @@
 #include <PxPhysicsAPI.h>
 #endif
 
-#ifdef MODULE_D3D11
-#include "External/SimpleMath/SimpleMath.h"
-using BoundingBox = DirectX::BoundingBox;
-using BoundingFrustum = DirectX::BoundingFrustum;
-using Vector2 = DirectX::SimpleMath::Vector2;
-using Vector3 = DirectX::SimpleMath::Vector3;
-using Vector4 = DirectX::SimpleMath::Vector4;
-using Matrix = DirectX::SimpleMath::Matrix;
-using Quaternion = DirectX::SimpleMath::Quaternion;
-using Color = DirectX::SimpleMath::Color;
-using Ray = DirectX::SimpleMath::Ray;
-#endif
-
 #include "External/Imgui/imgui.h"
 
 #pragma region
 //Engine core include
 #include "Core/Types.h"
 #include "Misc/Misc.h"
+#include "Math/MathTypes.h"
+#include "Math/MathHelp.h"
 #include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"
 #include "Helpers/LogMacros.h"
@@ -68,9 +57,6 @@ using Ray = DirectX::SimpleMath::Ray;
 #include "Core/GameTimer.h"
 
 #include "Audio/AudioEngine.h"
-
-#include "Math/MathHelp.h"
-#include "Math/MathTypes.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File/File.h"

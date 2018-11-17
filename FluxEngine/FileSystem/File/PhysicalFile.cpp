@@ -214,6 +214,6 @@ bool PhysicalFile::SetPointerInternal(const size_t position, bool fromEnd)
 	{
 		return false;
 	}
-	m_FilePointer = li.QuadPart;
+	m_FilePointer = (size_t)li.QuadPart;
 	return true;
 }

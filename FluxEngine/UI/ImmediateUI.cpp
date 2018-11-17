@@ -15,11 +15,22 @@
 
 #include <SDL_events.h>
 
+void* ImGuiAllocate(const size_t size, void*)
+{
+	return new char[size];
+}
+
+void ImGuiFree(void* pData, void*)
+{
+	delete[] pData;
+}
+
 ImmediateUI::ImmediateUI(Context* pContext)
 	: Subsystem(pContext)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
 
+	ImGui::SetAllocatorFunctions(&ImGuiAllocate, &ImGuiFree);
 	ImGui::CreateContext();
 
 	m_pInput = pContext->GetSubsystem<InputEngine>();

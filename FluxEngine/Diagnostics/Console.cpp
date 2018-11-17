@@ -42,7 +42,7 @@ Console::Console()
 
 	FLUX_LOG(Info, "Date: %02d-%02d-%02d", time.Day, time.Month, time.Year);
 	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
-	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());
+	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::ComputerName().c_str(), Misc::UserName().c_str());
 
 	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
 	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform));
@@ -162,7 +162,7 @@ void Console::Log(const std::string &message, LogType type)
 		}
 		else if (type == LogType::FatalError)
 		{
-			Misc::MessageBox("Fatal Error", message);
+			Misc::ShowMessageBox("Fatal Error", message);
 			abort();
 		}
 	}
