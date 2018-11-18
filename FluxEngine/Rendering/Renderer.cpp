@@ -14,6 +14,7 @@
 #include "Material.h"
 #include "Scenegraph/SceneNode.h"
 #include "Math/DualQuaternion.h"
+#include "PostProcessing.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -111,6 +112,11 @@ void Renderer::Draw()
 			}
 		}
 	}
+
+	for (PostProcessing* pPost : m_PostProcessing)
+	{
+		pPost->Draw();
+	}
 }
 
 void Renderer::AddDrawable(Drawable* pDrawable)
@@ -142,6 +148,16 @@ void Renderer::AddLight(Light* pLight)
 void Renderer::RemoveLight(Light* pLight)
 {
 	m_Lights.erase(std::remove(m_Lights.begin(), m_Lights.end(), pLight), m_Lights.end());
+}
+
+void Renderer::AddPostProcessing(PostProcessing* pPostProcessing)
+{
+	m_PostProcessing.push_back(pPostProcessing);
+}
+
+void Renderer::RemovePostProcessing(PostProcessing* pPostProcessing)
+{
+	m_PostProcessing.erase(std::remove(m_PostProcessing.begin(), m_PostProcessing.end(), pPostProcessing), m_PostProcessing.end());
 }
 
 void Renderer::QueueCamera(Camera * pCamera)

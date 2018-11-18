@@ -10,6 +10,7 @@ class VertexBuffer;
 class Geometry;
 class Light;
 struct Batch;
+class PostProcessing;
 
 DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
 
@@ -30,6 +31,8 @@ public:
 	void RemoveCamera(Camera* pCamera);
 	void AddLight(Light* pLight);
 	void RemoveLight(Light* pLight);
+	void AddPostProcessing(PostProcessing* pPostProcessing);
+	void RemovePostProcessing(PostProcessing* pPostProcessing);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 
@@ -55,6 +58,7 @@ private:
 	std::vector<Drawable*> m_Drawables;
 	std::vector<Camera*> m_Cameras;
 	std::vector<Light*> m_Lights;
+	std::vector<PostProcessing*> m_PostProcessing;
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;

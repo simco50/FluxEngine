@@ -18,10 +18,10 @@ Animator::~Animator()
 
 }
 
-void Animator::Play()
+void Animator::Play(Animation* pAnimation)
 {
-	m_pAnimation = m_pModel->GetMesh()->GetAnimation(0);
-
+	pAnimation->ResolveBoneIndices(m_pModel->GetSkeleton());
+	m_pAnimation = pAnimation;
 	AnimatedModel* pModel = GetComponent<AnimatedModel>();
 	if (pModel)
 	{

@@ -8,105 +8,7 @@
 #include "Async/AsyncTaskQueue.h"
 #include "Core/Graphics.h"
 #include "IO/InputStream.h"
-
-#include <assimp\Importer.hpp>
-#include <assimp\scene.h>
-#include <assimp\postprocess.h>
-
-Vector3 ToDXVector3(const aiVector3D& vec)
-{
-	return *reinterpret_cast<const Vector3*>(&vec);
-}
-
-Quaternion TxDXQuaternion(const aiQuaternion& quat)
-{
-	Quaternion out;
-	out.x = quat.x;
-	out.y = quat.y;
-	out.z = quat.z;
-	out.w = quat.w;
-	return out;
-}
-
-Matrix ToDXMatrix(const aiMatrix4x4& mat)
-{
-	Matrix m;
-	m._11 = mat.a1;
-	m._21 = mat.a2;
-	m._31 = mat.a3;
-	m._41 = mat.a4;
-
-	m._12 = mat.b1;
-	m._22 = mat.b2;
-	m._32 = mat.b3;
-	m._42 = mat.b4;
-
-	m._13 = mat.c1;
-	m._23 = mat.c2;
-	m._33 = mat.c3;
-	m._43 = mat.c4;
-
-	m._14 = mat.d1;
-	m._24 = mat.d2;
-	m._34 = mat.d3;
-	m._44 = mat.d4;
-
-	return m;
-}
-
-
-aiQuaternion GetRotation(const aiNodeAnim* pNode, float time)
-{
-	if (pNode->mNumRotationKeys == 0)
-		return aiQuaternion();
-	for (unsigned int i = 0; i < pNode->mNumRotationKeys; i++)
-	{
-		if (pNode->mRotationKeys[i].mTime == time)
-			return pNode->mRotationKeys[i].mValue;
-		if (pNode->mRotationKeys[i].mTime > time)
-		{
-			float t = Math::InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
-			aiQuaternion output;
-			aiQuaterniont<float>::Interpolate(output, pNode->mRotationKeys[i - 1].mValue, pNode->mRotationKeys[i].mValue, t);
-			return output;
-		}
-	}
-	return pNode->mRotationKeys[pNode->mNumRotationKeys - 1].mValue;
-}
-
-aiVector3D GetScale(const aiNodeAnim* pNode, float time)
-{
-	if (pNode->mNumScalingKeys == 0)
-		return aiVector3D();
-	for (unsigned int i = 0; i < pNode->mNumScalingKeys; i++)
-	{
-		if (pNode->mScalingKeys[i].mTime == time)
-			return pNode->mScalingKeys[i].mValue;
-		if (pNode->mScalingKeys[i].mTime > time)
-		{
-			float t = Math::InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
-			return pNode->mScalingKeys[i - 1].mValue + (pNode->mScalingKeys[i].mValue - pNode->mScalingKeys[i - 1].mValue) * t;
-		}
-	}
-	return pNode->mScalingKeys[pNode->mNumScalingKeys - 1].mValue;
-}
-
-aiVector3D GetPosition(const aiNodeAnim* pNode, const float time)
-{
-	if (pNode->mNumPositionKeys == 0)
-		return aiVector3D();
-	for (unsigned int i = 0; i < pNode->mNumPositionKeys; i++)
-	{
-		if (pNode->mPositionKeys[i].mTime == time)
-			return pNode->mPositionKeys[i].mValue;
-		if (pNode->mPositionKeys[i].mTime > time)
-		{
-			float t = Math::InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
-			return pNode->mPositionKeys[i - 1].mValue + (pNode->mPositionKeys[i].mValue - pNode->mPositionKeys[i - 1].mValue) * t;
-		}
-	}
-	return pNode->mPositionKeys[pNode->mNumPositionKeys - 1].mValue;
-}
+#include "Content/AssimpHelpers.h"
 
 Mesh::Mesh(Context* pContext):
 	Resource(pContext)
@@ -135,7 +37,7 @@ bool Mesh::Load(InputStream& inputStream)
 	}
 	else
 	{
-		FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using Assimp", fileName.c_str());
+		FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using AssimpHelpers", fileName.c_str());
 		if (!LoadAssimp(inputStream))
 		{
 			return false;
@@ -156,28 +58,6 @@ void Mesh::CreateBuffers(std::vector<VertexElement>& elementDesc)
 	}
 }
 
-Animation* Mesh::GetAnimation(const std::string& name) const
-{
-	StringHash hash = std::hash<std::string>{}(name);
-	return GetAnimation(hash);
-}
-
-Animation* Mesh::GetAnimation(int index) const
-{
-	assert(index < (int)m_Animations.size());
-	return m_Animations[index].get();
-}
-
-Animation* Mesh::GetAnimation(StringHash hash) const
-{
-	for (const std::unique_ptr<Animation>& pAnimation : m_Animations)
-	{
-		if(pAnimation->GetNameHash() == hash)
-			return pAnimation.get();
-	}
-	return nullptr;
-}
-
 bool Mesh::LoadFlux(InputStream& inputStream)
 {
 	AUTOPROFILE(Mesh_Load_Flux);
@@ -188,9 +68,7 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 
 	if (minVersion != MESH_VERSION)
 	{
-		std::stringstream stream;
-		stream << "MeshLoader::LoadContent() File version mismatch: Expects v" << MESH_VERSION << ".0 but is v" << (int)minVersion << ".0";
-		FLUX_LOG(Warning, stream.str());
+		FLUX_LOG(Warning, "[MeshLoader::LoadContent()] File version mismatch: Expects v%d.0 but is v%d.0", MESH_VERSION, minVersion);
 		return false;
 	}
 
@@ -205,9 +83,13 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 		{
 			std::string block = inputStream.ReadSizedString();
 			for (char& c : block)
+			{
 				c = (char)toupper(c);
+			}
 			if (block == "ENDMESH")
+			{
 				break;
+			}
 
 			const unsigned int length = inputStream.ReadUInt();
 			const unsigned int stride = inputStream.ReadUInt();
@@ -247,15 +129,21 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 	}
 
 	if (pScene == nullptr)
+	{
 		return false;
+	}
 	if (!ProcessAssimpMeshes(pScene))
+	{
 		return false;
+	}
 	if (!ProcessSkeleton(pScene))
+	{
 		return false;
-	if (!ProcessAssimpAnimations(pScene))
-		return false;
-	if(m_Geometries.size() > 0)
+	}
+	if (m_Geometries.size() > 0)
+	{
 		CalculateBoundingBox();
+	}
 	return true;
 }
 
@@ -352,7 +240,7 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 					Bone newBone;
 					newBone.Index = boneCount;
 					newBone.Name = pBone->mName.C_Str();
-					newBone.OffsetMatrix = ToDXMatrix(pBone->mOffsetMatrix);
+					newBone.OffsetMatrix = AssimpHelpers::ToDXMatrix(pBone->mOffsetMatrix);
 					m_Skeleton.AddBone(newBone);
 					++boneCount;
 				}
@@ -374,83 +262,6 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			}
 		}
 		m_Geometries.push_back(std::move(pGeometry));
-	}
-	return true;
-}
-
-bool Mesh::ProcessAssimpAnimations(const aiScene* pScene)
-{
-	AUTOPROFILE(Mesh_ProcessAssimpAnimations);
-
-	if (pScene->HasAnimations())
-	{
-		for (unsigned int i = 0; i < pScene->mNumAnimations; i++)
-		{
-			const aiAnimation* pAnimation = pScene->mAnimations[i];
-			std::unique_ptr<Animation> pNewAnimation = std::make_unique<Animation>(m_pContext, pAnimation->mName.C_Str(), (int)m_Skeleton.BoneCount(), (float)pAnimation->mDuration, (float)pAnimation->mTicksPerSecond);
-
-			AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-			for (unsigned int j = 0; j < pAnimation->mNumChannels; j++)
-			{
-				const aiNodeAnim* pAnimNode = pAnimation->mChannels[j];
-				AsyncTaskDelegate taskFunction = AsyncTaskDelegate::CreateLambda([this, &pNewAnimation, pAnimNode](AsyncTask*, int)
-				{
-					AUTOPROFILE(Mesh_ProcessAssimpAnimations_Channel);
-
-					AnimationNode animNode;
-
-					animNode.Name = pAnimNode->mNodeName.C_Str();
-					size_t fbxSuffix = animNode.Name.find("_$AssimpFbx$");
-					if (fbxSuffix != std::string::npos)
-					{
-						animNode.Name = animNode.Name.substr(0, fbxSuffix);
-					}
-
-					auto pIt = m_BoneMap.find(animNode.Name);
-					if (pIt == m_BoneMap.end())
-					{
-						FLUX_LOG(Warning, "[Mesh::ProcessAssimpAnimations] > There is no bone that matches the animation node '%s'", animNode.Name.c_str());
-						return;
-					}
-					animNode.BoneIndex = pIt->second;
-
-					std::vector<float> keyTimes;
-					for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
-					{
-						float time = Math::Max<float>(0, (float)pAnimNode->mPositionKeys[k].mTime);
-						keyTimes.push_back(time);
-					}
-					for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
-					{
-						float time = Math::Max<float>(0, (float)pAnimNode->mScalingKeys[k].mTime);
-						keyTimes.push_back(time);
-					}
-					for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
-					{
-						float time = Math::Max<float>(0, (float)pAnimNode->mRotationKeys[k].mTime);
-						keyTimes.push_back(time);
-					}
-					std::sort(keyTimes.begin(), keyTimes.end());
-					keyTimes.erase(std::unique(keyTimes.begin(), keyTimes.end()), keyTimes.end());
-
-					for (float time : keyTimes)
-					{
-						AUTOPROFILE(Mesh_ProcessAssimpAnimations_Channel_Interpolate);
-
-						AnimationKey key;
-						key.Rotation = TxDXQuaternion(GetRotation(pAnimNode, time));
-						key.Scale = ToDXVector3(GetScale(pAnimNode, time));
-						key.Position = ToDXVector3(GetPosition(pAnimNode, time));
-						animNode.Keys.push_back(AnimationNode::KeyPair(time, key));
-					}
-					pNewAnimation->SetNode(animNode);
-				});
-
-				pQueue->AddWorkItem(taskFunction);
-			}
-			pQueue->JoinAll();
-			m_Animations.push_back(std::move(pNewAnimation));
-		}
 	}
 	return true;
 }
@@ -479,7 +290,7 @@ void Mesh::CalculateBoundingBox()
 void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
 {
 	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
-	Matrix nodeTransform = ToDXMatrix(pNode->mTransformation);
+	Matrix nodeTransform = AssimpHelpers::ToDXMatrix(pNode->mTransformation);
 	Matrix globalTransform = nodeTransform * parentMatrix;
 	if (pBone)
 	{
@@ -583,14 +394,6 @@ void Mesh::RefreshMemoryUsage()
 		memoryUsage += pGeometry->GetSize();
 	}
 	memoryUsage += (unsigned int)m_Skeleton.BoneCount() * sizeof(Bone);
-
-	for (const auto& pAnimation : m_Animations)
-	{
-		for (const auto& node : pAnimation->GetNodes())
-		{
-			memoryUsage += (unsigned int)node.Keys.size() * sizeof(AnimationKey);
-		}
-	}
 
 	SetMemoryUsage(memoryUsage);
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "Content\Resource.h"
 
+class Skeleton;
+
 struct AnimationKey
 {
 	Vector3 Position;
@@ -30,9 +32,12 @@ class Animation : public Resource
 
 public:
 	Animation(Context* pContext, const std::string& name, int numNodes, float duration, float ticksPerSecond);
+	Animation(Context* pContext);
 	virtual ~Animation();
 
 	virtual bool Load(InputStream& inputStream) override;
+
+	void ResolveBoneIndices(const Skeleton& skeleton);
 
 	void SetNode(const AnimationNode& node);
 	AnimationNode& GetNode(int boneIndex);

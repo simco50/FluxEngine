@@ -30,6 +30,7 @@
 #include "Math/DualQuaternion.h"
 #include "CommandLine.h"
 #include "Physics/PhysX/Collider.h"
+#include "Rendering/Animation/Animation.h"
 
 bool FluxCore::m_Exiting;
 
@@ -90,7 +91,6 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 	m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount() - 1);
 	m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
-	m_pPostProcessing = m_pContext->RegisterSubsystem<PostProcessing>();
 	m_pContext->RegisterSubsystem<Renderer>();
 
 	InitGame();
@@ -105,14 +105,16 @@ void FluxCore::InitGame()
 	m_pScene = std::make_unique<Scene>(m_pContext);
 	m_pCamera = m_pScene->CreateChild<FreeCamera>("Camera");
 	m_pCamera->SetPosition(0, 0, -40.0f);
-	m_pCamera->GetCamera()->SetNearPlane(10);
-	m_pCamera->GetCamera()->SetFarPlane(10000);
+	Camera* pCamera = m_pCamera->GetCamera();
+	pCamera->SetNearPlane(10);
+	pCamera->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
 
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/Vignette.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
-	m_pPostProcessing->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
+	PostProcessing* post = m_pCamera->CreateComponent<PostProcessing>();
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/Vignette.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
 
 	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Meshes/UnitPlane.flux");
@@ -131,7 +133,7 @@ void FluxCore::InitGame()
 	pPlaneNode->CreateComponent<Rigidbody>();
 	pPlaneNode->CreateComponent<PlaneCollider>();
 
-	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Man_Walking.dae");
+	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Knight_Dancing.dae");
 	std::vector<VertexElement> manDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -150,7 +152,8 @@ void FluxCore::InitGame()
 		pManModel->SetMesh(pManMesh);
 		pManModel->SetMaterial(pManMaterial);
 		Animator* pAnimator = pMan->CreateComponent<Animator>();
-		pAnimator->Play();
+		Animation* pAnimation = m_pResourceManager->Load<Animation>("Meshes/obj/Man_Walking.dae");
+		pAnimator->Play(pAnimation);
 	}
 
 	SceneNode* pLights = m_pScene->CreateChild("Lights");
@@ -237,7 +240,6 @@ void FluxCore::ProcessFrame()
 	//m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
 
 	m_pScene->Update();
-	m_pPostProcessing->Draw();
 
 	m_pDebugRenderer->Render();
 	m_pDebugRenderer->EndFrame();
@@ -368,9 +370,10 @@ void FluxCore::RenderUI()
 	}
 	if (ImGui::BeginMenu("Post Processing"))
 	{
-		for (uint32 i = 0; i < m_pPostProcessing->GetMaterialCount(); ++i)
+		PostProcessing* pPost = m_pCamera->GetComponent<PostProcessing>();
+		for (uint32 i = 0; i < pPost->GetMaterialCount(); ++i)
 		{
-			ImGui::Checkbox(m_pPostProcessing->GetMaterial(i)->GetName().c_str(), &m_pPostProcessing->GetMaterialActive(i));
+			ImGui::Checkbox(pPost->GetMaterial(i)->GetName().c_str(), &pPost->GetMaterialActive(i));
 		}
 		ImGui::EndMenu();
 	}

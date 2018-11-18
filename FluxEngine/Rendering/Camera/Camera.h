@@ -8,6 +8,8 @@ class RenderTarget;
 class Texture2D;
 struct RaycastResult;
 
+DECLARE_MULTICAST_DELEGATE(CameraViewportChangedDelegate, const FloatRect&);
+
 class Camera : public Component
 {
 	FLUX_OBJECT(Camera, Component)
@@ -52,7 +54,9 @@ public:
 	void SetClearFlags(const ClearFlags& flags) { m_ClearFlags = flags; }
 	void SetClearColor(const Color& color) { m_ClearColor = color; }
 
-	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
+	CameraViewportChangedDelegate& ViewportChanged() { return m_ViewportChangedEvent; }
+
+	RenderTarget* GetRenderTarget() const;
 	RenderTarget* GetDepthStencil();
 	int GetRenderOrder() const { return m_Order; }
 	const ClearFlags& GetClearFlags() const { return m_ClearFlags; }
@@ -83,6 +87,7 @@ private:
 
 	bool m_Perspective = true;
 
+	CameraViewportChangedDelegate m_ViewportChangedEvent;
 	FloatRect m_Viewport;
 	int m_Order = 0;
 

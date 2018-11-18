@@ -1,11 +1,9 @@
 #pragma once
 #include "Scenegraph\Component.h"
 
-struct Bone;
-struct AnimationNode;
 class AnimationState;
-class Animation;
 class AnimatedModel;
+class Animation;
 
 class Animator : public Component
 {
@@ -15,7 +13,7 @@ public:
 	Animator(Context* pContext);
 	virtual ~Animator();
 
-	void Play();
+	void Play(Animation* pAnimation);
 	void Stop();
 	void Reset();
 

@@ -13,70 +13,47 @@ using Color = DirectX::SimpleMath::Color;
 using Ray = DirectX::SimpleMath::Ray;
 #endif
 
-struct FloatRect
+template<typename T>
+struct RectT
 {
-	FloatRect() :
-		Left(0), Top(0), Right(0), Bottom(0)
+	RectT()
+		: Left(T()), Top(T()), Right(T()), Bottom(T())
 	{}
 
-	FloatRect(const float left, const float top, const float right, const float bottom) :
-		Left(left), Top(top), Right(right), Bottom(bottom)
+	RectT(const T left, const T top, const T right, const T bottom)
+		: Left(left), Top(top), Right(right), Bottom(bottom)
 	{}
 
-	float Left;
-	float Top;
-	float Right;
-	float Bottom;
+	template<typename U>
+	RectT(const RectT<U>& other)
+		: Left((T)other.Left), Top((T)other.Top), Right((T)other.Right), Bottom((T)other.Bottom)
+	{
 
-	float GetWidth() const { return Right - Left; }
-	float GetHeight() const { return Bottom - Top; }
+	}
 
-	bool operator==(const FloatRect& other) const
+	T Left;
+	T Top;
+	T Right;
+	T Bottom;
+
+	T GetWidth() const { return Right - Left; }
+	T GetHeight() const { return Bottom - Top; }
+
+	bool operator==(const RectT& other) const
 	{
 		return Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
 	}
 
-	bool operator!=(const FloatRect& other) const
+	bool operator!=(const RectT& other) const
 	{
 		return Left != other.Left || Top != other.Top || Right != other.Right || Bottom != other.Bottom;
 	}
 
-	static FloatRect ZERO()
+	static RectT ZERO()
 	{
-		return FloatRect();
+		return RectT();
 	}
 };
 
-struct IntRect
-{
-	IntRect() :
-		Left(0), Top(0), Right(0), Bottom(0)
-	{}
-
-	IntRect(const int left, const int top, const int right, const int bottom) :
-		Left(left), Top(top), Right(right), Bottom(bottom)
-	{}
-
-	int Left;
-	int Top;
-	int Right;
-	int Bottom;
-
-	int GetWidth() const { return Right - Left; }
-	int GetHeight() const { return Bottom - Top; }
-
-	bool operator==(const IntRect& other) const
-	{
-		return Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
-	}
-
-	bool operator!=(const IntRect& other) const
-	{
-		return Left != other.Left || Top != other.Top || Right != other.Right || Bottom != other.Bottom;
-	}
-
-	static IntRect ZERO()
-	{
-		return IntRect();
-	}
-};
+using FloatRect = RectT<float>;
+using IntRect = RectT<int>;

@@ -8,22 +8,19 @@
 #include "Core\DepthStencilState.h"
 #include "Input\InputEngine.h"
 #include "Core\BlendState.h"
+#include "Camera\Camera.h"
+#include "Scenegraph\SceneNode.h"
+#include "Renderer.h"
 
-PostProcessing::PostProcessing(Context* pContext) :
-	Subsystem(pContext)
+PostProcessing::PostProcessing(Context* pContext)
+	: Component(pContext)
 {
 	AUTOPROFILE(PostProcessing_Create);
 
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
 
-	m_pGraphics->GetRenderTarget()->GetParentTexture()->SetAddressMode(TextureAddressMode::CLAMP);
-
 	m_pRenderTexture = std::make_unique<Texture2D>(m_pContext);
 	m_pDepthTexture = std::make_unique<Texture2D>(m_pContext);
-
-	OnResize(m_pGraphics->GetWindowWidth(), m_pGraphics->GetWindowHeight());
-
-	pContext->GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw<PostProcessing>(this, &PostProcessing::OnResize);
 
 	m_pBlitVertexShader = m_pGraphics->GetShader("Shaders/Blit", ShaderType::VertexShader);
 	m_pBlitPixelShader = m_pGraphics->GetShader("Shaders/Blit", ShaderType::PixelShader);
@@ -44,10 +41,11 @@ void PostProcessing::Draw()
 
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
+	m_pGraphics->SetViewport(m_pCamera->GetViewport());
 
-	RenderTarget* pOldTarget = m_pGraphics->GetRenderTarget();
-	RenderTarget* pCurrentSource = pOldTarget;
+	RenderTarget* pOriginalTarget = m_pGraphics->GetRenderTarget();
+
+	RenderTarget* pCurrentSource = m_pCamera->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
 	m_pGraphics->GetDepthStencilState()->SetDepthWrite(false);
@@ -81,7 +79,8 @@ void PostProcessing::Draw()
 	}
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
 	m_pGraphics->FlushSRVChanges(false);
-	m_pGraphics->SetRenderTarget(0, pOldTarget);
+
+	m_pGraphics->SetRenderTarget(0, pOriginalTarget);
 
 	//Do an extra blit if the shader count is odd
 	if (activeMaterials % 2 == 1)
@@ -100,9 +99,22 @@ void PostProcessing::AddEffect(Material* pMaterial, const bool active)
 	}
 }
 
-void PostProcessing::OnResize(const int width, const int height)
+void PostProcessing::OnNodeSet(SceneNode* pNode)
 {
-	m_pRenderTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, m_pGraphics->GetMultisample(), nullptr);
+	Component::OnNodeSet(pNode);
+
+	m_pCamera = pNode->GetComponent<Camera>();
+	checkf(m_pCamera, "[PostProcessing::OnNodeSet] Post Processing requires a Camera component");
+	OnResize(m_pCamera->GetViewport());
+
+	Renderer* pRenderer = GetSubsystem<Renderer>();
+	pRenderer->AddPostProcessing(this);
+}
+
+void PostProcessing::OnResize(const FloatRect& viewport)
+{
+	int msaa = m_pCamera->GetRenderTarget()->GetParentTexture()->GetMultiSample();
+	m_pRenderTexture->SetSize((int)viewport.GetWidth(), (int)viewport.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, msaa, nullptr);
 	m_pRenderTexture->SetAddressMode(TextureAddressMode::CLAMP);
-	m_pDepthTexture->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, m_pGraphics->GetMultisample(), nullptr);
+	m_pDepthTexture->SetSize((int)viewport.GetWidth(), (int)viewport.GetHeight(), DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, msaa, nullptr);
 }

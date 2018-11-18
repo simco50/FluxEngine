@@ -2,26 +2,29 @@
 
 namespace Math
 {
-	const float PI = 3.141592654f;
-	const float INVPI = 0.318309886f;
-	const float INV2PI = 0.159154943f;
-	const float PIDIV2 = 1.570796327f;
-	const float PIDIV4 = 0.785398163f;
+	constexpr float PI = 3.141592654f;
+	constexpr float INVPI = 0.318309886f;
+	constexpr float INV2PI = 0.159154943f;
+	constexpr float PIDIV2 = 1.570796327f;
+	constexpr float PIDIV4 = 0.785398163f;
+
+	constexpr float ToDegrees = 180.0f / PI;
+	constexpr float ToRadians = PI / 180.0f;
 
 	template<typename T>
-	T Max(const T& a, const T& b)
+	constexpr T Max(const T& a, const T& b)
 	{
 		return a < b ? b : a;
 	}
 
 	template<typename T>
-	T Min(const T& a, const T& b)
+	constexpr T Min(const T& a, const T& b)
 	{
 		return a < b ? a : b;
 	}
 
 	template<typename T>
-	T Max3(const T& a, const T& b, const T& c)
+	constexpr T Max3(const T& a, const T& b, const T& c)
 	{
 		if (a < b)
 			return b < c ? c : b;
@@ -29,7 +32,7 @@ namespace Math
 	}
 
 	template<typename T>
-	T Min3(const T& a, const T& b, const T& c)
+	constexpr T Min3(const T& a, const T& b, const T& c)
 	{
 		if (a < b)
 			return a < c ? a : c;
@@ -41,7 +44,7 @@ namespace Math
 	int RandomRange(int min, int max);
 
 	template<typename T>
-	T Clamp(const T value, const T hi, const T lo)
+	constexpr T Clamp(const T value, const T hi, const T lo)
 	{
 		if (value > hi)
 			return hi;
@@ -51,45 +54,45 @@ namespace Math
 	}
 
 	template<typename T>
-	void ClampMin(T& value, const T lo)
+	constexpr void ClampMin(T& value, const T lo)
 	{
 		if (value < lo)
 			value = lo;
 	}
 
 	template<typename T>
-	T ClampMin(const T value, const T lo)
+	constexpr T ClampMin(const T value, const T lo)
 	{
 		return value < lo ? lo : value;
 	}
 
 	template<typename T>
-	void ClampMax(T& value, const T hi)
+	constexpr void ClampMax(T& value, const T hi)
 	{
 		if (value > hi)
 			value = hi;
 	}
 
 	template<typename T>
-	T ClampMax(const T value, const T hi)
+	constexpr T ClampMax(const T value, const T hi)
 	{
 		return value > hi ? hi : value;
 	}
 
 	template<typename T>
-	T Average(const T& a, const T& b)
+	constexpr T Average(const T& a, const T& b)
 	{
 		return (a + b) / (T)2;
 	}
 
 	template<typename T>
-	T Average3(const T& a, const T& b, const T& c)
+	constexpr T Average3(const T& a, const T& b, const T& c)
 	{
 		return (a + b + c) / (T)3;
 	}
 
 	template<typename T>
-	void Clamp01(T& value)
+	constexpr void Clamp01(T& value)
 	{
 		if (value > 1)
 			value = 1;
@@ -106,10 +109,6 @@ namespace Math
 			return 0;
 		return value;
 	}
-
-	float RadToDeg(float rad);
-
-	float DegToRad(float deg);
 
 	float Lerp(float a, float b, float t);
 

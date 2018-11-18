@@ -120,8 +120,7 @@ unsigned int Texture::GetSRVFormat(const unsigned int format)
 	case DXGI_FORMAT_R16_TYPELESS: return DXGI_FORMAT_R16_UNORM;
 	case DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_R32_FLOAT;
 	default:
-		checkf(false, "[Texture::GetSRVFormat] Texture format not supported");
-		return 0;
+		return format;
 	}
 }
 

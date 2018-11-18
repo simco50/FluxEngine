@@ -12,7 +12,6 @@ class DebugRenderer;
 class Context;
 class ResourceManager;
 class AudioEngine;
-class PostProcessing;
 
 class FluxCore : public Object
 {
@@ -51,7 +50,6 @@ private:
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
-	PostProcessing* m_pPostProcessing = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;

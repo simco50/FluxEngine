@@ -229,7 +229,7 @@ void SceneNode::Rotate(const Vector3& eulerAngles, const Space space)
 
 void SceneNode::Rotate(const float x, const float y, const float z, const Space space)
 {
-	Rotate(Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z)), space);
+	Rotate(Quaternion::CreateFromYawPitchRoll(Math::ToRadians * y, Math::ToRadians * x, Math::ToRadians * z), space);
 }
 
 void SceneNode::Rotate(const Quaternion& quaternion, const Space space)
@@ -313,7 +313,7 @@ void SceneNode::SetRotation(const Vector3& eulerAngles, const Space space)
 
 void SceneNode::SetRotation(const float x, const float y, const float z, const Space space)
 {
-	SetRotation(Quaternion::CreateFromYawPitchRoll(Math::DegToRad(y), Math::DegToRad(x), Math::DegToRad(z)), space);
+	SetRotation(Quaternion::CreateFromYawPitchRoll(Math::ToRadians * y, Math::ToRadians * x, Math::ToRadians * z), space);
 }
 
 void SceneNode::SetRotation(const Quaternion& quaternion, const Space space)

@@ -50,6 +50,15 @@ FloatRect Camera::GetAbsoluteViewport() const
 	return rect;
 }
 
+RenderTarget* Camera::GetRenderTarget() const
+{
+	if (m_pRenderTarget)
+	{
+		return m_pRenderTarget;
+	}
+	return m_pGraphics->GetRenderTarget();
+}
+
 RenderTarget* Camera::GetDepthStencil()
 {
 	if (m_pRenderTarget == nullptr)
@@ -72,7 +81,7 @@ void Camera::OnMarkedDirty(const SceneNode* pNode)
 
 	if (m_Perspective)
 	{
-		m_Projection = DirectX::XMMatrixPerspectiveFovLH(m_FoV * (Math::PI / 180.0f), viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
+		m_Projection = DirectX::XMMatrixPerspectiveFovLH(m_FoV * Math::ToRadians, viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
 	}
 	else
 	{
@@ -81,12 +90,8 @@ void Camera::OnMarkedDirty(const SceneNode* pNode)
 		m_Projection = DirectX::XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
 
-	m_View = XMMatrixLookAtLH(
-		pNode->GetWorldPosition(),
-		pNode->GetWorldPosition() + pNode->GetForward(),
-		pNode->GetUp());
-
-	m_View.Invert(m_ViewInverse);
+	m_ViewInverse = pNode->GetWorldMatrix();
+	m_ViewInverse.Invert(m_View);
 
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
@@ -128,6 +133,8 @@ void Camera::SetViewport(float x, float y, float width, float height)
 	m_Viewport.Right = width + x;
 	m_Viewport.Bottom = height + y;
 	OnMarkedDirty(m_pNode);
+
+	m_ViewportChangedEvent.Broadcast(m_Viewport);
 }
 
 void Camera::SetClippingPlanes(float nearPlane, float farPlane)

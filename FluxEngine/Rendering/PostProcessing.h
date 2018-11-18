@@ -1,15 +1,15 @@
 #pragma once
+#include "Scenegraph/Component.h"
 
 class Graphics;
 class ShaderVariation;
 class Material;
 class Texture2D;
+class Camera;
 
-#include "Core/Subsystem.h"
-
-class PostProcessing : public Subsystem
+class PostProcessing : public Component
 {
-	FLUX_OBJECT(PostProcessing, Subsystem)
+	FLUX_OBJECT(PostProcessing, Component)
 
 public:
 	PostProcessing(Context* pContext);
@@ -21,13 +21,18 @@ public:
 	Material* GetMaterial(const uint32 index) const { return m_Materials[index].second; }
 	void SetMaterialActive(const uint32 index, const bool active) { m_Materials[index].first = active; }
 	bool& GetMaterialActive(const uint32 index) { return m_Materials[index].first; }
+	Camera* GetCamera() const { return m_pCamera; }
+
+protected:
+	virtual void OnNodeSet(SceneNode* pNode) override;
 
 private:
-	void OnResize(const int width, const int height);
+	void OnResize(const FloatRect& viewport);
 
 	std::unique_ptr<Texture2D> m_pRenderTexture;
 	std::unique_ptr<Texture2D> m_pDepthTexture;
 
+	Camera* m_pCamera = nullptr;
 	Graphics* m_pGraphics;
 
 	ShaderVariation* m_pBlitVertexShader;

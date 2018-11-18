@@ -17,16 +17,6 @@ namespace Math
 		return min + rand() % (max - min + 1);
 	}
 
-	float RadToDeg(float rad)
-	{
-		return rad * 57.2957795131f;
-	}
-
-	float DegToRad(float deg)
-	{
-		return deg * 0.01745329251f;
-	}
-
 	float Lerp(float a, float b, float t)
 	{
 		return a + t * (b - a);
