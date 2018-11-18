@@ -38,14 +38,11 @@ public:
 	DELETE_COPY(Texture)
 
 	virtual void Release() = 0;
-
-	virtual bool Load(InputStream& /*inputStream*/) override { return true; }
 	virtual bool Resolve(bool force) = 0;
 
 	void SetAddressMode(TextureAddressMode addressMode);
 	void SetMipLevels(const int mipLevels) { m_MipLevels = mipLevels; }
 	void SetResolveDirty(bool dirty) { m_ResolveTextureDirty = dirty; }
-	void RegenerateMips();
 	void UpdateParameters();
 
 	void* GetResolvedResource() const { return m_pResolvedResource; }
@@ -63,7 +60,7 @@ public:
 	const Image* GetImage() const { return m_pImage.get(); }
 
 protected:
-	virtual bool Create() { return true; }
+	virtual bool Create() = 0;
 
 	int GetLevelWidth(unsigned int mipLevel) const;
 	int GetLevelHeight(unsigned int mipLevel) const;
