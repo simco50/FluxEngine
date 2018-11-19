@@ -21,8 +21,10 @@ public:
 
 	void AddTime(float time);
 	void SetTime(float time);
+	float GetTime() const { return m_Time; }
 
 	void Apply(std::vector<Matrix>& skinMatrices);
+	void SetLoop(bool looped) { m_Looped = looped; }
 
 	Animation* GetAnimation() const { return m_pAnimation; }
 	bool IsLooped() const { return m_Looped; }

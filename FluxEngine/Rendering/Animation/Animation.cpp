@@ -26,7 +26,7 @@ Animation::~Animation()
 
 bool Animation::Load(InputStream& inputStream)
 {
-	AUTOPROFILE(Mesh_ProcessAssimpAnimations);
+	AUTOPROFILE(Animation_Load);
 
 	std::vector<unsigned char> buffer;
 	inputStream.ReadAllBytes(buffer);
@@ -50,7 +50,15 @@ bool Animation::Load(InputStream& inputStream)
 	{
 		const aiAnimation* pAnimation = pScene->mAnimations[0];
 
-		m_Name = pAnimation->mName.C_Str();
+		if (pAnimation->mName.length != 0)
+		{
+			m_Name = pAnimation->mName.C_Str();
+		}
+		else
+		{
+			m_Name = Paths::GetFileNameWithoutExtension(inputStream.GetSource());
+		}
+
 		m_NameHash = std::hash<std::string>{} (m_Name);
 		m_DurationInTicks = (float)pAnimation->mDuration;
 		m_TickPerSecond = (float)pAnimation->mTicksPerSecond;
