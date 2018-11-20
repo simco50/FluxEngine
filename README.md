@@ -21,3 +21,5 @@
 * SDL2
 * Assimp
 * Nvidia PhysX
+* LZ4 compression
+* Zlib

@@ -122,7 +122,7 @@ bool ZipFile::CacheUncompressedData()
 		}
 
 		m_UncompressedCache.resize(m_pTableEntry->UncompressedSize);
-		if (!Compression::Decompress(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache, false))
+		if (!Compression::DecompressZlib(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache, false))
 		{
 			return false;
 		}

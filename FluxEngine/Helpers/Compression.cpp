@@ -2,10 +2,11 @@
 #include "Compression.h"
 
 #include <Zlib.h>
+#include "External/LZ4/lz4.h"
 
 namespace Compression
 {
-	bool Decompress(void *pInData, size_t inDataSize, std::vector<char> &outData, bool zlibHeader)
+	bool DecompressZlib(void *pInData, size_t inDataSize, std::vector<char> &outData, bool zlibHeader)
 	{
 		const size_t BUFSIZE = 128 * 1024;
 
@@ -65,7 +66,7 @@ namespace Compression
 		return true;
 	}
 
-	bool Compress(void *pInData, size_t inDataSize, std::vector<char> &outData)
+	bool CompressZlib(void *pInData, size_t inDataSize, std::vector<char> &outData)
 	{
 		const size_t BUFSIZE = 128 * 1024;
 		unsigned char temp_buffer[BUFSIZE];
@@ -116,6 +117,28 @@ namespace Compression
 		outData.insert(outData.end(), temp_buffer, temp_buffer + BUFSIZE - strm.avail_out);
 		deflateEnd(&strm);
 
+		return true;
+	}
+
+	bool DecompressLZ4(const void *pInData, size_t compressedSize, size_t uncompressedSize, std::vector<char> &outData)
+	{
+		outData.resize(uncompressedSize);
+		const int decompressedSize = LZ4_decompress_safe((const char*)pInData, outData.data(), (int)compressedSize, (int)uncompressedSize);
+		return decompressedSize > 0;
+	}
+
+	bool CompressLZ4(const void *pInData, size_t inDataSize, std::vector<char> &outData)
+	{
+		const int maxDstSize = LZ4_compressBound((int)inDataSize);
+		outData.resize((size_t)maxDstSize);
+
+		const int compressDataSize = LZ4_compress_default((const char*)pInData, outData.data(), (int)inDataSize, (int)maxDstSize);
+		if (compressDataSize < 0)
+		{
+			return false;
+		}
+
+		outData.resize((size_t)compressDataSize);
 		return true;
 	}
 }

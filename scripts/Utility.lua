@@ -4,7 +4,8 @@ function AddSourceFiles(directoryPath)
         ("../" .. directoryPath .. "/**.h"),
         ("../" .. directoryPath .. "/**.hpp"),
         ("../" .. directoryPath .. "/**.cpp"),
-        ("../" .. directoryPath .. "/**.inl")
+        ("../" .. directoryPath .. "/**.inl"),
+        ("../" .. directoryPath .. "/**.c")
     }
 end
 

@@ -121,7 +121,7 @@ bool PakFile::CacheUncompressedData()
 		}
 
 		m_UncompressedCache.resize(m_pTableEntry->UncompressedSize);
-		if (!Compression::Decompress(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache))
+		if (!Compression::DecompressLZ4(tempBuffer.data(), tempBuffer.size(), (size_t)m_pTableEntry->UncompressedSize, m_UncompressedCache))
 		{
 			return false;
 		}
