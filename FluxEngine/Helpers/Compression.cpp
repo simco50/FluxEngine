@@ -3,6 +3,7 @@
 
 #include <Zlib.h>
 #include "External/LZ4/lz4.h"
+#include "External/LZ4/lz4hc.h"
 
 namespace Compression
 {
@@ -127,18 +128,31 @@ namespace Compression
 		return decompressedSize > 0;
 	}
 
-	bool CompressLZ4(const void *pInData, size_t inDataSize, std::vector<char> &outData)
+	bool CompressLZ4(const void *pInData, size_t inDataSize, const bool hc, std::vector<char> &outData)
 	{
 		const int maxDstSize = LZ4_compressBound((int)inDataSize);
 		outData.resize((size_t)maxDstSize);
 
-		const int compressDataSize = LZ4_compress_default((const char*)pInData, outData.data(), (int)inDataSize, (int)maxDstSize);
-		if (compressDataSize < 0)
+		if (hc)
 		{
-			return false;
-		}
+			const int compressDataSize = LZ4_compress_HC((const char*)pInData, outData.data(), (int)inDataSize, (int)maxDstSize, LZ4HC_CLEVEL_MAX);
+			if (compressDataSize < 0)
+			{
+				return false;
+			}
 
-		outData.resize((size_t)compressDataSize);
+			outData.resize((size_t)compressDataSize);
+		}
+		else
+		{
+			const int compressDataSize = LZ4_compress_default((const char*)pInData, outData.data(), (int)inDataSize, (int)maxDstSize);
+			if (compressDataSize < 0)
+			{
+				return false;
+			}
+
+			outData.resize((size_t)compressDataSize);
+		}
 		return true;
 	}
 }
