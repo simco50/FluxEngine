@@ -77,16 +77,24 @@ function AddFmod(isTarget)
     libdirs	"../Libraries/Fmod/lib/%{cfg.platform}"
     
     if(isTarget == true) then
-        filter { "configurations:Debug", "platforms:x64" }
-            links "fmodL64_vc.lib"
-            postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmodL64.dll\" \"$(OutDir)\""
-        filter { "configurations:Release or Test", "platforms:x64" }
+        --filter { "configurations:Debug", "platforms:x64" }
+        --    links "fmodL64_vc.lib"
+        --    postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmodL64.dll\" \"$(OutDir)\""
+        --filter { "configurations:Release or Test", "platforms:x64" }
+        --    postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\""
+        --    links "fmod64_vc.lib"
+        --filter { "configurations:Debug", "platforms:x86" }
+        --    postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmodL.dll\" \"$(OutDir)\""
+        --    links "fmodL_vc.lib"
+        --filter { "configurations:Release or Test", "platforms:x86" }
+        --    postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\""
+        --    links "fmod_vc.lib"
+
+        --Don't want the debug libs in Debug
+        filter { "platforms:x64" }
             postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x64\\fmod64.dll\" \"$(OutDir)\""
             links "fmod64_vc.lib"
-        filter { "configurations:Debug", "platforms:x86" }
-            postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmodL.dll\" \"$(OutDir)\""
-            links "fmodL_vc.lib"
-        filter { "configurations:Release or Test", "platforms:x86" }
+        filter { "platforms:x86" }
             postbuildcommands "{COPY} \"$(SolutionDir)Libraries\\Fmod\\bin\\x86\\fmod.dll\" \"$(OutDir)\""
             links "fmod_vc.lib"
         end

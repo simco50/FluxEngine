@@ -4,6 +4,8 @@
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
 
+#include "Rendering/Core/GraphicsDefines.h"
+
 class AssimpHelpers
 {
 public:
@@ -51,11 +53,15 @@ public:
 	static aiQuaternion GetRotation(const aiNodeAnim* pNode, float time)
 	{
 		if (pNode->mNumRotationKeys == 0)
+		{
 			return aiQuaternion();
+		}
 		for (unsigned int i = 0; i < pNode->mNumRotationKeys; i++)
 		{
 			if (pNode->mRotationKeys[i].mTime == time)
+			{
 				return pNode->mRotationKeys[i].mValue;
+			}
 			if (pNode->mRotationKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
@@ -70,11 +76,15 @@ public:
 	static aiVector3D GetScale(const aiNodeAnim* pNode, float time)
 	{
 		if (pNode->mNumScalingKeys == 0)
+		{
 			return aiVector3D();
+		}
 		for (unsigned int i = 0; i < pNode->mNumScalingKeys; i++)
 		{
 			if (pNode->mScalingKeys[i].mTime == time)
+			{
 				return pNode->mScalingKeys[i].mValue;
+			}
 			if (pNode->mScalingKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
@@ -87,11 +97,15 @@ public:
 	static aiVector3D GetPosition(const aiNodeAnim* pNode, const float time)
 	{
 		if (pNode->mNumPositionKeys == 0)
+		{
 			return aiVector3D();
+		}
 		for (unsigned int i = 0; i < pNode->mNumPositionKeys; i++)
 		{
 			if (pNode->mPositionKeys[i].mTime == time)
+			{
 				return pNode->mPositionKeys[i].mValue;
+			}
 			if (pNode->mPositionKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
@@ -99,5 +113,20 @@ public:
 			}
 		}
 		return pNode->mPositionKeys[pNode->mNumPositionKeys - 1].mValue;
+	}
+
+	static const aiScene* LoadScene(InputStream& inputStream, Assimp::Importer& importer)
+	{
+		std::vector<unsigned char> buffer;
+		inputStream.ReadAllBytes(buffer);
+		importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, GraphicsConstants::MAX_BONES_PER_VERTEX);
+		AUTOPROFILE(Mesh_ImportAssimp);
+		return importer.ReadFileFromMemory(buffer.data(), buffer.size(),
+			aiProcess_Triangulate |
+			aiProcess_ConvertToLeftHanded |
+			aiProcess_GenSmoothNormals |
+			aiProcess_CalcTangentSpace |
+			aiProcess_LimitBoneWeights
+		);
 	}
 };

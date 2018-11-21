@@ -2,6 +2,8 @@
 #include "Content\Resource.h"
 
 class Skeleton;
+struct Bone;
+struct aiNode;
 
 struct AnimationKey
 {
@@ -31,7 +33,6 @@ class Animation : public Resource
 	FLUX_OBJECT(Animation, Resource)
 
 public:
-	Animation(Context* pContext, const std::string& name, int numNodes, float duration, float ticksPerSecond);
 	Animation(Context* pContext);
 	virtual ~Animation();
 
@@ -39,9 +40,6 @@ public:
 
 	void ResolveBoneIndices(const Skeleton& skeleton);
 
-	void SetNode(const AnimationNode& node);
-	AnimationNode& GetNode(int boneIndex);
-	size_t GetNodeCount() const { return m_AnimationNodes.size(); }
 	const std::vector<AnimationNode>& GetNodes() { return m_AnimationNodes; }
 
 	const std::string& GetName() const { return m_Name; }

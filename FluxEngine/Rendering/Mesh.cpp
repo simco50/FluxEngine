@@ -37,7 +37,7 @@ bool Mesh::Load(InputStream& inputStream)
 	}
 	else
 	{
-		FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using AssimpHelpers", fileName.c_str());
+		FLUX_LOG(Warning, "[Mesh::Load] Slow loading '%s' using Assimp", fileName.c_str());
 		if (!LoadAssimp(inputStream))
 		{
 			return false;
@@ -110,22 +110,11 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 {
 	AUTOPROFILE(Mesh_Load_Assimp);
 
-	std::vector<unsigned char> buffer;
-	inputStream.ReadAllBytes(buffer);
-
+	const aiScene* pScene = nullptr;
 	Assimp::Importer importer;
-	const aiScene* pScene;
-
 	{
-		importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, GraphicsConstants::MAX_BONES_PER_VERTEX);
 		AUTOPROFILE(Mesh_ImportAssimp);
-		pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
-			aiProcess_Triangulate |
-			aiProcess_ConvertToLeftHanded |
-			aiProcess_GenSmoothNormals |
-			aiProcess_CalcTangentSpace |
-			aiProcess_LimitBoneWeights
-		);
+		pScene = AssimpHelpers::LoadScene(inputStream, importer);
 	}
 
 	if (pScene == nullptr)
@@ -287,7 +276,7 @@ void Mesh::CalculateBoundingBox()
 	}
 }
 
-void Mesh::ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone)
+void Mesh::ProcessNode(aiNode* pNode, const Matrix& parentMatrix, Bone* pParentBone)
 {
 	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
 	Matrix nodeTransform = AssimpHelpers::ToDXMatrix(pNode->mTransformation);

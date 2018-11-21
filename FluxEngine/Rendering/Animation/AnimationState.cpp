@@ -47,7 +47,7 @@ void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
 
 	const Vector3 position = Vector3::Lerp(key.Position, nextKey.Position, t);
 	const Vector3 scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
-	const Quaternion rotation = Quaternion::Lerp(key.Rotation, nextKey.Rotation, t);
+	const Quaternion rotation = Quaternion::Slerp(key.Rotation, nextKey.Rotation, t);
 	matrix = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 }
 
@@ -62,6 +62,7 @@ AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel) :
 		state.KeyFrame = 0;
 		state.pBone = skeleton.GetBone(node.BoneIndex);
 		state.pNode = &node;
+		checkf(state.pBone->Name == state.pNode->Name, "[AnimationState::AnimationState] The name of the node and the bone should match");
 		m_KeyStates.push_back(state);
 	}
 }
@@ -116,6 +117,8 @@ void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::
 		return;
 	}
 	float time = m_Time * m_pAnimation->GetTicksPerSecond();
+
+	//ASSUMPTION: The bone index matches the node index
 	AnimationKeyState& state = m_KeyStates[pBone->Index];
 	Matrix m;
 	if (m_KeyStates.size() != 0)
@@ -129,4 +132,3 @@ void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::
 		CalculateAnimations(pChild, m * parentMatrix, skinMatrices);
 	}
 }
-

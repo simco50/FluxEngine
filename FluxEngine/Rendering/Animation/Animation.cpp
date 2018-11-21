@@ -2,16 +2,8 @@
 #include "Animation.h"
 
 #include "Content/AssimpHelpers.h"
-#include "Rendering/Core/GraphicsDefines.h"
 #include "Async/AsyncTaskQueue.h"
 #include "Skeleton.h"
-
-Animation::Animation(Context* pContext, const std::string& name, int numNodes, float duration, float ticksPerSecond)
-	: Resource(pContext), m_Name(name), m_DurationInTicks(duration), m_TickPerSecond(ticksPerSecond)
-{
-	m_NameHash = std::hash<std::string>{} (name);
-	m_AnimationNodes.resize(numNodes);
-}
 
 Animation::Animation(Context* pContext)
 	: Resource(pContext), m_DurationInTicks(0), m_TickPerSecond(0)
@@ -28,22 +20,11 @@ bool Animation::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Animation_Load);
 
-	std::vector<unsigned char> buffer;
-	inputStream.ReadAllBytes(buffer);
-
+	const aiScene* pScene = nullptr;
 	Assimp::Importer importer;
-	const aiScene* pScene;
-
 	{
-		importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, GraphicsConstants::MAX_BONES_PER_VERTEX);
-		AUTOPROFILE(Mesh_ImportAssimp);
-		pScene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),
-			aiProcess_Triangulate |
-			aiProcess_ConvertToLeftHanded |
-			aiProcess_GenSmoothNormals |
-			aiProcess_CalcTangentSpace |
-			aiProcess_LimitBoneWeights
-		);
+		AUTOPROFILE(Animation_ImportAssimp);
+		pScene = AssimpHelpers::LoadScene(inputStream, importer);
 	}
 
 	if (pScene->HasAnimations())
@@ -82,8 +63,6 @@ bool Animation::Load(InputStream& inputStream)
 					animNode.Name = animNode.Name.substr(0, fbxSuffix);
 				}
 
-				animNode.BoneIndex = -1;
-
 				std::vector<float> keyTimes;
 				for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
 				{
@@ -111,6 +90,7 @@ bool Animation::Load(InputStream& inputStream)
 					key.Rotation = AssimpHelpers::TxDXQuaternion(AssimpHelpers::GetRotation(pAnimNode, time));
 					key.Scale = AssimpHelpers::ToDXVector3(AssimpHelpers::GetScale(pAnimNode, time));
 					key.Position = AssimpHelpers::ToDXVector3(AssimpHelpers::GetPosition(pAnimNode, time));
+
 					animNode.Keys.push_back(AnimationNode::KeyPair(time, key));
 				}
 			});
@@ -146,22 +126,18 @@ void Animation::ResolveBoneIndices(const Skeleton& skeleton)
 			if (bones[j].Name == m_AnimationNodes[i].Name)
 			{
 				m_AnimationNodes[i].BoneIndex = bones[j].Index;
-				std::swap(m_AnimationNodes[i], m_AnimationNodes[j]);
 				found = true;
 				break;
 			}
 		}
 		checkf(found, Printf("[Animation::ResolveBoneIndices] Bone with name '%s' does not exist in Skeleton", m_AnimationNodes[i].Name.c_str()).c_str());
 	}
-}
 
-void Animation::SetNode(const AnimationNode& node)
-{
-	m_AnimationNodes[node.BoneIndex] = node;
-}
-
-AnimationNode& Animation::GetNode(int boneIndex)
-{
-	assert(boneIndex < (int)m_AnimationNodes.size());
-	return m_AnimationNodes[boneIndex];
+	//!!! WEIRDNESS ALERT !!!
+	//I sort because in the skinning matrix preprocessing, I assume the bone indices match with the node indices
+	//This is because the bone transforms are relative so the preprocessing has to traverse the skeleton structure
+	//Because the bone has no reference to the node, there has to be some kind of relationship
+	//Either we sort here or we use an associative map in the AnimationState.
+	//This option is better as it has not runtime overhead
+	std::sort(m_AnimationNodes.begin(), m_AnimationNodes.end(), [](const AnimationNode& a, const AnimationNode& b) { return a.BoneIndex < b.BoneIndex; });
 }

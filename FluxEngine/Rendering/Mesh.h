@@ -39,7 +39,7 @@ private:
 	bool ProcessAssimpMeshes(const aiScene* pScene);
 	bool ProcessSkeleton(const aiScene* pScene);
 	void CalculateBoundingBox();
-	void ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone = nullptr);
+	void ProcessNode(aiNode* pNode, const Matrix& parentMatrix, Bone* pParentBone = nullptr);
 
 	static const int MESH_VERSION = 7;
 
