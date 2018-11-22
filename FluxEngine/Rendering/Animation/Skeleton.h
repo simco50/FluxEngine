@@ -1,10 +1,17 @@
 #pragma once
 
+class SceneNode;
+
 struct Bone
 {
 	std::string Name;
 	Matrix OffsetMatrix;
 	std::vector<int> Children;
+	SceneNode* pNode = nullptr;
+
+	Vector3 StartPosition;
+	Vector3 StartScale;
+	Quaternion StartRotation;
 };
 
 class Skeleton
@@ -12,6 +19,26 @@ class Skeleton
 public:
 	Skeleton() = default;
 	~Skeleton() = default;
+
+	Skeleton(const Skeleton& other)
+		: m_RootBoneIndex(other.m_RootBoneIndex), m_Bones(other.m_Bones)
+	{
+		for (Bone& bone : m_Bones)
+		{
+			bone.pNode = nullptr;
+		}
+	}
+
+	Skeleton& operator=(const Skeleton& other)
+	{
+		m_RootBoneIndex = other.m_RootBoneIndex;
+		m_Bones = other.m_Bones;
+		for (Bone& bone : m_Bones)
+		{
+			bone.pNode = nullptr;
+		}
+		return *this;
+	}
 
 	Bone* GetBone(const std::string& name)
 	{

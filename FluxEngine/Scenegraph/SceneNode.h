@@ -89,6 +89,11 @@ public:
 	void Rotate(float x, float y, float z, Space space = Space::World);
 	void Rotate(const Quaternion& quaternion, Space space = Space::World);
 
+	//User for animation
+	void SetLocalPositionSilent(const Vector3& newPosition);
+	void SetLocalScaleSilent(const Vector3& newScale);
+	void SetLocalRotationSilent(const Quaternion& newRotation);
+
 	const Vector3& GetPosition() const;
 	Vector3 GetWorldPosition() const;
 

@@ -12,7 +12,7 @@ struct AnimationKeyState
 	const AnimationNode* pNode = nullptr;
 
 	void GetFrameIndex(float time, int& index) const;
-	void GetMatrix(float time, Matrix& matrix);
+	void GetTransform(float time, Vector3& scale, Quaternion& rotation, Vector3& translation);
 };
 
 class AnimationState
@@ -24,7 +24,7 @@ public:
 	void SetTime(float time);
 	float GetTime() const { return m_Time; }
 
-	void Apply(std::vector<Matrix>& skinMatrices);
+	void Apply();
 	void SetLoop(bool looped) { m_Looped = looped; }
 
 	Animation* GetAnimation() const { return m_pAnimation; }
@@ -32,8 +32,6 @@ public:
 	float GetDuration() const;
 
 private:
-	void CalculateAnimations(const int boneIndex, const Matrix& parentMatrix, std::vector<Matrix>& skinMatrices);
-
 	float m_Time = 0.0f;
 	bool m_IsDirty = true;
 	bool m_Looped = true;

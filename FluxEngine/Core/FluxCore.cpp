@@ -341,6 +341,7 @@ void FluxCore::RenderUI()
 			{
 				m_pSelectedNode->MarkDirty();
 			}
+			ImGui::InputFloat4("Rotation", const_cast<float*>(&m_pSelectedNode->GetRotation().x), "%.3f", ImGuiInputTextFlags_ReadOnly);
 			ImGui::TreePop();
 		}
 

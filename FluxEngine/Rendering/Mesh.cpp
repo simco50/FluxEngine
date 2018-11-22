@@ -282,6 +282,13 @@ void Mesh::ProcessSkeletonHierarchy(aiNode* pNode, Bone* pParentBone)
 			pParentBone->Children.push_back(pIt->second);
 		}
 		pParentBone = pBone;
+
+		aiQuaternion rotation;
+		aiVector3D scale, translation;
+		pNode->mTransformation.Decompose(scale, rotation, translation);
+		pBone->StartPosition = AssimpHelpers::ToDXVector3(translation);
+		pBone->StartScale = AssimpHelpers::ToDXVector3(scale);
+		pBone->StartRotation = AssimpHelpers::TxDXQuaternion(rotation);
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)

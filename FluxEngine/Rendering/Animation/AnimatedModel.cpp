@@ -5,8 +5,8 @@
 #include "Animation.h"
 #include "Rendering/Core/GraphicsDefines.h"
 
-AnimatedModel::AnimatedModel(Context* pContext):
-	Model(pContext)
+AnimatedModel::AnimatedModel(Context* pContext)
+	: Model(pContext)
 {
 }
 
@@ -16,14 +16,13 @@ AnimatedModel::~AnimatedModel()
 
 void AnimatedModel::Update()
 {
-	m_AnimationStates[0].Apply(m_SkinMatrices);
-	for (size_t i = 0; i < m_SkinMatrices.size(); ++i)
+	if (m_AnimationStates.size() > 0)
 	{
-		Vector3 position, scale;
-		Quaternion rotation;
-		m_SkinMatrices[i].Decompose(scale, rotation, position);
-		m_SkinQuaternions[i] = DualQuaternion(rotation, position);
+		m_AnimationStates[0].Apply();
+		m_pNode->MarkDirty();
 	}
+
+	ApplySkinning();
 }
 
 void AnimatedModel::SetMesh(Mesh* pMesh)
@@ -46,11 +45,18 @@ void AnimatedModel::SetMesh(Mesh* pMesh)
 	m_BoundingBox = pMesh->GetBoundingBox();
 
 	m_pMesh = pMesh;
+	SetSkeleton(m_pMesh->GetSkeleton());
+}
+
+void AnimatedModel::SetSkeleton(const Skeleton& skeleton)
+{
+	m_Skeleton = skeleton;
+	AddBoneChildNodes(m_pNode, m_Skeleton.GetRootBoneIndex());
 }
 
 const Skeleton& AnimatedModel::GetSkeleton() const
 {
-	return m_pMesh->GetSkeleton();
+	return m_Skeleton;
 }
 
 AnimationState* AnimatedModel::AddAnimationState(Animation* pAnimation)
@@ -74,4 +80,41 @@ AnimationState* AnimatedModel::GetAnimationState(const StringHash hash)
 		}
 	}
 	return nullptr;
+}
+
+void AnimatedModel::ApplySkinning()
+{
+	const std::vector<Bone>& bones = m_Skeleton.GetBones();
+	for (size_t i = 0; i < bones.size(); ++i)
+	{
+		m_SkinMatrices[i] = bones[i].OffsetMatrix * bones[i].pNode->GetWorldMatrix();
+	}
+
+#define DUALQ_SKINNING
+#ifdef DUALQ_SKINNING
+	//NOTE: I know this it's super dumb to decompose all the matrices,
+	//make DQs and then copy them to the GPU on top of having matrix skinning but this is simply for DQ demonstration
+	for (size_t i = 0; i < m_SkinMatrices.size(); ++i)
+	{
+		Vector3 position, scale;
+		Quaternion rotation;
+		m_SkinMatrices[i].Decompose(scale, rotation, position);
+		m_SkinQuaternions[i] = DualQuaternion(rotation, position);
+	}
+#endif
+}
+
+void AnimatedModel::AddBoneChildNodes(SceneNode* pParentNode, int boneIndex)
+{
+	Bone* pBone = m_Skeleton.GetBone(boneIndex);
+	SceneNode* pNewNode = pParentNode->CreateChild(pBone->Name);
+	pBone->pNode = pNewNode;
+	pBone->pNode->SetPosition(pBone->StartPosition, Space::Self);
+	pBone->pNode->SetScale(pBone->StartScale, Space::Self);
+	pBone->pNode->SetRotation(pBone->StartRotation, Space::Self);
+
+	for (size_t i = 0; i < pBone->Children.size(); ++i)
+	{
+		AddBoneChildNodes(pNewNode, (int)pBone->Children[i]);
+	}
 }

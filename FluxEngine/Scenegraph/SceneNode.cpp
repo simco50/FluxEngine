@@ -246,6 +246,21 @@ void SceneNode::Rotate(const Quaternion& quaternion, const Space space)
 	MarkDirty();
 }
 
+void SceneNode::SetLocalPositionSilent(const Vector3& newPosition)
+{
+	m_Position = newPosition;
+}
+
+void SceneNode::SetLocalScaleSilent(const Vector3& newScale)
+{
+	m_Scale = newScale;
+}
+
+void SceneNode::SetLocalRotationSilent(const Quaternion& newRotation)
+{
+	m_Rotation = newRotation;
+}
+
 const Vector3& SceneNode::GetPosition() const
 {
 	return m_Position;

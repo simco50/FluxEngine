@@ -3,6 +3,7 @@
 #include "Animation.h"
 #include "AnimatedModel.h"
 #include "Skeleton.h"
+#include "Scenegraph/SceneNode.h"
 
 void AnimationKeyState::GetFrameIndex(float time, int& index) const
 {
@@ -25,11 +26,13 @@ void AnimationKeyState::GetFrameIndex(float time, int& index) const
 	}
 }
 
-void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
+void AnimationKeyState::GetTransform(float time, Vector3& scale, Quaternion& rotation, Vector3& translation)
 {
 	if (pNode->Keys.size() == 0)
 	{
-		matrix = Matrix::Identity;
+		scale = Vector3(1, 1, 1);
+		rotation = Quaternion::Identity;
+		translation = Vector3();
 		return;
 	}
 
@@ -45,10 +48,9 @@ void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
 
 	float t = time > 0.0f ? (time - pNode->Keys[KeyFrame].Time) / (pNode->Keys[nextFrame].Time - pNode->Keys[KeyFrame].Time) : 1.0f;
 
-	const Vector3 position = Vector3::Lerp(key.Position, nextKey.Position, t);
-	const Vector3 scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
-	const Quaternion rotation = Quaternion::Slerp(key.Rotation, nextKey.Rotation, t);
-	matrix = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
+	translation = Vector3::Lerp(key.Position, nextKey.Position, t);
+	scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
+	rotation = Quaternion::Slerp(key.Rotation, nextKey.Rotation, t);
 }
 
 AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel)
@@ -95,11 +97,21 @@ void AnimationState::SetTime(float time)
 	m_IsDirty = true;
 }
 
-void AnimationState::Apply(std::vector<Matrix>& skinMatrices)
+void AnimationState::Apply()
 {
 	if (m_IsDirty)
 	{
-		CalculateAnimations(m_pSkeleton->GetRootBoneIndex(), Matrix(), skinMatrices);
+		const std::vector<Bone>& bones = m_pSkeleton->GetBones();
+		Vector3 translation, scale;
+		Quaternion rotation;
+		for (size_t i = 0; i < bones.size(); ++i)
+		{
+			Matrix m;
+			m_KeyStates[i].GetTransform(m_Time, scale, rotation, translation);
+			bones[i].pNode->SetLocalScaleSilent(scale);
+			bones[i].pNode->SetLocalRotationSilent(rotation);
+			bones[i].pNode->SetLocalPositionSilent(translation);
+		}
 		m_IsDirty = false;
 	}
 }
@@ -107,25 +119,4 @@ void AnimationState::Apply(std::vector<Matrix>& skinMatrices)
 float AnimationState::GetDuration() const
 {
 	return m_pAnimation ? m_pAnimation->GetDurationInTicks() : 0.0f;
-}
-
-void AnimationState::CalculateAnimations(const int boneIndex, const Matrix& parentMatrix, std::vector<Matrix>& skinMatrices)
-{
-	float time = m_Time * m_pAnimation->GetTicksPerSecond();
-
-	const Bone* pBone = m_pSkeleton->GetBone(boneIndex);
-
-	//ASSUMPTION: The bone index matches the node index
-	AnimationKeyState& state = m_KeyStates[boneIndex];
-	Matrix m;
-	if (m_KeyStates.size() != 0)
-	{
-		state.GetMatrix(time, m);
-	}
-	skinMatrices[boneIndex] = pBone->OffsetMatrix * m * parentMatrix;
-
-	for (int childIndex : pBone->Children)
-	{
-		CalculateAnimations(childIndex, m * parentMatrix, skinMatrices);
-	}
 }
