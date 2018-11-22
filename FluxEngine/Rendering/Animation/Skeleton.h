@@ -5,7 +5,6 @@ struct Bone
 	int Index = 0;
 	std::string Name;
 	Matrix OffsetMatrix;
-	Bone* pParent = nullptr;
 	std::vector<Bone*> Children;
 };
 
@@ -14,6 +13,8 @@ class Skeleton
 public:
 	Skeleton() = default;
 	~Skeleton() = default;
+
+	DELETE_COPY(Skeleton);
 
 	Bone* GetBone(const std::string& name)
 	{
@@ -56,14 +57,14 @@ public:
 	}
 
 	const std::vector<Bone>& GetBones() const { return m_Bones; }
-	Bone* GetParentBone() const { return m_pParentBone; }
-	void SetParentBone(Bone* pBone) { m_pParentBone = pBone; }
+	const Bone* GetParentBone() const { return GetBone(m_RootBoneIndex); }
+	void SetParentBoneIndex(int boneIndex) { m_RootBoneIndex = boneIndex; }
 
 	size_t BoneCount() const { return m_Bones.size(); }
 
 	static const int MAX_BONE_COUNT = 100;
 
 private:
-	Bone* m_pParentBone = nullptr;
+	int m_RootBoneIndex = -1;
 	std::vector<Bone> m_Bones;
 };

@@ -110,7 +110,7 @@ float AnimationState::GetDuration() const
 	return m_pAnimation ? m_pAnimation->GetDurationInTicks() : 0.0f;
 }
 
-void AnimationState::CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices)
+void AnimationState::CalculateAnimations(const Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices)
 {
 	if (m_pRootBone == nullptr)
 	{

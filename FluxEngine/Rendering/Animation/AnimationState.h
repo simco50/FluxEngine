@@ -31,12 +31,12 @@ public:
 	float GetDuration() const;
 
 private:
-	void CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
+	void CalculateAnimations(const Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
 
 	float m_Time = 0.0f;
 	bool m_IsDirty = true;
 	bool m_Looped = true;
 	Animation* m_pAnimation = nullptr;
-	Bone* m_pRootBone = nullptr;
+	const Bone* m_pRootBone = nullptr;
 	std::vector<AnimationKeyState> m_KeyStates;
 };

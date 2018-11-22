@@ -125,9 +125,9 @@ bool Mesh::LoadAssimp(InputStream& inputStream)
 	{
 		return false;
 	}
-	if (!ProcessSkeleton(pScene))
 	{
-		return false;
+		AUTOPROFILE(Mesh_ProcessSkeletonHierarchy);
+		ProcessSkeletonHierarchy(pScene->mRootNode, nullptr);
 	}
 	if (m_Geometries.size() > 0)
 	{
@@ -255,15 +255,6 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 	return true;
 }
 
-bool Mesh::ProcessSkeleton(const aiScene* pScene)
-{
-	AUTOPROFILE(Mesh_Load_Hierarchy);
-
-	Matrix Identity = Matrix::CreateTranslation(0, 0, 0);
-	ProcessNode(pScene->mRootNode, Identity);
-	return true;
-}
-
 void Mesh::CalculateBoundingBox()
 {
 	AUTOPROFILE(Mesh_CalculateBoundingBox);
@@ -276,18 +267,15 @@ void Mesh::CalculateBoundingBox()
 	}
 }
 
-void Mesh::ProcessNode(aiNode* pNode, const Matrix& parentMatrix, Bone* pParentBone)
+void Mesh::ProcessSkeletonHierarchy(aiNode* pNode, Bone* pParentBone)
 {
 	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
-	Matrix nodeTransform = AssimpHelpers::ToDXMatrix(pNode->mTransformation);
-	Matrix globalTransform = nodeTransform * parentMatrix;
 	if (pBone)
 	{
 		if (m_Skeleton.GetParentBone() == nullptr)
 		{
-			m_Skeleton.SetParentBone(pBone);
+			m_Skeleton.SetParentBoneIndex(pBone->Index);
 		}
-		pBone->pParent = pParentBone;
 		if (pParentBone)
 		{
 			pParentBone->Children.push_back(pBone);
@@ -297,7 +285,7 @@ void Mesh::ProcessNode(aiNode* pNode, const Matrix& parentMatrix, Bone* pParentB
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
 	{
-		ProcessNode(pNode->mChildren[i], globalTransform, pParentBone);
+		ProcessSkeletonHierarchy(pNode->mChildren[i], pParentBone);
 	}
 }
 

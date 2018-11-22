@@ -66,18 +66,15 @@ bool Animation::Load(InputStream& inputStream)
 				std::vector<float> keyTimes;
 				for (unsigned int k = 0; k < pAnimNode->mNumPositionKeys; k++)
 				{
-					float time = Math::Max<float>(0, (float)pAnimNode->mPositionKeys[k].mTime);
-					keyTimes.push_back(time);
+					keyTimes.push_back((float)pAnimNode->mPositionKeys[k].mTime);
 				}
 				for (unsigned int k = 0; k < pAnimNode->mNumScalingKeys; k++)
 				{
-					float time = Math::Max<float>(0, (float)pAnimNode->mScalingKeys[k].mTime);
-					keyTimes.push_back(time);
+					keyTimes.push_back((float)pAnimNode->mScalingKeys[k].mTime);
 				}
 				for (unsigned int k = 0; k < pAnimNode->mNumRotationKeys; k++)
 				{
-					float time = Math::Max<float>(0, (float)pAnimNode->mRotationKeys[k].mTime);
-					keyTimes.push_back(time);
+					keyTimes.push_back((float)pAnimNode->mRotationKeys[k].mTime);
 				}
 				std::sort(keyTimes.begin(), keyTimes.end());
 				keyTimes.erase(std::unique(keyTimes.begin(), keyTimes.end()), keyTimes.end());

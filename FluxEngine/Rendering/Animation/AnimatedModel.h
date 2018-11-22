@@ -16,6 +16,8 @@ public:
 	virtual void Update() override;
 	virtual void SetMesh(Mesh* pMesh) override;
 
+	void SetSkeleton(const Skeleton& skeleton);
+
 	Matrix* GetSkinMatrices() { return m_SkinMatrices.data(); }
 	DualQuaternion* GetSkinQuaternions() { return m_SkinQuaternions.data(); }
 	const Skeleton& GetSkeleton() const;
