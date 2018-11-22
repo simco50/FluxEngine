@@ -122,7 +122,7 @@ void Animation::ResolveBoneIndices(const Skeleton& skeleton)
 		{
 			if (bones[j].Name == m_AnimationNodes[i].Name)
 			{
-				m_AnimationNodes[i].BoneIndex = bones[j].Index;
+				m_AnimationNodes[i].BoneIndex = (int)j;
 				found = true;
 				break;
 			}

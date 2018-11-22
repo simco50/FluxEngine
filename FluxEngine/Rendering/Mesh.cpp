@@ -227,7 +227,6 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 				{
 					m_BoneMap[pBone->mName.C_Str()] = boneCount;
 					Bone newBone;
-					newBone.Index = boneCount;
 					newBone.Name = pBone->mName.C_Str();
 					newBone.OffsetMatrix = AssimpHelpers::ToDXMatrix(pBone->mOffsetMatrix);
 					m_Skeleton.AddBone(newBone);
@@ -270,15 +269,17 @@ void Mesh::CalculateBoundingBox()
 void Mesh::ProcessSkeletonHierarchy(aiNode* pNode, Bone* pParentBone)
 {
 	Bone* pBone = m_Skeleton.GetBone(pNode->mName.C_Str());
-	if (pBone)
+
+	auto pIt = m_BoneMap.find(std::string(pNode->mName.C_Str()));
+	if (pIt != m_BoneMap.end())
 	{
-		if (m_Skeleton.GetParentBone() == nullptr)
+		if (m_Skeleton.GetRootBoneIndex() == -1)
 		{
-			m_Skeleton.SetParentBoneIndex(pBone->Index);
+			m_Skeleton.SetParentBoneIndex(pIt->second);
 		}
-		if (pParentBone)
+		else
 		{
-			pParentBone->Children.push_back(pBone);
+			pParentBone->Children.push_back(pIt->second);
 		}
 		pParentBone = pBone;
 	}

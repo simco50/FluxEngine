@@ -2,10 +2,9 @@
 
 struct Bone
 {
-	int Index = 0;
 	std::string Name;
 	Matrix OffsetMatrix;
-	std::vector<Bone*> Children;
+	std::vector<int> Children;
 };
 
 class Skeleton
@@ -13,8 +12,6 @@ class Skeleton
 public:
 	Skeleton() = default;
 	~Skeleton() = default;
-
-	DELETE_COPY(Skeleton);
 
 	Bone* GetBone(const std::string& name)
 	{
@@ -29,26 +26,14 @@ public:
 	}
 	Bone* GetBone(const int index)
 	{
-		for (Bone& bone : m_Bones)
-		{
-			if (bone.Index == index)
-			{
-				return &bone;
-			}
-		}
-		return nullptr;
+		check(index < m_Bones.size());
+		return &m_Bones[index];
 	}
 
 	const Bone* GetBone(const int index) const
 	{
-		for (const Bone& bone : m_Bones)
-		{
-			if (bone.Index == index)
-			{
-				return &bone;
-			}
-		}
-		return nullptr;
+		check(index < m_Bones.size());
+		return &m_Bones[index];
 	}
 
 	void AddBone(const Bone& bone)
@@ -57,7 +42,7 @@ public:
 	}
 
 	const std::vector<Bone>& GetBones() const { return m_Bones; }
-	const Bone* GetParentBone() const { return GetBone(m_RootBoneIndex); }
+	int GetRootBoneIndex() const { return m_RootBoneIndex; }
 	void SetParentBoneIndex(int boneIndex) { m_RootBoneIndex = boneIndex; }
 
 	size_t BoneCount() const { return m_Bones.size(); }

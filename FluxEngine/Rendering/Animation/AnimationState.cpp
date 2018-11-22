@@ -51,16 +51,15 @@ void AnimationKeyState::GetMatrix(float time, Matrix& matrix)
 	matrix = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 }
 
-AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel) :
-	m_pAnimation(pAnimation)
+AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel)
+	: m_pAnimation(pAnimation)
 {
-	const Skeleton& skeleton = pModel->GetSkeleton();
-	m_pRootBone = skeleton.GetParentBone();
+	m_pSkeleton = &pModel->GetSkeleton();
 	for (const AnimationNode& node : pAnimation->GetNodes())
 	{
 		AnimationKeyState state;
 		state.KeyFrame = 0;
-		state.pBone = skeleton.GetBone(node.BoneIndex);
+		state.pBone = m_pSkeleton->GetBone(node.BoneIndex);
 		state.pNode = &node;
 		checkf(state.pBone->Name == state.pNode->Name, "[AnimationState::AnimationState] The name of the node and the bone should match");
 		m_KeyStates.push_back(state);
@@ -100,7 +99,7 @@ void AnimationState::Apply(std::vector<Matrix>& skinMatrices)
 {
 	if (m_IsDirty)
 	{
-		CalculateAnimations(m_pRootBone, Matrix(), skinMatrices);
+		CalculateAnimations(m_pSkeleton->GetRootBoneIndex(), Matrix(), skinMatrices);
 		m_IsDirty = false;
 	}
 }
@@ -110,25 +109,23 @@ float AnimationState::GetDuration() const
 	return m_pAnimation ? m_pAnimation->GetDurationInTicks() : 0.0f;
 }
 
-void AnimationState::CalculateAnimations(const Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices)
+void AnimationState::CalculateAnimations(const int boneIndex, const Matrix& parentMatrix, std::vector<Matrix>& skinMatrices)
 {
-	if (m_pRootBone == nullptr)
-	{
-		return;
-	}
 	float time = m_Time * m_pAnimation->GetTicksPerSecond();
 
+	const Bone* pBone = m_pSkeleton->GetBone(boneIndex);
+
 	//ASSUMPTION: The bone index matches the node index
-	AnimationKeyState& state = m_KeyStates[pBone->Index];
+	AnimationKeyState& state = m_KeyStates[boneIndex];
 	Matrix m;
 	if (m_KeyStates.size() != 0)
 	{
 		state.GetMatrix(time, m);
 	}
-	skinMatrices[pBone->Index] = pBone->OffsetMatrix * m * parentMatrix;
+	skinMatrices[boneIndex] = pBone->OffsetMatrix * m * parentMatrix;
 
-	for (Bone* pChild : pBone->Children)
+	for (int childIndex : pBone->Children)
 	{
-		CalculateAnimations(pChild, m * parentMatrix, skinMatrices);
+		CalculateAnimations(childIndex, m * parentMatrix, skinMatrices);
 	}
 }

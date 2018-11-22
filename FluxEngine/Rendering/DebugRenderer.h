@@ -107,7 +107,7 @@ public:
 	void AddWireCone(const Vector3& position, const Vector3& direction, const float height, const float angle, const int segments, const Color& color);
 
 private:
-	void AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);
+	void AddBoneRecursive(const Skeleton & skeleton, const int boneIndex, const Matrix * pBoneMatrices, const Matrix & worldMatrix, const Color & color);
 
 	Graphics* m_pGraphics;
 	Camera* m_pCamera = nullptr;

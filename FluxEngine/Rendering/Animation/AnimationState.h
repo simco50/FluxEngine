@@ -3,6 +3,7 @@ struct Bone;
 struct AnimationNode;
 class AnimatedModel;
 class Animation;
+class Skeleton;
 
 struct AnimationKeyState
 {
@@ -31,12 +32,12 @@ public:
 	float GetDuration() const;
 
 private:
-	void CalculateAnimations(const Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
+	void CalculateAnimations(const int boneIndex, const Matrix& parentMatrix, std::vector<Matrix>& skinMatrices);
 
 	float m_Time = 0.0f;
 	bool m_IsDirty = true;
 	bool m_Looped = true;
 	Animation* m_pAnimation = nullptr;
-	const Bone* m_pRootBone = nullptr;
+	const Skeleton* m_pSkeleton = nullptr;
 	std::vector<AnimationKeyState> m_KeyStates;
 };

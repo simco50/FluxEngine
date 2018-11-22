@@ -384,7 +384,8 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color&
 
 void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
 {
-	AddBoneRecursive(skeleton.GetParentBone(), pBoneMatrices, worldMatrix, color);
+	//AddBoneRecursive(skeleton.GetParentBone(), pBoneMatrices, worldMatrix, color);
+	AddBoneRecursive(skeleton, skeleton.GetRootBoneIndex(), pBoneMatrices, worldMatrix, color);
 }
 
 void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Color& color)
@@ -464,13 +465,15 @@ void DebugRenderer::AddWireCone(const Vector3& position, const Vector3& directio
 	}
 }
 
-void DebugRenderer::AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
+void DebugRenderer::AddBoneRecursive(const Skeleton& skeleton, const int boneIndex, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
 {
-	Matrix boneMatrix = pBone->OffsetMatrix.Invert() * pBoneMatrices[pBone->Index] * worldMatrix;
+	const Bone* pBone = skeleton.GetBone(boneIndex);
+	Matrix boneMatrix = pBone->OffsetMatrix.Invert() * pBoneMatrices[boneIndex] * worldMatrix;
 	AddBone(boneMatrix, 5.0f, color);
-	for (const Bone* pChild : pBone->Children)
+
+	for (int i : pBone->Children)
 	{
-		AddBoneRecursive(pChild, pBoneMatrices, worldMatrix, color);
-		AddLine(boneMatrix.Translation(), (pChild->OffsetMatrix.Invert() * pBoneMatrices[pChild->Index] * worldMatrix).Translation(), color);
+		AddBoneRecursive(skeleton, (int)i, pBoneMatrices, worldMatrix, color);
+		AddLine(boneMatrix.Translation(), (skeleton.GetBone((int)i)->OffsetMatrix.Invert() * pBoneMatrices[i] * worldMatrix).Translation(), color);
 	}
 }
