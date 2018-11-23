@@ -100,7 +100,7 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 {
 	Drawable::OnNodeSet(pNode);
-	m_Batches[0].pModelMatrix = &pNode->GetWorldMatrix();
+	m_Batches[0].pWorldMatrices = &pNode->GetWorldMatrix();
 }
 
 void ParticleEmitter::FreeParticles()

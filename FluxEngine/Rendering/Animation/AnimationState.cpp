@@ -33,27 +33,34 @@ void AnimationKeyState::GetTransform(float time, Vector3& scale, Quaternion& rot
 		scale = Vector3(1, 1, 1);
 		rotation = Quaternion::Identity;
 		translation = Vector3();
-		return;
 	}
-
-	GetFrameIndex(time, KeyFrame);
-	int nextFrame = KeyFrame + 1;
-	if (nextFrame >= (int)pNode->Keys.size())
+	else if (pNode->Keys.size() == 1)
 	{
-		nextFrame = 0;
+		scale = pNode->Keys.front().Key.Scale;
+		rotation = pNode->Keys.front().Key.Rotation;
+		translation = pNode->Keys.front().Key.Position;
 	}
+	else
+	{
+		GetFrameIndex(time, KeyFrame);
+		int nextFrame = KeyFrame + 1;
+		if (nextFrame >= (int)pNode->Keys.size())
+		{
+			nextFrame = 0;
+		}
 
-	const AnimationKey& key = pNode->Keys[KeyFrame].Key;
-	const AnimationKey& nextKey = pNode->Keys[nextFrame].Key;
+		const AnimationKey& key = pNode->Keys[KeyFrame].Key;
+		const AnimationKey& nextKey = pNode->Keys[nextFrame].Key;
 
-	float t = time > 0.0f ? (time - pNode->Keys[KeyFrame].Time) / (pNode->Keys[nextFrame].Time - pNode->Keys[KeyFrame].Time) : 1.0f;
+		float t = time > 0.0f ? (time - pNode->Keys[KeyFrame].Time) / (pNode->Keys[nextFrame].Time - pNode->Keys[KeyFrame].Time) : 1.0f;
 
-	translation = Vector3::Lerp(key.Position, nextKey.Position, t);
-	scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
-	rotation = Quaternion::Slerp(key.Rotation, nextKey.Rotation, t);
+		translation = Vector3::Lerp(key.Position, nextKey.Position, t);
+		scale = Vector3::Lerp(key.Scale, nextKey.Scale, t);
+		rotation = Quaternion::Slerp(key.Rotation, nextKey.Rotation, t);
+	}
 }
 
-AnimationState::AnimationState(Animation* pAnimation, AnimatedModel* pModel)
+AnimationState::AnimationState(Animation* pAnimation, const AnimatedModel* pModel)
 	: m_pAnimation(pAnimation)
 {
 	m_pSkeleton = &pModel->GetSkeleton();

@@ -100,14 +100,14 @@ public:
 	void AddPhysicsScene(PhysicsScene* pScene);
 	void AddMesh(Mesh* pMesh, const Vector3& position, const Color& color, const bool solid = false);
 	void AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color& color, const bool solid = false);
-	void AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color);
+	void AddSkeleton(const Skeleton& skeleton, const Color& color);
 	void AddBone(const Matrix& matrix, const float length, const Color& color);
 	void AddLight(const Light* pLight);
 	void AddWireCylinder(const Vector3& position, const Vector3& direction, const float height, const float radius, const int segments, const Color& color);
 	void AddWireCone(const Vector3& position, const Vector3& direction, const float height, const float angle, const int segments, const Color& color);
 
 private:
-	void AddBoneRecursive(const Skeleton & skeleton, const int boneIndex, const Matrix * pBoneMatrices, const Matrix & worldMatrix, const Color & color);
+	void AddBoneRecursive(const Skeleton & skeleton, const int boneIndex, const Color & color);
 
 	Graphics* m_pGraphics;
 	Camera* m_pCamera = nullptr;

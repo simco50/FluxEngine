@@ -11,8 +11,7 @@ struct Batch
 {
 	const Material* pMaterial = nullptr;
 	const Geometry* pGeometry = nullptr;
-	const Matrix* pModelMatrix = nullptr;
-	const Matrix* pSkinMatrices = nullptr;
+	const Matrix* pWorldMatrices = nullptr;
 	const DualQuaternion* pSkinDualQuaternions = nullptr;
 	int NumSkinMatrices = 1;
 };

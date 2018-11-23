@@ -262,10 +262,13 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
 	if (batch.NumSkinMatrices > 0)
 	{
-		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
 		m_pGraphics->SetShaderParameter("cSkinDualQuaternions", batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
 	}
-	m_pGraphics->SetShaderParameter("cWorld", *batch.pModelMatrix);
-	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
+	else
+	{
+		m_pGraphics->SetShaderParameter("cWorld", *batch.pWorldMatrices);
+		Matrix wvp = *batch.pWorldMatrices * pCamera->GetViewProjection();
+		m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
+	}
 }

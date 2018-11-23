@@ -37,8 +37,7 @@ void AnimatedModel::SetMesh(Mesh* pMesh)
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
-		m_Batches[i].pSkinMatrices = m_SkinMatrices.data();
+		m_Batches[i].pWorldMatrices = m_SkinMatrices.data();
 		m_Batches[i].NumSkinMatrices = (int)m_SkinMatrices.size();
 		m_Batches[i].pSkinDualQuaternions = m_SkinQuaternions.data();
 	}
@@ -90,7 +89,7 @@ void AnimatedModel::ApplySkinning()
 		m_SkinMatrices[i] = bones[i].OffsetMatrix * bones[i].pNode->GetWorldMatrix();
 	}
 
-#define DUALQ_SKINNING
+/*#define DUALQ_SKINNING*/
 #ifdef DUALQ_SKINNING
 	//NOTE: I know this it's super dumb to decompose all the matrices,
 	//make DQs and then copy them to the GPU on top of having matrix skinning but this is simply for DQ demonstration

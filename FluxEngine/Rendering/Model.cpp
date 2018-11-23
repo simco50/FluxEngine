@@ -14,19 +14,6 @@ Model::~Model()
 {
 }
 
-void Model::OnSceneSet(Scene* pScene)
-{
-	Drawable::OnSceneSet(pScene);
-}
-
-void Model::OnMarkedDirty(const SceneNode* pNode)
-{
-	for (Batch& batch : m_Batches)
-	{
-		batch.pModelMatrix = &pNode->GetWorldMatrix();
-	}
-}
-
 void Model::SetMesh(Mesh* pMesh)
 {
 	if (m_pNode == nullptr)
@@ -40,7 +27,7 @@ void Model::SetMesh(Mesh* pMesh)
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_Batches[i].pModelMatrix = &m_pNode->GetWorldMatrix();
+		m_Batches[i].pWorldMatrices = &m_pNode->GetWorldMatrix();
 		m_Batches[i].NumSkinMatrices = 0;
 	}
 	m_BoundingBox = pMesh->GetBoundingBox();

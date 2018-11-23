@@ -1039,10 +1039,9 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 	destinationImage.Save(outputStream);
 }
 
-ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)
+ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int index, unsigned int size)
 {
-	size_t hash = (size_t)shaderType
-		| (unsigned)(index << 1)
+	size_t hash = (unsigned)(index << 1)
 		| (unsigned)(size << 4);
 
 	auto pIt = m_ConstantBuffers.find(hash);

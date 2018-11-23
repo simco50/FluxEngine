@@ -74,7 +74,7 @@ public:
 
 	void Clear(ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), float depth = 1.0f, unsigned char stencil = 0);
 
-	ConstantBuffer* GetOrCreateConstantBuffer(ShaderType shaderType, unsigned int index, unsigned int size);
+	ConstantBuffer* GetOrCreateConstantBuffer(unsigned int index, unsigned int size);
 	Shader* GetShader(const std::string& filePath);
 	ShaderVariation* GetShader(const std::string& filePath, ShaderType type, const std::string& defines = "");
 

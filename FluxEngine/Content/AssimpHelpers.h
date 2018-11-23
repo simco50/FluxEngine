@@ -11,22 +11,18 @@ class AssimpHelpers
 public:
 	static inline Vector3 ToDXVector3(const aiVector3D& vec)
 	{
-		return *reinterpret_cast<const Vector3*>(&vec);
+		return Vector3(vec.x, vec.y, vec.z);
 	}
 
 	static inline Quaternion TxDXQuaternion(const aiQuaternion& quat)
 	{
-		Quaternion out;
-		out.x = quat.x;
-		out.y = quat.y;
-		out.z = quat.z;
-		out.w = quat.w;
-		return out;
+		return Quaternion(quat.x, quat.y, quat.z, quat.w);
 	}
 
 	static inline Matrix ToDXMatrix(const aiMatrix4x4& mat)
 	{
 		Matrix m;
+
 		m._11 = mat.a1;
 		m._21 = mat.a2;
 		m._31 = mat.a3;
@@ -65,6 +61,7 @@ public:
 			if (pNode->mRotationKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mRotationKeys[i - 1].mTime, (float)pNode->mRotationKeys[i].mTime, time);
+				check(t >= 0 && t <= 1);
 				aiQuaternion output;
 				aiQuaterniont<float>::Interpolate(output, pNode->mRotationKeys[i - 1].mValue, pNode->mRotationKeys[i].mValue, t);
 				return output;
@@ -88,6 +85,7 @@ public:
 			if (pNode->mScalingKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mScalingKeys[i - 1].mTime, (float)pNode->mScalingKeys[i].mTime, time);
+				check(t >= 0 && t <= 1);
 				return pNode->mScalingKeys[i - 1].mValue + (pNode->mScalingKeys[i].mValue - pNode->mScalingKeys[i - 1].mValue) * t;
 			}
 		}
@@ -109,6 +107,7 @@ public:
 			if (pNode->mPositionKeys[i].mTime > time)
 			{
 				float t = Math::InverseLerp((float)pNode->mPositionKeys[i - 1].mTime, (float)pNode->mPositionKeys[i].mTime, time);
+				check(t >= 0 && t <= 1);
 				return pNode->mPositionKeys[i - 1].mValue + (pNode->mPositionKeys[i].mValue - pNode->mPositionKeys[i - 1].mValue) * t;
 			}
 		}

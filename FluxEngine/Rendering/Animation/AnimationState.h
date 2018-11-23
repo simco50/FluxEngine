@@ -18,7 +18,7 @@ struct AnimationKeyState
 class AnimationState
 {
 public:
-	AnimationState(Animation* pAnimation, AnimatedModel* pModel);
+	AnimationState(Animation* pAnimation, const AnimatedModel* pModel);
 
 	void AddTime(float time);
 	void SetTime(float time);

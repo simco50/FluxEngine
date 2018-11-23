@@ -83,10 +83,15 @@ bool Animation::Load(InputStream& inputStream)
 				{
 					AUTOPROFILE(Animation_Load_Interpolate);
 
+					checkf(time >= 0, "[Animation::Load] Key time is negative");
+
 					AnimationKey key;
 					key.Rotation = AssimpHelpers::TxDXQuaternion(AssimpHelpers::GetRotation(pAnimNode, time));
 					key.Scale = AssimpHelpers::ToDXVector3(AssimpHelpers::GetScale(pAnimNode, time));
 					key.Position = AssimpHelpers::ToDXVector3(AssimpHelpers::GetPosition(pAnimNode, time));
+
+					//Normalize the time
+					time /= keyTimes.back();
 
 					animNode.Keys.push_back(AnimationNode::KeyPair(time, key));
 				}

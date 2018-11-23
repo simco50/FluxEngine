@@ -12,9 +12,6 @@ public:
 	Model(Context* pContext);
 	virtual ~Model();
 
-	virtual void OnSceneSet(Scene* pScene) override;
-	virtual void OnMarkedDirty(const SceneNode* pNode) override;
-
 	virtual void SetMesh(Mesh* pMesh);
 	Mesh* GetMesh() const { return m_pMesh; }
 	void SetMaterial(Material* pMaterial);

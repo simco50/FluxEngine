@@ -50,6 +50,7 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	pFile->WriteSizedString("SHDR");
 	pFile->WriteInt(SHADER_CACHE_VERSION);
 	pFile->WriteSizedString(m_Name);
+	pFile->WriteUByte((unsigned char)m_ShaderType);
 	pFile->WriteUByte((unsigned char)m_Defines.size());
 	for (const std::string& define : m_Defines)
 	{
@@ -60,7 +61,6 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	{
 		pFile->WriteSizedString(pair.first);
 		const ShaderParameter& parameter = pair.second;
-		pFile->WriteUByte((unsigned char)parameter.Type);
 		pFile->WriteSizedString(parameter.Name);
 		pFile->WriteInt(parameter.Buffer);
 		pFile->WriteInt(parameter.Size);
@@ -109,6 +109,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		return false;
 	}
 	m_Name = pFile->ReadSizedString();
+	m_ShaderType = (ShaderType)pFile->ReadUByte();
 	m_Defines.resize((size_t)pFile->ReadByte());
 	for (std::string& define : m_Defines)
 	{
@@ -121,7 +122,6 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		std::string parameterName = pFile->ReadSizedString();
 		ShaderParameter& parameter = m_ShaderParameters[parameterName];
 
-		parameter.Type = (ShaderType)pFile->ReadUByte();
 		parameter.Name = pFile->ReadSizedString();
 		parameter.Buffer = pFile->ReadInt();
 		parameter.Size = pFile->ReadInt();
@@ -142,9 +142,13 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	for (size_t i = 0; i < m_ConstantBufferSizes.size() ; i++)
 	{
 		if (m_ConstantBufferSizes[i] > 0)
-			m_ConstantBuffers[i] = m_pGraphics->GetOrCreateConstantBuffer(ShaderType::VertexShader, (unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
+		{
+			m_ConstantBuffers[i] = m_pGraphics->GetOrCreateConstantBuffer((unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
+		}
 		else
+		{
 			m_ConstantBuffers[i] = nullptr;
+		}
 	}
 	for (auto& pair : m_ShaderParameters)
 	{

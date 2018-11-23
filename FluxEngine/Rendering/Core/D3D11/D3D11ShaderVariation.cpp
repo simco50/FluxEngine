@@ -166,7 +166,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			return;
 		}
 
-		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(m_ShaderType, cbRegister, bufferDesc.Size);
+		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(cbRegister, bufferDesc.Size);
 		m_ConstantBuffers[cbRegister] = pConstantBuffer;
 		m_ConstantBufferSizes[cbRegister] = bufferDesc.Size;
 
@@ -179,7 +179,6 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			ShaderParameter parameter = {};
 			parameter.Name = variableDesc.Name;
 			parameter.Offset = variableDesc.StartOffset;
-			parameter.Type = m_ShaderType;
 			parameter.Size = variableDesc.Size;
 			parameter.Buffer = cbRegister;
 			parameter.pBuffer = pConstantBuffer;

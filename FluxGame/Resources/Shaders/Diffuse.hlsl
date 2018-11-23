@@ -52,12 +52,12 @@ PS_INPUT VSMain(VS_INPUT input)
 	float3 transformedTangent = mul(input.tangent, (float3x3)finalMatrix);
 #endif
 
-	output.position = mul(transformedPosition, cWorldViewProj);
-	output.worldPosition = mul(transformedPosition, cWorld);
-	output.normal = normalize(mul(transformedNormal, (float3x3)cWorld));
+	output.position = mul(transformedPosition, cViewProj);
+	output.worldPosition = transformedPosition;
+	output.normal = transformedNormal;
 
 #ifdef NORMALMAP
-	output.tangent = normalize(mul(transformedTangent, (float3x3)cWorld));
+	output.tangent = transformedTangent;
 #endif
 
 #else

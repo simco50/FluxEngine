@@ -206,13 +206,13 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 		{
 			Geometry::VertexData& indexData = pGeometry->GetVertexDataUnsafe("BLENDINDEX");
 			indexData.Count = pMesh->mNumVertices;
-			indexData.Stride = sizeof(unsigned int) * 4;
+			indexData.Stride = sizeof(unsigned int) * GraphicsConstants::MAX_BONES_PER_VERTEX;
 			indexData.CreateBuffer();
 			memset(indexData.pData, -1, indexData.ByteSize());
 
 			Geometry::VertexData& weightData = pGeometry->GetVertexDataUnsafe("BLENDWEIGHT");
 			weightData.Count = pMesh->mNumVertices;
-			weightData.Stride = sizeof(float) * 4;
+			weightData.Stride = sizeof(float) * GraphicsConstants::MAX_BONES_PER_VERTEX;
 			weightData.CreateBuffer();
 			memset(weightData.pData, 0, indexData.ByteSize());
 
@@ -222,13 +222,13 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 			for (unsigned int boneIndex = 0; boneIndex < pMesh->mNumBones; boneIndex++)
 			{
 				aiBone* pBone = pMesh->mBones[boneIndex];
-
 				if (m_BoneMap.find(pBone->mName.C_Str()) == m_BoneMap.end())
 				{
 					m_BoneMap[pBone->mName.C_Str()] = boneCount;
 					Bone newBone;
 					newBone.Name = pBone->mName.C_Str();
 					newBone.OffsetMatrix = AssimpHelpers::ToDXMatrix(pBone->mOffsetMatrix);
+					//Since we just keep pushing back at the end of the bones, we can safetely assume the bone index is the same as the index in the bone array
 					m_Skeleton.AddBone(newBone);
 					++boneCount;
 				}
@@ -239,10 +239,10 @@ bool Mesh::ProcessAssimpMeshes(const aiScene* pScene)
 					const aiVertexWeight& pWeight = pBone->mWeights[weightIndex];
 					for (int j = 0; j < 4; j++)
 					{
-						if (pWeights[pWeight.mVertexId * 4 + j] == 0.0f)
+						if (pWeights[pWeight.mVertexId * GraphicsConstants::MAX_BONES_PER_VERTEX + j] == 0.0f)
 						{
-							pWeights[pWeight.mVertexId * 4 + j] = pWeight.mWeight;
-							pIndices[pWeight.mVertexId * 4 + j] = index;
+							pWeights[pWeight.mVertexId * GraphicsConstants::MAX_BONES_PER_VERTEX + j] = pWeight.mWeight;
+							pIndices[pWeight.mVertexId * GraphicsConstants::MAX_BONES_PER_VERTEX + j] = index;
 							break;
 						}
 					}

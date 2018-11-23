@@ -8,7 +8,6 @@ enum class ShaderType;
 
 struct ShaderParameter
 {
-	ShaderType Type = ShaderType::MAX;
 	std::string Name;
 	int Buffer = 0;
 	int Size = 0;
@@ -39,7 +38,7 @@ public:
 	bool CreateShader(Graphics* pGraphics, ShaderType type);
 
 private:
-	static const int SHADER_CACHE_VERSION = 1;
+	static const int SHADER_CACHE_VERSION = 3;
 
 	bool Compile(Graphics* pGraphics);
 
