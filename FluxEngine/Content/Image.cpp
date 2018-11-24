@@ -13,6 +13,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
 
+#define TINYEXR_IMPLEMENTATION
+#include "External/TinyExr/tinyexr.h"
+
 #include <SDL_surface.h>
 
 namespace STBI
@@ -67,6 +70,10 @@ bool Image::Load(InputStream& inputStream)
 	if (extenstion == "dds")
 	{
 		success = LoadDds(inputStream);
+	}
+	else if (extenstion == "exr")
+	{
+		success = LoadExr(inputStream);
 	}
 	//If not one of the above, load with Stbi by default (jpg, png, tga, bmp, ...)
 	else
@@ -124,6 +131,7 @@ bool Image::LoadLUT(InputStream& inputStream)
 		return false;
 	}
 
+	m_BBP = 32;
 	m_Pixels.resize(m_Height * m_Width * m_Components);
 	m_Width = m_Depth = m_Height = 16;
 
@@ -342,15 +350,128 @@ bool Image::LoadStbi(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
+
 	int components = 0;
-	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
-	if (pPixels == nullptr)
+
+	m_IsHdr = stbi_is_hdr_from_callbacks(&callbacks, &inputStream);
+	inputStream.SetPointer(0);
+	if (m_IsHdr)
 	{
+		float* pPixels = stbi_loadf_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
+		if (pPixels == nullptr)
+		{
+			return false;
+		}
+		m_BBP = sizeof(float) * 8 * m_Components;
+		m_Format = ImageFormat::RGBA32;
+		m_Pixels.resize(m_Width * m_Height * m_Components * sizeof(float));
+		memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+		stbi_image_free(pPixels);
+		return true;
+	}
+	else
+	{
+		unsigned char* pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
+		if (pPixels == nullptr)
+		{
+			return false;
+		}
+		m_BBP = sizeof(char) * 8 * m_Components;
+		m_Format = ImageFormat::RGBA;
+		m_Pixels.resize(m_Width * m_Height * m_Components);
+		memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+		stbi_image_free(pPixels);
+		return true;
+	}
+}
+
+bool Image::LoadExr(InputStream& inputStream)
+{
+	std::vector<unsigned char> buffer;
+	inputStream.ReadAllBytes(buffer);
+
+	const char* errorMessage = nullptr;
+	EXRVersion exrVersion;
+
+	int result = ParseEXRVersionFromMemory(&exrVersion, buffer.data(), buffer.size());
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to read Exr version");
 		return false;
 	}
-	m_Pixels.resize(m_Width * m_Height * m_Components);
-	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
-	stbi_image_free(pPixels);
+
+	if (exrVersion.multipart)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Exr file is multipart. This is not supported");
+		return false;
+	}
+
+	EXRHeader exrHeader;
+	InitEXRHeader(&exrHeader);
+
+	result = ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, buffer.data(), buffer.size(), &errorMessage);
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to parse Exr header: %s", errorMessage);
+		FreeEXRErrorMessage(errorMessage);
+		return false;
+	}
+
+	int pixelType = exrHeader.pixel_types[0];
+	for (int i = 1; i < exrHeader.num_channels; i++)
+	{
+		checkf(pixelType == exrHeader.pixel_types[i], "[Image::LoadExr] The pixel types of the channels are not equal. This is a requirement");
+	}
+
+	//The amount of bytes in a pixel per channel (== BytesPerPixel / Components)
+	m_Format = exrHeader.requested_pixel_types[0] == TINYEXR_PIXELTYPE_HALF ? ImageFormat::RGBA16 : ImageFormat::RGBA32;
+	int sizePerChannelPerPixel = m_Format == ImageFormat::RGBA16 ? sizeof(int16) : sizeof(int32);
+
+	EXRImage exrImage;
+	InitEXRImage(&exrImage);
+
+	result = LoadEXRImageFromMemory(&exrImage, &exrHeader, buffer.data(), buffer.size(), &errorMessage);
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to load Exr from memory: %s", errorMessage);
+		FreeEXRErrorMessage(errorMessage);
+		return false;
+	}
+
+	if (exrImage.images == nullptr || exrImage.num_tiles > 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Exr image is tiled instead of scanline. Tiled Exr is not supported", errorMessage);
+		FreeEXRImage(&exrImage);
+		FreeEXRHeader(&exrHeader);
+		return false;
+	}
+
+	m_Width = exrImage.width;
+	m_Height = exrImage.height;
+	m_Components = 4;
+	m_IsHdr = true;
+	m_BBP = sizePerChannelPerPixel * m_Components * 8;
+
+	m_Pixels.resize(m_Width * m_Height * m_BBP / 8);
+
+	unsigned char* pPixels = m_Pixels.data();
+	for (int i = 0; i < m_Width * m_Height; ++i)
+	{
+		for (int j = 0; j < m_Components; ++j)
+		{
+			if (j < exrImage.num_channels)
+			{
+				memcpy(pPixels + i * sizePerChannelPerPixel * m_Components + j * sizePerChannelPerPixel, &exrImage.images[m_Components - 1 - j][i * sizePerChannelPerPixel], sizePerChannelPerPixel);
+			}
+			else
+			{
+				memset(pPixels + i * sizePerChannelPerPixel * m_Components + j * sizePerChannelPerPixel, 0, sizePerChannelPerPixel);
+			}
+		}
+	}
+
+	FreeEXRImage(&exrImage);
+	FreeEXRHeader(&exrHeader);
 
 	return true;
 }
@@ -369,7 +490,7 @@ bool Image::GetSurfaceInfo(int width, int height, int depth, int mipLevel, MipLe
 
 	if (m_Format == ImageFormat::RGBA || m_Format == ImageFormat::BGRA)
 	{
-		mipLevelInfo.RowSize = mipLevelInfo.Width * 4;
+		mipLevelInfo.RowSize = mipLevelInfo.Width * m_BBP / 8;
 		mipLevelInfo.Rows = mipLevelInfo.Height;
 		mipLevelInfo.DataSize = mipLevelInfo.Depth * mipLevelInfo.Rows * mipLevelInfo.RowSize;
 	}

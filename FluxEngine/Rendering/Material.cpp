@@ -11,7 +11,6 @@
 #include "Core/Texture3D.h"
 #include "Content/Image.h"
 #include "Core/TextureCube.h"
-#include "Content/HDRImage.h"
 
 Material::Material(Context* pContext) :
 	Resource(pContext)
@@ -213,30 +212,10 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 				return false;
 			}
 
-			ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-
-			Texture* pTexture = nullptr;
+			Texture* pTexture;
 			if (parameterType == "Texture")
 			{
-				const char* pHdr = pParameter->Attribute("hdr");
-				if (pHdr == nullptr || strcmp(pHdr, "1") != 0)
-				{
-					Image* pImage = pResourceManager->Load<Image>(pParameter->Attribute("value"));
-					if (pImage)
-					{
-						pTexture = pResourceManager->CreateResource<Texture2D>(pParameter->Attribute("value"));
-						static_cast<Texture2D*>(pTexture)->SetImage(*pImage);
-					}
-				}
-				else
-				{
-					HDRImage* pImage = pResourceManager->Load<HDRImage>(pParameter->Attribute("value"));
-					if (pImage)
-					{
-						pTexture = pResourceManager->CreateResource<Texture2D>(pParameter->Attribute("value"));
-						static_cast<Texture2D*>(pTexture)->SetImage(*pImage);
-					}
-				}
+				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
 			}
 			else if(parameterType == "Texture3D")
 			{
@@ -253,7 +232,7 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 			}
 			if (pTexture)
 			{
-				if (slotType == TextureSlot::Normal && pTexture->GetImage() != nullptr && pTexture->GetImage()->GetFormat() == ImageFormat::BC5)
+				if (slotType == TextureSlot::Normal && pTexture->GetImage()->GetFormat() == ImageFormat::BC5)
 				{
 					m_InternalDefines += ",NORMALMAP_BC5";
 				}

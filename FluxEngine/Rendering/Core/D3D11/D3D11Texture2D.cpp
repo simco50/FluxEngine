@@ -3,8 +3,7 @@
 #include "Rendering/Core/Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
-#include "../RenderTarget.h"
-#include "Content/HDRImage.h"
+#include "Rendering/Core/RenderTarget.h"
 
 Texture2D::Texture2D(Context* pContext)
 	: Texture(pContext)
@@ -71,26 +70,6 @@ bool Texture2D::SetImage(const Image& image)
 
 	SetMemoryUsage(memoryUsage);
 
-	return true;
-}
-
-bool Texture2D::SetImage(const HDRImage& image)
-{
-	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetFilePath().c_str());
-
-	uint32 memoryUsage = 0;
-
-	if (!SetSize(image.GetWidth(), image.GetHeight(), DXGI_FORMAT_R32G32B32_FLOAT, TextureUsage::STATIC, 1, nullptr))
-	{
-		return false;
-	}
-
-	if (!SetData(0, 0, 0, image.GetWidth(), image.GetHeight(), image.GetData()))
-	{
-		return false;
-	}
-	memoryUsage = image.GetWidth() * image.GetHeight() * 3 * sizeof(float);
-	SetMemoryUsage(memoryUsage);
 	return true;
 }
 

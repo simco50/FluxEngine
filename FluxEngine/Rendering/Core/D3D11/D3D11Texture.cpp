@@ -155,6 +155,12 @@ unsigned int Texture::TextureFormatFromCompressionFormat(const ImageFormat& form
 			return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
 		}
 		return DXGI_FORMAT_B8G8R8A8_UNORM;
+	case ImageFormat::RGB32:
+		return DXGI_FORMAT_R32G32B32_FLOAT;
+	case ImageFormat::RGBA16:
+		return DXGI_FORMAT_R16G16B16A16_FLOAT;
+	case ImageFormat::RGBA32:
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	case ImageFormat::DXT1:
 		if (sRgb)
 		{
