@@ -15,6 +15,7 @@ workspace (engineName)
 	defines { "_CONSOLE", "THREADING"}
 	flags {"FatalWarnings"}
 	language "C++"
+	disablewarnings "4307"
 	startproject (gameName)
 
     filter { "platforms:x64" }

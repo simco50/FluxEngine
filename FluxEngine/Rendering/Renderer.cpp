@@ -198,18 +198,18 @@ void Renderer::CreateQuadGeometry()
 
 void Renderer::SetPerFrameParameters()
 {
-	m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
-	m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cDeltaTime, GameTimer::DeltaTime());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cElapsedTime, GameTimer::GameTime());
 }
 
 void Renderer::SetPerCameraParameters(Camera* pCamera)
 {
 	m_pCurrentCamera = pCamera;
-	m_pGraphics->SetShaderParameter("cViewProj", pCamera->GetViewProjection());
-	m_pGraphics->SetShaderParameter("cView", pCamera->GetView());
-	m_pGraphics->SetShaderParameter("cViewInverse", pCamera->GetViewInverse());
-	m_pGraphics->SetShaderParameter("cNearClip", pCamera->GetNearPlane());
-	m_pGraphics->SetShaderParameter("cFarClip", pCamera->GetFarPlane());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, pCamera->GetViewProjection());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cView, pCamera->GetView());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewInverse, pCamera->GetViewInverse());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cNearClip, pCamera->GetNearPlane());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cFarClip, pCamera->GetFarPlane());
 }
 
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
@@ -238,7 +238,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	{
 		lightData[i] = *m_Lights[i]->GetData();
 	}
-	m_pGraphics->SetShaderParameter("Lights", lightData.data());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cLights, lightData.data());
 
 	//Blend state
 	m_pGraphics->GetBlendState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
@@ -257,13 +257,13 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
 	if (batch.NumSkinMatrices > 0)
 	{
-		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
-		m_pGraphics->SetShaderParameter("cSkinDualQuaternions", batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinMatrices, batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinDualQuaternions, batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
 	}
 	else
 	{
-		m_pGraphics->SetShaderParameter("cWorld", *batch.pWorldMatrices);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cWorld, *batch.pWorldMatrices);
 		Matrix wvp = *batch.pWorldMatrices * pCamera->GetViewProjection();
-		m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cWorldViewProj, wvp);
 	}
 }

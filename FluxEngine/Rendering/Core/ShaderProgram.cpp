@@ -5,15 +5,14 @@
 
 ShaderProgram::ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX>& shaders)
 {
-	std::hash<std::string> hasher;
 	for (ShaderVariation* pShader : shaders)
 	{
 		if (pShader == nullptr)
 			continue;
-		const std::map<std::string, ShaderParameter>& parameters = pShader->GetParameters();
+		const std::map<StringHash, ShaderParameter>& parameters = pShader->GetParameters();
 		for (const auto& parameter : parameters)
 		{
-			m_ShaderParameters[hasher(parameter.first)] = &parameter.second;
+			m_ShaderParameters[parameter.first] = &parameter.second;
 		}
 	}
 }
@@ -25,7 +24,7 @@ ShaderProgram::~ShaderProgram()
 
 bool ShaderProgram::SetParameter(const std::string& name, const void* pData)
 {
-	return SetParameter(std::hash<std::string>{}(name), pData);
+	return SetParameter(HashString(name), pData);
 }
 
 bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
@@ -40,7 +39,7 @@ bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
 
 const ShaderParameter* ShaderProgram::GetShaderParameter(const std::string& name) const
 {
-	return GetShaderParameter(std::hash<std::string>{}(name));
+	return GetShaderParameter(HashString(name));
 }
 
 const ShaderParameter* ShaderProgram::GetShaderParameter(StringHash hash) const

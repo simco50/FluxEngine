@@ -67,6 +67,12 @@ int InputStream::ReadInt()
 	return Read(&out, sizeof(int)) == sizeof(int) ? out : 0;
 }
 
+int64 InputStream::ReadInt64()
+{
+	int64 out;
+	return Read(&out, sizeof(int64)) == sizeof(int64) ? out : 0;
+}
+
 unsigned int InputStream::ReadUInt()
 {
 	unsigned int out;

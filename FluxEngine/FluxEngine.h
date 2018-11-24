@@ -37,13 +37,13 @@
 //Engine core include
 #include "Core/Types.h"
 #include "Misc/Misc.h"
+#include "Helpers/Utility.h"
 #include "Math/MathTypes.h"
 #include "Math/MathHelp.h"
 #include "Helpers/Paths.h"
 #include "Helpers/SmartInterface.h"
 #include "Helpers/LogMacros.h"
 #include "Helpers/AssertMacros.h"
-#include "Helpers/Utility.h"
 #include "Misc/TimeSpan.h"
 #include "Misc/DateTime.h"
 

@@ -362,10 +362,10 @@ void Graphics::UpdateShaderProgram()
 	}
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+bool Graphics::SetShaderParameter(StringHash hash, const void* pData)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -373,10 +373,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, pParameter->Size, pData);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count)
+bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -389,10 +389,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData, co
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const float value)
+bool Graphics::SetShaderParameter(StringHash hash, float value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -400,10 +400,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const float value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(float), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const int value)
+bool Graphics::SetShaderParameter(StringHash hash, int value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -411,10 +411,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const int value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(int), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector2& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector2& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -422,10 +422,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector2& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector2), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector3& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector3& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -433,10 +433,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector3& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector3), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector4& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector4& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -444,10 +444,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector4& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector4), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Color& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Color& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -455,10 +455,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Color& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Color), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Matrix& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Matrix& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -645,8 +645,8 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 
 		Matrix worldMatrix = Matrix::CreateTranslation(Vector3(0, 0, depth));
 
-		SetShaderParameter("cColor", color);
-		SetShaderParameter("cWorld", worldMatrix);
+		SetShaderParameter(ShaderConstant::cColor, color);
+		SetShaderParameter(ShaderConstant::cWorld, worldMatrix);
 
 		quadGeometry->Draw(this);
 	}

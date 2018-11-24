@@ -3,16 +3,10 @@
 
 float4x4 BlendBoneTransformsToMatrix(float4 boneIndices, float4 boneWeights)
 {
-    float4x4 finalMatrix;
-    for(int i = 0; i < MAX_BONES_PER_VERTEX; ++i)
-    {
-        if(boneIndices[i] == -1)
-        {
-            break;
-        }
-        finalMatrix += boneWeights[i] * cSkinMatrices[boneIndices[i]];
-    }
-    return finalMatrix;
+    return boneWeights[0] * cSkinMatrices[boneIndices[0]]
+        + boneWeights[1] * cSkinMatrices[boneIndices[1]]
+        + boneWeights[2] * cSkinMatrices[boneIndices[2]]
+        + boneWeights[3] * cSkinMatrices[boneIndices[3]];
 }
 
 float2x4 NormalizeDualQuaternion(float2x4 dualQ)

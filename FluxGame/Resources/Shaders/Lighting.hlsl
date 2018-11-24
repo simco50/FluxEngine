@@ -120,33 +120,33 @@ LightResult DoLight(float3 worldPosition, float3 normal, float3 viewDirection)
 
 	for(uint i = 0; i < LIGHT_COUNT; ++i)
 	{
-		if(Lights[i].Enabled == 0)
+		if(cLights[i].Enabled == 0)
 		{
 			continue;
 		}
 
-		if(Lights[i].Type != DIRECTIONAL_LIGHT && distance(worldPosition, Lights[i].Position) > Lights[i].Range)
+		if(cLights[i].Type != DIRECTIONAL_LIGHT && distance(worldPosition, cLights[i].Position) > cLights[i].Range)
 		{
 			continue;
 		}
 
 		LightResult result;
 
-		switch(Lights[i].Type)
+		switch(cLights[i].Type)
 		{
 		case DIRECTIONAL_LIGHT:
 		{
-			result = DoDirectionalLight(Lights[i], normal, viewDirection);
+			result = DoDirectionalLight(cLights[i], normal, viewDirection);
 		}
 		break;
 		case POINT_LIGHT:
 		{
-			result = DoPointLight(Lights[i], worldPosition, normal, viewDirection);
+			result = DoPointLight(cLights[i], worldPosition, normal, viewDirection);
 		}
 		break;
 		case SPOT_LIGHT:
 		{
-			result = DoSpotLight(Lights[i], worldPosition, normal, viewDirection);
+			result = DoSpotLight(cLights[i], worldPosition, normal, viewDirection);
 		}
 		break;
 		}

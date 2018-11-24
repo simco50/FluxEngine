@@ -81,7 +81,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 {
 	AUTOPROFILE(Shader_GetOrCreateVariation);
 
-	size_t hash = std::hash<std::string>{}(defines);
+	size_t hash = HashString(defines);
 	auto pIt = m_ShaderCache[(size_t)type].find(hash);
 	if (pIt != m_ShaderCache[(size_t)type].end())
 	{
@@ -159,7 +159,7 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 		if (line.substr(0, 8) == "#include")
 		{
 			std::string includeFilePath = std::string(line.begin() + 10, line.end() - 1);
-			size_t includeHash = std::hash<std::string>{}(includeFilePath);
+			size_t includeHash = HashString(includeFilePath);
 			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) == processedIncludes.end())
 			{
 				processedIncludes.push_back(includeHash);

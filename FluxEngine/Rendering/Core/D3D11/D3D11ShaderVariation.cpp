@@ -182,7 +182,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			parameter.Size = variableDesc.Size;
 			parameter.Buffer = cbRegister;
 			parameter.pBuffer = pConstantBuffer;
-			m_ShaderParameters[parameter.Name] = parameter;
+			m_ShaderParameters[HashString(variableDesc.Name)] = parameter;
 		}
 	}
 }

@@ -87,7 +87,7 @@ void DebugRenderer::Render()
 	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
 
 	Matrix projectionMatrix = m_pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int start = 0;
 	if(m_LinePrimitives != 0)

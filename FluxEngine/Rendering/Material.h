@@ -57,14 +57,14 @@ private:
 	public:
 		ParameterEntry& GetParameter(const std::string& name, const size_t size)
 		{
-			ParameterEntry& entry = m_Parameters[name];
+			ParameterEntry& entry = m_Parameters[std::hash<std::string>{}(name)];
 			if (entry.GetSize() != size)
 			{
 				entry = ParameterEntry(size, nullptr, m_ParameterPool);
 			}
 			return entry;
 		}
-		const std::unordered_map<std::string, ParameterEntry>& GetParameters() const { return m_Parameters; }
+		const std::unordered_map<StringHash, ParameterEntry>& GetParameters() const { return m_Parameters; }
 
 		size_t ByteSize() const
 		{
@@ -73,7 +73,7 @@ private:
 
 	private:
 		std::vector<char> m_ParameterPool;
-		std::unordered_map<std::string, ParameterEntry> m_Parameters;
+		std::unordered_map<StringHash, ParameterEntry> m_Parameters;
 	};
 
 public:
@@ -81,7 +81,7 @@ public:
 
 	ShaderVariation* GetShader(ShaderType type) const;
 	const std::unordered_map<TextureSlot, Texture*>& GetTextures() const { return m_Textures; }
-	const std::unordered_map<std::string, ParameterEntry>& GetShaderParameters() const { return m_ParameterCache.GetParameters(); }
+	const std::unordered_map<StringHash, ParameterEntry>& GetShaderParameters() const { return m_ParameterCache.GetParameters(); }
 
 	void SetTexture(TextureSlot slot, Texture* pTexture);
 

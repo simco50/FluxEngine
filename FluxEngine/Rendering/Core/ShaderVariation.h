@@ -29,7 +29,7 @@ public:
 	bool SaveToCache(const std::string& cacheName) const;
 	bool LoadFromCache(const std::string& cacheName);
 
-	const std::map<std::string, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
+	const std::map<StringHash, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }
 
 	const std::vector<char>& GetByteCode() const { return m_ShaderByteCode; }
@@ -38,7 +38,7 @@ public:
 	bool CreateShader(Graphics* pGraphics, ShaderType type);
 
 private:
-	static const int SHADER_CACHE_VERSION = 3;
+	static const int SHADER_CACHE_VERSION = 4;
 
 	bool Compile(Graphics* pGraphics);
 
@@ -52,6 +52,6 @@ private:
 	std::vector<char> m_ShaderByteCode;
 	std::array<size_t, (size_t)ShaderParameterType::MAX> m_ConstantBufferSizes = {};
 
-	std::map<std::string, ShaderParameter> m_ShaderParameters;
+	std::map<StringHash, ShaderParameter> m_ShaderParameters;
 	std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX> m_ConstantBuffers = {};
 };

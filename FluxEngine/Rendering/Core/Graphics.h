@@ -78,15 +78,15 @@ public:
 	Shader* GetShader(const std::string& filePath);
 	ShaderVariation* GetShader(const std::string& filePath, ShaderType type, const std::string& defines = "");
 
-	bool SetShaderParameter(const std::string& name, const void* pData);
-	bool SetShaderParameter(const std::string& name, const void* pData, int stride, int count);
-	bool SetShaderParameter(const std::string& name, float value);
-	bool SetShaderParameter(const std::string& name, int value);
-	bool SetShaderParameter(const std::string& name, const Vector2& value);
-	bool SetShaderParameter(const std::string& name, const Vector3& value);
-	bool SetShaderParameter(const std::string& name, const Vector4& value);
-	bool SetShaderParameter(const std::string& name, const Color& value);
-	bool SetShaderParameter(const std::string& name, const Matrix& value);
+	bool SetShaderParameter(StringHash hash, const void* pData);
+	bool SetShaderParameter(StringHash hash, const void* pData, int stride, int count);
+	bool SetShaderParameter(StringHash hash, float value);
+	bool SetShaderParameter(StringHash hash, int value);
+	bool SetShaderParameter(StringHash hash, const Vector2& value);
+	bool SetShaderParameter(StringHash hash, const Vector3& value);
+	bool SetShaderParameter(StringHash hash, const Vector4& value);
+	bool SetShaderParameter(StringHash hash, const Color& value);
+	bool SetShaderParameter(StringHash hash, const Matrix& value);
 
 	void OnResize(int width, int height);
 	void BeginFrame();

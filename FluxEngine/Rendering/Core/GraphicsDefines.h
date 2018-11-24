@@ -1,15 +1,46 @@
 #pragma once
 
+struct ShaderConstant
+{
+	enum : size_t
+	{
+#define DEFINE_SHADER_PARAMETER(variableName, name) variableName = HashString(name)
+
+		//Frame variables
+		DEFINE_SHADER_PARAMETER(cElapsedTime, "cElapsedTime"),
+		DEFINE_SHADER_PARAMETER(cDeltaTime, "cDeltaTime"),
+		DEFINE_SHADER_PARAMETER(cLights, "cLights"),
+
+		//Camera variables
+		DEFINE_SHADER_PARAMETER(cViewProj, "cViewProj"),
+		DEFINE_SHADER_PARAMETER(cView, "cView"),
+		DEFINE_SHADER_PARAMETER(cViewInverse, "cViewInverse"),
+		DEFINE_SHADER_PARAMETER(cNearClip, "cNearClip"),
+		DEFINE_SHADER_PARAMETER(cFarClip, "cFarClip"),
+
+		//Material variables
+		DEFINE_SHADER_PARAMETER(cColor, "cColor"),
+
+		//Model variables
+		DEFINE_SHADER_PARAMETER(cWorld, "cWorld"),
+		DEFINE_SHADER_PARAMETER(cWorldViewProj, "cWorldViewProj"),
+		DEFINE_SHADER_PARAMETER(cSkinMatrices, "cSkinMatrices"),
+		DEFINE_SHADER_PARAMETER(cSkinDualQuaternions, "cSkinDualQuaternions"),
+
+#undef DEFINE_SHADER_PARAMETER
+	};
+};
+
 namespace GraphicsConstants
 {
-	const int MAX_VERTEX_BUFFERS = 2;
-	const int MAX_RENDERTARGETS = 2;
+	constexpr int MAX_VERTEX_BUFFERS = 2;
+	constexpr int MAX_RENDERTARGETS = 2;
 
-	const int MAX_LIGHTS = 20;
-	const int MAX_BONES = 50;
-	const int MAX_BONES_PER_VERTEX = 4;
+	constexpr int MAX_LIGHTS = 20;
+	constexpr int MAX_BONES = 50;
+	constexpr int MAX_BONES_PER_VERTEX = 4;
 
-	const int MAX_UV_CHANNELS = 3;
+	constexpr int MAX_UV_CHANNELS = 3;
 }
 
 enum class ShaderType

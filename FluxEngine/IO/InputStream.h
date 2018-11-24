@@ -23,6 +23,7 @@ public:
 	std::string ReadSizedString();
 	std::string ReadString();
 	int ReadInt();
+	int64 ReadInt64();
 	unsigned int ReadUInt();
 	float ReadFloat();
 	double ReadDouble();

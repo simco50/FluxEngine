@@ -188,7 +188,7 @@ void ImmediateUI::Render()
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	Matrix projectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

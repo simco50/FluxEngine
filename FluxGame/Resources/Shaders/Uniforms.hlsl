@@ -39,5 +39,5 @@ struct Light
 
 cbuffer cLights : register(b3)
 {
-	Light Lights[LIGHT_COUNT];
+	Light cLights[LIGHT_COUNT];
 }
