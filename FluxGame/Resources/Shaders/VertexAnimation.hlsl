@@ -32,6 +32,15 @@ struct PS_INPUT
 #endif
 };
 
+float3 MaxToFlux(float3 input)
+{
+	float t = input.z;
+	input.z = input.y;
+	input.y = -t;
+	input.x *= -1;
+	return input;
+}
+
 #ifdef COMPILE_VS
 PS_INPUT VSMain(VS_INPUT input)
 {
@@ -56,6 +65,9 @@ PS_INPUT VSMain(VS_INPUT input)
 	float3 normal = tNormalMorphingTexture.Load(loadCoordinates).xyz * 2 - 1;
 	normal = normalize(normal);
 
+	//positionOffset = MaxToFlux(positionOffset);
+	//normal = MaxToFlux(normal);
+
 	output.position = mul(float4(input.position - positionOffset, 1.0f), cWorldViewProj);
 	output.worldPosition = mul(float4(input.position - positionOffset, 1.0f), cWorld);
 
@@ -66,44 +78,6 @@ PS_INPUT VSMain(VS_INPUT input)
 #endif
 
 	output.texCoord = input.texCoord;
-	return output;
-}
-#endif
-
-#ifdef COMPILE_PS
-
-float4 PSMain(PS_INPUT input) : SV_TARGET
-{
-	float4 output = (float4)0;
-
-	float3 normal = normalize(input.normal);
-
-#ifdef NORMALMAP
-	normal = CalculateNormal(normal, normalize(input.tangent), input.texCoord, false);
-#endif
-
-	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
-	LightResult result = DoLight(input.worldPosition, normal, viewDirection);
-	float4 diffuse = result.Diffuse;
-	float4 specular = result.Specular;
-
-#ifdef DIFFUSEMAP
-	diffuse *= Sample2D(Diffuse, input.texCoord);
-#endif
-
-#ifdef SPECULARMAP
-	specular *= Sample2D(Specular, input.texCoord);
-#endif
-
-	output += diffuse;
-	output += specular;
-
-#ifdef ENVMAP
-	output += CubeMapReflection(normal, viewDirection, 1.0f, 0.4f, 0.0f);
-#endif
-
-	output.a = 0.9f;
-
 	return output;
 }
 #endif

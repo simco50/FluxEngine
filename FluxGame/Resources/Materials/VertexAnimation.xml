@@ -1,7 +1,7 @@
 <Material name="VertexAnimation">
 	<Shaders>
 		<Shader type="Vertex" source="Shaders/VertexAnimation"/>
-		<Shader type="Pixel" source="Shaders/VertexAnimation"/>
+		<Shader type="Pixel" source="Shaders/Diffuse"/>
 	</Shaders>
 
 	<Properties>
