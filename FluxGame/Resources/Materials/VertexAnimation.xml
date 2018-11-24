@@ -13,5 +13,7 @@
 	<Parameters>
 		<Texture slot="PositionMorph" value="Textures/Pot_UV1.exr"/>
 		<Texture slot="NormalMorph" value="Textures/Pot_UV1_Normals.bmp"/>
+		<Value name="cFrameCount" value="11"/>
+		<Value name="cDuration" value="2.0"/>
 	</Parameters>
 </Material>

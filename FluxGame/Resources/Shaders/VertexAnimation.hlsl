@@ -6,9 +6,8 @@
 cbuffer MaterialBuffer : register(b4)
 {
 	int cFrameCount;
+	float cDuration;
 }
-
-#define cFrameCount 11
 
 struct VS_INPUT
 {
@@ -41,8 +40,7 @@ PS_INPUT VSMain(VS_INPUT input)
 	tPositionMorphingTexture.GetDimensions(width, height);
 
 	float time = cElapsedTime;
-	float duration = 1.0f;
-	time = fmod(time, duration) / duration;
+	time = fmod(time, cDuration) / cDuration;
 
 	int frameIndex = floor(time * cFrameCount);
 
@@ -50,7 +48,7 @@ PS_INPUT VSMain(VS_INPUT input)
 	float3 positionOffset = tPositionMorphingTexture.Load(loadCoordinates).xyz;
 
 	float t = fmod(time, 1.0f / cFrameCount) * cFrameCount;
-	int nextFrameIndex = (frameIndex + 1) % 11;
+	int nextFrameIndex = (frameIndex + 1) % cFrameCount;
 	int3 nextLoadCoordinates = int3(input.texCoord2.x * width, nextFrameIndex, 0);
 	float3 nextPositionOffset = tPositionMorphingTexture.Load(nextLoadCoordinates).xyz;
 	positionOffset = positionOffset + t * (nextPositionOffset - positionOffset);

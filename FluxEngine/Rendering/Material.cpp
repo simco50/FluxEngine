@@ -269,10 +269,18 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 
 	std::stringstream stream(valueString);
 	std::string stringValue;
-	std::vector<float> values;
+	std::vector<int> values;
 	while (std::getline(stream, stringValue, ' '))
 	{
-		values.push_back(stof(stringValue));
+		if (stringValue.find('.') != std::string::npos)
+		{
+			float fVal = stof(stringValue);
+			values.push_back(*(int*)&fVal);
+		}
+		else
+		{
+			values.push_back(stoi(stringValue));
+		}
 	}
 	const size_t byteSize = values.size() * sizeof(float);
 	ParameterEntry& entry = m_ParameterCache.GetParameter(name, byteSize);
