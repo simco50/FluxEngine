@@ -106,6 +106,8 @@ int Texture::GetRowDataSize(unsigned int width) const
 	case DXGI_FORMAT_BC7_UNORM:
 	case DXGI_FORMAT_BC7_UNORM_SRGB:
 		return (unsigned)(((width + 3) >> 2) * 16);
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+		return width * 3 * sizeof(float);
 	default:
 		checkf(false, "[Texture::GetRowDataSize] Texture format not supported");
 		return 0;

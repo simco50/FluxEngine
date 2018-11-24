@@ -41,6 +41,36 @@ public:
 		return static_cast<T*>(pResource);
 	}
 
+	template <typename T>
+	T* Load(InputStream& inputStream)
+	{
+		std::string path = Paths::Normalize(inputStream.GetSource());
+		Resource* pResource = FindResource(path, T::GetTypeStatic());
+		if (pResource)
+		{
+			return static_cast<T*>(pResource);
+		}
+		pResource = new T(m_pContext);
+		if (!LoadResourcePrivate(pResource, inputStream))
+		{
+			delete pResource;
+			return nullptr;
+		}
+		StringHash hash = HashString(path);
+		m_Resources[T::GetTypeStatic()][hash] = pResource;
+		return static_cast<T*>(pResource);
+	}
+
+	template<typename T>
+	T* CreateResource(const std::string filePath)
+	{
+		std::string path = Paths::Normalize(filePath);
+		Resource* pResource = new T(m_pContext);
+		StringHash hash = HashString(path);
+		m_Resources[T::GetTypeStatic()][hash] = pResource;
+		return static_cast<T*>(pResource);
+	}
+
 	void EnableAutoReload(bool enable);
 
 	//Reload the resource
@@ -59,6 +89,7 @@ public:
 
 private:
 	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath) const;
+	bool LoadResourcePrivate(Resource* pResource, InputStream& inputStream) const;
 	Resource* FindResource(const std::string& filePath, const StringHash type);
 
 	std::map<StringHash, std::vector<std::string>> m_ResourceDependencies;

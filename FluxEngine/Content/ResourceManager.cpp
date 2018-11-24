@@ -171,9 +171,14 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 	}
 	pFile->SetSource(filePath);
 
-	if (!pResource->Load(*pFile))
+	return LoadResourcePrivate(pResource, *pFile);
+}
+
+bool ResourceManager::LoadResourcePrivate(Resource* pResource, InputStream& inputStream) const
+{
+	if (!pResource->Load(inputStream))
 	{
-		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), inputStream.GetSource().c_str());
 		return false;
 	}
 	return true;

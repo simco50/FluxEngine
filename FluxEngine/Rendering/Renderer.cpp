@@ -198,13 +198,8 @@ void Renderer::CreateQuadGeometry()
 
 void Renderer::SetPerFrameParameters()
 {
-	int frame = GameTimer::Ticks();
-	if (frame != m_CurrentFrame)
-	{
-		m_CurrentFrame = frame;
-		m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
-		m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
-	}
+	m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
+	m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
 }
 
 void Renderer::SetPerCameraParameters(Camera* pCamera)

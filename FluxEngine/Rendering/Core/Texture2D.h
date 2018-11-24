@@ -3,6 +3,7 @@
 
 enum class ImageFormat;
 class RenderTarget;
+class HDRImage;
 
 class Texture2D : public Texture
 {
@@ -19,6 +20,7 @@ public:
 	bool SetSize(int width, int height, unsigned int format, TextureUsage usage, int multiSample, void* pTexture);
 	bool SetData(unsigned int mipLevel, int x, int y, int width, int height, const void* pData);
 	bool SetImage(const Image& image);
+	bool SetImage(const HDRImage& image);
 
 	RenderTarget* GetRenderTarget() const { return m_pRenderTarget.get(); }
 

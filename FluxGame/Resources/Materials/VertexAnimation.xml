@@ -1,0 +1,17 @@
+<Material name="VertexAnimation">
+	<Shaders>
+		<Shader type="Vertex" source="Shaders/VertexAnimation"/>
+		<Shader type="Pixel" source="Shaders/VertexAnimation"/>
+	</Shaders>
+
+	<Properties>
+		<CullMode value="Back"/>
+		<BlendMode value="Replace"/>
+		<FillMode value="Solid"/>
+	</Properties>
+
+	<Parameters>
+		<Texture slot="Diffuse" hdr="1" value="Textures/Pot_UV1.exr"/>
+		<Texture slot="Normal" value="Textures/Pot_UV1_Normals.bmp"/>
+	</Parameters>
+</Material>

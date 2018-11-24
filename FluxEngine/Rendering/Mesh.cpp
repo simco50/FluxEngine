@@ -332,7 +332,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 	for (size_t i = 0; i < elementDesc.size(); ++i)
 	{
-		const Geometry::VertexData* pData = &pGeometry->GetVertexData(VertexElement::GetSemanticOfType(elementDesc[i].Semantic));
+		const Geometry::VertexData* pData = &pGeometry->GetVertexData(VertexElement::GetSemanticOfType(elementDesc[i].Semantic), elementDesc[i].Index);
 		checkf(pData, "[Mesh::CreateBufferForGeometry] Mesh does not have the appropriate data of semantic");
 
 		int elementSize = elementDesc[i].GetSizeOfType(elementDesc[i].Type);
