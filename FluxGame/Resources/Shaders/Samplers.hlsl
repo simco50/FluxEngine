@@ -19,3 +19,9 @@ SamplerState sCubeSampler : register(s3);
 
 Texture3D tShadowTexture : register(t5);
 SamplerState sShadowSampler : register(s5);
+
+Texture2D tPositionMorphingTexture : register(t6);
+SamplerState sPositionMorphingSampler : register(s6);
+
+Texture2D tNormalMorphingTexture : register(t7);
+SamplerState sNormalMorphingSampler : register(s7);

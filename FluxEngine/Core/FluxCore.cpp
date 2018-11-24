@@ -184,7 +184,7 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD, 1),
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL)
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
 		};
 		pMesh->CreateBuffers(meshDesc);
 		Material* pMaterial = m_pResourceManager->Load<Material>("Materials/VertexAnimation.xml");

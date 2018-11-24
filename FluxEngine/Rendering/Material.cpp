@@ -206,6 +206,10 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 				slotType = TextureSlot::Volume;
 			else if (slot == "Cube")
 				slotType = TextureSlot::Cube;
+			else if (slot == "PositionMorph")
+				slotType = TextureSlot::PositionMorph;
+			else if (slot == "NormalMorph")
+				slotType = TextureSlot::NormalMorph;
 			else
 			{
 				FLUX_LOG(Warning, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());

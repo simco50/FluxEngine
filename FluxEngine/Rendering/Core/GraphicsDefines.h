@@ -124,7 +124,9 @@ enum class TextureSlot
 	Cube = 3,
 	Lights = 4,
 	Shadow = 5,
-	MAX = 6
+	PositionMorph = 6,
+	NormalMorph = 7,
+	MAX = 8
 };
 
 enum class TextureFilter

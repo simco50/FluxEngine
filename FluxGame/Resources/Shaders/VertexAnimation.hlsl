@@ -16,6 +16,9 @@ struct VS_INPUT
 	float2 texCoord : TEXCOORD0;
 	float2 texCoord2 : TEXCOORD1;
 	float3 normal : NORMAL;
+#ifdef NORMALMAP
+	float3 tangent : TANGENT;
+#endif
 };
 
 struct PS_INPUT
@@ -24,6 +27,10 @@ struct PS_INPUT
 	float4 worldPosition : TEXCOORD1;
 	float2 texCoord : TEXCOORD0;
 	float3 normal : NORMAL;
+
+#ifdef NORMALMAP
+	float3 tangent : TANGENT;
+#endif
 };
 
 #ifdef COMPILE_VS
@@ -31,7 +38,7 @@ PS_INPUT VSMain(VS_INPUT input)
 {
 	PS_INPUT output = (PS_INPUT)0;
 	int width, height;
-	tDiffuseTexture.GetDimensions(width, height);
+	tPositionMorphingTexture.GetDimensions(width, height);
 
 	float time = cElapsedTime;
 	float duration = 1.0f;
@@ -40,24 +47,26 @@ PS_INPUT VSMain(VS_INPUT input)
 	int frameIndex = floor(time * cFrameCount);
 
 	int3 loadCoordinates = int3(input.texCoord2.x * width, frameIndex, 0);
-	float3 positionOffset = tDiffuseTexture.Load(loadCoordinates).xyz;
+	float3 positionOffset = tPositionMorphingTexture.Load(loadCoordinates).xyz;
 
-#define VERTEXANIMATION_SMOOTH_LERP
-#ifdef VERTEXANIMATION_SMOOTH_LERP
 	float t = fmod(time, 1.0f / cFrameCount) * cFrameCount;
 	int nextFrameIndex = (frameIndex + 1) % 11;
 	int3 nextLoadCoordinates = int3(input.texCoord2.x * width, nextFrameIndex, 0);
-	float3 nextPositionOffset = tDiffuseTexture.Load(nextLoadCoordinates).xyz;
+	float3 nextPositionOffset = tPositionMorphingTexture.Load(nextLoadCoordinates).xyz;
 	positionOffset = positionOffset + t * (nextPositionOffset - positionOffset);
-#endif
 
-	float3 normal = tNormalTexture.Load(loadCoordinates).xyz * 2 - 1;
+	float3 normal = tNormalMorphingTexture.Load(loadCoordinates).xyz * 2 - 1;
 	normal = normalize(normal);
 
 	output.position = mul(float4(input.position - positionOffset, 1.0f), cWorldViewProj);
 	output.worldPosition = mul(float4(input.position - positionOffset, 1.0f), cWorld);
 
 	output.normal = normalize(mul(input.normal - normal, (float3x3)cWorld));
+
+#ifdef NORMALMAP
+	output.tangent = input.tangent;
+#endif
+
 	output.texCoord = input.texCoord;
 	return output;
 }
