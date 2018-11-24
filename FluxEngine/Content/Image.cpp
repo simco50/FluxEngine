@@ -438,14 +438,6 @@ bool Image::LoadExr(InputStream& inputStream)
 		return false;
 	}
 
-	if (exrImage.images == nullptr || exrImage.num_tiles > 0)
-	{
-		FLUX_LOG(Warning, "[HDRImage::LoadExr] Exr image is tiled instead of scanline. Tiled Exr is not supported", errorMessage);
-		FreeEXRImage(&exrImage);
-		FreeEXRHeader(&exrHeader);
-		return false;
-	}
-
 	m_Width = exrImage.width;
 	m_Height = exrImage.height;
 	m_Components = 4;
@@ -455,17 +447,48 @@ bool Image::LoadExr(InputStream& inputStream)
 	m_Pixels.resize(m_Width * m_Height * m_BBP / 8);
 
 	unsigned char* pPixels = m_Pixels.data();
-	for (int i = 0; i < m_Width * m_Height; ++i)
+
+	auto getPixel = [](int x, int y, int width, int pixelSize)
 	{
-		for (int j = 0; j < m_Components; ++j)
+		return (x + y * width) * pixelSize;
+	};
+
+	if (exrImage.num_tiles > 0)
+	{
+		int tileMaxWidth = exrImage.tiles[0].width;
+		int tileMaxHeight = exrImage.tiles[0].height;
+		for (int i = 0; i < exrImage.num_tiles; ++i)
 		{
-			if (j < exrImage.num_channels)
+			const EXRTile& tile = exrImage.tiles[i];
+			int startX = tile.offset_x * tileMaxWidth;
+			int startY = tile.offset_y * tileMaxHeight;
+			for (int y = 0; y < tile.height; ++y)
 			{
-				memcpy(pPixels + i * sizePerChannelPerPixel * m_Components + j * sizePerChannelPerPixel, &exrImage.images[m_Components - 1 - j][i * sizePerChannelPerPixel], sizePerChannelPerPixel);
+				for (int x = 0; x < tile.width; ++x)
+				{
+					int targetIdx = getPixel(startX + x, startY + y, m_Width, sizePerChannelPerPixel * m_Components);
+					int sourceIndex = getPixel(x, y, tileMaxWidth, sizePerChannelPerPixel);
+
+					for (int c = 0; c < exrImage.num_channels; ++c)
+					{
+						memcpy(&pPixels[targetIdx + sizePerChannelPerPixel * c], &tile.images[exrImage.num_channels - 1 - c][sourceIndex], sizePerChannelPerPixel);
+					}
+				}
 			}
-			else
+		}
+	}
+	else
+	{
+		for (int y = 0; y < m_Height; ++y)
+		{
+			for (int x = 0; x < m_Width; ++x)
 			{
-				memset(pPixels + i * sizePerChannelPerPixel * m_Components + j * sizePerChannelPerPixel, 0, sizePerChannelPerPixel);
+				for (int c = 0; c < exrImage.num_channels; ++c)
+				{
+					int targetIdx = getPixel(x, y, m_Width, m_Components * sizePerChannelPerPixel);
+					int sourceIdx = getPixel(x, y, exrImage.width, sizePerChannelPerPixel);
+					memcpy(&pPixels[targetIdx + c * sizePerChannelPerPixel], &exrImage.images[exrImage.num_channels - 1 - c][sourceIdx], sizePerChannelPerPixel);
+				}
 			}
 		}
 	}
