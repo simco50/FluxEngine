@@ -24,7 +24,7 @@ ShaderProgram::~ShaderProgram()
 
 bool ShaderProgram::SetParameter(const std::string& name, const void* pData)
 {
-	return SetParameter(HashString(name), pData);
+	return SetParameter(StringHash(name), pData);
 }
 
 bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
@@ -39,7 +39,7 @@ bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
 
 const ShaderParameter* ShaderProgram::GetShaderParameter(const std::string& name) const
 {
-	return GetShaderParameter(HashString(name));
+	return GetShaderParameter(StringHash(name));
 }
 
 const ShaderParameter* ShaderProgram::GetShaderParameter(StringHash hash) const

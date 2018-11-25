@@ -36,7 +36,7 @@ public:
 			delete pResource;
 			return nullptr;
 		}
-		StringHash hash = HashString(path);
+		StringHash hash(path);
 		m_Resources[T::GetTypeStatic()][hash] = pResource;
 		return static_cast<T*>(pResource);
 	}
@@ -56,7 +56,7 @@ public:
 			delete pResource;
 			return nullptr;
 		}
-		StringHash hash = HashString(path);
+		StringHash hash(path);
 		m_Resources[T::GetTypeStatic()][hash] = pResource;
 		return static_cast<T*>(pResource);
 	}
@@ -66,7 +66,7 @@ public:
 	{
 		std::string path = Paths::Normalize(filePath);
 		Resource* pResource = new T(m_pContext);
-		StringHash hash = HashString(path);
+		StringHash hash = path;
 		m_Resources[T::GetTypeStatic()][hash] = pResource;
 		return static_cast<T*>(pResource);
 	}

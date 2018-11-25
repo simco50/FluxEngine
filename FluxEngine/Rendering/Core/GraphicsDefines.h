@@ -1,34 +1,31 @@
 #pragma once
 
-struct ShaderConstant
+namespace ShaderConstant
 {
-	enum : size_t
-	{
-#define DEFINE_SHADER_PARAMETER(variableName, name) variableName = HashString(name)
+#define DEFINE_SHADER_PARAMETER(variableName, name) constexpr StringHash variableName(name);
 
-		//Frame variables
-		DEFINE_SHADER_PARAMETER(cElapsedTime, "cElapsedTime"),
-		DEFINE_SHADER_PARAMETER(cDeltaTime, "cDeltaTime"),
-		DEFINE_SHADER_PARAMETER(cLights, "cLights"),
+	//Frame variables
+	DEFINE_SHADER_PARAMETER(cElapsedTime, "cElapsedTime");
+	DEFINE_SHADER_PARAMETER(cDeltaTime, "cDeltaTime");
+	DEFINE_SHADER_PARAMETER(cLights, "cLights");
 
-		//Camera variables
-		DEFINE_SHADER_PARAMETER(cViewProj, "cViewProj"),
-		DEFINE_SHADER_PARAMETER(cView, "cView"),
-		DEFINE_SHADER_PARAMETER(cViewInverse, "cViewInverse"),
-		DEFINE_SHADER_PARAMETER(cNearClip, "cNearClip"),
-		DEFINE_SHADER_PARAMETER(cFarClip, "cFarClip"),
+	//Camera variables
+	DEFINE_SHADER_PARAMETER(cViewProj, "cViewProj");
+	DEFINE_SHADER_PARAMETER(cView, "cView");
+	DEFINE_SHADER_PARAMETER(cViewInverse, "cViewInverse");
+	DEFINE_SHADER_PARAMETER(cNearClip, "cNearClip");
+	DEFINE_SHADER_PARAMETER(cFarClip, "cFarClip");
 
-		//Material variables
-		DEFINE_SHADER_PARAMETER(cColor, "cColor"),
+	//Material variables
+	DEFINE_SHADER_PARAMETER(cColor, "cColor");
 
-		//Model variables
-		DEFINE_SHADER_PARAMETER(cWorld, "cWorld"),
-		DEFINE_SHADER_PARAMETER(cWorldViewProj, "cWorldViewProj"),
-		DEFINE_SHADER_PARAMETER(cSkinMatrices, "cSkinMatrices"),
-		DEFINE_SHADER_PARAMETER(cSkinDualQuaternions, "cSkinDualQuaternions"),
+	//Model variabl
+	DEFINE_SHADER_PARAMETER(cWorld, "cWorld");
+	DEFINE_SHADER_PARAMETER(cWorldViewProj, "cWorldViewProj");
+	DEFINE_SHADER_PARAMETER(cSkinMatrices, "cSkinMatrices");
+	DEFINE_SHADER_PARAMETER(cSkinDualQuaternions, "cSkinDualQuaternions");
 
 #undef DEFINE_SHADER_PARAMETER
-	};
 };
 
 namespace GraphicsConstants

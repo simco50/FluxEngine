@@ -57,7 +57,7 @@ private:
 	public:
 		ParameterEntry& GetParameter(const std::string& name, const size_t size)
 		{
-			ParameterEntry& entry = m_Parameters[std::hash<std::string>{}(name)];
+			ParameterEntry& entry = m_Parameters[StringHash(name)];
 			if (entry.GetSize() != size)
 			{
 				entry = ParameterEntry(size, nullptr, m_ParameterPool);

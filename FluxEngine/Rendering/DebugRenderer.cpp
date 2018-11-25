@@ -382,31 +382,6 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color&
 	}
 }
 
-void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Color& color)
-{
-	AddBoneRecursive(skeleton, skeleton.GetRootBoneIndex(), color);
-}
-
-void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Color& color)
-{
-	float boneSize = 2;
-	Vector3 start = Vector3::Transform(Vector3(0, 0, 0), matrix);
-	Vector3 a = Vector3::Transform(Vector3(-boneSize, boneSize, boneSize), matrix);
-	Vector3 b = Vector3::Transform(Vector3(boneSize, boneSize, boneSize), matrix);
-	Vector3 c = Vector3::Transform(Vector3(boneSize, -boneSize, boneSize), matrix);
-	Vector3 d = Vector3::Transform(Vector3(-boneSize, -boneSize, boneSize), matrix);
-	Vector3 tip = Vector3::Transform(Vector3(0, 0, -boneSize * length), matrix);
-
-	AddTriangle(start, d, c, color, color, color, false);
-	AddTriangle(start, a, d, color, color, color, false);
-	AddTriangle(start, b, a, color, color, color, false);
-	AddTriangle(start, c, b, color, color, color, false);
-	AddTriangle(d, tip, c, color, color, color, false);
-	AddTriangle(a, tip, d, color, color, color, false);
-	AddTriangle(b, tip, a, color, color, color, false);
-	AddTriangle(c, tip, b, color, color, color, false);
-}
-
 void DebugRenderer::AddLight(const Light* pLight)
 {
 	const Light::Data* pData = pLight->GetData();
@@ -464,15 +439,40 @@ void DebugRenderer::AddWireCone(const Vector3& position, const Vector3& directio
 	}
 }
 
-void DebugRenderer::AddBoneRecursive(const Skeleton & skeleton, const int boneIndex, const Color & color)
+void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Color& color)
 {
-	const Bone* pBone = skeleton.GetBone(boneIndex);
-	AddBone(pBone->pNode->GetWorldMatrix(), 5.0f, color);
-
-	for (int i : pBone->Children)
+	for (const Bone& bone : skeleton.GetBones())
 	{
-		const Bone* pChild = skeleton.GetBone(i);
-		AddBoneRecursive(skeleton, (int)i, color);
-		AddLine(pBone->pNode->GetWorldPosition(), pChild->pNode->GetWorldPosition(), color);
+		AddBone(bone.pNode->GetWorldMatrix(), 4.0f, color);
 	}
+	AddLineSceneNodeHierarchy(skeleton.GetBone(skeleton.GetRootBoneIndex())->pNode, color);
+}
+
+void DebugRenderer::AddLineSceneNodeHierarchy(SceneNode* pNode, const Color& color)
+{
+	for (SceneNode* pChild : pNode->GetChildren())
+	{
+		AddLine(pNode->GetWorldPosition(), pChild->GetWorldPosition(), color);
+		AddLineSceneNodeHierarchy(pChild, color);
+	}
+}
+
+void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Color& color)
+{
+	float boneSize = 2;
+	Vector3 start = Vector3::Transform(Vector3(0, 0, 0), matrix);
+	Vector3 a = Vector3::Transform(Vector3(-boneSize, boneSize, boneSize), matrix);
+	Vector3 b = Vector3::Transform(Vector3(boneSize, boneSize, boneSize), matrix);
+	Vector3 c = Vector3::Transform(Vector3(boneSize, -boneSize, boneSize), matrix);
+	Vector3 d = Vector3::Transform(Vector3(-boneSize, -boneSize, boneSize), matrix);
+	Vector3 tip = Vector3::Transform(Vector3(0, 0, -boneSize * length), matrix);
+
+	AddTriangle(start, d, c, color, color, color, false);
+	AddTriangle(start, a, d, color, color, color, false);
+	AddTriangle(start, b, a, color, color, color, false);
+	AddTriangle(start, c, b, color, color, color, false);
+	AddTriangle(d, tip, c, color, color, color, false);
+	AddTriangle(a, tip, d, color, color, color, false);
+	AddTriangle(b, tip, a, color, color, color, false);
+	AddTriangle(c, tip, b, color, color, color, false);
 }

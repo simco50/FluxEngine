@@ -72,6 +72,9 @@ SceneNode* Scene::PickNode(const Ray& ray)
 {
 	std::vector<SceneNode*> sortedNodes = m_Nodes;
 	std::sort(sortedNodes.begin(), sortedNodes.end(), [&ray](SceneNode* pA, SceneNode* pB) { return Vector3::DistanceSquared(pA->GetWorldPosition(), ray.position) < Vector3::DistanceSquared(pB->GetWorldPosition(), ray.position); });
+
+	SceneNode* pClosest = nullptr;
+	float minDistance = std::numeric_limits<float>::max();
 	for (SceneNode* pNode : sortedNodes)
 	{
 		Drawable* pDrawable = pNode->GetComponent<Drawable>();
@@ -80,9 +83,13 @@ SceneNode* Scene::PickNode(const Ray& ray)
 			float distance;
 			if (ray.Intersects(pDrawable->GetWorldBoundingBox(), distance))
 			{
-				return pNode;
+				if (distance < minDistance)
+				{
+					minDistance = distance;
+					pClosest = pNode;
+				}
 			}
 		}
 	}
-	return nullptr;
+	return pClosest;
 }

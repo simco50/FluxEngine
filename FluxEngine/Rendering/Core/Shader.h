@@ -27,7 +27,7 @@ public:
 	const DateTime& GetLastModifiedTimestamp() const { return m_LastModifiedTimestamp; }
 
 private:
-	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes, std::vector<std::string>& dependencies);
+	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<StringHash>& processedIncludes, std::vector<std::string>& dependencies);
 
 	std::string m_Name;
 	std::string m_ShaderSource;

@@ -102,7 +102,6 @@ public:
 
 	const Quaternion& GetRotation() const;
 	const Quaternion& GetWorldRotation() const;
-
 	const Matrix& GetWorldMatrix() const;
 
 	Vector3 GetUp() const;
@@ -125,9 +124,9 @@ protected:
 
 private:
 	void AddComponent(Component* pComponent);
-	std::string m_Name;
-
 	void UpdateWorld() const;
+
+	std::string m_Name;
 
 	mutable Matrix m_WorldMatrix;
 	mutable Quaternion m_WorldRotation;

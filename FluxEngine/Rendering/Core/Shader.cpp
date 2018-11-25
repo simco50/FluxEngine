@@ -30,7 +30,7 @@ bool Shader::Load(InputStream& inputStream)
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;
-		std::vector<size_t> processedIncludes;
+		std::vector<StringHash> processedIncludes;
 		if (!ProcessSource(inputStream, codeStream, processedIncludes, dependencies))
 		{
 			return false;
@@ -81,7 +81,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 {
 	AUTOPROFILE(Shader_GetOrCreateVariation);
 
-	size_t hash = HashString(defines);
+	StringHash hash(defines);
 	auto pIt = m_ShaderCache[(size_t)type].find(hash);
 	if (pIt != m_ShaderCache[(size_t)type].end())
 	{
@@ -137,7 +137,7 @@ const char* Shader::GetEntryPoint(ShaderType type)
 	}
 }
 
-bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes, std::vector<std::string>& dependencies)
+bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<StringHash>& processedIncludes, std::vector<std::string>& dependencies)
 {
 	if (GetFilePath() != inputStream.GetSource())
 	{
@@ -159,7 +159,7 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 		if (line.substr(0, 8) == "#include")
 		{
 			std::string includeFilePath = std::string(line.begin() + 10, line.end() - 1);
-			size_t includeHash = HashString(includeFilePath);
+			StringHash includeHash(includeFilePath);
 			if (std::find(processedIncludes.begin(), processedIncludes.end(), includeHash) == processedIncludes.end())
 			{
 				processedIncludes.push_back(includeHash);

@@ -59,7 +59,7 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	pFile->WriteUByte((unsigned char)m_ShaderParameters.size());
 	for (const auto& pair : m_ShaderParameters)
 	{
-		pFile->WriteInt64((int64)pair.first);
+		pFile->WriteInt64((int64)pair.first.m_Hash);
 		const ShaderParameter& parameter = pair.second;
 		pFile->WriteSizedString(parameter.Name);
 		pFile->WriteInt(parameter.Buffer);

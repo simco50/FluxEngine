@@ -40,7 +40,7 @@ bool Animation::Load(InputStream& inputStream)
 			m_Name = Paths::GetFileNameWithoutExtension(inputStream.GetSource());
 		}
 
-		m_NameHash = HashString(m_Name);
+		m_NameHash = StringHash(m_Name);
 		m_DurationInTicks = (float)pAnimation->mDuration;
 		m_TickPerSecond = (float)pAnimation->mTicksPerSecond;
 

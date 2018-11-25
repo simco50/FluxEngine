@@ -378,7 +378,7 @@ void FluxCore::GameUpdate()
 			AnimatedModel* pAnimatedModel = m_pSelectedNode->GetComponent<AnimatedModel>();
 			if (pAnimatedModel)
 			{
-				m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), Color(1, 0, 0, 1));
+				m_pDebugRenderer->AddSkeleton(pAnimatedModel->GetSkeleton(), Color(1, 1, 0, 1));
 				m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix());
 			}
 			Drawable* pModel = m_pSelectedNode->GetComponent<Drawable>();
