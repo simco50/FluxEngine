@@ -119,7 +119,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	unsigned char parameterCount = pFile->ReadByte();
 	for (unsigned char i = 0; i < parameterCount ; i++)
 	{
-		StringHash parameterHash = (StringHash)pFile->ReadInt64();
+		StringHash parameterHash = StringHash((size_t)pFile->ReadInt64());
 		ShaderParameter& parameter = m_ShaderParameters[parameterHash];
 
 		parameter.Name = pFile->ReadSizedString();
