@@ -420,6 +420,7 @@ bool Image::LoadExr(InputStream& inputStream)
 	int pixelType = exrHeader.pixel_types[0];
 	for (int i = 1; i < exrHeader.num_channels; i++)
 	{
+		UNREFERENCED_PARAMETER(pixelType); //For release builds
 		checkf(pixelType == exrHeader.pixel_types[i], "[Image::LoadExr] The pixel types of the channels are not equal. This is a requirement");
 	}
 

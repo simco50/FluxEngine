@@ -133,7 +133,7 @@ void FluxCore::InitGame()
 	pPlaneNode->CreateComponent<Rigidbody>();
 	pPlaneNode->CreateComponent<PlaneCollider>();
 
-	/*Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Man_Walking.dae");
+	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Man_Walking.dae");
 	std::vector<VertexElement> manDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
@@ -152,7 +152,7 @@ void FluxCore::InitGame()
 	pManModel->SetMaterial(pManMaterial);
 	Animator* pAnimator = pMan->CreateComponent<Animator>();
 	Animation* pAnimation = m_pResourceManager->Load<Animation>("Meshes/obj/Man_Walking.dae");
-	pAnimator->Play(pAnimation);*/
+	pAnimator->Play(pAnimation);
 
 	SceneNode* pLights = m_pScene->CreateChild("Lights");
 
@@ -177,7 +177,7 @@ void FluxCore::InitGame()
 		}
 	}
 
-	{
+	/*{
 		Mesh* pMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Pot.dae");
 		std::vector<VertexElement> meshDesc =
 		{
@@ -192,7 +192,7 @@ void FluxCore::InitGame()
 		Model* pModel = pNode->CreateComponent<Model>();
 		pModel->SetMesh(pMesh);
 		pModel->SetMaterial(pMaterial);
-	}
+	}*/
 }
 
 void FluxCore::ProcessFrame()

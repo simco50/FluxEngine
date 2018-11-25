@@ -118,7 +118,7 @@ bool Animation::Load(InputStream& inputStream)
 
 void Animation::ResolveBoneIndices(const Skeleton& skeleton)
 {
-	checkf(skeleton.BoneCount() == m_AnimationNodes.size(), "[Animation::ResolveBoneIndices] Bone count does not match the amount of animation nodes")
+	checkf(skeleton.BoneCount() == m_AnimationNodes.size(), "[Animation::ResolveBoneIndices] Bone count does not match the amount of animation nodes");
 	const std::vector<Bone>& bones = skeleton.GetBones();
 	for (size_t i = 0; i < m_AnimationNodes.size(); ++i)
 	{
@@ -134,12 +134,4 @@ void Animation::ResolveBoneIndices(const Skeleton& skeleton)
 		}
 		checkf(found, Printf("[Animation::ResolveBoneIndices] Bone with name '%s' does not exist in Skeleton", m_AnimationNodes[i].Name.c_str()).c_str());
 	}
-
-	//!!! WEIRDNESS ALERT !!!
-	//I sort because in the skinning matrix preprocessing, I assume the bone indices match with the node indices
-	//This is because the bone transforms are relative so the preprocessing has to traverse the skeleton structure
-	//Because the bone has no reference to the node, there has to be some kind of relationship
-	//Either we sort here or we use an associative map in the AnimationState.
-	//This option is better as it has not runtime overhead
-	std::sort(m_AnimationNodes.begin(), m_AnimationNodes.end(), [](const AnimationNode& a, const AnimationNode& b) { return a.BoneIndex < b.BoneIndex; });
 }

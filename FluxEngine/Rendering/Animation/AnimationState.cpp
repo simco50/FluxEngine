@@ -60,15 +60,14 @@ void AnimationKeyState::GetTransform(float time, Vector3& scale, Quaternion& rot
 	}
 }
 
-AnimationState::AnimationState(Animation* pAnimation, const AnimatedModel* pModel)
+AnimationState::AnimationState(Animation* pAnimation, const Skeleton& skeleton)
 	: m_pAnimation(pAnimation)
 {
-	m_pSkeleton = &pModel->GetSkeleton();
 	for (const AnimationNode& node : pAnimation->GetNodes())
 	{
 		AnimationKeyState state;
 		state.KeyFrame = 0;
-		state.pBone = m_pSkeleton->GetBone(node.BoneIndex);
+		state.pBone = skeleton.GetBone(node.BoneIndex);
 		state.pNode = &node;
 		checkf(state.pBone->Name == state.pNode->Name, "[AnimationState::AnimationState] The name of the node and the bone should match");
 		m_KeyStates.push_back(state);
@@ -108,17 +107,19 @@ void AnimationState::Apply()
 {
 	if (m_IsDirty)
 	{
-		const std::vector<Bone>& bones = m_pSkeleton->GetBones();
 		Vector3 translation, scale;
 		Quaternion rotation;
-		for (size_t i = 0; i < bones.size(); ++i)
+
+		for (size_t i = 0; i < m_KeyStates.size(); ++i)
 		{
 			Matrix m;
-			m_KeyStates[i].GetTransform(m_Time, scale, rotation, translation);
-			bones[i].pNode->SetLocalScaleSilent(scale);
-			bones[i].pNode->SetLocalRotationSilent(rotation);
-			bones[i].pNode->SetLocalPositionSilent(translation);
+			AnimationKeyState& state = m_KeyStates[i];
+			state.GetTransform(m_Time, scale, rotation, translation);
+			state.pBone->pNode->SetLocalScaleSilent(scale);
+			state.pBone->pNode->SetLocalRotationSilent(rotation);
+			state.pBone->pNode->SetLocalPositionSilent(translation);
 		}
+
 		m_IsDirty = false;
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 struct Bone;
 struct AnimationNode;
-class AnimatedModel;
 class Animation;
 class Skeleton;
 
@@ -18,7 +17,7 @@ struct AnimationKeyState
 class AnimationState
 {
 public:
-	AnimationState(Animation* pAnimation, const AnimatedModel* pModel);
+	AnimationState(Animation* pAnimation, const Skeleton& skeleton);
 
 	void AddTime(float time);
 	void SetTime(float time);
@@ -36,6 +35,5 @@ private:
 	bool m_IsDirty = true;
 	bool m_Looped = true;
 	Animation* m_pAnimation = nullptr;
-	const Skeleton* m_pSkeleton = nullptr;
 	std::vector<AnimationKeyState> m_KeyStates;
 };

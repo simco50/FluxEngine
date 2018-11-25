@@ -60,7 +60,7 @@ const Skeleton& AnimatedModel::GetSkeleton() const
 
 AnimationState* AnimatedModel::AddAnimationState(Animation* pAnimation)
 {
-	m_AnimationStates.push_back(AnimationState(pAnimation, this));
+	m_AnimationStates.push_back(AnimationState(pAnimation, m_Skeleton));
 	return &m_AnimationStates.back();
 }
 
