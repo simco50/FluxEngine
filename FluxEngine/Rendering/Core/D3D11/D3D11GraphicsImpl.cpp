@@ -21,6 +21,10 @@ bool GraphicsImpl::GetPrimitiveType(const PrimitiveType primitiveType, const uns
 		type = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 		primitiveCount = elementCount / 2;
 		return true;
+	case PrimitiveType::PATCH_CP_3:
+		type = D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST;
+		primitiveCount = elementCount;
+		return true;
 	default:
 		FLUX_LOG(Error, "[Graphics::SetPrimitiveType()] > Invalid primitive type");
 		return false;

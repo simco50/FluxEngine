@@ -282,12 +282,25 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		case ShaderType::PixelShader:
 			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+
+#ifdef SHADER_GEOMETRY_ENABLE
 		case ShaderType::GeometryShader:
 			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 		case ShaderType::ComputeShader:
 			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+		case ShaderType::DomainShader:
+			m_pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::HullShader:
+			m_pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
+			break;
+#endif
 		default:
 			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
 			return false;
@@ -318,12 +331,24 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 			case ShaderType::PixelShader:
 				m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#ifdef SHADER_GEOMETRY_ENABLE
 			case ShaderType::GeometryShader:
 				m_pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 			case ShaderType::ComputeShader:
 				m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+			case ShaderType::DomainShader:
+				m_pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::HullShader:
+				m_pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#endif
 			default:
 				break;
 			}
@@ -339,12 +364,16 @@ void Graphics::UpdateShaderProgram()
 		AUTOPROFILE(Graphics_UpdateShaderProgram);
 
 		uint64 hash = 0;
+		int shiftAmount = (int)floor(64 / (int)ShaderType::MAX);
+		int maxSize = (int)pow(2, shiftAmount);
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
-			hash <<= 16;
+			hash <<= shiftAmount;
 			if (pVariation == nullptr)
+			{
 				continue;
-			hash |= (int)pVariation->GetByteCode().size() % UINT16_MAX;
+			}
+			hash |= (int)pVariation->GetByteCode().size() % maxSize;
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -640,6 +669,7 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 
 		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
 
+		InvalidateShaders();
 		SetShader(ShaderType::VertexShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::VertexShader));
 		SetShader(ShaderType::PixelShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::PixelShader));
 
@@ -680,6 +710,11 @@ void Graphics::FlushSRVChanges(bool force)
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+
+#ifdef SHADER_TESSELLATION_ENABLE
+		m_pImpl->m_pDeviceContext->DSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->DSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+#endif
 
 		m_pImpl->m_TexturesDirty = false;
 		m_pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;

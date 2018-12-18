@@ -43,10 +43,9 @@ void DebugRenderer::Render()
 
 	AUTOPROFILE(DebugRenderer_Render);
 
+	m_pGraphics->InvalidateShaders();
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
-	m_pGraphics->SetShader(ShaderType::ComputeShader, nullptr);
-	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 
 	if (totalPrimitives > (int)m_pVertexBuffer->GetVertexCount())
 	{

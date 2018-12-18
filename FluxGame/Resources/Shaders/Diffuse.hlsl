@@ -108,8 +108,6 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 	output += CubeMapReflection(normal, viewDirection, 1.0f, 0.4f, 0.0f);
 #endif
 
-	output.a = 0.9f;
-
 	return output;
 }
 #endif

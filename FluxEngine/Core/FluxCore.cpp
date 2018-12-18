@@ -31,6 +31,8 @@
 #include "CommandLine.h"
 #include "Physics/PhysX/Collider.h"
 #include "Rendering/Animation/Animation.h"
+#include "Rendering/Core/Shader.h"
+#include "Rendering/Geometry.h"
 
 bool FluxCore::m_Exiting;
 
@@ -116,7 +118,7 @@ void FluxCore::InitGame()
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
 
-	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -175,7 +177,36 @@ void FluxCore::InitGame()
 			pLight->Rotate(45, 0, 0);
 			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
 		}
+	}*/
+
+	{
+		SceneNode* pLight = m_pScene->CreateChild("Light 0");
+		Light* pL = pLight->CreateComponent<Light>();
+		pL->SetShadowCasting(true);
+		pL->SetType(Light::Type::Directional);
+		pL->SetRange(300);
+		pL->SetColor(Color(1,1,1,1));
+		pLight->Rotate(45, -135, 0);
 	}
+
+	{
+		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationTest.xml");
+		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
+		std::vector<VertexElement> cubeDesc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		};
+		pCubeMesh->CreateBuffers(cubeDesc);
+		pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
+		SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
+		Model* pCubeModel = pCubeNode->CreateComponent<Model>();
+		pCubeModel->SetMesh(pCubeMesh);
+		pCubeModel->SetMaterial(pMat);
+		pCubeNode->SetScale(50);
+	}
+
 
 	/*{
 		Mesh* pMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Pot.dae");

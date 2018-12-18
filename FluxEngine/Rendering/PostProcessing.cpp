@@ -39,8 +39,8 @@ void PostProcessing::Draw()
 
 	AUTOPROFILE(PostProcessing_Draw);
 
+	m_pGraphics->InvalidateShaders();
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
-	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 	m_pGraphics->SetViewport(m_pCamera->GetViewport());
 
 	RenderTarget* pOriginalTarget = m_pGraphics->GetRenderTarget();
