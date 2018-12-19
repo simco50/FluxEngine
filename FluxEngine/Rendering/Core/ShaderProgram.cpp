@@ -8,7 +8,9 @@ ShaderProgram::ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderTy
 	for (ShaderVariation* pShader : shaders)
 	{
 		if (pShader == nullptr)
+		{
 			continue;
+		}
 		const std::map<StringHash, ShaderParameter>& parameters = pShader->GetParameters();
 		for (const auto& parameter : parameters)
 		{

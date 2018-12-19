@@ -128,10 +128,20 @@ const char* Shader::GetEntryPoint(ShaderType type)
 		return "VSMain";
 	case ShaderType::PixelShader:
 		return "PSMain";
+#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
 		return "GSMain";
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
 		return "CSMain";
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	case ShaderType::DomainShader:
+		return "DSMain";
+	case ShaderType::HullShader:
+		return "HSMain";
+#endif
 	default:
 		return "";
 	}

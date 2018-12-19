@@ -40,12 +40,23 @@ namespace GraphicsConstants
 	constexpr int MAX_UV_CHANNELS = 3;
 }
 
+#define SHADER_TESSELLATION_ENABLE
+#define SHADER_GEOMETRY_ENABLE
+
 enum class ShaderType
 {
 	VertexShader = 0,
 	PixelShader,
+#ifdef SHADER_GEOMETRY_ENABLE
 	GeometryShader,
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 	ComputeShader,
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	DomainShader,
+	HullShader,
+#endif
 	MAX,
 };
 
@@ -56,6 +67,7 @@ enum class PrimitiveType : unsigned char
 	POINTLIST,
 	TRIANGLESTRIP,
 	LINELIST,
+	PATCH_CP_3,
 };
 
 //The window type
