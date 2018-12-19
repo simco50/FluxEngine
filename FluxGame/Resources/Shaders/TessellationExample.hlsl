@@ -121,7 +121,7 @@ DS_OUTPUT DSMain(HS_CONSTANT_OUTPUT input, OutputPatch<HS_OUTPUT, 3> patch, floa
 	float4 pos = float4(uvwCoord.x * patch[0].position + uvwCoord.y * patch[1].position + uvwCoord.z * patch[2].position, 1);
 	float2 texCoord = uvwCoord.x * patch[0].texCoord + uvwCoord.y * patch[1].texCoord + uvwCoord.z * patch[2].texCoord;
 	float3 normal = normalize(uvwCoord.x * patch[0].normal + uvwCoord.y * patch[1].normal + uvwCoord.z * patch[2].normal);
-	float offset = tNormalTexture.SampleLevel(sNormalSampler, texCoord, 0.0f).r;
+	float offset = tDiffuseTexture.SampleLevel(sDiffuseSampler, texCoord, 0.0f).r;
     pos = mul(pos, cWorld);
 	pos -= float4(normal * offset * cDisplacement, 0);
 	pos += float4(normal * cDisplacement, 0);
@@ -146,8 +146,8 @@ float4 PSMain(DS_OUTPUT input) : SV_TARGET
 {
 	float4 output = (float4)0;
 
-	//float3 normal = normalize(input.normal);
-	float3 normal = FindNormal(tNormalTexture, sNormalSampler, input.texCoord, 0.01f, 0.01f);
+	//float3 normal = input.normal;
+	float3 normal = FindNormal(tDiffuseTexture, sDiffuseSampler, input.texCoord, 0.01f, 0.01f);
 
 #ifdef NORMALMAP
 	normal = CalculateNormal(normal, normalize(input.tangent), input.texCoord, false);
@@ -158,7 +158,7 @@ float4 PSMain(DS_OUTPUT input) : SV_TARGET
 	float4 diffuse = result.Diffuse;
 
 #ifdef DIFFUSEMAP
-	float amount = Sample2D(Normal, input.texCoord).r;
+	float amount = Sample2D(Diffuse, input.texCoord).r;
 	diffuse *= lerp(Sample2D(Diffuse, 5*input.texCoord), Sample2D(Specular, 5*input.texCoord), amount);
 #endif
 

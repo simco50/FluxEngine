@@ -84,6 +84,7 @@ public:
 	const std::unordered_map<StringHash, ParameterEntry>& GetShaderParameters() const { return m_ParameterCache.GetParameters(); }
 
 	void SetTexture(TextureSlot slot, Texture* pTexture);
+	void SetShader(ShaderType type, ShaderVariation* pShader);
 
 	void SetCullMode(CullMode mode) { m_CullMode = mode; }
 	void SetBlendMode(BlendMode mode) { m_BlendMode = mode; }

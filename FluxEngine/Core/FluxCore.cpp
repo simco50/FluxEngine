@@ -190,7 +190,7 @@ void FluxCore::InitGame()
 	}
 
 	{
-		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationTest.xml");
+		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
 		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
 		std::vector<VertexElement> cubeDesc =
 		{

@@ -1,0 +1,19 @@
+<Material name="TessellationExample">
+	<Shaders>
+		<Shader type="Vertex" source="Shaders/TessellationExample"/>
+		<Shader type="Domain" source="Shaders/TessellationExample"/>
+		<Shader type="Hull" source="Shaders/TessellationExample"/>
+		<Shader type="Pixel" source="Shaders/TessellationExample"/>
+	</Shaders>
+
+	<Properties>
+		<CullMode value="Back"/>
+		<BlendMode value="Replace"/>
+		<FillMode value="Solid"/>
+	</Properties>
+	<Parameters>
+		<Texture slot="Diffuse" value="Textures/Tracks.png"/>
+		<Value name="cTessellation" value="4.0f"/>
+		<Value name="cDisplacement" value="40.0f"/>
+	</Parameters>
+</Material>

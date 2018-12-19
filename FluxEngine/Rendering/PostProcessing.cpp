@@ -11,6 +11,8 @@
 #include "Camera\Camera.h"
 #include "Scenegraph\SceneNode.h"
 #include "Renderer.h"
+#include "Geometry.h"
+#include "Core\RasterizerState.h"
 
 PostProcessing::PostProcessing(Context* pContext)
 	: Component(pContext)
@@ -18,6 +20,7 @@ PostProcessing::PostProcessing(Context* pContext)
 	AUTOPROFILE(PostProcessing_Create);
 
 	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
+	m_pRenderer = m_pContext->GetSubsystem<Renderer>();
 
 	m_pRenderTexture = std::make_unique<Texture2D>(m_pContext);
 	m_pDepthTexture = std::make_unique<Texture2D>(m_pContext);
@@ -39,16 +42,11 @@ void PostProcessing::Draw()
 
 	AUTOPROFILE(PostProcessing_Draw);
 
-	m_pGraphics->InvalidateShaders();
-	m_pGraphics->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 	m_pGraphics->SetViewport(m_pCamera->GetViewport());
 
 	RenderTarget* pOriginalTarget = m_pGraphics->GetRenderTarget();
-
 	RenderTarget* pCurrentSource = m_pCamera->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
-	m_pGraphics->GetDepthStencilState()->SetDepthWrite(false);
 
 	int activeMaterials = 0;
 	for (const auto& pMaterial : m_Materials)
@@ -58,36 +56,19 @@ void PostProcessing::Draw()
 			continue;
 		}
 		++activeMaterials;
-
-		m_pGraphics->SetShader(ShaderType::PixelShader, pMaterial.second->GetShader(ShaderType::PixelShader));
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-		m_pGraphics->FlushSRVChanges(false);
-		m_pGraphics->SetRenderTarget(0, pCurrentTarget);
-		for (const auto& texture : pMaterial.second->GetTextures())
+		if (pMaterial.second->GetShader(ShaderType::VertexShader) == nullptr)
 		{
-			m_pGraphics->SetTexture(texture.first, texture.second);
+			pMaterial.second->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 		}
-		for (auto& parameter : pMaterial.second->GetShaderParameters())
-		{
-			m_pGraphics->SetShaderParameter(parameter.first, parameter.second.GetData());
-		}
-		m_pGraphics->GetBlendState()->SetBlendMode(pMaterial.second->GetBlendMode(), false);
+		m_pRenderer->Blit(pCurrentSource, pCurrentTarget, pMaterial.second);
 
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, pCurrentSource->GetParentTexture());
-		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
 		std::swap(pCurrentSource, pCurrentTarget);
 	}
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-	m_pGraphics->FlushSRVChanges(false);
-
-	m_pGraphics->SetRenderTarget(0, pOriginalTarget);
 
 	//Do an extra blit if the shader count is odd
 	if (activeMaterials % 2 == 1)
 	{
-		m_pGraphics->SetShader(ShaderType::PixelShader, m_pBlitPixelShader);
-		m_pGraphics->SetTexture(TextureSlot::Diffuse, m_pRenderTexture.get());
-		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, 0, 3);
+		m_pRenderer->Blit(m_pRenderTexture->GetRenderTarget(), pOriginalTarget);
 	}
 }
 

@@ -9,6 +9,7 @@ class IndexBuffer;
 class VertexBuffer;
 class Geometry;
 class Light;
+class RenderTarget;
 struct Batch;
 class PostProcessing;
 
@@ -33,6 +34,8 @@ public:
 	void RemoveLight(Light* pLight);
 	void AddPostProcessing(PostProcessing* pPostProcessing);
 	void RemovePostProcessing(PostProcessing* pPostProcessing);
+
+	void Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial = nullptr);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 
@@ -62,6 +65,7 @@ private:
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;
+	Material* m_pBlitMaterial = nullptr;
 
 	std::vector<Camera*> m_CameraQueue;
 

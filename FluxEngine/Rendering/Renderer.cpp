@@ -15,12 +15,16 @@
 #include "Scenegraph/SceneNode.h"
 #include "Math/DualQuaternion.h"
 #include "PostProcessing.h"
+#include "Core/RenderTarget.h"
+#include "Content/ResourceManager.h"
+#include "Core/Texture.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	CreateQuadGeometry();
+	m_pBlitMaterial = pContext->GetSubsystem<ResourceManager>()->Load<Material>("Materials/Blit.xml");
 }
 
 Renderer::~Renderer()
@@ -160,6 +164,24 @@ void Renderer::RemovePostProcessing(PostProcessing* pPostProcessing)
 	m_PostProcessing.erase(std::remove(m_PostProcessing.begin(), m_PostProcessing.end(), pPostProcessing), m_PostProcessing.end());
 }
 
+void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial /*= nullptr*/)
+{
+	check(pSource);
+	check(pTarget);
+	check(pSource->GetParentTexture()->GetWidth() == pTarget->GetParentTexture()->GetWidth());
+	check(pSource->GetParentTexture()->GetHeight() == pTarget->GetParentTexture()->GetHeight());
+	if (pMaterial == nullptr)
+	{
+		pMaterial = m_pBlitMaterial;
+	}
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
+	m_pGraphics->FlushSRVChanges(false);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
+	m_pGraphics->SetRenderTarget(0, pTarget);
+	SetPerMaterialParameters(pMaterial);
+	GetQuadGeometry()->Draw(m_pGraphics);
+}
+
 void Renderer::QueueCamera(Camera * pCamera)
 {
 	m_CameraQueue.push_back(pCamera);
@@ -169,16 +191,23 @@ void Renderer::CreateQuadGeometry()
 {
 	AUTOPROFILE(Renderer_CreateQuadGeometry);
 
+	struct VertexStructure
+	{
+		Vector3 Position;
+		Vector2 TexCoord;
+	};
+
 	m_pQuadVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 	std::vector<VertexElement> elements = {
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false)
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD, 0, false),
 	};
 	m_pQuadVertexBuffer->Create(4, elements);
-	Vector3 vertices[] = {
-		Vector3(-1.0f, 1.0f, 0.0f),
-		Vector3(1.0f, 1.0f, 0.0f),
-		Vector3(1.0f, -1.0f, 0.0f),
-		Vector3(-1.0f, -1.0f, 0.0f),
+	VertexStructure vertices[] = {
+		{ Vector3(-1.0f, 1.0f, 0.0f), Vector2(0, 0) },
+		{ Vector3(1.0f, 1.0f, 0.0f), Vector2(1, 0) },
+		{ Vector3(1.0f, -1.0f, 0.0f), Vector2(1, 1) },
+		{ Vector3(-1.0f, -1.0f, 0.0f), Vector2(0, 1) },
 	};
 	m_pQuadVertexBuffer->SetData(vertices);
 

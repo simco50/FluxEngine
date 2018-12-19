@@ -75,6 +75,11 @@ void Material::SetTexture(TextureSlot slot, Texture* pTexture)
 	m_Textures[slot] = pTexture;
 }
 
+void Material::SetShader(ShaderType type, ShaderVariation* pShader)
+{
+	m_ShaderVariations[(int)type] = pShader;
+}
+
 bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 {
 	namespace XML = tinyxml2;

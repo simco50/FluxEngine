@@ -41,6 +41,7 @@ namespace GraphicsConstants
 }
 
 #define SHADER_TESSELLATION_ENABLE
+#define SHADER_GEOMETRY_ENABLE
 
 enum class ShaderType
 {
