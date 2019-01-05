@@ -28,7 +28,9 @@ bool Material::Load(InputStream& inputStream)
 
 	std::vector<unsigned char> buffer;
 	if (!inputStream.ReadAllBytes(buffer))
+	{
 		return false;
+	}
 
 	XML::XMLDocument document;
 	if (document.Parse((char*)buffer.data(), buffer.size()) != XML::XML_SUCCESS)
@@ -68,9 +70,14 @@ ShaderVariation* Material::GetShader(const ShaderType type) const
 	return m_ShaderVariations[(unsigned int)type];
 }
 
-void Material::SetTexture(const TextureSlot slot, Texture* pTexture)
+void Material::SetTexture(TextureSlot slot, Texture* pTexture)
 {
 	m_Textures[slot] = pTexture;
+}
+
+void Material::SetShader(ShaderType type, ShaderVariation* pShader)
+{
+	m_ShaderVariations[(int)type] = pShader;
 }
 
 bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
@@ -86,10 +93,20 @@ bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 			type = ShaderType::VertexShader;
 		else if (shaderType == "Pixel")
 			type = ShaderType::PixelShader;
+#ifdef SHADER_GEOMETRY_ENABLE
 		else if (shaderType == "Geometry")
 			type = ShaderType::GeometryShader;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 		else if (shaderType == "Compute")
 			type = ShaderType::ComputeShader;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+		else if (shaderType == "Domain")
+			type = ShaderType::DomainShader;
+		else if (shaderType == "Hull")
+			type = ShaderType::HullShader;
+#endif
 		else
 		{
 			FLUX_LOG(Warning, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
@@ -103,9 +120,11 @@ bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 		}
 
 		const char* pAttribute = pShader->Attribute("defines");
-		std::string defines = "";
+		std::string defines;
 		if (pAttribute)
+		{
 			defines = pAttribute;
+		}
 		std::string source = pShader->Attribute("source");
 		ShaderVariation* pShaderVariation = m_pGraphics->GetShader(source, type, defines + m_InternalDefines);
 		if (pShaderVariation == nullptr)
@@ -163,6 +182,14 @@ bool Material::ParseProperties(tinyxml2::XMLElement* pElement)
 			else
 				FLUX_LOG(Warning, "[Material::Load()] > %s : Fill mode '%s' is not valid, falling back to default", m_Name.c_str(), value.c_str());
 		}
+		else if (propertyType == "DepthWrite")
+		{
+			std::string value = pProperty->Attribute("value");
+			if (value == "False")
+				m_DepthWrite = false;
+			else
+				m_DepthWrite = true;
+		}
 		else
 		{
 			FLUX_LOG(Warning, "[Material::Load()] > %s : Property with name '%s' is not valid, skipping", m_Name.c_str(), propertyType.c_str());
@@ -194,18 +221,22 @@ bool Material::ParseParameters(tinyxml2::XMLElement* pElement)
 				slotType = TextureSlot::Volume;
 			else if (slot == "Cube")
 				slotType = TextureSlot::Cube;
+			else if (slot == "PositionMorph")
+				slotType = TextureSlot::PositionMorph;
+			else if (slot == "NormalMorph")
+				slotType = TextureSlot::NormalMorph;
 			else
 			{
 				FLUX_LOG(Warning, "[Material::Load()] > %s : Slot with name '%s' is not valid", m_Name.c_str(), slot.c_str());
 				return false;
 			}
 
-			Texture* pTexture = nullptr;
+			Texture* pTexture;
 			if (parameterType == "Texture")
 			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture2D>(pParameter->Attribute("value"));
 			}
-			else if(parameterType == "Texture3D") 
+			else if(parameterType == "Texture3D")
 			{
 				pTexture = GetSubsystem<ResourceManager>()->Load<Texture3D>(pParameter->Attribute("value"));
 			}
@@ -253,12 +284,20 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 
 	std::stringstream stream(valueString);
 	std::string stringValue;
-	std::vector<float> values;
+	std::vector<int> values;
 	while (std::getline(stream, stringValue, ' '))
 	{
-		values.push_back(stof(stringValue));
+		if (stringValue.find('.') != std::string::npos)
+		{
+			float fVal = stof(stringValue);
+			values.push_back(*(int*)&fVal);
+		}
+		else
+		{
+			values.push_back(stoi(stringValue));
+		}
 	}
-	size_t byteSize = values.size() * sizeof(float);
+	const size_t byteSize = values.size() * sizeof(float);
 	ParameterEntry& entry = m_ParameterCache.GetParameter(name, byteSize);
 	entry.SetData(values.data(), byteSize);
 }

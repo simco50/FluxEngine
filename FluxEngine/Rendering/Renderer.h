@@ -8,7 +8,12 @@ class Camera;
 class IndexBuffer;
 class VertexBuffer;
 class Geometry;
+class Light;
+class RenderTarget;
 struct Batch;
+class PostProcessing;
+
+DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
 
 class Renderer : public Subsystem
 {
@@ -25,15 +30,20 @@ public:
 	void RemoveDrawable(Drawable* pDrawable);
 	void AddCamera(Camera* pCamera);
 	void RemoveCamera(Camera* pCamera);
+	void AddLight(Light* pLight);
+	void RemoveLight(Light* pLight);
+	void AddPostProcessing(PostProcessing* pPostProcessing);
+	void RemovePostProcessing(PostProcessing* pPostProcessing);
+
+	void Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial = nullptr);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
-	Vector3* GetLightPosition() { return &m_LightPosition; }
 
 	Geometry* GetQuadGeometry() const { return m_pQuadGeometry.get(); }
 
 	void QueueCamera(Camera* pCamera);
 
-	MulticastDelegate<>& OnPreRender() { return m_OnPreRender; }
+	OnSceneUpdateDelegate& OnPreRender() { return m_OnPreRender; }
 
 private:
 	void CreateQuadGeometry();
@@ -45,16 +55,17 @@ private:
 
 	const Material* m_pCurrentMaterial = nullptr;
 
-	MulticastDelegate<> m_OnPreRender;
+	OnSceneUpdateDelegate m_OnPreRender;
 
 	Graphics* m_pGraphics;
 	std::vector<Drawable*> m_Drawables;
 	std::vector<Camera*> m_Cameras;
-	Vector3 m_LightDirection = Vector3(-0.577f, -0.577f, 0.577f);
-	Vector3 m_LightPosition = Vector3(1, 1, -1);
+	std::vector<Light*> m_Lights;
+	std::vector<PostProcessing*> m_PostProcessing;
 
 	int m_CurrentFrame = 0;
 	Camera* m_pCurrentCamera = nullptr;
+	Material* m_pBlitMaterial = nullptr;
 
 	std::vector<Camera*> m_CameraQueue;
 

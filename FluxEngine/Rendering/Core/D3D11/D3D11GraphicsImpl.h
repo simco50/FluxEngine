@@ -1,4 +1,8 @@
 #pragma once
+
+#include <dxgi.h>
+#include <d3d11.h>
+
 #include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/D3DCommon/D3DHelpers.h"
 
@@ -11,13 +15,14 @@ public:
 	friend class Graphics;
 
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
+	ComPtr<ID3D11Device>& GetDeviceCom() { return m_pDevice; }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_pDeviceContext.Get(); }
 
-	unsigned int GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
-	bool CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const;
+	unsigned int GetMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
+	bool CheckMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
 
 private:
-	static bool GetPrimitiveType(const PrimitiveType primitiveType, const unsigned int elementCount, D3D11_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
+	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D11_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
 
 	ComPtr<IDXGIAdapter> m_pAdapter;
 	ComPtr<ID3D11Device> m_pDevice;
@@ -48,7 +53,7 @@ private:
 	std::array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
 	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets = {};
 	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides = {};
-	unsigned int m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
+	unsigned int m_FirstDirtyVertexBuffer = UINT_MAX;
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
 

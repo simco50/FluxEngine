@@ -5,13 +5,14 @@ class Scene;
 class SceneNode;
 class Material;
 class Geometry;
+struct DualQuaternion;
 
 struct Batch
 {
 	const Material* pMaterial = nullptr;
 	const Geometry* pGeometry = nullptr;
-	const Matrix* pModelMatrix = nullptr;
-	const Matrix* pSkinMatrices = nullptr;
+	const Matrix* pWorldMatrices = nullptr;
+	const DualQuaternion* pSkinDualQuaternions = nullptr;
 	int NumSkinMatrices = 1;
 };
 
@@ -34,6 +35,8 @@ public:
 	BoundingBox GetWorldBoundingBox() const;
 
 	bool DrawEnabled() const { return m_Draw; }
+
+	virtual void CreateUI() override;
 
 protected:
 	bool m_Draw = true;

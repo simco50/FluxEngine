@@ -5,24 +5,37 @@
 #include "Rendering\Core\IndexBuffer.h"
 #include "Rendering\Core\Shader.h"
 #include "Rendering\Core\ShaderVariation.h"
-#include "Rendering\Core\ConstantBuffer.h"
 #include "Rendering\Core\Texture.h"
 #include "Rendering\Core\DepthStencilState.h"
 #include "Rendering\Core\BlendState.h"
 #include "Rendering\Core\RasterizerState.h"
 #include "Input/InputEngine.h"
 #include "Rendering\Core\Texture2D.h"
+#include "FileSystem\File\PhysicalFile.h"
 
-ImmediateUI::ImmediateUI(Context* pContext) :
-	Subsystem(pContext)
+#include <SDL_events.h>
+
+void* ImGuiAllocate(const size_t size, void*)
+{
+	return new char[size];
+}
+
+void ImGuiFree(void* pData, void*)
+{
+	delete[] pData;
+}
+
+ImmediateUI::ImmediateUI(Context* pContext)
+	: Subsystem(pContext)
 {
 	AUTOPROFILE(ImmediateUI_Initialize);
 
+	ImGui::SetAllocatorFunctions(&ImGuiAllocate, &ImGuiFree);
 	ImGui::CreateContext();
 
 	m_pInput = pContext->GetSubsystem<InputEngine>();
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
-	m_SDLEventHandle = m_pInput->OnHandleSDL().AddRaw(this, &ImmediateUI::HandleSDLEvent);
+	m_SDLEventHandle = m_pInput->OnHandleSDL().AddStatic(&ImmediateUI::HandleSDLEvent);
 
 	//Set ImGui parameters
 	ImGuiIO& io = ImGui::GetIO();
@@ -47,14 +60,16 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	io.KeyMap[ImGuiKey_X] = (int)KeyboardKey::KEY_X;
 	io.KeyMap[ImGuiKey_Y] = (int)KeyboardKey::KEY_Y;
 	io.KeyMap[ImGuiKey_Z] = (int)KeyboardKey::KEY_Z;
-	io.RenderDrawListsFn = nullptr;
 	io.ImeWindowHandle = m_pGraphics->GetWindow();
+	io.IniFilename = nullptr;
+
+	LoadConfig();
 
 	SetStyle(true, 0.9f);
 
 	//Load shader
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/Imgui", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Shaders/Imgui", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Shaders/Imgui", ShaderType::PixelShader);
 
 	//Create vertex buffer
 	m_pVertexBuffer.reset();
@@ -69,7 +84,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 	m_pIndexBuffer = std::make_unique<IndexBuffer>(m_pGraphics);
 	m_pIndexBuffer->Create(START_INDEX_COUNT, true, true);
 
-	const char fontPath[] = "Resources/OpenSans-Regular.ttf";
+	const char fontPath[] = "OpenSans-Regular.ttf";
 	std::unique_ptr<File> pFile = FileSystem::GetFile(fontPath);
 	if (pFile && pFile->OpenRead())
 	{
@@ -94,6 +109,7 @@ ImmediateUI::ImmediateUI(Context* pContext) :
 
 ImmediateUI::~ImmediateUI()
 {
+	SaveConfig();
 	ImGui::DestroyContext();
 }
 
@@ -108,7 +124,7 @@ void ImmediateUI::NewFrame()
 	io.KeyShift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	io.KeyAlt = (GetKeyState(VK_MENU) & 0x8000) != 0;
 	io.KeySuper = false;
-	
+
 	Vector2 mousePos = m_pInput->GetMousePosition();
 	io.MousePos.x = mousePos.x;
 	io.MousePos.y = mousePos.y;
@@ -171,8 +187,8 @@ void ImmediateUI::Render()
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
-	Matrix projectionMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
+	Matrix projectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -187,9 +203,9 @@ void ImmediateUI::Render()
 			else
 			{
 				m_pGraphics->SetScissorRect(true, {
-					(int)pcmd->ClipRect.x, 
-					(int)pcmd->ClipRect.y, 
-					(int)pcmd->ClipRect.z, 
+					(int)pcmd->ClipRect.x,
+					(int)pcmd->ClipRect.y,
+					(int)pcmd->ClipRect.z,
 					(int)pcmd->ClipRect.w });
 				m_pGraphics->SetTexture(TextureSlot::Diffuse, static_cast<Texture*>(pcmd->TextureId));
 				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
@@ -200,9 +216,12 @@ void ImmediateUI::Render()
 	}
 }
 
-void ImmediateUI::HandleSDLEvent(SDL_Event* pEvent)
+void ImmediateUI::HandleSDLEvent(void* pEventData)
 {
 	ImGuiIO& io = ImGui::GetIO();
+
+	SDL_Event* pEvent = (SDL_Event*)pEventData;
+
 	switch (pEvent->type)
 	{
 	case SDL_MOUSEWHEEL:
@@ -241,23 +260,26 @@ void ImmediateUI::HandleSDLEvent(SDL_Event* pEvent)
 		io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
 		return;
 	}
+	default:
+		return;
 	}
-	return;
 }
 
 void ImmediateUI::SetStyle(bool dark, float alpha)
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 
+	// light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
 	style.Alpha = 1.0f;
 	style.FrameRounding = 3.0f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
+	//style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
 	style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
 	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
 	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
@@ -265,11 +287,12 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
 	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 0.80f);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.49f, 0.49f, 0.49f, 0.80f);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
+	//style.Colors[ImGuiCol_ComboBg] = ImVec4(0.86f, 0.86f, 0.86f, 0.99f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
@@ -277,22 +300,25 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 	style.Colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
 	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
 	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
-	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+	//style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+	//style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
+	//style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+	//style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
+	//style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	//style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
 	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-	style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+	//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
 	if (dark)
 	{
-		for (int i = 0; i < ImGuiCol_COUNT; i++)
+		for (int i = 0; i <= ImGuiCol_COUNT; i++)
 		{
 			ImVec4& col = style.Colors[i];
 			float H, S, V;
@@ -323,4 +349,35 @@ void ImmediateUI::SetStyle(bool dark, float alpha)
 			}
 		}
 	}
+}
+
+bool ImmediateUI::LoadConfig()
+{
+	std::unique_ptr<File> pFile = std::make_unique<PhysicalFile>(Paths::ConfigDir() + "imgui.ini");
+	if (pFile == nullptr)
+	{
+		return false;
+	}
+	if (pFile->OpenRead(false))
+	{
+		std::vector<unsigned char> buffer;
+		pFile->ReadAllBytes(buffer);
+		pFile->Close();
+		ImGui::LoadIniSettingsFromMemory((char*)buffer.data(), buffer.size());
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void ImmediateUI::SaveConfig()
+{
+	size_t iniFileSize = 0;
+	const char* pIniData = ImGui::SaveIniSettingsToMemory(&iniFileSize);
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(Paths::ConfigDir() + "imgui.ini");
+	pFile->OpenWrite(false, false);
+	pFile->Write(pIniData, iniFileSize);
+	pFile->Close();
 }

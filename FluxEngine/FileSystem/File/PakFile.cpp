@@ -2,8 +2,18 @@
 #include "PakFile.h"
 #include "FileSystem/MountPoint/PakMountPoint.h"
 #include "PhysicalFile.h"
-
 #include "Helpers/Compression.h"
+
+PakFile::PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry)
+	: File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
+{
+
+}
+
+PakFile::~PakFile()
+{
+
+}
 
 bool PakFile::OpenRead(bool allowWrite)
 {
@@ -36,7 +46,7 @@ size_t PakFile::Read(void* pBuffer, const size_t size)
 		return 0;
 	}
 
-	size_t read = 0;
+	size_t read;
 	if (m_pTableEntry->Compressed)
 	{
 		//If the file is compressed we have to cache the uncompressed data if we want to use it later
@@ -67,7 +77,7 @@ bool PakFile::SetPointer(const size_t position)
 
 size_t PakFile::Write(const void* /*pBuffer*/, const size_t /*size*/)
 {
-	return 0;
+	throw std::exception("Function not implemented");
 }
 
 bool PakFile::Flush()
@@ -111,7 +121,7 @@ bool PakFile::CacheUncompressedData()
 		}
 
 		m_UncompressedCache.resize(m_pTableEntry->UncompressedSize);
-		if (!Compression::Decompress(tempBuffer.data(), tempBuffer.size(), m_UncompressedCache))
+		if (!Compression::DecompressLZ4(tempBuffer.data(), tempBuffer.size(), (size_t)m_pTableEntry->UncompressedSize, m_UncompressedCache))
 		{
 			return false;
 		}

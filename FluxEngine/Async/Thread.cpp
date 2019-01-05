@@ -6,7 +6,7 @@
 #include <thread>
 #endif
 
-unsigned int Thread::m_MainThread;
+unsigned int Thread::m_MainThread = 0;
 
 Thread::Thread()
 {
@@ -17,12 +17,14 @@ Thread::~Thread()
 	StopThread();
 }
 
-bool Thread::RunThread()
+bool Thread::RunThread(ThreadFunction function, void* pArgs)
 {
 #ifdef WIN32
 	if (m_pHandle)
+	{
 		return false;
-	m_pHandle = CreateThread(nullptr, 0, ThreadFunctionStatic, this, 0, &m_ThreadId);
+	}
+	m_pHandle = CreateThread(nullptr, 0, function, pArgs, 0, (DWORD*)&m_ThreadId);
 	if (m_pHandle == nullptr)
 	{
 		auto error = GetLastError();
@@ -31,7 +33,7 @@ bool Thread::RunThread()
 	}
 	return true;
 #else
-	m_pHandle = new std::thread(ThreadFunctionStatic, this);
+	m_pHandle = new std::thread(ThreadFunctionStatic, pArgs);
 	return true;
 #endif
 }
@@ -39,7 +41,9 @@ bool Thread::RunThread()
 void Thread::StopThread()
 {
 	if (!m_pHandle)
+	{
 		return;
+	}
 #ifdef WIN32
 	WaitForSingleObject((HANDLE)m_pHandle, INFINITE);
 	if (CloseHandle((HANDLE)m_pHandle) == 0)
@@ -70,26 +74,47 @@ bool Thread::SetPriority(const int priority)
 	}
 	return false;
 #else
-	UNREFERENCED_PARAMETER(priority);
+	priority;
 	return false;
 #endif
 }
 
-unsigned int Thread::GetCurrentId()
+void Thread::SetAffinity(const uint64 affinity)
+{
+	SetAffinity(m_pHandle, affinity);
+}
+
+void Thread::SetAffinity(void* pHandle, const uint64 affinity)
+{
+	check(pHandle);
+	::SetThreadAffinityMask((HANDLE*)pHandle, (DWORD)affinity);
+}
+
+void Thread::LockToCore(const uint32 core)
+{
+	uint32 affinity = 1 << core;
+	SetAffinity(m_pHandle, (uint64)affinity);
+}
+
+void Thread::SetCurrentAffinity(const uint64 affinity)
+{
+	SetAffinity(GetCurrentThread(), affinity);
+}
+
+void Thread::LockCurrentToCore(const uint32 core)
+{
+	uint32 affinity = 1 << core;
+	SetAffinity(GetCurrentThread(), (uint64)affinity);
+}
+
+uint32 Thread::GetCurrentId()
 {
 #ifdef WIN32
-	return ::GetCurrentThreadId();
+	return (uint32)::GetCurrentThreadId();
 #else
-	return (unsigned int)std::hash<std::thread::id>{}(std::this_thread::get_id());
+	return (uint32)std::hash<std::thread::id>{}(std::this_thread::get_id());
 #endif
 }
-
-DWORD WINAPI Thread::ThreadFunctionStatic(void* pData)
-{
-	Thread* pThread = static_cast<Thread*>(pData);
-	return pThread->ThreadFunction();
-}
-
 
 void Thread::SetMainThread()
 {
@@ -101,15 +126,61 @@ bool Thread::IsMainThread()
 	return m_MainThread == GetCurrentId();
 }
 
-bool Thread::IsMainThread(unsigned int id)
+bool Thread::IsMainThread(uint32 id)
 {
 	return m_MainThread == id;
 }
 
+void Thread::SetName(uint32 id, const std::string& name)
+{
+#if _MSC_VER
+	const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType; // Must be 0x1000.
+		LPCSTR szName; // Pointer to name (in user addr space).
+		DWORD dwThreadID; // Thread ID (-1=caller thread).
+		DWORD dwFlags; // Reserved for future use, must be zero.
+	} THREADNAME_INFO;
+#pragma pack(pop)
+
+		THREADNAME_INFO info;
+		info.dwType = 0x1000;
+		info.szName = name.c_str();
+		info.dwThreadID = id;
+		info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+		__try {
+			RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+		}
+#pragma warning(pop)
+#else
+	UNREFERENCED_PARAMETER(id);
+	UNREFERENCED_PARAMETER(name);
+#endif
+}
+
+bool HookableThread::RunThread()
+{
+	return Thread::RunThread(&HookableThread::ThreadFunctionStatic, this);
+}
+
+//HOOKABLE THREAD
+
+DWORD WINAPI HookableThread::ThreadFunctionStatic(void* pData)
+{
+	HookableThread* pThread = static_cast<HookableThread*>(pData);
+	return pThread->ThreadFunction();
+}
+
 //WORKER THREAD
 
-WorkerThread::WorkerThread(AsyncTaskQueue* pOwner, int index) :
-	m_pOwner(pOwner), m_Index(index)
+WorkerThread::WorkerThread(AsyncTaskQueue* pOwner, int index)
+	: m_pOwner(pOwner), m_Index(index)
 {
 }
 
@@ -117,4 +188,9 @@ int WorkerThread::ThreadFunction()
 {
 	m_pOwner->ProcessItems(m_Index);
 	return 0;
+}
+
+int WorkerThread::GetIndex() const
+{
+	return m_Index;
 }

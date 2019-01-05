@@ -3,13 +3,13 @@
 class InputStream
 {
 public:
-	InputStream() :
-		m_Size(0), m_FilePointer(0)
+	InputStream()
+		: m_Size(0), m_FilePointer(0)
 	{}
-	InputStream(const size_t size) :
-		m_Size(size), m_FilePointer(0)
+	InputStream(const size_t size)
+		: m_Size(size), m_FilePointer(0)
 	{}
-	virtual ~InputStream() {}
+	virtual ~InputStream() = default;
 
 	virtual size_t Read(void* pDestination, const size_t size) = 0;
 
@@ -23,6 +23,7 @@ public:
 	std::string ReadSizedString();
 	std::string ReadString();
 	int ReadInt();
+	int64 ReadInt64();
 	unsigned int ReadUInt();
 	float ReadFloat();
 	double ReadDouble();

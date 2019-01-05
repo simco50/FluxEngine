@@ -3,10 +3,20 @@
 
 #include "FileSystem/File/PhysicalFile.h"
 
+//#define STBI_NO_PSD
+#define STBI_NO_GIF
+#define STBI_NO_PIC
+#define STBI_NO_PNM
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/Stb/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
+
+#define TINYEXR_IMPLEMENTATION
+#include "External/TinyExr/tinyexr.h"
+
+#include <SDL_surface.h>
 
 namespace STBI
 {
@@ -14,7 +24,9 @@ namespace STBI
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream == nullptr)
+		{
 			return 0;
+		}
 		return (int)pStream->Read(pData, (size_t)size);
 	}
 
@@ -22,20 +34,24 @@ namespace STBI
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream)
+		{
 			pStream->MovePointer(n);
+		}
 	}
 
 	int EofCallback(void* pUser)
 	{
 		InputStream* pStream = (InputStream*)pUser;
 		if (pStream == nullptr)
+		{
 			return 1;
+		}
 		return pStream->GetPointer() >= pStream->GetSize() ? 1 : 0;
 	}
 }
 
-Image::Image(Context* pContext) :
-	Resource(pContext)
+Image::Image(Context* pContext)
+	: Resource(pContext)
 {
 
 }
@@ -49,11 +65,15 @@ bool Image::Load(InputStream& inputStream)
 {
 	AUTOPROFILE_DESC(Image_Load, inputStream.GetSource().c_str());
 
-	std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
-	bool success = false;
+	const std::string extenstion = Paths::GetFileExtenstion(inputStream.GetSource());
+	bool success;
 	if (extenstion == "dds")
 	{
 		success = LoadDds(inputStream);
+	}
+	else if (extenstion == "exr")
+	{
+		success = LoadExr(inputStream);
 	}
 	//If not one of the above, load with Stbi by default (jpg, png, tga, bmp, ...)
 	else
@@ -111,12 +131,13 @@ bool Image::LoadLUT(InputStream& inputStream)
 		return false;
 	}
 
+	m_BBP = 32;
 	m_Pixels.resize(m_Height * m_Width * m_Components);
 	m_Width = m_Depth = m_Height = 16;
 
 	int* c3D = (int*)m_Pixels.data();
 	int* c2D = (int*)pPixels;
-	int dim = m_Height;
+	const int dim = m_Height;
 	for (int z = 0; z < dim; ++z)
 	{
 		for (int y = 0; y < dim; ++y)
@@ -137,11 +158,13 @@ bool Image::LoadLUT(InputStream& inputStream)
 
 bool Image::SavePng(OutputStream& outputStream)
 {
-	int result = stbi_write_png_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_png_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), m_Width * m_Components * m_Depth);
 	return result > 0;
 }
@@ -149,34 +172,39 @@ bool Image::SavePng(OutputStream& outputStream)
 
 bool Image::SaveBmp(OutputStream& outputStream)
 {
-	int result = stbi_write_bmp_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_bmp_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data());
 	return result > 0;
 }
 
 bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 {
-	int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data(), quality);
 	return result > 0;
 }
 
 bool Image::SaveTga(OutputStream& outputStream)
 {
-	const int quality = 8;
-	int result = stbi_write_tga_to_func([](void *context, void *data, int size)
+	const int result = stbi_write_tga_to_func([](void *context, void *data, int size)
 	{
 		OutputStream* pStream = (OutputStream*)context;
 		if (!pStream->Write((char*)data, size))
+		{
 			return;
+		}
 	}, &outputStream, m_Width, m_Height, m_Components, m_Pixels.data());
 	return result > 0;
 }
@@ -204,20 +232,28 @@ bool Image::SetData(const unsigned int* pPixels)
 bool Image::SetPixel(const int x, const int y, const Color& color)
 {
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return false;
+	}
 	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		pPixel[i] = (unsigned char)(color[i] * 255);
+	}
 	return true;
 }
 
 bool Image::SetPixelInt(const int x, const int y, const unsigned int color)
 {
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return false;
+	}
 	unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		pPixel[i] = reinterpret_cast<const unsigned char*>(&color)[i];
+	}
 	return true;
 }
 
@@ -225,10 +261,14 @@ Color Image::GetPixel(const int x, const int y) const
 {
 	Color c = {};
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return c;
+	}
 	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
+	{
 		reinterpret_cast<float*>(&c)[i] = (float)pPixel[i] / 255.0f;
+	}
 	return c;
 }
 
@@ -236,7 +276,9 @@ unsigned int Image::GetPixelInt(const int x, const int y) const
 {
 	unsigned int c = 0;
 	if (x + y * m_Width >= (int)m_Pixels.size())
+	{
 		return c;
+	}
 	const unsigned char* pPixel = &m_Pixels[(x + (y * m_Width)) * m_Components * m_Depth];
 	for (int i = 0; i < m_Components; ++i)
 	{
@@ -250,7 +292,9 @@ unsigned int Image::GetPixelInt(const int x, const int y) const
 SDL_Surface* Image::GetSDLSurface()
 {
 	if (m_Pixels.size() == 0)
+	{
 		return nullptr;
+	}
 
 	// Assume little-endian for all the supported platforms
 	unsigned rMask = 0x000000ff;
@@ -306,15 +350,152 @@ bool Image::LoadStbi(InputStream& inputStream)
 	callbacks.read = STBI::ReadCallback;
 	callbacks.skip = STBI::SkipCallback;
 	callbacks.eof = STBI::EofCallback;
+
 	int components = 0;
-	unsigned char* pPixels = pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
-	if (pPixels == nullptr)
+
+	m_IsHdr = stbi_is_hdr_from_callbacks(&callbacks, &inputStream);
+	inputStream.SetPointer(0);
+	if (m_IsHdr)
 	{
+		float* pPixels = stbi_loadf_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
+		if (pPixels == nullptr)
+		{
+			return false;
+		}
+		m_BBP = sizeof(float) * 8 * m_Components;
+		m_Format = ImageFormat::RGBA32;
+		m_Pixels.resize(m_Width * m_Height * m_Components * sizeof(float));
+		memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+		stbi_image_free(pPixels);
+		return true;
+	}
+	else
+	{
+		unsigned char* pPixels = stbi_load_from_callbacks(&callbacks, &inputStream, &m_Width, &m_Height, &components, m_Components);
+		if (pPixels == nullptr)
+		{
+			return false;
+		}
+		m_BBP = sizeof(char) * 8 * m_Components;
+		m_Format = ImageFormat::RGBA;
+		m_Pixels.resize(m_Width * m_Height * m_Components);
+		memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
+		stbi_image_free(pPixels);
+		return true;
+	}
+}
+
+bool Image::LoadExr(InputStream& inputStream)
+{
+	std::vector<unsigned char> buffer;
+	inputStream.ReadAllBytes(buffer);
+
+	const char* errorMessage = nullptr;
+	EXRVersion exrVersion;
+
+	int result = ParseEXRVersionFromMemory(&exrVersion, buffer.data(), buffer.size());
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to read Exr version");
 		return false;
 	}
-	m_Pixels.resize(m_Width * m_Height * m_Components);
-	memcpy(m_Pixels.data(), pPixels, m_Pixels.size());
-	stbi_image_free(pPixels);
+
+	if (exrVersion.multipart)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Exr file is multipart. This is not supported");
+		return false;
+	}
+
+	EXRHeader exrHeader;
+	InitEXRHeader(&exrHeader);
+
+	result = ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, buffer.data(), buffer.size(), &errorMessage);
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to parse Exr header: %s", errorMessage);
+		FreeEXRErrorMessage(errorMessage);
+		return false;
+	}
+
+	int pixelType = exrHeader.pixel_types[0];
+	for (int i = 1; i < exrHeader.num_channels; i++)
+	{
+		UNREFERENCED_PARAMETER(pixelType); //For release builds
+		checkf(pixelType == exrHeader.pixel_types[i], "[Image::LoadExr] The pixel types of the channels are not equal. This is a requirement");
+	}
+
+	//The amount of bytes in a pixel per channel (== BytesPerPixel / Components)
+	m_Format = exrHeader.requested_pixel_types[0] == TINYEXR_PIXELTYPE_HALF ? ImageFormat::RGBA16 : ImageFormat::RGBA32;
+	int sizePerChannelPerPixel = m_Format == ImageFormat::RGBA16 ? sizeof(int16) : sizeof(int32);
+
+	EXRImage exrImage;
+	InitEXRImage(&exrImage);
+
+	result = LoadEXRImageFromMemory(&exrImage, &exrHeader, buffer.data(), buffer.size(), &errorMessage);
+	if (result != 0)
+	{
+		FLUX_LOG(Warning, "[HDRImage::LoadExr] Failed to load Exr from memory: %s", errorMessage);
+		FreeEXRErrorMessage(errorMessage);
+		return false;
+	}
+
+	m_Width = exrImage.width;
+	m_Height = exrImage.height;
+	m_Components = 4;
+	m_IsHdr = true;
+	m_BBP = sizePerChannelPerPixel * m_Components * 8;
+
+	m_Pixels.resize(m_Width * m_Height * m_BBP / 8);
+
+	unsigned char* pPixels = m_Pixels.data();
+
+	auto getPixel = [](int x, int y, int width, int pixelSize)
+	{
+		return (x + y * width) * pixelSize;
+	};
+
+	if (exrImage.num_tiles > 0)
+	{
+		int tileMaxWidth = exrImage.tiles[0].width;
+		int tileMaxHeight = exrImage.tiles[0].height;
+		for (int i = 0; i < exrImage.num_tiles; ++i)
+		{
+			const EXRTile& tile = exrImage.tiles[i];
+			int startX = tile.offset_x * tileMaxWidth;
+			int startY = tile.offset_y * tileMaxHeight;
+			for (int y = 0; y < tile.height; ++y)
+			{
+				for (int x = 0; x < tile.width; ++x)
+				{
+					int targetIdx = getPixel(startX + x, startY + y, m_Width, sizePerChannelPerPixel * m_Components);
+					int sourceIndex = getPixel(x, y, tileMaxWidth, sizePerChannelPerPixel);
+
+					for (int c = 0; c < exrImage.num_channels; ++c)
+					{
+						memcpy(&pPixels[targetIdx + sizePerChannelPerPixel * c], &tile.images[exrImage.num_channels - 1 - c][sourceIndex], sizePerChannelPerPixel);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int y = 0; y < m_Height; ++y)
+		{
+			for (int x = 0; x < m_Width; ++x)
+			{
+				for (int c = 0; c < exrImage.num_channels; ++c)
+				{
+					int targetIdx = getPixel(x, y, m_Width, m_Components * sizePerChannelPerPixel);
+					int sourceIdx = getPixel(x, y, exrImage.width, sizePerChannelPerPixel);
+					memcpy(&pPixels[targetIdx + c * sizePerChannelPerPixel], &exrImage.images[exrImage.num_channels - 1 - c][sourceIdx], sizePerChannelPerPixel);
+				}
+			}
+		}
+	}
+
+	FreeEXRImage(&exrImage);
+	FreeEXRHeader(&exrHeader);
 
 	return true;
 }
@@ -333,7 +514,7 @@ bool Image::GetSurfaceInfo(int width, int height, int depth, int mipLevel, MipLe
 
 	if (m_Format == ImageFormat::RGBA || m_Format == ImageFormat::BGRA)
 	{
-		mipLevelInfo.RowSize = mipLevelInfo.Width * 4;
+		mipLevelInfo.RowSize = mipLevelInfo.Width * m_BBP / 8;
 		mipLevelInfo.Rows = mipLevelInfo.Height;
 		mipLevelInfo.DataSize = mipLevelInfo.Depth * mipLevelInfo.Rows * mipLevelInfo.RowSize;
 	}
@@ -428,7 +609,7 @@ bool Image::LoadDds(InputStream& inputStream)
 		DDSCAPS2_CUBEMAP = 0x00000200U,
 	};
 
-#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)a | (unsigned char)b << 8 | (unsigned char)c << 16 | (unsigned char)d << 24)
+#define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)(a) | (unsigned char)(b) << 8 | (unsigned char)(c) << 16 | (unsigned char)(d) << 24)
 
 	char magic[5];
 	magic[4] = '\0';
@@ -539,7 +720,7 @@ bool Image::LoadDds(InputStream& inputStream)
 				if (m_BBP == 32)
 				{
 					m_Components = 4;
-#define ISBITMASK(r, g, b, a) (header.ddpf.dwRBitMask == r && header.ddpf.dwGBitMask == g && header.ddpf.dwBBitMask == b && header.ddpf.dwABitMask == a)
+#define ISBITMASK(r, g, b, a) (header.ddpf.dwRBitMask == (r) && header.ddpf.dwGBitMask == (g) && header.ddpf.dwBBitMask == (b) && header.ddpf.dwABitMask == (a))
 					if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
 					{
 						m_Format = ImageFormat::RGBA;

@@ -1,0 +1,7 @@
+<Material name="FXAA">
+	<Shaders>
+		<Shader type="Pixel" source="Shaders/FXAA"/>
+	</Shaders>
+	<Parameters>
+	</Parameters>
+</Material>

@@ -2,10 +2,10 @@
 #include "TypeInfo.h"
 
 
-TypeInfo::TypeInfo(const char* typeName, const TypeInfo* baseTypeInfo) :
-	m_TypeName(typeName), 
-	m_pBaseTypeInfo(baseTypeInfo),
-	m_Type(std::hash<std::string>{} (typeName))
+TypeInfo::TypeInfo(const char* typeName, const TypeInfo* baseTypeInfo)
+	: m_TypeName(typeName),
+	m_Type(typeName),
+	m_pBaseTypeInfo(baseTypeInfo)
 {
 }
 
@@ -26,7 +26,9 @@ bool TypeInfo::IsTypeOf(const StringHash& type) const
 	while (pInfo != nullptr)
 	{
 		if (type == pInfo->m_Type)
+		{
 			return true;
+		}
 		pInfo = pInfo->m_pBaseTypeInfo;
 	}
 	return false;

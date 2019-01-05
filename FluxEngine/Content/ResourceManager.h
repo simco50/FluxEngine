@@ -9,12 +9,14 @@ class ResourceManager : public Subsystem
 	FLUX_OBJECT(ResourceManager, Subsystem)
 
 private:
-	using ResourceGroup = std::map<std::string, Resource*>;
+	using ResourceGroup = std::map<StringHash, Resource*>;
 	using ResourceCache = std::map<StringHash, ResourceGroup>;
 
 public:
 	ResourceManager(Context* pContext);
 	~ResourceManager();
+
+	DELETE_COPY(ResourceManager)
 
 	void Update();
 
@@ -34,7 +36,38 @@ public:
 			delete pResource;
 			return nullptr;
 		}
-		m_Resources[T::GetTypeStatic()][path] = pResource;
+		StringHash hash(path);
+		m_Resources[T::GetTypeStatic()][hash] = pResource;
+		return static_cast<T*>(pResource);
+	}
+
+	template <typename T>
+	T* Load(InputStream& inputStream)
+	{
+		std::string path = Paths::Normalize(inputStream.GetSource());
+		Resource* pResource = FindResource(path, T::GetTypeStatic());
+		if (pResource)
+		{
+			return static_cast<T*>(pResource);
+		}
+		pResource = new T(m_pContext);
+		if (!LoadResourcePrivate(pResource, inputStream))
+		{
+			delete pResource;
+			return nullptr;
+		}
+		StringHash hash(path);
+		m_Resources[T::GetTypeStatic()][hash] = pResource;
+		return static_cast<T*>(pResource);
+	}
+
+	template<typename T>
+	T* CreateResource(const std::string filePath)
+	{
+		std::string path = Paths::Normalize(filePath);
+		Resource* pResource = new T(m_pContext);
+		StringHash hash = path;
+		m_Resources[T::GetTypeStatic()][hash] = pResource;
 		return static_cast<T*>(pResource);
 	}
 
@@ -55,10 +88,11 @@ public:
 	void ResetDependencies(Resource* pResource);
 
 private:
-	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath);
+	bool LoadResourcePrivate(Resource* pResource, const std::string& filePath) const;
+	bool LoadResourcePrivate(Resource* pResource, InputStream& inputStream) const;
 	Resource* FindResource(const std::string& filePath, const StringHash type);
 
-	std::map<std::string, std::vector<std::string>> m_ResourceDependencies;
+	std::map<StringHash, std::vector<std::string>> m_ResourceDependencies;
 
 	std::unique_ptr<FileWatcher> m_pResourceWatcher;
 	ResourceCache m_Resources;

@@ -1,6 +1,9 @@
 #pragma once
-#include "Skeleton.h"
 #include "Content\Resource.h"
+
+class Skeleton;
+struct Bone;
+struct aiNode;
 
 struct AnimationKey
 {
@@ -11,9 +14,17 @@ struct AnimationKey
 
 struct AnimationNode
 {
-	int BoneIndex;
+	int BoneIndex = 0;
 	std::string Name;
-	using KeyPair = std::pair<float, AnimationKey>;
+	struct KeyPair
+	{
+		KeyPair(float time, const AnimationKey& key)
+			: Time(time), Key(key)
+		{}
+		float Time;
+		AnimationKey Key;
+	};
+
 	std::vector<KeyPair> Keys;
 };
 
@@ -22,14 +33,13 @@ class Animation : public Resource
 	FLUX_OBJECT(Animation, Resource)
 
 public:
-	Animation(Context* pContext, const std::string& name, int numNodes, const float duration, const float ticksPerSecond);
+	Animation(Context* pContext);
 	virtual ~Animation();
 
 	virtual bool Load(InputStream& inputStream) override;
 
-	void SetNode(const AnimationNode& node);
-	AnimationNode& GetNode(const int boneIndex);
-	size_t GetNodeCount() const { return m_AnimationNodes.size(); }
+	void ResolveBoneIndices(const Skeleton& skeleton);
+
 	const std::vector<AnimationNode>& GetNodes() { return m_AnimationNodes; }
 
 	const std::string& GetName() const { return m_Name; }

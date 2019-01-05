@@ -16,7 +16,7 @@ RasterizerState::~RasterizerState()
 	m_RasterizerStates.clear();
 }
 
-void RasterizerState::SetFillMode(const FillMode fillMode)
+void RasterizerState::SetFillMode(FillMode fillMode)
 {
 	if (fillMode != m_FillMode)
 	{
@@ -25,7 +25,7 @@ void RasterizerState::SetFillMode(const FillMode fillMode)
 	}
 }
 
-void RasterizerState::SetCullMode(const CullMode cullMode)
+void RasterizerState::SetCullMode(CullMode cullMode)
 {
 	if (cullMode != m_CullMode)
 	{
@@ -34,7 +34,7 @@ void RasterizerState::SetCullMode(const CullMode cullMode)
 	}
 }
 
-void RasterizerState::SetLineAntialias(const bool lineAntiAlias)
+void RasterizerState::SetLineAntialias(bool lineAntiAlias)
 {
 	if (lineAntiAlias != m_LineAntiAlias)
 	{
@@ -43,7 +43,7 @@ void RasterizerState::SetLineAntialias(const bool lineAntiAlias)
 	}
 }
 
-void RasterizerState::SetScissorEnabled(const bool enabled)
+void RasterizerState::SetScissorEnabled(bool enabled)
 {
 	if (enabled != m_ScissorEnabled)
 	{
@@ -52,7 +52,7 @@ void RasterizerState::SetScissorEnabled(const bool enabled)
 	}
 }
 
-void RasterizerState::SetMultisampleEnabled(const bool enabled)
+void RasterizerState::SetMultisampleEnabled(bool enabled)
 {
 	if (enabled != m_MultisampleEnabled)
 	{

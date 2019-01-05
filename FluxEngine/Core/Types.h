@@ -22,10 +22,18 @@ using uint32 = uint32_t;
 using uint64 = uint64_t;
 #endif
 
-using StringHash = size_t;
+template<typename T>
+using UniquePtr = std::unique_ptr<T>;
+template<typename T>
+using SharedPtr = std::shared_ptr<T>;
+template<typename T>
+using WeakPtr = std::weak_ptr<T>;
 
 #define FORCEINLINE __forceinline
 #define FORCENOINLINE __declspec(noinline)
 
 #define PRAGMA_DISABLE_OPTIMIZATION __pragma(optimize("",off))
 #define PRAGMA_ENABLE_OPTIMIZATION  __pragma(optimize("",on))
+
+#define STD_CALL __stdcall
+#define CDECL_CALL __cdecl

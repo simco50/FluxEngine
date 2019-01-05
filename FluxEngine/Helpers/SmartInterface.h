@@ -34,7 +34,7 @@ public:
 	T* Get() const { return m_pPtr; }
 
 	T** GetAddressOf() { return &m_pPtr; }
-	T** GetAddressOf() const { return &m_pPtr; }
+	T* const * GetAddressOf() const { return &m_pPtr; }
 
 	T* operator->() { return m_pPtr; }
 	T* operator->() const { return m_pPtr; }
@@ -60,15 +60,17 @@ public:
 		return ptr;
 	}
 
+	T* Release()
+	{
+		T* pPtr = m_pPtr;
+		m_pPtr = nullptr;
+		return pPtr;
+	}
+
 	operator bool() { return m_pPtr != nullptr; }
 	operator bool() const { return m_pPtr != nullptr; }
 
-	T** operator&()
-	{
-		return &m_pPtr;
-	}
-
-	T* operator*()
+	T* operator*() const
 	{
 		return m_pPtr;
 	}

@@ -3,16 +3,16 @@
 #include "Rendering/Core/Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
-#include "../RenderTarget.h"
+#include "Rendering/Core/RenderTarget.h"
 
-Texture2D::Texture2D(Context* pContext) :
-	Texture(pContext)
+Texture2D::Texture2D(Context* pContext)
+	: Texture(pContext)
 {
 }
 
 Texture2D::~Texture2D()
 {
-	Release();
+	Texture2D::Release();
 }
 
 void Texture2D::Release()
@@ -69,10 +69,11 @@ bool Texture2D::SetImage(const Image& image)
 	}
 
 	SetMemoryUsage(memoryUsage);
+
 	return true;
 }
 
-bool Texture2D::SetSize(const int width, const int height, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
+bool Texture2D::SetSize(int width, int height, unsigned int format, TextureUsage usage, int multiSample, void* pTexture)
 {
 	AUTOPROFILE(Texture2D_SetSize);
 
@@ -90,7 +91,7 @@ bool Texture2D::SetSize(const int width, const int height, const unsigned int fo
 	m_TextureFormat = format;
 	m_Usage = usage;
 	m_MultiSample = multiSample;
-	m_pResource = pTexture;
+	m_pResource = (ID3D11Resource*)pTexture;
 
 	if (usage == TextureUsage::RENDERTARGET || usage == TextureUsage::DEPTHSTENCILBUFFER)
 	{
@@ -98,11 +99,13 @@ bool Texture2D::SetSize(const int width, const int height, const unsigned int fo
 	}
 
 	if (!Create())
+	{
 		return false;
+	}
 	return true;
 }
 
-bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, int height, const void* pData)
+bool Texture2D::SetData(unsigned int mipLevel, int x, int y, int width, int height, const void* pData)
 {
 	AUTOPROFILE(Texture2D_SetData);
 
@@ -127,14 +130,9 @@ bool Texture2D::SetData(const unsigned int mipLevel, int x, int y, int width, in
 	unsigned int rowSize = GetRowDataSize(width);
 	unsigned int rowStart = GetRowDataSize(x);
 	unsigned int subResource = D3D11CalcSubresource(mipLevel, 0, m_MipLevels);
-	
+
 	if (m_Usage == TextureUsage::STATIC)
 	{
-		if (IsCompressed())
-		{
-			levelHeight = (levelHeight + 3) >> 2;
-		}
-
 		D3D11_BOX box;
 		box.left = (UINT)x;
 		box.right = (UINT)(x + width);

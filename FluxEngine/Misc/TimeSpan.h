@@ -1,6 +1,4 @@
 #pragma once
-#include <time.h>
-
 namespace Time
 {
 	const unsigned long long TicksPerDay = 864000000000;
@@ -27,46 +25,34 @@ struct TimeStamp
 
 struct TimeSpan
 {
-	TimeSpan() :
-		Ticks(0)
-	{}
+	TimeSpan();
 
-	TimeSpan(unsigned long long ticks) :
-		Ticks(ticks)
-	{}
+	TimeSpan(unsigned long long ticks);
 
-	int GetMilliSeconds() const { return Ticks / Time::TicksPerMillisecond % 1000; }
-	int GetSeconds() const { return Ticks / Time::TicksPerSecond % 60; }
-	int GetMinutes() const { return Ticks / Time::TicksPerMinute % 60; }
-	int GetHours() const { return (int)(Ticks / Time::TicksPerHour % 24); }
-	int GetDays() const { return (int)(Ticks / Time::TicksPerDay); }
+	int GetMilliSeconds() const;
+	int GetSeconds() const;
+	int GetMinutes() const;
+	int GetHours() const;
+	int GetDays() const;
 
-	double GetTotalMinutes() const { return (double)Ticks / Time::TicksPerMinute; }
-	double GetTotalSeconds() const { return (double)Ticks / Time::TicksPerSecond; }
-	double GetTotalMilliseconds() const { return (double)Ticks / Time::TicksPerMillisecond; }
-	double GetTotalMicroseconds() const { return (double)Ticks / Time::TicksPerMicrosecond; }
+	double GetTotalMinutes() const;
+	double GetTotalSeconds() const;
+	double GetTotalMilliseconds() const;
+	double GetTotalMicroseconds() const;
 
-	bool operator==(TimeSpan& other) const { return Ticks == other.Ticks; }
-	bool operator!=(TimeSpan& other) const { return Ticks != other.Ticks; }
-	bool operator<(TimeSpan& other) const { return Ticks < other.Ticks; }
-	bool operator>(TimeSpan& other) const { return Ticks > other.Ticks; }
-	bool operator<=(TimeSpan& other) const { return Ticks <= other.Ticks; }
-	bool operator>=(TimeSpan& other) const { return Ticks >= other.Ticks; }
+	bool operator==(TimeSpan& other) const;
+	bool operator!=(TimeSpan& other) const;
+	bool operator<(TimeSpan& other) const;
+	bool operator>(TimeSpan& other) const;
+	bool operator<=(TimeSpan& other) const;
+	bool operator>=(TimeSpan& other) const;
 
-	TimeSpan operator+(const TimeSpan& other) const { return TimeSpan(Ticks + other.Ticks); }
-	TimeSpan operator-(const TimeSpan& other) const { return TimeSpan(Ticks - other.Ticks); }
-	
-	TimeSpan& operator+=(const TimeSpan& other) 
-	{ 
-		Ticks += other.Ticks;
-		return *this;
-	}
+	TimeSpan operator+(const TimeSpan& other) const;
+	TimeSpan operator-(const TimeSpan& other) const;
 
-	TimeSpan& operator-=(const TimeSpan& other) 
-	{
-		Ticks -= other.Ticks; 
-		return *this;
-	}
+	TimeSpan& operator+=(const TimeSpan& other);
 
-	unsigned long long Ticks;
+	TimeSpan& operator-=(const TimeSpan& other);
+
+	unsigned long long m_Ticks;
 };

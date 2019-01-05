@@ -6,14 +6,13 @@ class IMountPoint;
 
 #ifdef PLATFORM_WINDOWS
 #define FILE_HANDLE_INVALID INVALID_HANDLE_VALUE
-using FileHandle = HANDLE; 
+using FileHandle = HANDLE;
 #endif
 
 class PhysicalFile : public File
 {
 public:
-	PhysicalFile(const std::string& fileName) : File(fileName)
-	{}
+	PhysicalFile(const std::string& fileName);
 	virtual ~PhysicalFile();
 
 	virtual bool OpenRead(bool allowWrite = false) override;
@@ -29,7 +28,9 @@ public:
 	virtual bool SetPointerFromEnd(const size_t position) override;
 
 private:
-	bool CreateDirectoryTree(const std::string& path);
+	static bool CreateDirectoryTree(const std::string& path);
+	bool SetPointerInternal(const size_t position, bool fromEnd);
 
 	FileHandle m_Handle = FILE_HANDLE_INVALID;
+	std::string m_PhysicalPath;
 };

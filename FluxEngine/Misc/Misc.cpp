@@ -1,6 +1,7 @@
 #include "FluxEngine.h"
 #include "Misc.h"
 #include <shellapi.h>
+#include <intrin.h>
 
 namespace BuildConfiguration
 {
@@ -12,7 +13,7 @@ namespace BuildConfiguration
 	Type Configuration = Type::Other;
 #endif
 
-	char* ToString(Type type)
+	const char* ToString(Type type)
 	{
 		switch (type)
 		{
@@ -49,7 +50,7 @@ namespace BuildPlatform
 	Type Platform = Type::Other;
 #endif
 
-	char* ToString(Type type)
+	const char* ToString(Type type)
 	{
 		switch (type)
 		{
@@ -99,7 +100,7 @@ bool Misc::GetEnvironmentVar(const std::string& name, std::string& value)
 
 bool Misc::GetDiskSpace(char driveLetter, uint64& totalSpace, uint64& freeSpace)
 {
-	std::string drive = driveLetter + ":\\";
+	std::string drive = Printf("%c:\\", driveLetter);
 	return ::GetDiskFreeSpaceEx(drive.c_str(), nullptr, reinterpret_cast<ULARGE_INTEGER*>(&totalSpace), reinterpret_cast<ULARGE_INTEGER*>(&freeSpace));
 }
 
@@ -149,10 +150,10 @@ void Misc::GetCpuId(CpuId* pCpuId)
 	}
 
 	__cpuid(cpuId.data(), 0x80000000);
-	int nExIds = cpuId[0];
+	const unsigned int nExIds = cpuId[0];
 
 	std::vector<std::array<int, 4>> extdata;
-	for (int i = 0x80000000; i <= nExIds; i++)
+	for (unsigned int i = 0x80000000; i <= nExIds; i++)
 	{
 		__cpuidex(cpuId.data(), i, 0);
 		extdata.push_back(cpuId);
@@ -172,7 +173,7 @@ void Misc::GetCpuId(CpuId* pCpuId)
 	pCpuId->CacheLineSize = cpuId[2] & 0xFF;
 }
 
-bool Misc::MessageBox(const std::string& title, const std::string& description)
+bool Misc::ShowMessageBox(const std::string& title, const std::string& description)
 {
 	::MessageBox(nullptr,description.c_str(), title.c_str(), MB_OK | MB_SYSTEMMODAL);
 	return true;
@@ -180,11 +181,12 @@ bool Misc::MessageBox(const std::string& title, const std::string& description)
 
 bool Misc::OsExecute(const std::string& command, const std::string& commandLine, const std::string& operation /*= ""*/)
 {
-	HINSTANCE process = ShellExecute(0,
+	HINSTANCE process = ShellExecute(
+		nullptr,
 		operation.c_str(),
 		command.c_str(),
 		commandLine.c_str(),
-		0,
+		nullptr,
 		SW_SHOWNORMAL);
 	return process > (HINSTANCE)32;
 }
@@ -222,7 +224,7 @@ uint32 Misc::GetProcessId()
 	return ::GetCurrentProcessId();
 }
 
-std::string Misc::GetComputerName()
+std::string Misc::ComputerName()
 {
 	char buffer[256];
 	uint32 size = sizeof(buffer);
@@ -230,7 +232,7 @@ std::string Misc::GetComputerName()
 	return buffer;
 }
 
-std::string Misc::GetUserName()
+std::string Misc::UserName()
 {
 	char buffer[256];
 	uint32 size = sizeof(buffer);

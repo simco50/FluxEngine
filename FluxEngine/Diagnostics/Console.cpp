@@ -3,9 +3,8 @@
 #include "Async\Thread.h"
 #include "Core\Config.h"
 
-using namespace std;
-
 static Console* consoleInstance = nullptr;
+
 Console::Console()
 {
 	AUTOPROFILE(Console_Initialize);
@@ -43,7 +42,7 @@ Console::Console()
 
 	FLUX_LOG(Info, "Date: %02d-%02d-%02d", time.Day, time.Month, time.Year);
 	FLUX_LOG(Info, "Time: %02d:%02d:%02d", time.Hour, time.Minute, time.Second);
-	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::GetComputerName().c_str(), Misc::GetUserName().c_str());
+	FLUX_LOG(Info, "Computer: %s | User: %s", Misc::ComputerName().c_str(), Misc::UserName().c_str());
 
 	FLUX_LOG(Info, "Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
 	FLUX_LOG(Info, "Platform: %s", BuildPlatform::ToString(BuildPlatform::Platform));
@@ -68,20 +67,10 @@ void Console::FlushThreadedMessages()
 	ScopeLock lock(m_QueueMutex);
 	while (m_MessageQueue.size() > 0)
 	{
-		const QueuedMessage& message = m_MessageQueue.front();
+		const LogEntry& message = m_MessageQueue.front();
 		Log(message.Message, message.Type);
 		m_MessageQueue.pop();
 	}
-}
-
-bool Console::LogFmodResult(FMOD_RESULT result)
-{
-	if (result != FMOD_OK)
-	{
-		Log(Printf("FMOD Error (%d) %s", result, FMOD_ErrorString(result)), LogType::Error);
-		return true;
-	}
-	return false;
 }
 
 bool Console::LogHRESULT(const std::string &source, HRESULT hr)
@@ -125,11 +114,11 @@ void Console::Log(const std::string &message, LogType type)
 	if (!Thread::IsMainThread())
 	{
 		ScopeLock lock(consoleInstance->m_QueueMutex);
-		consoleInstance->m_MessageQueue.push(QueuedMessage(message, type));
+		consoleInstance->m_MessageQueue.push(LogEntry(message, type));
 	}
 	else
 	{
-		stringstream stream;
+		std::stringstream stream;
 		DateTime now = DateTime::Now();
 		stream << "[" << now.GetHours() << ":" << now.GetMinutes() << ":" << now.GetSeconds() << "]";
 		switch (type)
@@ -153,13 +142,19 @@ void Console::Log(const std::string &message, LogType type)
 		}
 
 		stream << message;
-		std::string output = stream.str();
-
+		const std::string output = stream.str();
 		std::cout << output << std::endl;
 		if (consoleInstance->m_ConsoleHandle)
+		{
 			SetConsoleTextAttribute(consoleInstance->m_ConsoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		}
+		consoleInstance->m_pFileLog->WriteLine(output);
 
-		consoleInstance->m_pFileLog->WriteLine(output.c_str());
+		consoleInstance->m_History.push_back(LogEntry(message, type));
+		if (consoleInstance->m_History.size() > 50)
+		{
+			consoleInstance->m_History.pop_front();
+		}
 
 		if (type == LogType::Error)
 		{
@@ -167,7 +162,7 @@ void Console::Log(const std::string &message, LogType type)
 		}
 		else if (type == LogType::FatalError)
 		{
-			Misc::MessageBox("Fatal Error", message);
+			Misc::ShowMessageBox("Fatal Error", message);
 			abort();
 		}
 	}
@@ -243,6 +238,11 @@ bool Console::Flush()
 		return false;
 	}
 	return consoleInstance->m_pFileLog->Flush();
+}
+
+const std::deque<Console::LogEntry>& Console::GetHistory()
+{
+	return consoleInstance->m_History;
 }
 
 void Console::InitializeConsoleWindow()

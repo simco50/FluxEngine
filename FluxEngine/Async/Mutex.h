@@ -1,5 +1,6 @@
 #pragma once
 
+//Simple mutex implementation
 class Mutex
 {
 public:
@@ -16,6 +17,7 @@ private:
 	void* m_pHandle = nullptr;
 };
 
+//Scoped mutex lock
 class ScopeLock
 {
 public:

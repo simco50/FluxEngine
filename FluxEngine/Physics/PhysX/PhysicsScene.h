@@ -5,7 +5,6 @@ class PhysicsSystem;
 class Collider;
 class Rigidbody;
 class SceneNode;
-class Transform;
 
 struct RaycastResult
 {
@@ -29,7 +28,6 @@ struct CollisionResult
 	Collider* pCollider = nullptr;
 	Rigidbody* pRigidbody = nullptr;
 	SceneNode* pNode = nullptr;
-	Transform* pTransform = nullptr;
 };
 
 class PhysicsScene : public Component, public physx::PxSimulationEventCallback
@@ -48,10 +46,9 @@ public:
 	physx::PxScene* GetScene() const { return m_pPhysicsScene; }
 
 	bool Raycast(
-		const Vector3& origin,
-		const Vector3& direction,
+		const Ray& ray,
 		RaycastResult& outResult,
-		const float length = std::numeric_limits<float>::max()
+		const float length = FLT_MAX
 	) const;
 
 	void SetGravity(const float x, const float y, const float z);

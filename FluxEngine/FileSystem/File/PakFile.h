@@ -8,11 +8,8 @@ struct PakFileEntry;
 class PakFile : public File
 {
 public:
-	PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry) :
-		File(fileName), m_pTableEntry(pEntry), m_pMountPoint(pMountPoint)
-	{}
-	virtual ~PakFile()
-	{}
+	PakFile(const std::string& fileName, PakMountPoint* pMountPoint, PakFileEntry* pEntry);
+	virtual ~PakFile();
 
 	virtual bool OpenRead(bool allowWrite = false) override;
 	virtual bool OpenWrite(bool append = false, bool allowRead = false) override;

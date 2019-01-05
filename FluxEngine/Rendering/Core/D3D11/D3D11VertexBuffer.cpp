@@ -3,7 +3,7 @@
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
 
-char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
+const char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
 {
 	switch (semantic)
 	{
@@ -25,9 +25,11 @@ char* VertexElement::GetSemanticOfType(VertexElementSemantic semantic)
 		return "BLENDINDEX";
 	case VertexElementSemantic::OBJECTINDEX:
 		return "OBJECTINDEX";
+	case VertexElementSemantic::MAX_VERTEX_ELEMENT_SEMANTICS:
+	default:
+		checkf(false, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+		return "INVALID";
 	}
-	FLUX_LOG(Warning, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
-	return "INVALID";
 }
 
 DXGI_FORMAT VertexElement::GetFormatOfType(VertexElementType type)
@@ -52,12 +54,14 @@ DXGI_FORMAT VertexElement::GetFormatOfType(VertexElementType type)
 		return DXGI_FORMAT_R32G32B32A32_UINT;
 	case VertexElementType::INT4:
 		return DXGI_FORMAT_R32G32B32A32_SINT;
+	case VertexElementType::MAX_VERTEX_ELEMENT_TYPES:
+	default:
+		checkf(false, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
+		return (DXGI_FORMAT)0;
 	}
-	FLUX_LOG(Warning, "[VertexElement::GetFormatOfType()] Invalid vertex type!");
-	return (DXGI_FORMAT)0;
 }
 
-void VertexBuffer::Create(const int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
+void VertexBuffer::Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
 {
 	AUTOPROFILE(VertexBuffer_Create);
 
@@ -76,11 +80,12 @@ void VertexBuffer::Create(const int vertexCount, std::vector<VertexElement>& ele
 	desc.CPUAccessFlags = dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Usage = dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pBuffer));
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pResource));
 }
 
 void VertexBuffer::SetData(void* pData)
 {
+	check(m_pResource);
 	AUTOPROFILE(VertexBuffer_SetData);
 
 	D3D11_BOX destBox;
@@ -91,21 +96,18 @@ void VertexBuffer::SetData(void* pData)
 	destBox.front = 0;
 	destBox.back = 1;
 
-	m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pBuffer, 0, &destBox, pData, 0, 0);
+	m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &destBox, pData, 0, 0);
 }
 
 void* VertexBuffer::Map(bool discard)
 {
-	if (!m_Dynamic)
-	{
-		FLUX_LOG(Error, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
-		return nullptr;
-	}
+	check(m_pResource);
+	checkf(m_Dynamic, "[VertexBuffer::Map] > Vertex buffer is not dynamic");
 
 	D3D11_MAPPED_SUBRESOURCE mappedData = {};
 	mappedData.pData = nullptr;
 
-	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pBuffer, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData))
+	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData));
 	void* pBuffer = mappedData.pData;
 
 	m_Mapped = true;
@@ -116,7 +118,7 @@ void VertexBuffer::Unmap()
 {
 	if (m_Mapped)
 	{
-		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pBuffer, 0);
+		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);
 		m_Mapped = false;
 	}
 }

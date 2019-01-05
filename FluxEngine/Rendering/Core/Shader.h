@@ -17,17 +17,17 @@ public:
 
 	virtual bool Load(InputStream& inputStream) override;
 
-	ShaderVariation* GetOrCreateVariation(const ShaderType type, const std::string& defines = std::string(""));
+	ShaderVariation* GetOrCreateVariation(ShaderType type, const std::string& defines = std::string(""));
 
 	bool ReloadVariations();
 
-	const std::string& GetSource() { return m_ShaderSource; }
-	static std::string GetEntryPoint(const ShaderType type);
+	const std::string& GetSource() const { return m_ShaderSource; }
+	static const char* GetEntryPoint(ShaderType type);
 	const std::string& GetName() const { return m_Name; }
 	const DateTime& GetLastModifiedTimestamp() const { return m_LastModifiedTimestamp; }
 
 private:
-	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<size_t>& processedIncludes);
+	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<StringHash>& processedIncludes, std::vector<std::string>& dependencies);
 
 	std::string m_Name;
 	std::string m_ShaderSource;

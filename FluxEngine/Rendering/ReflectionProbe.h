@@ -36,6 +36,8 @@ public:
 	void SetTimeSlicingMethod(const ReflectionSlicingMethod method) { m_SlicingMethod = method; }
 	TextureCube* GetTexture() const { return m_pCubeTexture.get(); }
 
+	virtual void CreateUI() override;
+
 protected:
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnSceneRemoved() override;

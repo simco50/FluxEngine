@@ -1,7 +1,7 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 
-cbuffer cCustom : register(b3)
+cbuffer cCustom : register(b4)
 {
 	float4 cColor;
 }

@@ -43,4 +43,6 @@ struct Paths
 
 	static std::string GameIniFile();
 	static std::string EngineIniFile();
+
+	static std::string WorkingDirectory();
 };

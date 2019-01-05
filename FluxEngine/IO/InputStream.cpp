@@ -9,6 +9,7 @@ size_t InputStream::ReadFrom(void* pDestination, const size_t from, const size_t
 
 bool InputStream::ReadAllBytes(std::vector<unsigned char>& buffer)
 {
+	SetPointer(0);
 	const size_t size = GetSize();
 	buffer.resize(size);
 	return Read(buffer.data(), buffer.size()) == size;
@@ -16,7 +17,7 @@ bool InputStream::ReadAllBytes(std::vector<unsigned char>& buffer)
 
 bool InputStream::SetPointer(const size_t position)
 {
-	m_FilePointer = position; 
+	m_FilePointer = position;
 	return true;
 }
 
@@ -64,6 +65,12 @@ int InputStream::ReadInt()
 {
 	int out;
 	return Read(&out, sizeof(int)) == sizeof(int) ? out : 0;
+}
+
+int64 InputStream::ReadInt64()
+{
+	int64 out;
+	return Read(&out, sizeof(int64)) == sizeof(int64) ? out : 0;
 }
 
 unsigned int InputStream::ReadUInt()

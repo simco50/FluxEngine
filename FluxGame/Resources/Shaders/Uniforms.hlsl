@@ -2,7 +2,6 @@ cbuffer cPerFrame : register(b0)
 {
 	float cDeltaTime;
 	float cElapsedTime;
-	float4 cLightDirection;
 }
 
 cbuffer cPerView : register(b1)
@@ -21,5 +20,24 @@ cbuffer cPerObject : register(b2)
 
 #ifdef SKINNED
 	float4x4 cSkinMatrices[100];
+	float2x4 cSkinDualQuaternions[100];
 #endif
+}
+
+struct Light
+{
+	int Enabled;
+	float3 Position;
+	float3 Direction;
+	float Intensity;
+	float4 Color;
+	float Range;
+	float SpotLightAngle;
+	float Attenuation;
+	uint Type;
+};
+
+cbuffer cLights : register(b3)
+{
+	Light cLights[LIGHT_COUNT];
 }

@@ -8,6 +8,8 @@ class Renderer;
 class Component;
 class Camera;
 
+DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
+
 class Scene : public SceneNode
 {
 	friend class SceneNode;
@@ -25,16 +27,19 @@ public:
 	Camera* GetCamera() const;
 
 	SceneNode* FindNode(const std::string& name);
+	const std::vector<SceneNode*>& GetNodes() const { return m_Nodes; }
 
 	virtual void OnSceneSet(Scene* pScene) override;
 
-	MulticastDelegate<>& OnSceneUpdate() { return m_OnSceneUpdate; }
+	OnSceneUpdateDelegate& OnSceneUpdate() { return m_OnSceneUpdate; }
+
+	SceneNode* PickNode(const Ray& ray);
 
 private:
-	void AddChild(SceneNode* pNode);
+	void TrackChild(SceneNode* pNode);
 
 	Renderer* m_pRenderer;
 	std::vector<SceneNode*> m_Nodes;
 
-	MulticastDelegate<> m_OnSceneUpdate;
+	OnSceneUpdateDelegate m_OnSceneUpdate;
 };

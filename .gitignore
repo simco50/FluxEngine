@@ -23,3 +23,5 @@ CppCheck/
 FluxGame/FluxGame_vs2015.vcxproj.user
 *.user
 Old/
+SourceAssets/
+/RenderDocSettings.cap

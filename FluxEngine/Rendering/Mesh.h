@@ -1,7 +1,6 @@
 #pragma once
 #include "Content/Resource.h"
 #include "Animation/Skeleton.h"
-#include "Animation/Animation.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -33,19 +32,13 @@ public:
 
 	const Skeleton& GetSkeleton() const { return m_Skeleton; }
 
-	Animation* GetAnimation(const std::string& name) const;
-	Animation* GetAnimation(const StringHash hash) const;
-	Animation* GetAnimation(const int index) const;
-
 private:
 	bool LoadFlux(InputStream& inputStream);
 	bool LoadAssimp(InputStream& inputStream);
 
 	bool ProcessAssimpMeshes(const aiScene* pScene);
-	bool ProcessAssimpAnimations(const aiScene* pScene);
-	bool ProcessSkeleton(const aiScene* pScene);
 	void CalculateBoundingBox();
-	void ProcessNode(aiNode* pNode, Matrix parentMatrix, Bone* pParentBone = nullptr);
+	void ProcessSkeletonHierarchy(aiNode* pNode, Bone* pParentBone);
 
 	static const int MESH_VERSION = 7;
 
@@ -61,6 +54,5 @@ private:
 
 	std::map<std::string, int> m_BoneMap;
 	Skeleton m_Skeleton;
-	std::vector<std::unique_ptr<Animation>> m_Animations;
 	int m_GeometryCount = 0;
 };

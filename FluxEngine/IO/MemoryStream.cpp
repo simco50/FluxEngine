@@ -11,9 +11,13 @@ size_t MemoryStream::Write(const void* pData, const size_t size)
 
 size_t MemoryStream::Read(void* pDestination, const size_t size)
 {
-	size_t s = Math::Clamp(size, m_Size, (size_t)0);
-	//assert(m_FilePointer + size < m_Size);
+	const size_t s = Math::Clamp(size, m_Size, (size_t)0);
 	memcpy(pDestination, Current(), s);
 	m_FilePointer += s;
 	return s;
+}
+
+void* MemoryStream::Current() const
+{
+	return (char*)m_pBuffer + m_FilePointer;
 }

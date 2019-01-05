@@ -1,3 +1,4 @@
+#pragma once
 #include "GraphicsDefines.h"
 
 class Graphics;
@@ -13,11 +14,11 @@ public:
 	void* GetOrCreate(Graphics* pGraphics);
 	bool IsDirty() const { return m_IsDirty; }
 
-	void SetScissorEnabled(const bool enabled);
-	void SetMultisampleEnabled(const bool enabled);
-	void SetFillMode(const FillMode fillMode);
-	void SetCullMode(const CullMode cullMode);
-	void SetLineAntialias(const bool lineAntiAlias);
+	void SetScissorEnabled(bool enabled);
+	void SetMultisampleEnabled(bool enabled);
+	void SetFillMode(FillMode fillMode);
+	void SetCullMode(CullMode cullMode);
+	void SetLineAntialias(bool lineAntiAlias);
 
 private:
 	bool m_IsDirty = true;

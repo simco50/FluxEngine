@@ -9,31 +9,31 @@
 #include "../VertexBuffer.h"
 #include "../Texture2D.h"
 #include "../DepthStencilState.h"
-#include "../InputLayout.h"
+#include "../D3D11/D3D11InputLayout.h"
 #include "../BlendState.h"
-#include "../Shader.h"
 #include "../ShaderProgram.h"
-#include "UI/ImmediateUI.h"
-#include "FileSystem/File/PhysicalFile.h"
+#include "../../../FileSystem/File/PhysicalFile.h"
+#include "../../../Content/Image.h"
+#include "../../Renderer.h"
+#include "../../Geometry.h"
+#include "../StructuredBuffer.h"
 
 #include <SDL.h>
 #include <SDL_syswm.h>
-#include "Content/Image.h"
-#include "Input/InputEngine.h"
-#include "../../Renderer.h"
-#include "../../Geometry.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 
-Graphics::Graphics(Context* pContext) :
-	Subsystem(pContext),
-	m_pImpl(std::make_unique<GraphicsImpl>()),
-	m_WindowType(WindowType::WINDOWED)
+Graphics::Graphics(Context* pContext)
+	: Subsystem(pContext),
+	m_WindowType(WindowType::WINDOWED),
+	m_pImpl(std::make_unique<GraphicsImpl>())
 {
 	AUTOPROFILE(Graphics_Construct);
 
-	for (size_t i = 0; i < m_CurrentRenderTargets.size(); ++i)
-		m_CurrentRenderTargets[i] = nullptr;
+	for (RenderTarget*& pRt : m_CurrentRenderTargets)
+	{
+		pRt = nullptr;
+	}
 
 	pContext->InitSDLSystem(SDL_INIT_VIDEO);
 }
@@ -41,14 +41,16 @@ Graphics::Graphics(Context* pContext) :
 Graphics::~Graphics()
 {
 	if (m_pImpl->m_pSwapChain.IsValid())
-		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, NULL);
+	{
+		m_pImpl->m_pSwapChain->SetFullscreenState(FALSE, nullptr);
+	}
 
 	m_pContext->ShutdownSDL();
 
 #if 0
 	ComPtr<ID3D11Debug> pDebug;
-	HR(m_pDevice->QueryInterface(IID_PPV_ARGS(&pDebug)));
-	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_SUMMARY);
+	HR(pDevice->QueryInterface(IID_PPV_ARGS(pDebug.GetAddressOf())));
+	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 #endif
 }
 
@@ -90,7 +92,9 @@ bool Graphics::SetMode(
 	if (!m_pImpl->m_pDevice.IsValid() || m_Multisample != multiSample)
 	{
 		if (!CreateDevice(m_WindowWidth, m_WindowHeight))
+		{
 			return false;
+		}
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
@@ -116,7 +120,9 @@ bool Graphics::OpenWindow()
 
 	unsigned flags = 0;
 	if (m_Resizable)
+	{
 		flags |= SDL_WINDOW_RESIZABLE;
+	}
 	switch (m_WindowType)
 	{
 	case WindowType::BORDERLESS:
@@ -134,7 +140,7 @@ bool Graphics::OpenWindow()
 	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_WindowWidth, m_WindowHeight, flags);
 	if (!m_pWindow)
 		return false;
-	
+
 	//Hardcode the logo into the binary
 	unsigned int pLogo[] =
 	{
@@ -172,6 +178,12 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 	else if(m_CurrentRenderTargets[index] != pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
+
+		if (pRenderTarget->GetParentTexture()->GetMultiSample() > 1)
+		{
+			pRenderTarget->GetParentTexture()->SetResolveDirty(true);
+		}
+
 		m_pImpl->m_RenderTargetsDirty = true;
 	}
 }
@@ -217,7 +229,7 @@ void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsi
 			m_CurrentVertexBuffers[i] = pBuffer;
 			m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
 			m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
-			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetBuffer();
+			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetResource();
 			changed = true;
 		}
 		else if (m_CurrentVertexBuffers[i])
@@ -245,9 +257,13 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	{
 		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
-			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetBuffer(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		{
+			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetResource(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		}
 		else
+		{
 			m_pImpl->m_pDeviceContext->IASetIndexBuffer(nullptr, (DXGI_FORMAT)0, 0);
+		}
 		m_pCurrentIndexBuffer = pIndexBuffer;
 	}
 }
@@ -261,17 +277,30 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		switch (type)
 		{
 		case ShaderType::VertexShader:
-			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
 		case ShaderType::PixelShader:
-			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+
+#ifdef SHADER_GEOMETRY_ENABLE
 		case ShaderType::GeometryShader:
-			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 		case ShaderType::ComputeShader:
-			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetShaderObject() : nullptr, nullptr, 0);
+			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 			break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+		case ShaderType::DomainShader:
+			m_pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
+			break;
+		case ShaderType::HullShader:
+			m_pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
+			break;
+#endif
 		default:
 			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
 			return false;
@@ -288,7 +317,7 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 		{
 			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
 			{
-				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetBuffer() : nullptr;
+				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
 				buffersChanged = true;
 			}
 		}
@@ -302,12 +331,24 @@ bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
 			case ShaderType::PixelShader:
 				m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#ifdef SHADER_GEOMETRY_ENABLE
 			case ShaderType::GeometryShader:
 				m_pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 			case ShaderType::ComputeShader:
 				m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+			case ShaderType::DomainShader:
+				m_pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::HullShader:
+				m_pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#endif
 			default:
 				break;
 			}
@@ -323,12 +364,16 @@ void Graphics::UpdateShaderProgram()
 		AUTOPROFILE(Graphics_UpdateShaderProgram);
 
 		uint64 hash = 0;
+		int shiftAmount = (int)floor(64 / (int)ShaderType::MAX);
+		int maxSize = (int)pow(2, shiftAmount);
 		for (ShaderVariation* pVariation : m_CurrentShaders)
 		{
-			hash <<= 16;
+			hash <<= shiftAmount;
 			if (pVariation == nullptr)
+			{
 				continue;
-			hash |= (int)pVariation->GetByteCode().size() % std::numeric_limits<uint16>::max();
+			}
+			hash |= (int)pVariation->GetByteCode().size() % maxSize;
 		}
 		auto pIt = m_pImpl->m_ShaderPrograms.find(hash);
 		if (pIt != m_pImpl->m_ShaderPrograms.end())
@@ -346,10 +391,10 @@ void Graphics::UpdateShaderProgram()
 	}
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
+bool Graphics::SetShaderParameter(StringHash hash, const void* pData)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -357,10 +402,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, pParameter->Size, pData);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const void* pData, const int stride, const int count)
+bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -373,10 +418,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const void* pData, co
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const float value)
+bool Graphics::SetShaderParameter(StringHash hash, float value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -384,10 +429,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const float value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(float), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const int value)
+bool Graphics::SetShaderParameter(StringHash hash, int value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -395,10 +440,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const int value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(int), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector2& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector2& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -406,10 +451,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector2& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector2), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector3& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector3& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -417,10 +462,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector3& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector3), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Vector4& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Vector4& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -428,10 +473,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Vector4& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector4), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Color& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Color& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -439,10 +484,10 @@ bool Graphics::SetShaderParameter(const std::string& name, const Color& value)
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Color), &value);
 }
 
-bool Graphics::SetShaderParameter(const std::string& name, const Matrix& value)
+bool Graphics::SetShaderParameter(StringHash hash, const Matrix& value)
 {
 	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(name);
+	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
 	if (pParameter == nullptr)
 	{
 		return false;
@@ -473,7 +518,9 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	}
 
 	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_SamplerStates[(unsigned int)slot]))
+	{
 		return;
+	}
 
 	if (pTexture)
 	{
@@ -494,6 +541,34 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 		m_pImpl->m_LastDirtyTexture = (int)slot;
 	}
 }
+
+void Graphics::SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer)
+{
+	if (slot >= TextureSlot::MAX)
+	{
+		FLUX_LOG(Warning, "[Graphics::SetStructuredBuffer] > Can't assign a structuredbuffer to a slot out of range");
+		return;
+	}
+
+	if (pBuffer && (pBuffer->GetView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot]))
+	{
+		return;
+	}
+
+	m_pImpl->m_ShaderResourceViews[(size_t)slot] = pBuffer ? (ID3D11ShaderResourceView*)pBuffer->GetView() : nullptr;
+	m_pImpl->m_SamplerStates[(size_t)slot] = nullptr;
+
+	m_pImpl->m_TexturesDirty = true;
+	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
+	{
+		m_pImpl->m_FirstDirtyTexture = (int)slot;
+	}
+	if (m_pImpl->m_LastDirtyTexture < (int)slot)
+	{
+		m_pImpl->m_LastDirtyTexture = (int)slot;
+	}
+}
+
 
 void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
 {
@@ -594,13 +669,14 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 
 		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
 
-		SetShader(ShaderType::VertexShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::VertexShader));
-		SetShader(ShaderType::PixelShader, GetShader("Resources/Shaders/ClearFrameBuffer", ShaderType::PixelShader));
+		InvalidateShaders();
+		SetShader(ShaderType::VertexShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::VertexShader));
+		SetShader(ShaderType::PixelShader, GetShader("Shaders/ClearFrameBuffer", ShaderType::PixelShader));
 
 		Matrix worldMatrix = Matrix::CreateTranslation(Vector3(0, 0, depth));
 
-		SetShaderParameter("cColor", color);
-		SetShaderParameter("cWorld", worldMatrix);
+		SetShaderParameter(ShaderConstant::cColor, color);
+		SetShaderParameter(ShaderConstant::cWorld, worldMatrix);
 
 		quadGeometry->Draw(this);
 	}
@@ -634,7 +710,12 @@ void Graphics::FlushSRVChanges(bool force)
 		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
 		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-		
+
+#ifdef SHADER_TESSELLATION_ENABLE
+		m_pImpl->m_pDeviceContext->DSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+		m_pImpl->m_pDeviceContext->DSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+#endif
+
 		m_pImpl->m_TexturesDirty = false;
 		m_pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;
 		m_pImpl->m_LastDirtyTexture = 0;
@@ -667,7 +748,7 @@ void Graphics::PrepareDraw()
 	{
 		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
 		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, std::numeric_limits<unsigned int>::max());
+		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, UINT_MAX);
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)
@@ -705,17 +786,17 @@ void Graphics::PrepareDraw()
 		{
 			auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
 			if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
-				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetInputLayout());
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetResource());
 			else
 			{
 				std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
 				pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), m_CurrentShaders[(unsigned int)ShaderType::VertexShader]);
-				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetInputLayout());
+				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetResource());
 				m_pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
 			}
 		}
 
-		m_pImpl->m_FirstDirtyVertexBuffer = std::numeric_limits<unsigned int>::max();
+		m_pImpl->m_FirstDirtyVertexBuffer = UINT_MAX;
 		m_pImpl->m_LastDirtyVertexBuffer = 0;
 		m_pImpl->m_VertexBuffersDirty = false;
 	}
@@ -914,7 +995,7 @@ void Graphics::OnResize(const int width, const int height)
 void Graphics::TakeScreenshot()
 {
 	std::stringstream str;
-	str << Paths::ScreenshotDir() << "\\" << GetTimeStamp() << ".png";
+	str << Paths::ScreenshotDir() << "\\Screenshot_" << DateTime::Now().ToString("%y-%m-%d_%H-%M-%S") << ".png";
 	PhysicalFile file(str.str());
 	if (!file.OpenWrite())
 	{
@@ -993,10 +1074,9 @@ void Graphics::TakeScreenshot(OutputStream& outputStream)
 	destinationImage.Save(outputStream);
 }
 
-ConstantBuffer* Graphics::GetOrCreateConstantBuffer(const ShaderType shaderType, unsigned int index, unsigned int size)
+ConstantBuffer* Graphics::GetOrCreateConstantBuffer(unsigned int index, unsigned int size)
 {
-	size_t hash = (size_t)shaderType
-		| (unsigned)(index << 1)
+	size_t hash = (unsigned)(index << 1)
 		| (unsigned)(size << 4);
 
 	auto pIt = m_ConstantBuffers.find(hash);

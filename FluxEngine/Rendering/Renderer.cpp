@@ -1,25 +1,30 @@
 #include "FluxEngine.h"
 #include "Renderer.h"
-#include "Drawable.h"
-#include "Material.h"
-#include "Rendering/Core/Graphics.h"
-#include "Geometry.h"
-#include "Core/ShaderVariation.h"
-#include "Camera/Camera.h"
-#include "Rendering/Core/Texture.h"
-#include "Core/BlendState.h"
-#include "Core/RasterizerState.h"
-#include "Core/DepthStencilState.h"
-#include "Core/VertexBuffer.h"
-#include "Core/IndexBuffer.h"
-#include "Scenegraph/SceneNode.h"
 #include "Async/AsyncTaskQueue.h"
+#include "Camera/Camera.h"
+#include "Core/BlendState.h"
+#include "Core/DepthStencilState.h"
+#include "Core/Graphics.h"
+#include "Core/IndexBuffer.h"
+#include "Core/RasterizerState.h"
+#include "Core/VertexBuffer.h"
+#include "Drawable.h"
+#include "Geometry.h"
+#include "Light.h"
+#include "Material.h"
+#include "Scenegraph/SceneNode.h"
+#include "Math/DualQuaternion.h"
+#include "PostProcessing.h"
+#include "Core/RenderTarget.h"
+#include "Content/ResourceManager.h"
+#include "Core/Texture.h"
 
 Renderer::Renderer(Context* pContext) :
-	Subsystem(pContext) 
+	Subsystem(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	CreateQuadGeometry();
+	m_pBlitMaterial = pContext->GetSubsystem<ResourceManager>()->Load<Material>("Materials/Blit.xml");
 }
 
 Renderer::~Renderer()
@@ -37,7 +42,7 @@ void Renderer::Draw()
 	{
 		AUTOPROFILE(Renderer_UpdateDrawables);
 		AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i) 
+		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i)
 		{
 			AUTOPROFILE(Renderer_UpdateDrawable);
 			m_Drawables[i]->Update();
@@ -111,6 +116,11 @@ void Renderer::Draw()
 			}
 		}
 	}
+
+	for (PostProcessing* pPost : m_PostProcessing)
+	{
+		pPost->Draw();
+	}
 }
 
 void Renderer::AddDrawable(Drawable* pDrawable)
@@ -134,6 +144,44 @@ void Renderer::RemoveCamera(Camera* pCamera)
 	m_Cameras.erase(std::remove(m_Cameras.begin(), m_Cameras.end(), pCamera), m_Cameras.end());
 }
 
+void Renderer::AddLight(Light* pLight)
+{
+	m_Lights.push_back(pLight);
+}
+
+void Renderer::RemoveLight(Light* pLight)
+{
+	m_Lights.erase(std::remove(m_Lights.begin(), m_Lights.end(), pLight), m_Lights.end());
+}
+
+void Renderer::AddPostProcessing(PostProcessing* pPostProcessing)
+{
+	m_PostProcessing.push_back(pPostProcessing);
+}
+
+void Renderer::RemovePostProcessing(PostProcessing* pPostProcessing)
+{
+	m_PostProcessing.erase(std::remove(m_PostProcessing.begin(), m_PostProcessing.end(), pPostProcessing), m_PostProcessing.end());
+}
+
+void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial /*= nullptr*/)
+{
+	check(pSource);
+	check(pTarget);
+	check(pSource->GetParentTexture()->GetWidth() == pTarget->GetParentTexture()->GetWidth());
+	check(pSource->GetParentTexture()->GetHeight() == pTarget->GetParentTexture()->GetHeight());
+	if (pMaterial == nullptr)
+	{
+		pMaterial = m_pBlitMaterial;
+	}
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
+	m_pGraphics->FlushSRVChanges(false);
+	m_pGraphics->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
+	m_pGraphics->SetRenderTarget(0, pTarget);
+	SetPerMaterialParameters(pMaterial);
+	GetQuadGeometry()->Draw(m_pGraphics);
+}
+
 void Renderer::QueueCamera(Camera * pCamera)
 {
 	m_CameraQueue.push_back(pCamera);
@@ -143,16 +191,23 @@ void Renderer::CreateQuadGeometry()
 {
 	AUTOPROFILE(Renderer_CreateQuadGeometry);
 
+	struct VertexStructure
+	{
+		Vector3 Position;
+		Vector2 TexCoord;
+	};
+
 	m_pQuadVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 	std::vector<VertexElement> elements = {
-		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false)
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD, 0, false),
 	};
 	m_pQuadVertexBuffer->Create(4, elements);
-	Vector3 vertices[] = {
-		Vector3(-1.0f, 1.0f, 0.0f),
-		Vector3(1.0f, 1.0f, 0.0f),
-		Vector3(1.0f, -1.0f, 0.0f),
-		Vector3(-1.0f, -1.0f, 0.0f),
+	VertexStructure vertices[] = {
+		{ Vector3(-1.0f, 1.0f, 0.0f), Vector2(0, 0) },
+		{ Vector3(1.0f, 1.0f, 0.0f), Vector2(1, 0) },
+		{ Vector3(1.0f, -1.0f, 0.0f), Vector2(1, 1) },
+		{ Vector3(-1.0f, -1.0f, 0.0f), Vector2(0, 1) },
 	};
 	m_pQuadVertexBuffer->SetData(vertices);
 
@@ -172,26 +227,18 @@ void Renderer::CreateQuadGeometry()
 
 void Renderer::SetPerFrameParameters()
 {
-	int frame = GameTimer::Ticks();
-	if (frame != m_CurrentFrame)
-	{
-		m_CurrentFrame = frame;
-		m_pGraphics->SetShaderParameter("cDeltaTime", GameTimer::DeltaTime());
-		m_pGraphics->SetShaderParameter("cElapsedTime", GameTimer::GameTime());
-		m_LightPosition.Normalize(m_LightDirection);
-		m_LightDirection *= -1;
-		m_pGraphics->SetShaderParameter("cLightDirection", m_LightDirection);
-	}
+	m_pGraphics->SetShaderParameter(ShaderConstant::cDeltaTime, GameTimer::DeltaTime());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cElapsedTime, GameTimer::GameTime());
 }
 
 void Renderer::SetPerCameraParameters(Camera* pCamera)
 {
 	m_pCurrentCamera = pCamera;
-	m_pGraphics->SetShaderParameter("cViewProj", pCamera->GetViewProjection());
-	m_pGraphics->SetShaderParameter("cView", pCamera->GetView());
-	m_pGraphics->SetShaderParameter("cViewInverse", pCamera->GetViewInverse());
-	m_pGraphics->SetShaderParameter("cNearClip", pCamera->GetNearPlane());
-	m_pGraphics->SetShaderParameter("cFarClip", pCamera->GetFarPlane());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, pCamera->GetViewProjection());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cView, pCamera->GetView());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewInverse, pCamera->GetViewInverse());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cNearClip, pCamera->GetNearPlane());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cFarClip, pCamera->GetFarPlane());
 }
 
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
@@ -215,13 +262,20 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
 	}
 
+	std::vector<Light::Data> lightData(GraphicsConstants::MAX_LIGHTS);
+	for (size_t i = 0; i < m_Lights.size(); ++i)
+	{
+		lightData[i] = *m_Lights[i]->GetData();
+	}
+	m_pGraphics->SetShaderParameter(ShaderConstant::cLights, lightData.data());
+
 	//Blend state
 	m_pGraphics->GetBlendState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
-	
+
 	//Rasterizer state
 	m_pGraphics->GetRasterizerState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
 	m_pGraphics->GetRasterizerState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
-	
+
 	//Depth stencil state
 	m_pGraphics->GetDepthStencilState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
 	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
@@ -230,11 +284,15 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 
 void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 {
-	if (batch.NumSkinMatrices > 1)
+	if (batch.NumSkinMatrices > 0)
 	{
-		m_pGraphics->SetShaderParameter("cSkinMatrices", batch.pSkinMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinMatrices, batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinDualQuaternions, batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
 	}
-	m_pGraphics->SetShaderParameter("cWorld", *batch.pModelMatrix);
-	Matrix wvp = *batch.pModelMatrix * pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cWorldViewProj", wvp);
+	else
+	{
+		m_pGraphics->SetShaderParameter(ShaderConstant::cWorld, *batch.pWorldMatrices);
+		Matrix wvp = *batch.pWorldMatrices * pCamera->GetViewProjection();
+		m_pGraphics->SetShaderParameter(ShaderConstant::cWorldViewProj, wvp);
+	}
 }

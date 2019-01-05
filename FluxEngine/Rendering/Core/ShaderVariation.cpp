@@ -2,13 +2,10 @@
 #include "ShaderVariation.h"
 #include "Shader.h"
 #include "Graphics.h"
-#include "ConstantBuffer.h"
 #include "FileSystem\File\PhysicalFile.h"
 
-ShaderVariation::ShaderVariation(Context* pContext, Shader* pShader, const ShaderType type) :
-	Object(pContext),
-	m_pParentShader(pShader),
-	m_ShaderType(type)
+ShaderVariation::ShaderVariation(Graphics* pGraphics, Shader* pOwner, ShaderType type)
+	: GraphicsObject(pGraphics), m_pParentShader(pOwner), m_ShaderType(type)
 {
 
 }
@@ -21,7 +18,7 @@ ShaderVariation::~ShaderVariation()
 
 void ShaderVariation::Release()
 {
-	SafeRelease(m_pShaderObject);
+	SafeRelease(m_pResource);
 }
 
 void ShaderVariation::AddDefine(const std::string& define)
@@ -53,17 +50,17 @@ bool ShaderVariation::SaveToCache(const std::string& cacheName) const
 	pFile->WriteSizedString("SHDR");
 	pFile->WriteInt(SHADER_CACHE_VERSION);
 	pFile->WriteSizedString(m_Name);
+	pFile->WriteUByte((unsigned char)m_ShaderType);
 	pFile->WriteUByte((unsigned char)m_Defines.size());
 	for (const std::string& define : m_Defines)
 	{
 		pFile->WriteSizedString(define);
 	}
 	pFile->WriteUByte((unsigned char)m_ShaderParameters.size());
-	for (const std::pair<std::string, ShaderParameter>& pair : m_ShaderParameters)
+	for (const auto& pair : m_ShaderParameters)
 	{
-		pFile->WriteSizedString(pair.first);
+		pFile->WriteInt64((int64)pair.first.m_Hash);
 		const ShaderParameter& parameter = pair.second;
-		pFile->WriteUByte((unsigned char)parameter.Type);
 		pFile->WriteSizedString(parameter.Name);
 		pFile->WriteInt(parameter.Buffer);
 		pFile->WriteInt(parameter.Size);
@@ -89,9 +86,9 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	std::stringstream filePathStream;
 	filePathStream << Paths::ShaderCacheDir() << cacheName << ".bin";
 	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
-	
+
 	DateTime timeStamp = FileSystem::GetLastModifiedTime(filePathStream.str());
-	if (timeStamp.Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
+	if (timeStamp.m_Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
 	{
 		return false;
 	}
@@ -112,6 +109,7 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		return false;
 	}
 	m_Name = pFile->ReadSizedString();
+	m_ShaderType = (ShaderType)pFile->ReadUByte();
 	m_Defines.resize((size_t)pFile->ReadByte());
 	for (std::string& define : m_Defines)
 	{
@@ -121,10 +119,9 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 	unsigned char parameterCount = pFile->ReadByte();
 	for (unsigned char i = 0; i < parameterCount ; i++)
 	{
-		std::string parameterName = pFile->ReadSizedString();
-		ShaderParameter& parameter = m_ShaderParameters[parameterName];
+		StringHash parameterHash = StringHash((size_t)pFile->ReadInt64());
+		ShaderParameter& parameter = m_ShaderParameters[parameterHash];
 
-		parameter.Type = (ShaderType)pFile->ReadUByte();
 		parameter.Name = pFile->ReadSizedString();
 		parameter.Buffer = pFile->ReadInt();
 		parameter.Size = pFile->ReadInt();
@@ -142,13 +139,16 @@ bool ShaderVariation::LoadFromCache(const std::string& cacheName)
 		return false;
 	}
 
-	Graphics* pGraphics = GetSubsystem<Graphics>();
 	for (size_t i = 0; i < m_ConstantBufferSizes.size() ; i++)
 	{
 		if (m_ConstantBufferSizes[i] > 0)
-			m_ConstantBuffers[i] = pGraphics->GetOrCreateConstantBuffer(ShaderType::VertexShader, (unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
+		{
+			m_ConstantBuffers[i] = m_pGraphics->GetOrCreateConstantBuffer((unsigned int)i, (unsigned int)m_ConstantBufferSizes[i]);
+		}
 		else
+		{
 			m_ConstantBuffers[i] = nullptr;
+		}
 	}
 	for (auto& pair : m_ShaderParameters)
 	{

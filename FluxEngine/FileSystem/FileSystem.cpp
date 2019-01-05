@@ -4,8 +4,9 @@
 #include "FileSystem/MountPoint/PhysicalMountPoint.h"
 #include "FileSystem/File/PhysicalFile.h"
 #include "FileSystemHelpers.h"
+#include "MountPoint/ZipMountPoint.h"
 
-std::vector<MountPointPair> FileSystem::m_MountPoints;
+std::vector<FileSystem::MountPointPtr> FileSystem::m_MountPoints;
 
 std::vector<std::string> FileSystem::m_PakLocations;
 
@@ -15,37 +16,36 @@ FileSystem::FileSystem()
 FileSystem::~FileSystem()
 {}
 
-bool FileSystem::Mount(const std::string& path, const std::string& virtualPath, const ArchiveType type)
+bool FileSystem::Mount(const std::string& physicalPath)
 {
-	AUTOPROFILE_DESC(FileSystem_Mount, path);
+	AUTOPROFILE_DESC(FileSystem_Mount, physicalPath);
 
-	std::unique_ptr<IMountPoint> pPtr = CreateMountPoint(FixPath(path), type);
+	std::unique_ptr<IMountPoint> pPtr = CreateMountPoint(FixPath(physicalPath));
 	if (pPtr == nullptr)
+	{
 		return false;
+	}
 
 	if (!pPtr->OnMount())
+	{
 		return false;
+	}
 
-	m_MountPoints.push_back(MountPointPair(FixPath(virtualPath), std::move(pPtr)));
+	m_MountPoints.push_back(std::move(pPtr));
 
 	//Sort the mountpoints depending on their priority
-	std::sort(m_MountPoints.begin(), m_MountPoints.end(), 
-		[](const MountPointPair& a, const MountPointPair& b)
+	std::sort(m_MountPoints.begin(), m_MountPoints.end(),
+		[](const MountPointPtr& a, const MountPointPtr& b)
 	{
-		return a.second->GetOrder() > b.second->GetOrder();
+		return a->GetOrder() > b->GetOrder();
 	}
 	);
-	FLUX_LOG(Info, "[FileSystem::Mount] > Mounted '%s' on '%s'", path.c_str(), virtualPath.c_str());
+	FLUX_LOG(Info, "[FileSystem::Mount] > Mounted '%s'", physicalPath.c_str());
 
 	return true;
 }
 
-bool FileSystem::Mount(const std::string& path, const ArchiveType type /*= ArchiveType::Physical*/)
-{
-	return Mount(path, "", type);
-}
-
-void FileSystem::AddPakLocation(const std::string& path, const std::string& virtualPath)
+void FileSystem::AddPakLocation(const std::string& path)
 {
 	if (std::find(m_PakLocations.begin(), m_PakLocations.end(), path) != m_PakLocations.end())
 		return;
@@ -55,7 +55,9 @@ void FileSystem::AddPakLocation(const std::string& path, const std::string& virt
 		std::vector<std::string> pakFiles;
 		GetFilesWithExtension(location, pakFiles, "pak", false);
 		for (const std::string& pakFile : pakFiles)
-			Mount(pakFile, virtualPath, ArchiveType::Pak);
+		{
+			Mount(pakFile);
+		}
 	}
 }
 
@@ -66,16 +68,13 @@ std::unique_ptr<File> FileSystem::GetFile(const std::string& fileName)
 	//The points that got mounted first get prioritized
 	for (const auto& pMp : m_MountPoints)
 	{
-		//strip out the mount point's virtual file path
-		std::string searchPath = path.substr(0, pMp.first.size());
-		if (pMp.first == searchPath)
+		std::unique_ptr<File> pFile = pMp->GetFile(path);
+		//If we didn't find the file, continue looking in the other mount points
+		if (pFile == nullptr)
 		{
-			std::unique_ptr<File> pFile = pMp.second->GetFile(path.substr(pMp.first.size() + 1));
-			//If we didn't find the file, continue looking in the other mount points
-			if(pFile == nullptr)
-				continue;
-			return std::move(pFile);
+			continue;
 		}
+		return pFile;
 	}
 	return nullptr;
 }
@@ -112,7 +111,6 @@ DateTime FileSystem::GetCreationTime(const std::string& fileName)
 
 int64 FileSystem::GetFileSize(const std::string& fileName)
 {
-	DateTime creationTime, accessTime, modifiedTime;
 	FileAttributes attibutes;
 	if (!GetFileAttributes(fileName, attibutes))
 	{
@@ -231,12 +229,14 @@ void FileSystem::GetFilesWithExtension(const std::string& directory, std::vector
 	struct SimpleVisitor : public FileVisitor
 	{
 		SimpleVisitor(std::vector<std::string>& files, const std::string& extension, const bool recursive) :
-			Files(files), Extension(extension), Recursive(recursive)
+			Files(files), pExtension(&extension), Recursive(recursive)
 		{}
 		virtual bool Visit(const std::string& fileName, const bool isDirectory) override
 		{
-			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == Extension)
+			if (isDirectory == false && Paths::GetFileExtenstion(fileName) == *pExtension)
+			{
 				Files.push_back(fileName);
+			}
 			return true;
 		}
 		virtual bool IsRecursive() const override
@@ -244,7 +244,7 @@ void FileSystem::GetFilesWithExtension(const std::string& directory, std::vector
 			return Recursive;
 		}
 		std::vector<std::string>& Files;
-		const std::string& Extension;
+		const std::string* pExtension;
 		bool Recursive;
 	};
 	SimpleVisitor visitor(files, extension, recursive);
@@ -255,22 +255,39 @@ std::string FileSystem::FixPath(const std::string& path)
 {
 	std::string output;
 	if (path.substr(0, 2) == "./" || path.substr(0, 2) == ".\\")
+	{
 		output = std::string(path.begin() + 2, path.end());
+	}
 	else
+	{
 		output = path;
+	}
 	std::replace(output.begin(), output.end(), '\\', '/');
 	ToLower(output);
-		
+	if (output.back() == '/')
+	{
+		output.pop_back();
+	}
+
 	return output;
 }
 
-std::unique_ptr<IMountPoint> FileSystem::CreateMountPoint(const std::string& physicalPath, const ArchiveType type)
+std::unique_ptr<IMountPoint> FileSystem::CreateMountPoint(const std::string& physicalPath)
 {
-	switch (type)
+	std::string extension = Paths::GetFileExtenstion(physicalPath);
+	if (extension.length() == 0)
 	{
-	case ArchiveType::Physical: return std::make_unique<PhysicalMountPoint>(physicalPath);
-	case ArchiveType::Pak: return std::make_unique<PakMountPoint>(physicalPath);
+		return std::make_unique<PhysicalMountPoint>(physicalPath);
 	}
+	else if (extension == "pak")
+	{
+		return std::make_unique<PakMountPoint>(physicalPath);
+	}
+	else if (extension == "zip")
+	{
+		return std::make_unique<ZipMountPoint>(physicalPath);
+	}
+	checkNoEntry();
 	return nullptr;
 }
 

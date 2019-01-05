@@ -8,7 +8,9 @@ public:
 	static void CreateInstance(Args... args)
 	{
 		if (!m_pObj)
+		{
 			m_pObj = new T(args...);
+		}
 	}
 
 	static void DestroyInstance()

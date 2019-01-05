@@ -4,45 +4,14 @@ class Subsystem;
 class Context
 {
 public:
-	Context() {}
-	~Context()
-	{
-		m_SystemCache.clear();
-		if (m_SdlInits > 0)
-		{
-			FLUX_LOG(Warning, "SDL hasn't been properly shut down");
-		}
-	}
+	Context();
+	~Context();
 
-	Subsystem* GetSubsystem(StringHash type) const
-	{
-		auto pIt = m_Systems.find(type);
-		if (pIt == m_Systems.end())
-		{
-			return nullptr;
-		}
-		return pIt->second;
-	}
+	Subsystem* GetSubsystem(StringHash type) const;
 
-	void InitSDLSystem(unsigned int flag)
-	{
-		if (m_SdlInits == 0)
-			SDL_Init(0);
+	void InitSDLSystem(unsigned int flag);
 
-		unsigned int flagsToEnable = flag & ~SDL_WasInit(0);
-		SDL_InitSubSystem(flagsToEnable);
-		++m_SdlInits;
-	}
-
-	void ShutdownSDL()
-	{
-		--m_SdlInits;
-		if (m_SdlInits == 0)
-		{
-			SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
-			SDL_Quit();
-		}
-	}
+	void ShutdownSDL();
 
 	template<typename T>
 	T* GetSubsystem(bool required = true) const

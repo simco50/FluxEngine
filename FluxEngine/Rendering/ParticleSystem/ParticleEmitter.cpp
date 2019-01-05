@@ -4,7 +4,6 @@
 #include "ParticleEmitter.h"
 #include "Particle.h"
 
-#include "SceneGraph/Transform.h"
 #include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
 
@@ -16,21 +15,18 @@
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/Texture2D.h"
 
-ParticleEmitter::ParticleEmitter(Context* pContext, ParticleSystem* pSystem) :
-	Drawable(pContext),
-	m_pGeometry(std::make_unique<Geometry>())
+ParticleEmitter::ParticleEmitter(Context* pContext)
+	: Drawable(pContext), m_pGeometry(std::make_unique<Geometry>())
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
 	m_Batches.resize(1);
 	m_Batches[0].pGeometry = m_pGeometry.get();
-	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Resources/Materials/Particles.xml");
+	m_pMaterial = GetSubsystem<ResourceManager>()->Load<Material>("Materials/Particles.xml");
 	m_pMaterial->SetDepthTestMode(CompareMode::LESSEQUAL);
 	m_pMaterial->SetDepthEnabled(true);
 	m_pMaterial->SetDepthWrite(false);
 	m_Batches[0].pMaterial = m_pMaterial;
-
-	SetSystem(pSystem);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -51,7 +47,7 @@ void ParticleEmitter::SetSystem(ParticleSystem* pSettings)
 		return;
 	}
 
-	if (m_pParticleSystem->ImagePath == "")
+	if (m_pParticleSystem->ImagePath.empty())
 	{
 		m_pParticleSystem->ImagePath = ERROR_TEXTURE;
 	}
@@ -90,7 +86,6 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 
 	if (m_pParticleSystem)
 	{
-		m_Draw = true;
 		CreateVertexBuffer(m_BufferSize);
 		m_BurstIterator = m_pParticleSystem->Bursts.begin();
 		if (m_pParticleSystem->PlayOnAwake)
@@ -98,7 +93,6 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 	}
 	else
 	{
-		m_Draw = false;
 		Stop();
 	}
 }
@@ -106,14 +100,14 @@ void ParticleEmitter::OnSceneSet(Scene* pScene)
 void ParticleEmitter::OnNodeSet(SceneNode* pNode)
 {
 	Drawable::OnNodeSet(pNode);
-	m_Batches[0].pModelMatrix = &pNode->GetTransform()->GetWorldMatrix();
+	m_Batches[0].pWorldMatrices = &pNode->GetWorldMatrix();
 }
 
 void ParticleEmitter::FreeParticles()
 {
-	for (size_t i = 0; i < m_Particles.size(); i++)
+	for (Particle* pParticle : m_Particles)
 	{
-		delete m_Particles[i];
+		delete pParticle;
 	}
 	m_Particles.clear();
 }
@@ -141,20 +135,20 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 	case ParticleSortingMode::FrontToBack:
 		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
 			return d1 > d2;
 		});
 		break;
 	case ParticleSortingMode::BackToFront:
 		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
 		{
-			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
-			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetTransform()->GetWorldPosition());
+			float d1 = Vector3::DistanceSquared(a->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
+			float d2 = Vector3::DistanceSquared(b->GetVertexInfo().Position, m_pScene->GetCamera()->GetNode()->GetWorldPosition());
 			return d1 < d2;
 		});
 	case ParticleSortingMode::OldestFirst:
-		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();
 			float lifeTimerB = b->GetLifeTimer();
@@ -162,14 +156,14 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 		});
 		break;
 	case ParticleSortingMode::YoungestFirst:
-		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [this](Particle* a, Particle* b)
+		std::sort(m_Particles.begin(), m_Particles.begin() + m_ParticleCount, [](Particle* a, Particle* b)
 		{
 			float lifeTimerA = a->GetLifeTimer();
 			float lifeTimerB = b->GetLifeTimer();
 			return lifeTimerA > lifeTimerB;
 		});
 		break;
-	default: 
+	default:
 		break;
 	}
 }
@@ -177,17 +171,17 @@ void ParticleEmitter::SortParticles(const ParticleSortingMode sortMode)
 void ParticleEmitter::CalculateBoundingBox()
 {
 	Vector3 max;
-	auto p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	auto p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.x < b->GetVertexInfo().Position.x;
 	});
 	max.x = abs((*p)->GetVertexInfo().Position.x);
-	p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.y < b->GetVertexInfo().Position.y;
 	});
 	max.y = abs((*p)->GetVertexInfo().Position.y);
-	p = std::max_element(m_Particles.begin(), m_Particles.end(), [this](const Particle* a, const Particle* b)
+	p = std::max_element(m_Particles.begin(), m_Particles.end(), [](const Particle* a, const Particle* b)
 	{
 		return a->GetVertexInfo().Position.z < b->GetVertexInfo().Position.z;
 	});
@@ -273,4 +267,48 @@ void ParticleEmitter::Update()
 		CreateVertexBuffer(m_BufferSize);
 	}
 	m_pGeometry->SetDrawRange(PrimitiveType::POINTLIST, 0, m_ParticleCount);
+}
+
+void ParticleEmitter::CreateUI()
+{
+	if (m_pParticleSystem)
+	{
+		static const char* shapes[] =
+		{
+			"Circle",
+			"Sphere",
+			"Cone",
+			"Edge",
+		};
+
+		ImGui::SliderFloat("Duration", &m_pParticleSystem->Duration, 0.0f, 20.0f);
+		ImGui::Checkbox("Loop", &m_pParticleSystem->Loop);
+		ImGui::SliderFloat("Lifetime", &m_pParticleSystem->Lifetime, 0.0f, 20.0f);
+		ImGui::SliderFloat("Lifetime Variance", &m_pParticleSystem->LifetimeVariance, 0.0f, 10.0f);
+		ImGui::SliderFloat("Start Velocity", &m_pParticleSystem->StartVelocity, 0.0f, 20.0f);
+		ImGui::SliderFloat("Start Velocity Variance", &m_pParticleSystem->StartVelocityVariance, 0.0f, 10.0f);
+		ImGui::SliderFloat("Start Size", &m_pParticleSystem->StartSize, 0.0f, 20.0f);
+		ImGui::SliderFloat("Start Size Variance", &m_pParticleSystem->StartSizeVariance, 0.0f, 10.0f);
+		ImGui::Checkbox("Random Start Rotation", &m_pParticleSystem->RandomStartRotation);
+		ImGui::Checkbox("Loop", &m_pParticleSystem->Loop);
+		ImGui::Checkbox("Play On Awake", &m_pParticleSystem->PlayOnAwake);
+		ImGui::SliderInt("Max Particles", &m_pParticleSystem->MaxParticles, 0, 10000);
+		ImGui::SliderInt("Emission", &m_pParticleSystem->Emission, 0, 1000);
+		ImGui::Separator();
+		ImGui::Combo("Shape", (int*)&m_pParticleSystem->Shape.ShapeType, [](void*, int index, const char** pText)
+		{
+			*pText = shapes[index];
+			return true;
+		}, nullptr, 4);
+		ImGui::SliderFloat("Radius", &m_pParticleSystem->Shape.Radius, 0.0f, 20.0f);
+		ImGui::Checkbox("Emit From Shell", &m_pParticleSystem->Shape.EmitFromShell);
+		ImGui::Checkbox("Emit From Volume", &m_pParticleSystem->Shape.EmitFromVolume);
+		ImGui::SliderFloat("Angle", &m_pParticleSystem->Shape.Angle, 0.0f, 180.0f);
+	}
+	else
+	{
+		ImGui::Text("No Particle System assigned");
+	}
+
+	Drawable::CreateUI();
 }

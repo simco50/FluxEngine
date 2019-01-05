@@ -14,7 +14,7 @@ inline void D3DBlobToVector(ID3DBlob* pBlob, std::vector<char>& buffer)
 	memcpy(buffer.data(), pBlob->GetBufferPointer(), buffer.size());
 }
 
-inline D3D11_COMPARISON_FUNC D3D11ComparisonFunction(CompareMode mode)
+inline constexpr D3D11_COMPARISON_FUNC D3D11ComparisonFunction(CompareMode mode)
 {
 	switch (mode)
 	{
@@ -25,32 +25,33 @@ inline D3D11_COMPARISON_FUNC D3D11ComparisonFunction(CompareMode mode)
 	case CompareMode::LESSEQUAL:		return D3D11_COMPARISON_LESS_EQUAL;
 	case CompareMode::GREATER:			return D3D11_COMPARISON_GREATER;
 	case CompareMode::GREATEREQUAL:		return D3D11_COMPARISON_GREATER_EQUAL;
+	case CompareMode::UNDEFINED:
+	default:							return D3D11_COMPARISON_LESS;
 	}
-	return D3D11_COMPARISON_LESS;
 }
 
-inline D3D11_FILL_MODE D3D11FillMode(FillMode mode)
+inline constexpr D3D11_FILL_MODE D3D11FillMode(FillMode mode)
 {
 	switch (mode)
 	{
 	case FillMode::SOLID: return D3D11_FILL_SOLID;
 	case FillMode::WIREFRAME: return D3D11_FILL_WIREFRAME;
+	default: return D3D11_FILL_SOLID;
 	}
-	return D3D11_FILL_SOLID;
 }
 
-inline D3D11_CULL_MODE D3D11CullMode(CullMode mode)
+inline constexpr D3D11_CULL_MODE D3D11CullMode(CullMode mode)
 {
 	switch (mode)
 	{
 	case CullMode::BACK: return D3D11_CULL_BACK;
 	case CullMode::NONE: return D3D11_CULL_NONE;
 	case CullMode::FRONT: return D3D11_CULL_FRONT;
+	default: return D3D11_CULL_BACK;
 	}
-	return D3D11_CULL_BACK;
 }
 
-inline D3D11_STENCIL_OP D3D11StencilOperation(StencilOperation operation)
+inline constexpr D3D11_STENCIL_OP D3D11StencilOperation(StencilOperation operation)
 {
 	switch (operation)
 	{
@@ -63,7 +64,7 @@ inline D3D11_STENCIL_OP D3D11StencilOperation(StencilOperation operation)
 	return D3D11_STENCIL_OP_REPLACE;
 }
 
-inline D3D11_FILTER D3D11Filter(TextureFilter filter)
+inline constexpr D3D11_FILTER D3D11Filter(TextureFilter filter)
 {
 	switch (filter)
 	{
@@ -107,7 +108,7 @@ inline D3D11_FILTER D3D11Filter(TextureFilter filter)
 	return D3D11_FILTER_ANISOTROPIC;
 }
 
-inline D3D11_RENDER_TARGET_BLEND_DESC D3D11RenderTargetBlendDesc(BlendMode mode, unsigned char colorWriteMask)
+inline constexpr D3D11_RENDER_TARGET_BLEND_DESC D3D11RenderTargetBlendDesc(BlendMode mode, unsigned char colorWriteMask)
 {
 	D3D11_RENDER_TARGET_BLEND_DESC desc = {};
 	desc.RenderTargetWriteMask = colorWriteMask;
@@ -187,6 +188,9 @@ inline D3D11_RENDER_TARGET_BLEND_DESC D3D11RenderTargetBlendDesc(BlendMode mode,
 		desc.DestBlendAlpha = D3D11_BLEND_ONE;
 		desc.BlendOpAlpha = D3D11_BLEND_OP_REV_SUBTRACT;
 		break;
+	case BlendMode::UNDEFINED:
+	default:
+		return desc;
 	}
 	return desc;
 }

@@ -1,6 +1,5 @@
 #pragma once
-
-class Graphics;
+#include "GraphicsObject.h"
 
 enum class VertexElementType : unsigned char
 {
@@ -61,7 +60,7 @@ struct VertexElement
 		return other.GetHash() == GetHash();
 	}
 
-	static char* GetSemanticOfType(VertexElementSemantic semantic);
+	static const char* GetSemanticOfType(VertexElementSemantic semantic);
 
 	static DXGI_FORMAT GetFormatOfType(VertexElementType type);
 
@@ -82,12 +81,14 @@ struct VertexElement
 		case VertexElementType::UINT4:
 		case VertexElementType::INT4:
 			return 4 * sizeof(float);
+		case VertexElementType::MAX_VERTEX_ELEMENT_TYPES:
+		default:
+			return 0;
 		}
-		return 0;
 	}
 };
 
-class VertexBuffer
+class VertexBuffer : public GraphicsObject
 {
 public:
 	VertexBuffer(Graphics* pGraphics);
@@ -95,14 +96,13 @@ public:
 
 	DELETE_COPY(VertexBuffer)
 
-	void Create(const int vertexCount, std::vector<VertexElement>& elements, bool dynamic = false);
+	void Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic = false);
 	void SetData(void* pData);
-
-	void* GetBuffer() const { return m_pBuffer; }
 
 	void* Map(bool discard);
 	void Unmap();
 
+	unsigned int GetSize() const { return m_VertexCount * m_VertexStride; }
 	unsigned int GetVertexStride() const { return m_VertexStride; }
 	unsigned int GetVertexCount() const { return m_VertexCount; }
 	const std::vector<VertexElement>& GetElements() const { return m_Elements; }
@@ -115,16 +115,12 @@ private:
 	void SetVertexSize(const std::vector<VertexElement>& elements);
 	void UpdateOffsets(std::vector<VertexElement>& elements);
 
-	void* m_pBuffer = nullptr;
-
 	bool m_Dynamic = false;
 	bool m_Mapped = false;
 	std::vector<VertexElement> m_Elements;
 
 	unsigned int m_VertexCount = 0;
 	unsigned int m_VertexStride = 0;
-
-	Graphics* m_pGraphics;
 
 	unsigned long long m_BufferHash = 0;
 };

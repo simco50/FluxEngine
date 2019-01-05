@@ -1,63 +1,41 @@
 #pragma once
 
+class SceneNode;
+
 struct Bone
 {
-	int Index;
 	std::string Name;
 	Matrix OffsetMatrix;
-	Bone* pParent = nullptr;
-	std::vector<Bone*> Children;
+	std::vector<int> Children;
+	SceneNode* pNode = nullptr;
+
+	Vector3 StartPosition;
+	Vector3 StartScale;
+	Quaternion StartRotation;
 };
 
 class Skeleton
 {
 public:
-	Skeleton() {}
-	~Skeleton() {}
+	Skeleton() = default;
+	~Skeleton() = default;
 
-	Bone* GetBone(const std::string& name)
-	{
-		for (Bone& bone : m_Bones)
-		{
-			if (bone.Name == name)
-				return &bone;
-		}
-		return nullptr;
-	}
-	Bone* GetBone(const int index)
-	{
-		for (Bone& bone : m_Bones)
-		{
-			if (bone.Index == index)
-				return &bone;
-		}
-		return nullptr;
-	}
+	Skeleton(const Skeleton& other);
+	Skeleton& operator=(const Skeleton& other);
 
-	const Bone* GetBone(const int index) const
-	{
-		for (const Bone& bone : m_Bones)
-		{
-			if (bone.Index == index)
-				return &bone;
-		}
-		return nullptr;
-	}
+	Bone* GetBone(const std::string& name);
+	Bone* GetBone(const int index);
+	const Bone* GetBone(const int index) const;
 
-	void AddBone(const Bone& bone)
-	{
-		m_Bones.push_back(bone);
-	}
+	void AddBone(const Bone& bone);
 
 	const std::vector<Bone>& GetBones() const { return m_Bones; }
-	Bone* GetParentBone() const { return m_pParentBone; }
-	void SetParentBone(Bone* pBone) { m_pParentBone = pBone; }
+	int GetRootBoneIndex() const { return m_RootBoneIndex; }
+	void SetParentBoneIndex(int boneIndex) { m_RootBoneIndex = boneIndex; }
 
 	size_t BoneCount() const { return m_Bones.size(); }
 
-	static const int MAX_BONE_COUNT = 100;
-
 private:
-	Bone * m_pParentBone = nullptr;
+	int m_RootBoneIndex = -1;
 	std::vector<Bone> m_Bones;
 };

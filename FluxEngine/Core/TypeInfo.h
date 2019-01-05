@@ -3,14 +3,13 @@
 class TypeInfo
 {
 public:
-
 	TypeInfo(const char* typeName, const TypeInfo* baseTypeInfo);
 	~TypeInfo();
 
 	bool IsTypeOf(const StringHash& type) const;
 	bool IsTypeOf(const TypeInfo* typeInfo) const;
 
-	template<typename T> 
+	template<typename T>
 	bool IsTypeOf() const { return IsTypeOf(T::GetTypeInfoStatic()); }
 
 	const StringHash& GetType() const { return m_Type; }

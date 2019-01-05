@@ -12,12 +12,11 @@ class DebugRenderer;
 class Context;
 class ResourceManager;
 class AudioEngine;
-class PostProcessing;
 
 class FluxCore : public Object
 {
 	FLUX_OBJECT(FluxCore, Object)
-	
+
 public:
 	FluxCore(Context* pContext);
 	virtual ~FluxCore();
@@ -34,15 +33,12 @@ public:
 private:
 	void RenderUI();
 	void GameUpdate();
-
-	//Window variables
-	HINSTANCE m_hInstance = nullptr;
-
-	Scene* pScene = nullptr;
+	void ObjectUI(SceneNode* pNode);
 
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
 
+	bool m_EnableDebugRendering = true;
 	bool m_DebugPhysics = false;
 
 	//Systems
@@ -54,7 +50,6 @@ private:
 	DebugRenderer* m_pDebugRenderer = nullptr;
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
-	PostProcessing* m_pPostProcessing = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;

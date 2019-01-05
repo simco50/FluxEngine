@@ -1,6 +1,16 @@
 #include "FluxEngine.h"
 #include "FileWatcher.h"
 
+FileWatcher::FileWatcher()
+{
+
+}
+
+FileWatcher::~FileWatcher()
+{
+	StopWatching();
+}
+
 bool FileWatcher::StartWatching(const std::string& directory, const bool recursiveWatch /*= true*/)
 {
 	if (m_Exiting)
@@ -78,9 +88,13 @@ int FileWatcher::ThreadFunction()
 				}
 
 				if (!record->NextEntryOffset)
+				{
 					break;
+				}
 				else
+				{
 					offset += record->NextEntryOffset;
+				}
 			}
 		}
 	}

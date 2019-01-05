@@ -19,9 +19,17 @@ public:
 	Console();
 	~Console();
 
+	struct LogEntry
+	{
+		LogEntry(const std::string& message, const LogType type)
+			: Message(message), Type(type)
+		{}
+		std::string Message;
+		LogType Type;
+	};
+
 	void FlushThreadedMessages();
 
-	static bool LogFmodResult(FMOD_RESULT result);
 	static bool LogHRESULT(const std::string &source, HRESULT hr);
 	static bool LogHRESULT(char* source, HRESULT hr);
 	static void Log(const std::string &message, LogType type = LogType::Info);
@@ -31,24 +39,19 @@ public:
 	static bool CleanupLogs(const TimeSpan& age);
 	static bool Flush();
 
+	static const std::deque<LogEntry>& GetHistory();
+
 private:
 	void InitializeConsoleWindow();
 
 	char* m_ConvertBuffer;
 	const size_t m_ConvertBufferSize = 4096;
-
-	struct QueuedMessage
-	{
-		QueuedMessage(const std::string& message, const LogType type) :
-			Message(message), Type(type)
-		{}
-		std::string Message;
-		LogType Type;
-	};
-	std::queue<QueuedMessage> m_MessageQueue;
+	std::queue<LogEntry> m_MessageQueue;
 	Mutex m_QueueMutex;
 
 	LogType m_Verbosity = LogType::Info;
 	File* m_pFileLog;
-	HANDLE m_ConsoleHandle;
+	HANDLE m_ConsoleHandle = nullptr;
+
+	std::deque<LogEntry> m_History;
 };

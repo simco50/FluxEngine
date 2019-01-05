@@ -38,7 +38,7 @@ std::string Paths::GetFileExtenstion(const std::string& filePath)
 	size_t dotPos = filePath.rfind('.');
 	if (dotPos == std::string::npos)
 	{
-		return filePath;
+		return "";
 	}
 	return filePath.substr(dotPos + 1);
 }
@@ -104,7 +104,7 @@ std::string Paths::MakeRelativePath(const std::string& basePath, const std::stri
 	size_t matchLength = 0;
 	for (size_t i = 0; i < basePath.size(); i++)
 	{
-		if (basePath[i] != filePath[i]) 
+		if (basePath[i] != filePath[i])
 		{
 			break;
 		}
@@ -205,4 +205,11 @@ std::string Paths::GameIniFile()
 std::string Paths::EngineIniFile()
 {
 	return ConfigDir() + "Engine.ini";
+}
+
+std::string Paths::WorkingDirectory()
+{
+	char path[256];
+	GetModuleFileName(nullptr, path, 256);
+	return path;
 }

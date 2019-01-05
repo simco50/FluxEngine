@@ -11,7 +11,7 @@ namespace BuildConfiguration
 
 	extern Type Configuration;
 
-	char* ToString(Type type);
+	const char* ToString(Type type);
 	Type FromString(const char* configuration);
 }
 
@@ -26,7 +26,7 @@ namespace BuildPlatform
 
 	extern Type Platform;
 
-	char* ToString(Type type);
+	const char* ToString(Type type);
 	Type FromString(const char* configuration);
 }
 
@@ -54,7 +54,7 @@ struct Misc
 
 	static void GetCpuId(CpuId* pCpuId);
 
-	static bool MessageBox(const std::string& title, const std::string& description);
+	static bool ShowMessageBox(const std::string& title, const std::string& description);
 	static bool OsExecute(const std::string& command, const std::string& commandLine, const std::string& operation = "open");
 
 	static int GetLastErrorCode();
@@ -62,6 +62,6 @@ struct Misc
 	static std::string GetErrorStringFromCode(int errorCode);
 
 	static uint32 GetProcessId();
-	static std::string GetComputerName();
-	static std::string GetUserName();
+	static std::string ComputerName();
+	static std::string UserName();
 };

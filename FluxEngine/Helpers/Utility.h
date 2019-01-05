@@ -7,27 +7,6 @@
 className(const className& other) = delete; \
 className& operator=(const className& other) = delete;
 
-//Utility methods
-template<typename T>
-inline void SafeDelete(T*& object)
-{
-	if (object)
-	{
-		delete object;
-		object = nullptr;
-	}
-}
-
-template<typename T>
-inline void SafeDeleteArray(T*& object)
-{
-	if (object)
-	{
-		delete[] object;
-		object = nullptr;
-	}
-}
-
 template<typename T>
 inline void SafeRelease(T*& object)
 {
@@ -46,22 +25,6 @@ inline void PhysXSafeRelease(T*& object)
 		object->release();
 		object = nullptr;
 	}
-}
-
-inline std::string GetTimeStamp()
-{
-	time_t timer;
-	time(&timer);
-	tm localTime;
-	localtime_s(&localTime, &timer);
-	std::stringstream str;
-	str << 1900 + localTime.tm_year << "-"
-		<< std::setfill('0') << std::setw(2) << localTime.tm_mon + 1
-		<< "-" << std::setw(2) << localTime.tm_mday
-		<< "_" << std::setw(2) << localTime.tm_hour
-		<< "-" << std::setw(2) << localTime.tm_min
-		<< "-" << std::setw(2) << localTime.tm_sec;
-	return str.str();
 }
 
 template<typename ...Args>

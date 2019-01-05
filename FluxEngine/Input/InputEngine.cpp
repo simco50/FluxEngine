@@ -2,11 +2,13 @@
 #include "InputEngine.h"
 #include "Rendering/Core/Graphics.h"
 #include "Core/FluxCore.h"
+#include "Core/CommandLine.h"
 
-InputEngine::InputEngine(Context* pContext) :
-	Subsystem(pContext),
-	m_Enabled(false), 
-	m_ForceToCenter(false)
+#include <SDL.h>
+
+InputEngine::InputEngine(Context* pContext)
+	: Subsystem(pContext),
+	m_Enabled(false)
 {
 	AUTOPROFILE(InputEngine_Construct);
 
@@ -14,6 +16,8 @@ InputEngine::InputEngine(Context* pContext) :
 	pContext->InitSDLSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 
 	ResetGamepads();
+
+	m_PauseOnInactive = !CommandLine::GetBool("NeverPause");
 }
 
 InputEngine::~InputEngine()
@@ -31,10 +35,7 @@ void InputEngine::Update()
 
 	for (auto& joystickState : m_Joysticks)
 	{
-		for (size_t i = 0; i < joystickState.second.ButtonsPressed.size(); ++i)
-		{
-			joystickState.second.ButtonsPressed[i] = false;
-		}
+		memset(joystickState.second.ButtonsPressed, 0, sizeof(bool) * JoystickState::MAX_BUTTONS);
 	}
 
 	SDL_Event event;
@@ -52,11 +53,16 @@ void InputEngine::Update()
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 			case SDL_WINDOWEVENT_MINIMIZED:
-				GameTimer::Stop();
+				if (m_PauseOnInactive)
+				{
+					GameTimer::Stop();
+				}
 				break;
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 			case SDL_WINDOWEVENT_MAXIMIZED:
 				GameTimer::Start();
+				break;
+			default:
 				break;
 			}
 			break;
@@ -90,7 +96,7 @@ void InputEngine::Update()
 			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
-				if (button < (int)state.Buttons.size())
+				if (button < JoystickState::MAX_BUTTONS)
 				{
 					state.Buttons[button] = true;
 					state.ButtonsPressed[button] = true;
@@ -105,7 +111,7 @@ void InputEngine::Update()
 			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
-				if (button < (int)state.Buttons.size())
+				if (button < JoystickState::MAX_BUTTONS)
 				{
 					state.Buttons[button] = false;
 				}
@@ -119,7 +125,7 @@ void InputEngine::Update()
 
 			if (!state.pController)
 			{
-				if (event.jaxis.axis < (int)state.Axes.size())
+				if (event.jaxis.axis < JoystickState::MAX_AXIS)
 				{
 					state.Axes[event.jaxis.axis] = Math::Clamp((float)event.jaxis.value / 32767.0f, 1.0f, -1.0f);
 				}
@@ -133,7 +139,7 @@ void InputEngine::Update()
 
 			if (!state.pController)
 			{
-				if (event.jhat.which < (int)state.Hats.size())
+				if (event.jhat.which < JoystickState::MAX_HATS)
 				{
 					state.Hats[event.jhat.which] = event.jhat.value;
 				}
@@ -145,7 +151,7 @@ void InputEngine::Update()
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
 			JoystickState& state = m_Joysticks[joystickId];
-			if (button < (int)state.Buttons.size())
+			if (button < JoystickState::MAX_BUTTONS)
 			{
 				state.Buttons[button] = true;
 				state.ButtonsPressed[button] = true;
@@ -157,7 +163,7 @@ void InputEngine::Update()
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
 			JoystickState& state = m_Joysticks[joystickId];
-			if (button < (int)state.Buttons.size())
+			if (button < JoystickState::MAX_BUTTONS)
 			{
 				state.Buttons[button] = false;
 			}
@@ -168,7 +174,7 @@ void InputEngine::Update()
 			SDL_JoystickID joystickId = event.caxis.which;
 			JoystickState& state = m_Joysticks[joystickId];
 
-			if (event.caxis.axis < (int)state.Axes.size())
+			if (event.caxis.axis < JoystickState::MAX_AXIS)
 			{
 				state.Axes[event.caxis.axis] = Math::Clamp((float)event.caxis.value / 32767.0f, 1.0f, -1.0f);
 			}
@@ -177,15 +183,21 @@ void InputEngine::Update()
 		case SDL_QUIT:
 			FluxCore::DoExit();
 			break;
+		default:
+			break;
 		}
 		m_OnHandleSDLEvent.Broadcast(&event);
 	}
 
 	//Mouse Position
 	if (m_MouseMove)
+	{
 		m_MouseMove = false;
+	}
 	else
+	{
 		m_MouseMovement = Vector2(0, 0);
+	}
 
 	m_OldMousePosition = m_CurrMousePosition;
 	int mousePosX, mousePosY;
@@ -269,10 +281,10 @@ const JoystickState* InputEngine::GetJoystickStateFromIndex(int index) const
 	return nullptr;
 }
 
-void InputEngine::Rumble(int index)
+bool InputEngine::Rumble(const int index, const float strength, const unsigned int length)
 {
 	const JoystickState* pState = GetJoystickStateFromIndex(index);
-	SDL_HapticRumblePlay(pState->pHaptic, 1, 200);
+	return SDL_HapticRumblePlay(pState->pHaptic, strength, length) == 0;
 }
 
 ImVec2 operator+(const ImVec2& a, const ImVec2& b)
@@ -282,54 +294,66 @@ ImVec2 operator+(const ImVec2& a, const ImVec2& b)
 
 void InputEngine::DrawDebugJoysticks()
 {
-	size_t joySticks = m_Joysticks.size();
+	const size_t joySticks = m_Joysticks.size();
 	ImGui::SetNextWindowSize(ImVec2(500, 200.0f * joySticks));
-	ImGui::Begin("Joystick", nullptr, ImVec2(500, 200), -1.0f, ImGuiWindowFlags_NoResize);
-	for (const std::pair<SDL_JoystickID, JoystickState>& statePair : m_Joysticks)
+	ImGui::Begin("Joystick", nullptr, ImGuiWindowFlags_NoResize);
+
+	const unsigned int white = 0xffffffff;
+	const unsigned int grey = 0xffcccccc;
+
+	ImDrawList* pDrawList = ImGui::GetWindowDrawList();
+	for (const auto& statePair : m_Joysticks)
 	{
 		const JoystickState& state = statePair.second;
-
 		ImGui::Text("Jostick: %i - %s", state.Index, state.Name.c_str());
-		ImVec2 basePos = ImGui::GetWindowPos() + ImVec2(70, 120);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[0] * 45, state.Axes[1] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
 
+		ImVec2 basePos = ImGui::GetWindowPos() + ImVec2(70, 120);
+		pDrawList->AddCircle(basePos, 50, 0xffffffff, 20, 20.0f);
+		pDrawList->AddCircleFilled(basePos, 5, grey, 12);
+		if (state.GetButton(ControllerButton::BUTTON_LEFT))
+		{
+			pDrawList->AddCircleFilled(basePos, 20, grey, 12);
+		}
+		pDrawList->AddCircleFilled(basePos + ImVec2(state.Axes[0] * 45, state.Axes[1] * 45), 5, 0xffffffff);
 		basePos = basePos + ImVec2(140, 0);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 50, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 20, 20.0f);
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 5, ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, 1)), 12);
-		ImGui::GetWindowDrawList()->AddCircleFilled(basePos + ImVec2(state.Axes[2] * 45, state.Axes[3] * 45), 5, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+		pDrawList->AddCircle(basePos, 50, 0xffffffff, 20, 20.0f);
+		pDrawList->AddCircleFilled(basePos, 5, grey, 12);
+		if (state.GetButton(ControllerButton::BUTTON_RIGHT))
+		{
+			pDrawList->AddCircleFilled(basePos, 20, grey, 12);
+		}
+		pDrawList->AddCircleFilled(basePos + ImVec2(state.Axes[2] * 45, state.Axes[3] * 45), 5, 0xffffffff);
 
 		basePos = basePos + ImVec2(80, -70);
-		ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
-		ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[4] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+		pDrawList->AddRect(basePos, basePos + ImVec2(20, 140), 0xffffffff, 0, ImDrawCornerFlags_All, 10);
+		pDrawList->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[4] * 140), 0xffffffff);
 		basePos = basePos + ImVec2(40, 0);
-		ImGui::GetWindowDrawList()->AddRect(basePos, basePos + ImVec2(20, 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 0, ImDrawCornerFlags_All, 10);
-		ImGui::GetWindowDrawList()->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[5] * 140), ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)));
+		pDrawList->AddRect(basePos, basePos + ImVec2(20, 140), 0xffffffff, 0, ImDrawCornerFlags_All, 10);
+		pDrawList->AddRectFilled(basePos, basePos + ImVec2(20, state.Axes[5] * 140), 0xffffffff);
 
 		basePos = basePos + ImVec2(100, 110);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		pDrawList->AddCircle(basePos, 10, 0xffffffff, 12, 4.0f);
 		if (state.Buttons[0])
 		{
-			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+			pDrawList->AddCircleFilled(basePos, 10, 0xffffffff, 12);
 		}
 		basePos = basePos + ImVec2(0, -80);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		pDrawList->AddCircle(basePos, 10, 0xffffffff, 12, 4.0f);
 		if (state.Buttons[3])
 		{
-			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+			pDrawList->AddCircleFilled(basePos, 10, 0xffffffff, 12);
 		}
 		basePos = basePos + ImVec2(-40, 40);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		pDrawList->AddCircle(basePos, 10, 0xffffffff, 12, 4.0f);
 		if (state.Buttons[2])
 		{
-			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+			pDrawList->AddCircleFilled(basePos, 10, 0xffffffff, 12);
 		}
 		basePos = basePos + ImVec2(80, 0);
-		ImGui::GetWindowDrawList()->AddCircle(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12, 4.0f);
+		pDrawList->AddCircle(basePos, 10, 0xffffffff, 12, 4.0f);
 		if (state.Buttons[1])
 		{
-			ImGui::GetWindowDrawList()->AddCircleFilled(basePos, 10, ImGui::ColorConvertFloat4ToU32(ImVec4(1, 1, 1, 1)), 12);
+			pDrawList->AddCircleFilled(basePos, 10, 0xffffffff, 12);
 		}
 	}
 
@@ -338,7 +362,7 @@ void InputEngine::DrawDebugJoysticks()
 
 void InputEngine::ResetGamepads()
 {
-	m_Joysticks.clear();
+	CloseAllGamepads();
 	int size = SDL_NumJoysticks();
 	for (int i = 0; i < size; ++i)
 	{
@@ -350,6 +374,14 @@ bool InputEngine::OpenGamepad(int index)
 {
 	AUTOPROFILE(InputEngine_OpenGamepad);
 
+	for (const auto& state : m_Joysticks)
+	{
+		if (state.second.Index == index)
+		{
+			return true;
+		}
+	}
+
 	SDL_Joystick* pJoystick = SDL_JoystickOpen(index);
 	if (pJoystick == nullptr)
 	{
@@ -357,7 +389,7 @@ bool InputEngine::OpenGamepad(int index)
 	}
 	SDL_JoystickID instanceId = SDL_JoystickInstanceID(pJoystick);
 
-	JoystickState& state = m_Joysticks[instanceId];
+	JoystickState state = {};
 	state.Index = index;
 	state.Name = SDL_JoystickName(pJoystick);
 	state.pJoystick = pJoystick;
@@ -379,24 +411,7 @@ bool InputEngine::OpenGamepad(int index)
 			FLUX_LOG(Warning, "[InputEngine::OpenGamepad] Failed to intialize rumble: %s", SDL_GetError());
 		}
 	}
-
-	unsigned numButtons = (unsigned)SDL_JoystickNumButtons(pJoystick);
-	unsigned numAxes = (unsigned)SDL_JoystickNumAxes(pJoystick);
-	unsigned numHats = (unsigned)SDL_JoystickNumHats(pJoystick);
-
-	if (state.pController)
-	{
-		if (numButtons < SDL_CONTROLLER_BUTTON_MAX)
-			numButtons = SDL_CONTROLLER_BUTTON_MAX;
-		if (numAxes < SDL_CONTROLLER_AXIS_MAX)
-			numAxes = SDL_CONTROLLER_AXIS_MAX;
-	}
-
-	state.Buttons.resize(numButtons);
-	state.ButtonsPressed.resize(numButtons);
-	state.Axes.resize(numAxes);
-	state.Hats.resize(numHats);
-
+	m_Joysticks[instanceId] = state;
 	return true;
 }
 
@@ -422,6 +437,23 @@ bool InputEngine::CloseGamepad(int index)
 		}
 	}
 	return false;
+}
+
+void InputEngine::CloseAllGamepads()
+{
+	for (const auto& j : m_Joysticks)
+	{
+		SDL_JoystickClose(j.second.pJoystick);
+		if (j.second.pController)
+		{
+			SDL_GameControllerClose(j.second.pController);
+		}
+		if (j.second.pHaptic)
+		{
+			SDL_HapticClose(j.second.pHaptic);
+		}
+	}
+	m_Joysticks.clear();
 }
 
 void InputEngine::ForceMouseToCenter(bool force)

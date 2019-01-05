@@ -1,7 +1,7 @@
 #include "Uniforms.hlsl"
 #include "Samplers.hlsl"
 
-cbuffer MaterialBuffer : register(b3)
+cbuffer MaterialBuffer : register(b4)
 {
 	float cIntensity;
 	float cRadius;

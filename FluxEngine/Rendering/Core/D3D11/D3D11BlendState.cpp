@@ -15,7 +15,9 @@ void* BlendState::GetOrCreate(Graphics* pGraphics)
 
 	auto state = m_BlendStates.find(stateHash);
 	if (state != m_BlendStates.end())
+	{
 		return state->second;
+	}
 
 	AUTOPROFILE_DESC(BlendState_Create, Math::ToHex(stateHash));
 

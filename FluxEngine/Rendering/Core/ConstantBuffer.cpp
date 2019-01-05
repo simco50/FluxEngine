@@ -2,8 +2,8 @@
 #include "ConstantBuffer.h"
 #include "Graphics.h"
 
-ConstantBuffer::ConstantBuffer(Graphics* pGraphics) : 
-	m_pGraphics(pGraphics)
+ConstantBuffer::ConstantBuffer(Graphics* pGraphics)
+	: GraphicsObject(pGraphics)
 {
 
 }
@@ -15,8 +15,8 @@ ConstantBuffer::~ConstantBuffer()
 
 bool ConstantBuffer::SetParameter(unsigned int offset, const unsigned int size, const void* pData)
 {
-	if (m_Size < offset + size)
-		return false;
+	check(m_pShadowData);
+	checkf(m_Size >= offset + size, "Trying to modify data outside of bounds!");
 	memcpy(&m_pShadowData[offset], pData, size);
 	m_IsDirty = true;
 	return true;
@@ -24,7 +24,7 @@ bool ConstantBuffer::SetParameter(unsigned int offset, const unsigned int size, 
 
 void ConstantBuffer::Release()
 {
-	SafeRelease(m_pBuffer);
+	SafeRelease(m_pResource);
 	if (m_pShadowData != nullptr)
 	{
 		delete[] m_pShadowData;

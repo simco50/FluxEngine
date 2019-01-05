@@ -17,8 +17,7 @@ class PhysicalMountPoint : public IMountPoint
 {
 public:
 	PhysicalMountPoint(const std::string& physicalPath);
-	virtual ~PhysicalMountPoint() 
-	{}
+	virtual ~PhysicalMountPoint();
 
 	virtual bool OnMount() override;
 	virtual bool HasFile(const std::string& filePath) const override;

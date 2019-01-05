@@ -2,11 +2,11 @@
 #include "Async\Thread.h"
 #include "Diagnostics\Timer.h"
 
-class FileWatcher : public Thread
+class FileWatcher : public HookableThread
 {
 public:
-	FileWatcher() {}
-	virtual ~FileWatcher() { StopWatching(); }
+	FileWatcher();
+	virtual ~FileWatcher();
 
 	bool StartWatching(const std::string& directory, const bool recursiveWatch = true);
 	void StopWatching();

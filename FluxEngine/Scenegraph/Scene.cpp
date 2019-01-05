@@ -3,6 +3,7 @@
 #include "SceneNode.h"
 #include "Rendering\Renderer.h"
 #include "Component.h"
+#include "Rendering\Model.h"
 
 Scene::Scene(Context* pContext) : SceneNode(pContext, this)
 {
@@ -13,12 +14,12 @@ Scene::~Scene()
 {
 	for (SceneNode*& pNode : m_Nodes)
 	{
-		SafeDelete(pNode);
+		delete pNode;
 	}
 	m_Nodes.clear();
 	for (Component*& pComponent : m_Components)
 	{
-		SafeDelete(pComponent);
+		delete pComponent;
 	}
 	m_Components.clear();
 }
@@ -40,9 +41,8 @@ void Scene::Update()
 	m_pRenderer->Draw();
 }
 
-void Scene::AddChild(SceneNode* pNode)
+void Scene::TrackChild(SceneNode* pNode)
 {
-	pNode->OnSceneSet(this);
 	m_Nodes.push_back(pNode);
 }
 
@@ -63,8 +63,33 @@ SceneNode* Scene::FindNode(const std::string& name)
 	return nullptr;
 }
 
-void Scene::OnSceneSet(Scene* pScene)
+void Scene::OnSceneSet(Scene* /*pScene*/)
 {
-	UNREFERENCED_PARAMETER(pScene);
 	SceneNode::OnSceneSet(this);
+}
+
+SceneNode* Scene::PickNode(const Ray& ray)
+{
+	std::vector<SceneNode*> sortedNodes = m_Nodes;
+	std::sort(sortedNodes.begin(), sortedNodes.end(), [&ray](SceneNode* pA, SceneNode* pB) { return Vector3::DistanceSquared(pA->GetWorldPosition(), ray.position) < Vector3::DistanceSquared(pB->GetWorldPosition(), ray.position); });
+
+	SceneNode* pClosest = nullptr;
+	float minDistance = std::numeric_limits<float>::max();
+	for (SceneNode* pNode : sortedNodes)
+	{
+		Drawable* pDrawable = pNode->GetComponent<Drawable>();
+		if (pDrawable)
+		{
+			float distance;
+			if (ray.Intersects(pDrawable->GetWorldBoundingBox(), distance))
+			{
+				if (distance < minDistance)
+				{
+					minDistance = distance;
+					pClosest = pNode;
+				}
+			}
+		}
+	}
+	return pClosest;
 }

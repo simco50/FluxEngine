@@ -8,6 +8,8 @@ class RenderTarget;
 class Texture2D;
 struct RaycastResult;
 
+DECLARE_MULTICAST_DELEGATE(CameraViewportChangedDelegate, const FloatRect&);
+
 class Camera : public Component
 {
 	FLUX_OBJECT(Camera, Component)
@@ -26,12 +28,12 @@ public:
 	void SetView(const Matrix& view);
 	void UpdateFrustum();
 
-	void SetFOW(const float fov);
+	void SetFOW(float fov);
 	void SetViewport(float x, float y, float width, float height);
 	FloatRect GetViewport() const { return GetAbsoluteViewport(); }
-	void SetClippingPlanes(const float nearPlane, const float farPlane);
+	void SetClippingPlanes(float nearPlane, float farPlane);
 
-	void GetMouseRay(Vector3& startPoint, Vector3& direction) const;
+	Ray GetMouseRay() const;
 
 	void SetOrthographic(bool orthographic) { m_Perspective = !orthographic; }
 	void SetOrthographicSize(float size) { m_Size = size; }
@@ -39,8 +41,8 @@ public:
 	float GetNearPlane() const { return m_NearPlane; }
 	float GetFarPlane() const { return m_FarPlane; }
 
-	void SetNearPlane(const float nearPlane);
-	void SetFarPlane(const float farPlane);
+	void SetNearPlane(float nearPlane);
+	void SetFarPlane(float farPlane);
 
 	const BoundingFrustum& GetFrustum() const { return m_Frustum; }
 
@@ -52,13 +54,17 @@ public:
 	void SetClearFlags(const ClearFlags& flags) { m_ClearFlags = flags; }
 	void SetClearColor(const Color& color) { m_ClearColor = color; }
 
-	RenderTarget* GetRenderTarget() const { return m_pRenderTarget; }
+	CameraViewportChangedDelegate& ViewportChanged() { return m_ViewportChangedEvent; }
+
+	RenderTarget* GetRenderTarget() const;
 	RenderTarget* GetDepthStencil();
 	int GetRenderOrder() const { return m_Order; }
 	const ClearFlags& GetClearFlags() const { return m_ClearFlags; }
 	const Color& GetClearColor() const { return m_ClearColor; }
 
-	virtual void OnMarkedDirty(const Transform* transform) override;
+	virtual void OnMarkedDirty(const SceneNode* pNode) override;
+
+	virtual void CreateUI() override;
 
 protected:
 	void OnSceneSet(Scene* pScene) override;
@@ -81,6 +87,7 @@ private:
 
 	bool m_Perspective = true;
 
+	CameraViewportChangedDelegate m_ViewportChangedEvent;
 	FloatRect m_Viewport;
 	int m_Order = 0;
 

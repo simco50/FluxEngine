@@ -5,7 +5,7 @@
 
 struct ParticleVertex
 {
-	ParticleVertex(Vector3 pos = Vector3(), Vector4 col = (Vector4)Colors::White, float size = 5.0f, float rotation = 0) :
+	ParticleVertex(Vector3 pos = Vector3(), Vector4 col = Vector4(1, 1, 1, 1), float size = 5.0f, float rotation = 0) :
 		Position(pos),
 		Color(col),
 		Size(size),
@@ -28,13 +28,13 @@ enum class ParticleSortingMode
 class ParticleSystem : public Resource
 {
 	FLUX_OBJECT(ParticleSystem, Resource)
-
+	DELETE_COPY(ParticleSystem)
 public:
 
-	ParticleSystem(Context* pContext):
-		Resource(pContext)
+	ParticleSystem(Context* pContext)
+		: Resource(pContext)
 	{}
-	virtual ~ParticleSystem() {}
+	virtual ~ParticleSystem() = default;
 
 	virtual bool Load(InputStream& inputStream) override;
 

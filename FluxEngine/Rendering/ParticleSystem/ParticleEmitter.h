@@ -15,7 +15,7 @@ class ParticleEmitter : public Drawable
 	FLUX_OBJECT(ParticleEmitter, Drawable)
 
 public:
-	ParticleEmitter(Context* pContext, ParticleSystem* pSystem);
+	ParticleEmitter(Context* pContext);
 	~ParticleEmitter();
 	ParticleEmitter(const ParticleEmitter& other) = delete;
 	ParticleEmitter operator=(const ParticleEmitter& other) = delete;
@@ -31,6 +31,8 @@ public:
 
 	int GetParticleCount() const { return m_ParticleCount; }
 
+	virtual void CreateUI() override;
+
 protected:
 	virtual void OnSceneSet(Scene* pScene) override;
 	virtual void OnNodeSet(SceneNode* pNode) override;
@@ -38,8 +40,8 @@ protected:
 
 private:
 	void FreeParticles();
-	void CreateVertexBuffer(const int bufferSize);
-	void SortParticles(const ParticleSortingMode sortMode);
+	void CreateVertexBuffer(int bufferSize);
+	void SortParticles(ParticleSortingMode sortMode);
 
 	void CalculateBoundingBox();
 

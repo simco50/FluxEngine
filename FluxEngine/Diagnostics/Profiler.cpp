@@ -2,18 +2,11 @@
 #include "Profiler.h"
 #include "FileSystem\File\PhysicalFile.h"
 #include "Async\Thread.h"
-#include "External\NlohmannJson\json.hpp"
-#include "Core\GameTimer.h"
 #include "Core\CommandLine.h"
 
 ProfilingThread::ProfilingThread()
 {
 	QueryPerformanceFrequency((LARGE_INTEGER*)&m_Frequency);
-}
-
-void ProfilingThread::Run()
-{
-	RunThread();
 }
 
 void ProfilingThread::Shutdown()
@@ -168,7 +161,6 @@ void ProfilingThread::AddEvent(const std::string& name, const std::string& descr
 	case EventType::MAX:
 	default:
 		throw;
-		break;
 	}
 	ScopeLock lock(m_JobMutex);
 	m_Jobs.push(data);
@@ -183,7 +175,7 @@ Profiler::Profiler()
 	}
 
 	m_Thread = std::make_unique<ProfilingThread>();
-	m_Thread->Run();
+	m_Thread->RunThread();
 }
 
 Profiler::~Profiler()
@@ -222,7 +214,7 @@ void Profiler::Capture(int frameCount /*= 1*/)
 	}
 }
 
-void Profiler::BeginEvent(const std::string& name, const std::string& description)
+void Profiler::BeginEvent(const std::string& name, const std::string& description) const
 {
 	if (ShouldRecord())
 	{
@@ -230,7 +222,7 @@ void Profiler::BeginEvent(const std::string& name, const std::string& descriptio
 	}
 }
 
-void Profiler::EndEvent(const std::string& name, const std::string& description)
+void Profiler::EndEvent(const std::string& name, const std::string& description) const
 {
 	if (ShouldRecord())
 	{
@@ -238,7 +230,7 @@ void Profiler::EndEvent(const std::string& name, const std::string& description)
 	}
 }
 
-void Profiler::MarkEvent(const std::string& name, const std::string& description /*= ""*/)
+void Profiler::MarkEvent(const std::string& name, const std::string& description /*= ""*/) const
 {
 	if (ShouldRecord())
 	{
@@ -246,7 +238,7 @@ void Profiler::MarkEvent(const std::string& name, const std::string& description
 	}
 }
 
-void Profiler::MarkDuration(const std::string& name, const int64 startTime, const std::string& description /*= ""*/)
+void Profiler::MarkDuration(const std::string& name, const int64 startTime, const std::string& description /*= ""*/) const
 {
 	if (ShouldRecord())
 	{

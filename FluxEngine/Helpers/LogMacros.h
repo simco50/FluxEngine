@@ -1,7 +1,12 @@
 #pragma once
 
+#define STR(x) #x
+#define STRINGIFY(x) STR(x)
+
 #define FLUX_LOG_FMOD(fmod) \
-Console::LogFmodResult(fmod)
+{std::string msg; \
+if (AudioEngine::ErrorString(fmod, msg)) {} \
+else { Console::Log(msg, LogType::Info); }} \
 
 #define FLUX_LOG_HR(description, hr) \
 Console::LogHRESULT(description, hr)
@@ -23,14 +28,10 @@ else \
 
 #define HR(command)\
 {HRESULT r = command;\
-std::stringstream stream;\
-stream << __FILE__ << __func__ << "()" << std::endl;\
-stream << "Line: " << __LINE__  << std::endl;\
-stream << "Action: " << #command ;\
-Console::LogHRESULT(stream.str(), r);}
+Console::LogHRESULT(__FILE__ "\n" __FUNCTION__ "()\nLine:" STRINGIFY(__LINE__) "\nAction: " #command, r);}
 
 #else
 
-#define HR(command) UNREFERENCED_PARAMETER(command);
+#define HR(command) command
 
 #endif

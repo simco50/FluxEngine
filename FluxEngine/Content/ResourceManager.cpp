@@ -3,10 +3,9 @@
 #include "Resource.h"
 #include "FileSystem\File\File.h"
 #include "FileSystem\FileWatcher.h"
-#include "Async\AsyncTaskQueue.h"
 
-ResourceManager::ResourceManager(Context* pContext) :
-	Subsystem(pContext)
+ResourceManager::ResourceManager(Context* pContext)
+	: Subsystem(pContext)
 {
 
 }
@@ -17,7 +16,7 @@ ResourceManager::~ResourceManager()
 	{
 		for (auto& resourceEntry : resourceGroupEntry.second)
 		{
-			SafeDelete(resourceEntry.second);
+			delete resourceEntry.second;
 		}
 	}
 }
@@ -30,9 +29,9 @@ void ResourceManager::Update()
 		std::string resource;
 		while (m_pResourceWatcher->GetNextChange(resource))
 		{
-			std::string filePath = Paths::Normalize("Resources/" + resource);
-			Reload(filePath);
-			ReloadDependencies(filePath);
+			Paths::NormalizeInline(resource);
+			Reload(resource);
+			ReloadDependencies(resource);
 		}
 	}
 }
@@ -53,26 +52,33 @@ void ResourceManager::EnableAutoReload(bool enable)
 bool ResourceManager::Reload(Resource* pResource)
 {
 	if (pResource == nullptr)
+	{
 		return false;
+	}
 	return LoadResourcePrivate(pResource, pResource->GetFilePath());
 }
 
 bool ResourceManager::Reload(Resource* pResource, const std::string& filePath)
 {
 	if (pResource == nullptr)
+	{
 		return false;
+	}
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
-	auto pIt = resourceGroup.find(pResource->GetFilePath());
-	if(pIt != resourceGroup.end())
+	auto pIt = resourceGroup.find(StringHash(pResource->GetFilePath()));
+	if (pIt != resourceGroup.end())
+	{
 		resourceGroup.erase(pIt);
+	}
 	std::string path = Paths::Normalize(filePath);
-	resourceGroup[path] = pResource;
+	StringHash hash(path);
+	resourceGroup[hash] = pResource;
 	return LoadResourcePrivate(pResource, path);
 }
 
 bool ResourceManager::Reload(const std::string& filePath)
 {
-	std::string path = Paths::Normalize(filePath);
+	StringHash path(Paths::Normalize(filePath));
 	for (auto& groupPair : m_Resources)
 	{
 		for (auto& resourcePair : groupPair.second)
@@ -81,7 +87,7 @@ bool ResourceManager::Reload(const std::string& filePath)
 			{
 				if (Reload(resourcePair.second))
 				{
-					FLUX_LOG(Info, "[ResourceManager::Reload] > Reloaded %s", resourcePair.first.c_str());
+					FLUX_LOG(Info, "[ResourceManager::Reload] Reloaded '%s'", Paths::GetFileName(filePath).c_str());
 					return true;
 				}
 				return false;
@@ -94,12 +100,16 @@ bool ResourceManager::Reload(const std::string& filePath)
 void ResourceManager::Unload(Resource*& pResource)
 {
 	if (pResource == nullptr)
+	{
 		return;
+	}
 
 	ResourceGroup& resourceGroup = m_Resources[pResource->GetType()];
-	auto pIt = resourceGroup.find(pResource->GetFilePath());
+	auto pIt = resourceGroup.find(StringHash(pResource->GetFilePath()));
 	if (pIt != resourceGroup.end())
+	{
 		resourceGroup.erase(pIt);
+	}
 	delete pResource;
 	pResource = nullptr;
 }
@@ -107,9 +117,11 @@ void ResourceManager::Unload(Resource*& pResource)
 bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
 {
 	bool success = true;
-	auto pIt = m_ResourceDependencies.find(Paths::Normalize(resourcePath));
+	StringHash hash(Paths::Normalize(resourcePath));
+	auto pIt = m_ResourceDependencies.find(hash);
 	if (pIt != m_ResourceDependencies.end())
 	{
+		FLUX_LOG(Info, "[ResourceManager::ReloadDependencies] %s has %d dependencies. Reloading dependencies", resourcePath.c_str(), pIt->second.size());
 		std::vector<std::string> dependants = pIt->second;
 		for (const std::string& path : dependants)
 		{
@@ -124,8 +136,9 @@ bool ResourceManager::ReloadDependencies(const std::string& resourcePath)
 
 void ResourceManager::AddResourceDependency(Resource* pResource, const std::string& filePath)
 {
-	std::string name = pResource->GetFilePath();
-	m_ResourceDependencies[Paths::Normalize(filePath)].push_back(name);
+	const std::string& name = pResource->GetFilePath();
+	StringHash hash(Paths::Normalize(filePath));
+	m_ResourceDependencies[hash].push_back(name);
 }
 
 void ResourceManager::ResetDependencies(Resource* pResource)
@@ -142,7 +155,7 @@ void ResourceManager::ResetDependencies(Resource* pResource)
 	}
 }
 
-bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath)
+bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string& filePath) const
 {
 	pResource->SetFilePath(filePath);
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
@@ -158,9 +171,14 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 	}
 	pFile->SetSource(filePath);
 
-	if (!pResource->Load(*pFile.get()))
+	return LoadResourcePrivate(pResource, *pFile);
+}
+
+bool ResourceManager::LoadResourcePrivate(Resource* pResource, InputStream& inputStream) const
+{
+	if (!pResource->Load(inputStream))
 	{
-		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), filePath.c_str());
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), inputStream.GetSource().c_str());
 		return false;
 	}
 	return true;
@@ -169,7 +187,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 Resource* ResourceManager::FindResource(const std::string& filePath, const StringHash type)
 {
 	ResourceGroup& group = m_Resources[type];
-	auto pIt = group.find(filePath);
+	auto pIt = group.find(StringHash(filePath));
 	if (pIt != group.end())
 	{
 		return pIt->second;

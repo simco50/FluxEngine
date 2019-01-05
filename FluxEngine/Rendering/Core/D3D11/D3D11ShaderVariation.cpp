@@ -5,29 +5,26 @@
 #include "../Shader.h"
 
 #include <d3dcompiler.h>
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "dxguid.lib")
 
 bool ShaderVariation::Create()
 {
 	AUTOPROFILE_DESC(ShaderVariation_Create, m_pParentShader->GetFilePath());
 	m_Name = m_pParentShader->GetName() + "_" + Shader::GetEntryPoint(m_ShaderType);
-	Graphics* pGraphics = GetSubsystem<Graphics>();
-	if (!Compile(pGraphics))
+	if (!Compile(m_pGraphics))
 	{
 		FLUX_LOG(Warning, "[ShaderVariation::Create()] > Failed to compile shader");
 		return false;
 	}
 
-	if (m_ShaderByteCode.size() == 0)
+	if (m_ShaderByteCode.empty())
 	{
 		FLUX_LOG(Warning, "[ShaderVariation::Create()] > Shader byte code is empty");
 		return false;
 	}
 
-	SafeRelease(m_pShaderObject);
+	SafeRelease(m_pResource);
 
-	if (!CreateShader(pGraphics, m_ShaderType))
+	if (!CreateShader(m_pGraphics, m_ShaderType))
 	{
 		return false;
 	}
@@ -41,7 +38,9 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 
 	const std::string& source = m_pParentShader->GetSource();
 	if (source.length() == 0)
+	{
 		return false;
+	}
 
 	// Set the entrypoint, profile and flags according to the shader being compiled
 	std::string entry = Shader::GetEntryPoint(m_ShaderType);
@@ -51,64 +50,80 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 #ifdef _DEBUG
 	flags |= D3DCOMPILE_DEBUG;
 	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
 #else
 	flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
 
 	std::vector<std::string> defines = m_Defines;
-	defines.push_back("D3D11");
+	std::vector<std::string> defineValues;
+	defines.emplace_back("D3D11");
+	defines.push_back(Printf("LIGHT_COUNT=%d", GraphicsConstants::MAX_LIGHTS));
 
 	switch (m_ShaderType)
 	{
 	case ShaderType::VertexShader:
-		defines.push_back("COMPILE_VS");
-		profile = "vs_4_0";
+		defines.emplace_back("COMPILE_VS");
+		profile = "vs_5_0";
 		break;
 	case ShaderType::PixelShader:
-		defines.push_back("COMPILE_PS");
-		profile = "ps_4_0";
-		flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
+		defines.emplace_back("COMPILE_PS");
+		profile = "ps_5_0";
 		break;
+#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
-		defines.push_back("COMPILE_GS");
-		profile = "gs_4_0";
+		defines.emplace_back("COMPILE_GS");
+		profile = "gs_5_0";
 		break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
-		defines.push_back("COMPILE_CS");
-		profile = "cs_4_0";
+		defines.emplace_back("COMPILE_CS");
+		profile = "cs_5_0";
+		break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	case ShaderType::DomainShader:
+		defines.emplace_back("COMPILE_DS");
+		profile = "ds_5_0";
+		break;
+	case ShaderType::HullShader:
+		defines.emplace_back("COMPILE_HS");
+		profile = "hs_5_0";
+		break;
+#endif
 	default:
 		break;
 	}
 
-	std::vector<D3D_SHADER_MACRO> macros;
-	for (const std::string& define : defines)
+	for (size_t i = 0; i < defines.size(); ++i)
 	{
-		D3D_SHADER_MACRO macro;
 		//Check if the define has a value
-		size_t assignmentOp = define.find('=');
+		size_t assignmentOp = defines[i].find('=');
 		if (assignmentOp != std::string::npos)
 		{
-			std::string name = define.substr(0, assignmentOp);
-			std::string definition = define.substr(assignmentOp + 1);
-			macro.Name = name.c_str();
-			macro.Definition = definition.c_str();
+			defineValues.emplace_back(defines[i].substr(assignmentOp + 1));
+			defines[i] = defines[i].substr(0, assignmentOp);
 		}
 		else
 		{
-			macro.Name = define.c_str();
-			macro.Definition = "1";
+			defineValues.emplace_back("1");
 		}
-		macros.push_back(macro);
+	}
+	std::vector<D3D_SHADER_MACRO> macros;
+	for (size_t i = 0; i < defines.size(); ++i)
+	{
+		macros.push_back({ defines[i].c_str(), defineValues[i].c_str() });
 	}
 
 	D3D_SHADER_MACRO endMacro;
-	endMacro.Name = 0;
-	endMacro.Definition = 0;
+	endMacro.Name = nullptr;
+	endMacro.Definition = nullptr;
 	macros.push_back(endMacro);
 
 	ComPtr<ID3DBlob> pShaderCode, pErrorBlob;
 
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), m_Name.c_str(), macros.data(), 0, entry.c_str(), profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), m_Name.c_str(), macros.data(), nullptr, entry.c_str(), profile, flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
 		std::string error = D3DBlobToString(pErrorBlob.Get());
@@ -121,8 +136,8 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 #ifndef _DEBUG
 	// Strip everything not necessary to use the shader
 	ComPtr<ID3DBlob> pStrippedCode;
-	HR(D3DStripShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, pStrippedCode.GetAddressOf()))
-		m_ShaderByteCode.resize((unsigned)pStrippedCode->GetBufferSize());
+	HR(D3DStripShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS, pStrippedCode.GetAddressOf()));
+	m_ShaderByteCode.resize((unsigned)pStrippedCode->GetBufferSize());
 	memcpy(&m_ShaderByteCode[0], pStrippedCode->GetBufferPointer(), m_ShaderByteCode.size());
 #endif // !_DEBUG
 
@@ -166,7 +181,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			return;
 		}
 
-		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(m_ShaderType, cbRegister, bufferDesc.Size);
+		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(cbRegister, bufferDesc.Size);
 		m_ConstantBuffers[cbRegister] = pConstantBuffer;
 		m_ConstantBufferSizes[cbRegister] = bufferDesc.Size;
 
@@ -179,11 +194,10 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 			ShaderParameter parameter = {};
 			parameter.Name = variableDesc.Name;
 			parameter.Offset = variableDesc.StartOffset;
-			parameter.Type = m_ShaderType;
 			parameter.Size = variableDesc.Size;
 			parameter.Buffer = cbRegister;
 			parameter.pBuffer = pConstantBuffer;
-			m_ShaderParameters[parameter.Name] = parameter;
+			m_ShaderParameters[StringHash(variableDesc.Name)] = parameter;
 		}
 	}
 }
@@ -199,17 +213,33 @@ bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
 	switch (type)
 	{
 	case ShaderType::VertexShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pShaderObject))
+		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pResource));
 		break;
 	case ShaderType::PixelShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pShaderObject))
+		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pResource));
 		break;
+#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pShaderObject))
+		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pResource));
 		break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pShaderObject))
+		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pResource));
 		break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	case ShaderType::DomainShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateDomainShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11DomainShader**)&m_pResource));
+		break;
+	case ShaderType::HullShader:
+		HR(pGraphics->GetImpl()->GetDevice()->CreateHullShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11HullShader**)&m_pResource));
+		break;
+#endif
+	case ShaderType::MAX:
+	default:
+		FLUX_LOG(Warning, "[ShaderVariation::CreateShader] Shader type unknown");
+		return false;
 	}
 	return true;
 }

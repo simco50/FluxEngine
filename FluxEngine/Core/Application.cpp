@@ -2,8 +2,8 @@
 #include "Application.h"
 #include "FluxCore.h"
 
-Application::Application() :
-	Object(new Context())
+Application::Application()
+	: Object(new Context())
 {
 	m_pEngine = new FluxCore(m_pContext);
 }

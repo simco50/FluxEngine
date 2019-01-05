@@ -25,7 +25,9 @@ public:
 		void CreateBuffer()
 		{
 			if (pData)
-				delete[] pData;
+			{
+				delete[] (char*)pData;
+			}
 			pData = new char[Stride * Count];
 		}
 
@@ -33,20 +35,22 @@ public:
 	};
 
 	//Return the vertex data of the given semantic
-	VertexData& GetVertexData(const std::string& semantic);
+	VertexData& GetVertexData(const std::string& semantic, const int slot = 0);
 	//Same as above but without range checking
-	VertexData& GetVertexDataUnsafe(const std::string& semantic);
-	bool HasData(const std::string& semantic) const;
-	int GetDataCount(const std::string& semantic);
+	VertexData& GetVertexDataUnsafe(const std::string& semantic, const int slot = 0);
+	bool HasData(const std::string& semantic, const int slot = 0) const;
+	int GetDataCount(const std::string& semantic, const int slot = 0) const;
 
 	void SetDrawRange(PrimitiveType type, int indexCount, int vertexCount);
 
 	int GetVertexCount() const { return m_VertexCount; }
 	int GetIndexCount() const { return m_IndexCount; }
 
-	const std::map<std::string, VertexData>& GetRawData() { return m_VertexData; }
+	int GetSize() const;
 
 private:
+	static std::string GetLookupStringFromSemantic(const std::string& semantic, const int slot);
+
 	int m_IndexCount = 0;
 	int m_VertexCount = 0;
 	PrimitiveType m_PrimitiveType = PrimitiveType::TRIANGLELIST;

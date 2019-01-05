@@ -1,8 +1,8 @@
 #pragma once
 struct Bone;
 struct AnimationNode;
-class AnimatedModel;
 class Animation;
+class Skeleton;
 
 struct AnimationKeyState
 {
@@ -11,31 +11,29 @@ struct AnimationKeyState
 	const AnimationNode* pNode = nullptr;
 
 	void GetFrameIndex(float time, int& index) const;
-	void GetMatrix(const float time, Matrix& matrix);
+	void GetTransform(float time, Vector3& scale, Quaternion& rotation, Vector3& translation);
 };
 
 class AnimationState
 {
 public:
-	AnimationState(Animation* pAnimation, AnimatedModel* pModel);
+	AnimationState(Animation* pAnimation, const Skeleton& skeleton);
 
-	void AddTime(const float time);
-	void SetTime(const float time);
+	void AddTime(float time);
+	void SetTime(float time);
+	float GetTime() const { return m_Time; }
 
-	void Apply(std::vector<Matrix>& skinMatrices);
+	void Apply();
+	void SetLoop(bool looped) { m_Looped = looped; }
 
 	Animation* GetAnimation() const { return m_pAnimation; }
 	bool IsLooped() const { return m_Looped; }
 	float GetDuration() const;
 
 private:
-	void CalculateAnimations(Bone* pBone, Matrix parentMatrix, std::vector<Matrix>& skinMatrices);
-	
 	float m_Time = 0.0f;
 	bool m_IsDirty = true;
 	bool m_Looped = true;
 	Animation* m_pAnimation = nullptr;
-	AnimatedModel* m_pModel = nullptr;
-	Bone* m_pRootBone = nullptr;
 	std::vector<AnimationKeyState> m_KeyStates;
 };

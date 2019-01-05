@@ -1,17 +1,62 @@
 #pragma once
 
+namespace ShaderConstant
+{
+#define DEFINE_SHADER_PARAMETER(variableName, name) constexpr StringHash variableName(name);
+
+	//Frame variables
+	DEFINE_SHADER_PARAMETER(cElapsedTime, "cElapsedTime");
+	DEFINE_SHADER_PARAMETER(cDeltaTime, "cDeltaTime");
+	DEFINE_SHADER_PARAMETER(cLights, "cLights");
+
+	//Camera variables
+	DEFINE_SHADER_PARAMETER(cViewProj, "cViewProj");
+	DEFINE_SHADER_PARAMETER(cView, "cView");
+	DEFINE_SHADER_PARAMETER(cViewInverse, "cViewInverse");
+	DEFINE_SHADER_PARAMETER(cNearClip, "cNearClip");
+	DEFINE_SHADER_PARAMETER(cFarClip, "cFarClip");
+
+	//Material variables
+	DEFINE_SHADER_PARAMETER(cColor, "cColor");
+
+	//Model variabl
+	DEFINE_SHADER_PARAMETER(cWorld, "cWorld");
+	DEFINE_SHADER_PARAMETER(cWorldViewProj, "cWorldViewProj");
+	DEFINE_SHADER_PARAMETER(cSkinMatrices, "cSkinMatrices");
+	DEFINE_SHADER_PARAMETER(cSkinDualQuaternions, "cSkinDualQuaternions");
+
+#undef DEFINE_SHADER_PARAMETER
+};
+
 namespace GraphicsConstants
 {
-	const int MAX_VERTEX_BUFFERS = 4;
-	const int MAX_RENDERTARGETS = 4;
+	constexpr int MAX_VERTEX_BUFFERS = 2;
+	constexpr int MAX_RENDERTARGETS = 2;
+
+	constexpr int MAX_LIGHTS = 20;
+	constexpr int MAX_BONES = 50;
+	constexpr int MAX_BONES_PER_VERTEX = 4;
+
+	constexpr int MAX_UV_CHANNELS = 3;
 }
 
-enum class ShaderType 
+#define SHADER_TESSELLATION_ENABLE
+#define SHADER_GEOMETRY_ENABLE
+
+enum class ShaderType
 {
 	VertexShader = 0,
 	PixelShader,
+#ifdef SHADER_GEOMETRY_ENABLE
 	GeometryShader,
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
 	ComputeShader,
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	DomainShader,
+	HullShader,
+#endif
 	MAX,
 };
 
@@ -22,9 +67,10 @@ enum class PrimitiveType : unsigned char
 	POINTLIST,
 	TRIANGLESTRIP,
 	LINELIST,
+	PATCH_CP_3,
 };
 
-//The windwo type
+//The window type
 enum class WindowType
 {
 	WINDOWED = 0,
@@ -103,7 +149,8 @@ enum class ShaderParameterType
 	PerFrame = 0,
 	PerView = 1,
 	PerObject = 2,
-	Custom = 3,
+	Lights = 3,
+	Custom = 4,
 	MAX
 };
 
@@ -111,11 +158,15 @@ enum class ShaderParameterType
 enum class TextureSlot
 {
 	Diffuse = 0,
-	Normal,
-	Specular,
-	Volume,
-	Cube,
-	MAX
+	Normal = 1,
+	Specular = 2,
+	Volume = 3,
+	Cube = 3,
+	Lights = 4,
+	Shadow = 5,
+	PositionMorph = 6,
+	NormalMorph = 7,
+	MAX = 8
 };
 
 enum class TextureFilter

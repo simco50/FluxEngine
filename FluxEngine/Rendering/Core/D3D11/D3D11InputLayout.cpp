@@ -1,15 +1,25 @@
 #include "FluxEngine.h"
-#include "../InputLayout.h"
+#include "D3D11InputLayout.h"
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
 #include "../ShaderVariation.h"
 #include "../VertexBuffer.h"
 
-void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int bufferCount, ShaderVariation* pVariation)
+InputLayout::InputLayout(Graphics* pGraphics)
+	: GraphicsObject(pGraphics)
+{
+}
+
+InputLayout::~InputLayout()
+{
+	SafeRelease(m_pResource);
+}
+
+void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount, ShaderVariation* pVariation)
 {
 	AUTOPROFILE_DESC(InputLayout_Create, pVariation->GetName());
 
-	SafeRelease(m_pInputLayout);
+	SafeRelease(m_pResource);
 
 	std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
 
@@ -33,7 +43,7 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, const unsigned int buffer
 		}
 	}
 	const std::vector<char>& byteCode = pVariation->GetByteCode();
-	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pInputLayout))
+	HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), (ID3D11InputLayout**)&m_pResource));
 }
 
 void InputLayout::Create(std::vector<VertexBuffer*> vertexBuffers, ShaderVariation* pVariation)

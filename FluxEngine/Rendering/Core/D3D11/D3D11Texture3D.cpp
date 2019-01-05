@@ -5,8 +5,8 @@
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
 
-Texture3D::Texture3D(Context* pContext) :
-	Texture(pContext)
+Texture3D::Texture3D(Context* pContext)
+	: Texture(pContext)
 {
 
 }
@@ -37,10 +37,13 @@ bool Texture3D::Load(InputStream& inputStream)
 	{
 		return false;
 	}
+
+	GRAPHICS_SET_NAME(inputStream.GetSource());
+
 	return true;
 }
 
-bool Texture3D::SetSize(const int width, const int height, const int depth, const unsigned int format, TextureUsage usage, const int multiSample, void* pTexture)
+bool Texture3D::SetSize(int width, int height, int depth, unsigned int format, TextureUsage usage, int multiSample, void* pTexture)
 {
 	AUTOPROFILE(Texture3D_SetSize);
 
@@ -58,14 +61,14 @@ bool Texture3D::SetSize(const int width, const int height, const int depth, cons
 	m_TextureFormat = format;
 	m_Usage = usage;
 	m_MultiSample = multiSample;
-	m_pResource = pTexture;
+	m_pResource = (ID3D11Resource*)pTexture;
 
 	if (!Create())
 		return false;
 	return true;
 }
 
-bool Texture3D::SetData(const unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData)
+bool Texture3D::SetData(unsigned int mipLevel, int x, int y, int z, int width, int height, int depth, const void* pData)
 {
 	AUTOPROFILE(Texture3D_SetData);
 
@@ -162,7 +165,8 @@ bool Texture3D::Create()
 {
 	AUTOPROFILE(Texture3D_Create);
 
-	D3D11_TEXTURE3D_DESC desc = {};
+	D3D11_TEXTURE3D_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_TEXTURE3D_DESC));
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = m_Usage == TextureUsage::DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Format = (DXGI_FORMAT)m_TextureFormat;

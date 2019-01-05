@@ -1,7 +1,7 @@
 #pragma once
-class Graphics;
+#include "GraphicsObject.h"
 
-class IndexBuffer
+class IndexBuffer : public GraphicsObject
 {
 public:
 	IndexBuffer(Graphics* pGraphics);
@@ -9,10 +9,8 @@ public:
 
 	DELETE_COPY(IndexBuffer)
 
-	void Create(const int indexCount, const bool smallIndexStride = false, const bool dynamic = false);
+	void Create(int indexCount, bool smallIndexStride = false, bool dynamic = false);
 	void SetData(void* pData);
-
-	void* GetBuffer() const { return m_pBuffer; }
 
 	void* Map(bool discard);
 	void Unmap();
@@ -21,13 +19,9 @@ public:
 	bool IsSmallStride() const { return m_SmallIndexStride; }
 
 private:
-	void* m_pBuffer = nullptr;
-
 	bool m_Dynamic = false;
 	unsigned int m_IndexCount = 0;
 	bool m_SmallIndexStride = false;
 	bool m_HardwareLocked = false;
-
-	Graphics* m_pGraphics;
 };
 

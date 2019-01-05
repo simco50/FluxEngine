@@ -29,14 +29,15 @@ public:
 	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
 	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; }
 
-	bool IsTypeOf(const TypeInfo* pTypeInfo);
-	bool IsTypeOf(StringHash type);
+	bool IsTypeOf(const TypeInfo* pTypeInfo) const;
+	bool IsTypeOf(StringHash type) const;
 	template<typename T>
-	inline bool IsTypeOf() { return IsTypeOf(T::GetTypeInfoStatic()); }
+	inline bool IsTypeOf() const { return IsTypeOf(T::GetTypeInfoStatic()); }
 
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>
 	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
+	Context* GetContext() const { return m_pContext; }
 
 protected:
 	//This enforces the FLUX_OBJECT on all classes that inherit from Object
@@ -49,6 +50,18 @@ template<typename T>
 T* DynamicCast(Object* pObject)
 {
 	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	{
 		return static_cast<T*>(pObject);
+	}
 	return nullptr;
+}
+
+template<typename T>
+std::shared_ptr<T> DynamicCastPtr(const std::shared_ptr<Object>& pObject)
+{
+	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	{
+		return std::static_pointer_cast<T>(pObject);
+	}
+	return std::shared_ptr<T>();
 }

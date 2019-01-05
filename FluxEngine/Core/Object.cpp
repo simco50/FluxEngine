@@ -1,12 +1,12 @@
 #include "FluxEngine.h"
 #include "Object.h"
 
-bool Object::IsTypeOf(const TypeInfo* pTypeInfo)
+bool Object::IsTypeOf(const TypeInfo* pTypeInfo) const
 {
 	return GetTypeInfo()->IsTypeOf(pTypeInfo);
 }
 
-bool Object::IsTypeOf(StringHash type)
+bool Object::IsTypeOf(StringHash type) const
 {
 	return GetTypeInfo()->IsTypeOf(type);
 }

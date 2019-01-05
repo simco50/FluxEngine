@@ -3,7 +3,6 @@
 #include "Scenegraph\Scene.h"
 #include "Mesh.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 
 Model::Model(Context* pContext):
 	Drawable(pContext)
@@ -13,19 +12,6 @@ Model::Model(Context* pContext):
 
 Model::~Model()
 {
-}
-
-void Model::OnSceneSet(Scene* pScene)
-{
-	Drawable::OnSceneSet(pScene);
-}
-
-void Model::OnMarkedDirty(const Transform* pTransform)
-{
-	for (Batch& batch : m_Batches)
-	{
-		batch.pModelMatrix = &pTransform->GetWorldMatrix();
-	}
 }
 
 void Model::SetMesh(Mesh* pMesh)
@@ -41,8 +27,8 @@ void Model::SetMesh(Mesh* pMesh)
 	for (int i = 0; i < geometries; ++i)
 	{
 		m_Batches[i].pGeometry = pMesh->GetGeometry(i);
-		m_Batches[i].pModelMatrix = &m_pNode->GetTransform()->GetWorldMatrix();
-		m_Batches[i].NumSkinMatrices = 1;
+		m_Batches[i].pWorldMatrices = &m_pNode->GetWorldMatrix();
+		m_Batches[i].NumSkinMatrices = 0;
 	}
 	m_BoundingBox = pMesh->GetBoundingBox();
 
@@ -65,4 +51,13 @@ void Model::SetMaterial(int index, Material* pMaterial)
 		return;
 	}
 	m_Batches[index].pMaterial = pMaterial;
+}
+
+void Model::CreateUI()
+{
+	if (m_pMesh)
+	{
+		ImGui::LabelText("Mesh", m_pMesh->GetFilePath().c_str());
+	}
+	Drawable::CreateUI();
 }

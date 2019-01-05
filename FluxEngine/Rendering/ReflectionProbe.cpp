@@ -2,9 +2,9 @@
 #include "ReflectionProbe.h"
 #include "Camera/Camera.h"
 #include "Core/TextureCube.h"
-#include "Scenegraph/Transform.h"
 #include "Renderer.h"
 #include "Core/Texture2D.h"
+#include "Scenegraph/SceneNode.h"
 
 ReflectionProbe::ReflectionProbe(Context* pContext) :
 	Component(pContext)
@@ -19,11 +19,11 @@ ReflectionProbe::~ReflectionProbe()
 
 void ReflectionProbe::Capture(const CubeMapFace face)
 {
-	Matrix projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, m_NearClip, m_FarClip);
+	Matrix projection = DirectX::XMMatrixPerspectiveFovLH(Math::PIDIV2, 1.0f, m_NearClip, m_FarClip);
 	std::unique_ptr<Camera>& pCamera = m_Cameras[(int)face];
 	pCamera->SetProjection(projection);
 
-	Vector3 position = GetTransform()->GetWorldPosition();
+	Vector3 position = m_pNode->GetWorldPosition();
 
 	switch (face)
 	{
@@ -137,5 +137,37 @@ void ReflectionProbe::ExecuteRender()
 		Capture();
 		m_Finished = true;
 		break;
+	}
+}
+
+void ReflectionProbe::CreateUI()
+{
+	static const char* updateModes[] =
+	{
+		"OnStart",
+		"OnUpdate",
+		"Manual",
+	};
+	static const char* slicingModes[] =
+	{
+		"OnePerFrame",
+		"AllAtOnce"
+	};
+
+	ImGui::SliderFloat("Near Plane", &m_NearClip, 0.001f, 100.0f);
+	ImGui::SliderFloat("Far Plane", &m_FarClip, 100.0f, 100000.0f);
+	ImGui::Combo("Update Mode", (int*)&m_UpdateMode, [](void*, int index, const char** pText)
+	{
+		*pText = updateModes[index];
+		return true;
+	}, nullptr, 3);
+	ImGui::Combo("Slicing Method", (int*)&m_SlicingMethod, [](void*, int index, const char** pText)
+	{
+		*pText = slicingModes[index];
+		return true;
+	}, nullptr, 2);
+	if (ImGui::Button("Capture"))
+	{
+		Capture();
 	}
 }

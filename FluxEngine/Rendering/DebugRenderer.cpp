@@ -10,19 +10,22 @@
 #include "Physics\PhysX\PhysicsScene.h"
 #include "Mesh.h"
 #include "Geometry.h"
+#include "Light.h"
+#include "IO/MemoryStream.h"
+#include "Scenegraph\SceneNode.h"
 
 DebugRenderer::DebugRenderer(Context* pContext) :
 	Subsystem(pContext)
 {
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 
-	m_ElementDesc = 
+	m_ElementDesc =
 	{
 		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION, 0, false),
 		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::COLOR, 0, false),
 	};
-	m_pVertexShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::VertexShader);
-	m_pPixelShader = m_pGraphics->GetShader("Resources/Shaders/DebugRenderer", ShaderType::PixelShader);
+	m_pVertexShader = m_pGraphics->GetShader("Shaders/DebugRenderer", ShaderType::VertexShader);
+	m_pPixelShader = m_pGraphics->GetShader("Shaders/DebugRenderer", ShaderType::PixelShader);
 	m_pVertexBuffer = std::make_unique<VertexBuffer>(m_pGraphics);
 }
 
@@ -40,43 +43,32 @@ void DebugRenderer::Render()
 
 	AUTOPROFILE(DebugRenderer_Render);
 
+	m_pGraphics->InvalidateShaders();
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
-	m_pGraphics->SetShader(ShaderType::ComputeShader, nullptr);
-	m_pGraphics->SetShader(ShaderType::GeometryShader, nullptr);
 
 	if (totalPrimitives > (int)m_pVertexBuffer->GetVertexCount())
 	{
 		m_pVertexBuffer->Create(totalPrimitives + 100, m_ElementDesc, true);
 	}
 
-	char* pData = (char*)m_pVertexBuffer->Map(true);
-	char* pDestination = pData;
+	void* pData = m_pVertexBuffer->Map(true);
+	MemoryStream memStream(pData, m_pVertexBuffer->GetSize());
 	for (const DebugLine& line : m_Lines)
 	{
-		memcpy(pDestination, &line.Start, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.ColorStart, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &line.End, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &line.ColorEnd, sizeof(Color));
-		pDestination += sizeof(Color);
+		memStream.Write(&line.Start, sizeof(Vector3));
+		memStream.Write(&line.ColorStart, sizeof(Color));
+		memStream.Write(&line.End, sizeof(Vector3));
+		memStream.Write(&line.ColorEnd, sizeof(Color));
 	}
 	for (const DebugTriangle& triangle : m_Triangles)
 	{
-		memcpy(pDestination, &triangle.A, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorA, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &triangle.B, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorB, sizeof(Color));
-		pDestination += sizeof(Color);
-		memcpy(pDestination, &triangle.C, sizeof(Vector3));
-		pDestination += sizeof(Vector3);
-		memcpy(pDestination, &triangle.ColorC, sizeof(Color));
-		pDestination += sizeof(Color);
+		memStream.Write(&triangle.A, sizeof(Vector3));
+		memStream.Write(&triangle.ColorA, sizeof(Color));
+		memStream.Write(&triangle.B, sizeof(Vector3));
+		memStream.Write(&triangle.ColorB, sizeof(Color));
+		memStream.Write(&triangle.C, sizeof(Vector3));
+		memStream.Write(&triangle.ColorC, sizeof(Color));
 	}
 
 	m_pVertexBuffer->Unmap();
@@ -94,7 +86,7 @@ void DebugRenderer::Render()
 	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
 
 	Matrix projectionMatrix = m_pCamera->GetViewProjection();
-	m_pGraphics->SetShaderParameter("cViewProj", &projectionMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int start = 0;
 	if(m_LinePrimitives != 0)
@@ -236,14 +228,14 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 {
 	DebugSphere sphere(position, radius);
 
-	float jStep = XM_PI / slices;
-	float iStep = XM_PI / stacks;
+	float jStep = Math::PI / slices;
+	float iStep = Math::PI / stacks;
 
 	if (!solid)
 	{
-		for (float j = 0; j < XM_PI; j += jStep)
+		for (float j = 0; j < Math::PI; j += jStep)
 		{
-			for (float i = 0; i < XM_2PI; i += iStep)
+			for (float i = 0; i < Math::PI * 2; i += iStep)
 			{
 				Vector3 p1 = sphere.GetPoint(i, j);
 				Vector3 p2 = sphere.GetPoint(i + iStep, j);
@@ -259,16 +251,16 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 	}
 	else
 	{
-		for (float j = 0; j < XM_PI; j += jStep)
+		for (float j = 0; j < Math::PI; j += jStep)
 		{
-			for (float i = 0; i < XM_2PI; i += iStep)
+			for (float i = 0; i < Math::PI * 2; i += iStep)
 			{
 				Vector3 p1 = sphere.GetPoint(i, j);
 				Vector3 p2 = sphere.GetPoint(i + iStep, j);
 				Vector3 p3 = sphere.GetPoint(i, j + jStep);
 				Vector3 p4 = sphere.GetPoint(i + iStep, j + jStep);
 
-				AddPolygon(p2, p1, p3, p4, (Color)Colors::Blue);
+				AddPolygon(p2, p1, p3, p4, Color(0, 0, 1, 1));
 			}
 		}
 	}
@@ -276,7 +268,7 @@ void DebugRenderer::AddSphere(const Vector3& position, const float radius, const
 
 void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& color)
 {
-	std::vector<XMFLOAT3> corners(frustrum.CORNER_COUNT);
+	std::vector<Vector3> corners(BoundingFrustum::CORNER_COUNT);
 	frustrum.GetCorners(corners.data());
 
 	AddLine(corners[0], corners[1], color);
@@ -295,10 +287,14 @@ void DebugRenderer::AddFrustrum(const BoundingFrustum& frustrum, const Color& co
 
 void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLength)
 {
+	Matrix newMatrix = Matrix::CreateScale(Math::ScaleFromMatrix(transform));
+	newMatrix.Invert(newMatrix);
+	newMatrix *= Matrix::CreateScale(Vector3::Distance(m_pCamera->GetNode()->GetWorldPosition(), transform.Translation()) / 5.0f);
+	newMatrix *= transform;
 	Vector3 origin(Vector3::Transform(Vector3(), transform));
-	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), transform));
-	Vector3 y(Vector3::Transform(Vector3(0, lineLength, 0), transform));
-	Vector3 z(Vector3::Transform(Vector3(0, 0, lineLength), transform));
+	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), newMatrix));
+	Vector3 y(Vector3::Transform(Vector3(0, lineLength, 0), newMatrix));
+	Vector3 z(Vector3::Transform(Vector3(0, 0, lineLength), newMatrix));
 
 	AddLine(origin, x, Color(1, 0, 0, 1));
 	AddLine(origin, y, Color(0, 1, 0, 1));
@@ -385,9 +381,79 @@ void DebugRenderer::AddMesh(Mesh* pMesh, const Matrix& worldMatrix, const Color&
 	}
 }
 
-void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
+void DebugRenderer::AddLight(const Light* pLight)
 {
-	AddBoneRecursive(skeleton.GetParentBone(), pBoneMatrices, worldMatrix, color);
+	const Light::Data* pData = pLight->GetData();
+	switch (pData->Type)
+	{
+	case Light::Type::Directional:
+		AddWireCylinder(pData->Position, pData->Direction, 200.0f, 50.0f, 10, Color(1.0f, 1.0f, 0.0f, 1.0f));
+		break;
+	case Light::Type::Point:
+		AddSphere(pData->Position, pData->Range, 8, 8, Color(1.0f, 1.0f, 0.0f, 1.0f), false);
+		break;
+	case Light::Type::Spot:
+		AddWireCone(pData->Position, pData->Direction, pData->Range, pData->SpotLightAngle, 10, Color(1.0f, 1.0f, 0.0f, 1.0f));
+		break;
+	default:
+		break;
+	}
+}
+
+void DebugRenderer::AddWireCylinder(const Vector3& position, const Vector3& direction, const float height, const float radius, const int segments, const Color& color)
+{
+	Vector3 d;
+	direction.Normalize(d);
+
+	DebugSphere sphere(position, radius);
+	float t = Math::PI * 2 / (segments + 1);
+
+	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position - d * (height / 2));
+	for (int i = 0; i < segments + 1; ++i)
+	{
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, i * t), world);
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, (i + 1) * t), world);
+		AddLine(a, b, color, color);
+		AddLine(a + d * height, b + d * height, color, color);
+		AddLine(a, a + d * height, color, color);
+	}
+}
+
+void DebugRenderer::AddWireCone(const Vector3& position, const Vector3& direction, const float height, const float angle, const int segments, const Color& color)
+{
+	Vector3 d;
+	direction.Normalize(d);
+
+	float radius = tan(Math::ToRadians * angle) * height;
+	DebugSphere sphere(position, radius);
+	float t = Math::PI * 2 / (segments + 1);
+
+	Matrix world = Matrix::CreateFromQuaternion(Math::LookRotation(d)) * Matrix::CreateTranslation(position);
+	for (int i = 0; i < segments + 1; ++i)
+	{
+		Vector3 a = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, i * t), world) + direction * height;
+		Vector3 b = Vector3::Transform(sphere.GetLocalPoint(Math::PIDIV2, (i + 1) * t), world) + direction * height;
+		AddLine(a, b, color, color);
+		AddLine(a, position, color, color);
+	}
+}
+
+void DebugRenderer::AddSkeleton(const Skeleton& skeleton, const Color& color)
+{
+	for (const Bone& bone : skeleton.GetBones())
+	{
+		AddBone(bone.pNode->GetWorldMatrix(), 4.0f, color);
+	}
+	AddLineSceneNodeHierarchy(skeleton.GetBone(skeleton.GetRootBoneIndex())->pNode, color);
+}
+
+void DebugRenderer::AddLineSceneNodeHierarchy(SceneNode* pNode, const Color& color)
+{
+	for (SceneNode* pChild : pNode->GetChildren())
+	{
+		AddLine(pNode->GetWorldPosition(), pChild->GetWorldPosition(), color);
+		AddLineSceneNodeHierarchy(pChild, color);
+	}
 }
 
 void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Color& color)
@@ -408,15 +474,4 @@ void DebugRenderer::AddBone(const Matrix& matrix, const float length, const Colo
 	AddTriangle(a, tip, d, color, color, color, false);
 	AddTriangle(b, tip, a, color, color, color, false);
 	AddTriangle(c, tip, b, color, color, color, false);
-}
-
-void DebugRenderer::AddBoneRecursive(const Bone* pBone, const Matrix* pBoneMatrices, const Matrix& worldMatrix, const Color& color)
-{
-	Matrix boneMatrix = pBone->OffsetMatrix.Invert() * pBoneMatrices[pBone->Index] * worldMatrix;
-	AddBone(boneMatrix, 5.0f, color);
-	for (const Bone* pChild : pBone->Children)
-	{
-		AddBoneRecursive(pChild, pBoneMatrices, worldMatrix, color);
-		AddLine(boneMatrix.Translation(), (pChild->OffsetMatrix.Invert() * pBoneMatrices[pChild->Index] * worldMatrix).Translation(), color);
-	}
 }

@@ -1,6 +1,5 @@
 #include "FluxEngine.h"
 #include "Rigidbody.h"
-#include "Scenegraph\Transform.h"
 #include "PhysicsSystem.h"
 #include "PhysicsScene.h"
 #include "Scenegraph\SceneNode.h"
@@ -55,10 +54,12 @@ void Rigidbody::OnNodeRemoved()
 	}
 }
 
-void Rigidbody::OnMarkedDirty(const Transform* pTransform)
+void Rigidbody::OnMarkedDirty(const SceneNode* pNode)
 {
+	Vector3 wPos = pNode->GetWorldPosition();
+	Quaternion wRot = pNode->GetWorldRotation();
 
-	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
 	if (m_pBody)
 		m_pBody->setGlobalPose(transform, true);
@@ -69,7 +70,8 @@ void Rigidbody::UpdateBody()
 	if (m_pBody)
 	{
 		PxTransform transform = m_pBody->getGlobalPose();
-		GetTransform()->MarkDirty(*reinterpret_cast<Vector3*>(&transform.p), GetTransform()->GetWorldScale(), *reinterpret_cast<Quaternion*>(&transform.q));
+		m_pNode->SetPosition(*reinterpret_cast<Vector3*>(&transform.p), Space::World);
+		m_pNode->SetRotation(*reinterpret_cast<Quaternion*>(&transform.q), Space::World);
 	}
 }
 
@@ -107,11 +109,11 @@ void Rigidbody::SetConstraints(const Constraint constraints)
 			m_pConstraintJoint->setMotion(PxD6Axis::eX, (constraints & Constraint::XPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eY, (constraints & Constraint::YPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eZ, (constraints & Constraint::ZPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
-			
+
 			m_pConstraintJoint->setMotion(PxD6Axis::eTWIST, (constraints & Constraint::XRotation) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eSWING1, (constraints & Constraint::YRotation) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
 			m_pConstraintJoint->setMotion(PxD6Axis::eSWING2, (constraints & Constraint::ZPosition) ? PxD6Motion::eLOCKED : PxD6Motion::eFREE);
-			
+
 			m_pConstraintJoint->setLocalPose(PxJointActorIndex::eACTOR0, m_pBody->getGlobalPose());
 		}
 	}
@@ -127,8 +129,9 @@ void Rigidbody::CreateBody(const Type type)
 
 	AUTOPROFILE(Rigidbody_CreateBody);
 
-	Transform* pTransform = GetTransform();
-	PxTransform transform(*reinterpret_cast<const PxVec3*>(&pTransform->GetWorldPosition()), *reinterpret_cast<const PxQuat*>(&pTransform->GetWorldRotation()));
+	Vector3 wPos = m_pNode->GetWorldPosition();
+	Quaternion wRot = m_pNode->GetWorldRotation();
+	PxTransform transform(*reinterpret_cast<PxVec3*>(&wPos), *reinterpret_cast<PxQuat*>(&wRot));
 
 	PxRigidActor* pNewBody;
 	switch (m_Type)

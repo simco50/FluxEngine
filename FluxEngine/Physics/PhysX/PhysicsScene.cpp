@@ -3,7 +3,6 @@
 #include "PhysicsSystem.h"
 #include "Scenegraph\Scene.h"
 #include "Rendering\Camera\Camera.h"
-#include "Scenegraph\Transform.h"
 #include "Rigidbody.h"
 #include "Collider.h"
 
@@ -86,7 +85,7 @@ void PhysicsScene::Update()
 		pRigidbody->UpdateBody();
 }
 
-bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, RaycastResult& outResult, const float length) const
+bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float length) const
 {
 	outResult = RaycastResult();
 
@@ -95,8 +94,8 @@ bool PhysicsScene::Raycast(const Vector3& origin, const Vector3& direction, Rayc
 
 	PxRaycastBuffer buffer;
 	bool hit = m_pPhysicsScene->raycast(
-		*reinterpret_cast<const PxVec3*>(&origin),
-		*reinterpret_cast<const PxVec3*>(&direction),
+		*reinterpret_cast<const PxVec3*>(&ray.position),
+		*reinterpret_cast<const PxVec3*>(&ray.direction),
 		length,
 		buffer,
 		PxHitFlag::eDEFAULT,
@@ -185,7 +184,6 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 				result.pCollider = pShapeB;
 				result.pRigidbody = reinterpret_cast<Rigidbody*>(pairHeader.actors[1]->userData);
 				result.pNode = pShapeB->GetNode();
-				result.pTransform = pShapeB->GetTransform();
 
 				if (pairs[i].events.isSet(PxPairFlag::eNOTIFY_TOUCH_FOUND))
 				{

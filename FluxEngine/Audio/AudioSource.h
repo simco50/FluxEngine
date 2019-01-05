@@ -24,13 +24,13 @@ public:
 
 private:
 	virtual void OnNodeSet(SceneNode* pNode) override;
-	virtual void OnMarkedDirty(const Transform* transform) override;
+	virtual void OnMarkedDirty(const SceneNode* pNode) override;
 
 	AudioEngine* m_pAudio = nullptr;
 	Sound* m_pSound = nullptr;
 	FMOD::Channel* m_pChannel = nullptr;
 
-	FMOD_MODE m_Mode;
-	std::string m_FilePath;
 	Vector3 m_LastPosition;
+	std::string m_FilePath;
+	FMOD_MODE m_Mode;
 };

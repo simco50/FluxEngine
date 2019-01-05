@@ -3,7 +3,6 @@
 
 #include "Scenegraph/Scene.h"
 #include "Scenegraph/SceneNode.h"
-#include "SceneGraph/Transform.h"
 
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Renderer.h"
@@ -15,14 +14,14 @@
 #include "../Core/Texture.h"
 #include "../Core/Texture2D.h"
 
-Camera::Camera(Context* pContext):
-	Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
+Camera::Camera(Context* pContext)
+	: Component(pContext), m_Viewport(FloatRect(0.0f, 0.0f, 1.0f, 1.0f))
 {
-	m_Projection = XMMatrixIdentity();
-	m_View = XMMatrixIdentity();
-	m_ViewInverse = XMMatrixIdentity();
-	m_ViewProjection = XMMatrixIdentity();
-	m_ViewProjectionInverse = XMMatrixIdentity();
+	m_Projection = DirectX::XMMatrixIdentity();
+	m_View = DirectX::XMMatrixIdentity();
+	m_ViewInverse = DirectX::XMMatrixIdentity();
+	m_ViewProjection = DirectX::XMMatrixIdentity();
+	m_ViewProjectionInverse = DirectX::XMMatrixIdentity();
 
 	m_pGraphics = GetSubsystem<Graphics>();
 }
@@ -35,22 +34,29 @@ void Camera::OnSceneSet(Scene* pScene)
 {
 	Component::OnSceneSet(pScene);
 	pScene->GetRenderer()->AddCamera(this);
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 FloatRect Camera::GetAbsoluteViewport() const
 {
-	FloatRect rect = m_Viewport;
-
 	float renderTargetWidth = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetWidth() : (float)m_pGraphics->GetWindowWidth();
 	float renderTargetHeight = m_pRenderTarget ? (float)m_pRenderTarget->GetParentTexture()->GetHeight() : (float)m_pGraphics->GetWindowHeight();
-	
+
+	FloatRect rect;
 	rect.Left = m_Viewport.Left * renderTargetWidth;
 	rect.Top = m_Viewport.Top * renderTargetHeight;
 	rect.Right = m_Viewport.Right * renderTargetWidth;
 	rect.Bottom = m_Viewport.Bottom * renderTargetHeight;
-
 	return rect;
+}
+
+RenderTarget* Camera::GetRenderTarget() const
+{
+	if (m_pRenderTarget)
+	{
+		return m_pRenderTarget;
+	}
+	return m_pGraphics->GetRenderTarget();
 }
 
 RenderTarget* Camera::GetDepthStencil()
@@ -67,7 +73,7 @@ RenderTarget* Camera::GetDepthStencil()
 	return m_pDepthStencil->GetRenderTarget();
 }
 
-void Camera::OnMarkedDirty(const Transform* transform)
+void Camera::OnMarkedDirty(const SceneNode* pNode)
 {
 	FloatRect absolute = GetAbsoluteViewport();
 	float viewportWidth = absolute.GetWidth();
@@ -75,21 +81,17 @@ void Camera::OnMarkedDirty(const Transform* transform)
 
 	if (m_Perspective)
 	{
-		m_Projection = XMMatrixPerspectiveFovLH(m_FoV * (XM_PI / 180.0f), viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
+		m_Projection = DirectX::XMMatrixPerspectiveFovLH(m_FoV * Math::ToRadians, viewportWidth / viewportHeight, m_NearPlane, m_FarPlane);
 	}
 	else
 	{
 		float viewWidth = m_Size * viewportWidth / viewportHeight;
 		float viewHeight = m_Size;
-		m_Projection = XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
+		m_Projection = DirectX::XMMatrixOrthographicLH(viewWidth, viewHeight, m_NearPlane, m_FarPlane);
 	}
 
-	m_View = XMMatrixLookAtLH(
-		transform->GetWorldPosition(), 
-		transform->GetWorldPosition() + transform->GetForward(), 
-		XMLoadFloat3(&transform->GetUp()));
-
-	m_View.Invert(m_ViewInverse);
+	m_ViewInverse = pNode->GetWorldMatrix();
+	m_ViewInverse.Invert(m_View);
 
 	m_ViewProjection = m_View * m_Projection;
 	m_ViewProjection.Invert(m_ViewProjectionInverse);
@@ -118,10 +120,10 @@ void Camera::UpdateFrustum()
 	m_Frustum.Transform(m_Frustum, m_ViewInverse);
 }
 
-void Camera::SetFOW(const float fov)
+void Camera::SetFOW(float fov)
 {
 	m_FoV = fov;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 void Camera::SetViewport(float x, float y, float width, float height)
@@ -130,18 +132,21 @@ void Camera::SetViewport(float x, float y, float width, float height)
 	m_Viewport.Top = y;
 	m_Viewport.Right = width + x;
 	m_Viewport.Bottom = height + y;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
+
+	m_ViewportChangedEvent.Broadcast(m_Viewport);
 }
 
-void Camera::SetClippingPlanes(const float nearPlane, const float farPlane)
+void Camera::SetClippingPlanes(float nearPlane, float farPlane)
 {
 	m_NearPlane = nearPlane;
 	m_FarPlane = farPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
-void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
+Ray Camera::GetMouseRay() const
 {
+	Ray ray;
 	InputEngine* input = GetSubsystem<InputEngine>();
 	if (input)
 	{
@@ -157,23 +162,24 @@ void Camera::GetMouseRay(Vector3& startPoint, Vector3& direction) const
 		Vector3 nearPoint, farPoint;
 		nearPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 0), m_ViewProjectionInverse);
 		farPoint = Vector3::Transform(Vector3(ndc.x, ndc.y, 1), m_ViewProjectionInverse);
-		startPoint = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
+		ray.position = Vector3(nearPoint.x, nearPoint.y, nearPoint.z);
 
-		direction = farPoint - nearPoint;
-		direction.Normalize();
+		ray.direction = farPoint - nearPoint;
+		ray.direction.Normalize();
 	}
+	return ray;
 }
 
-void Camera::SetNearPlane(const float nearPlane)
+void Camera::SetNearPlane(float nearPlane)
 {
 	m_NearPlane = nearPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
-void Camera::SetFarPlane(const float farPlane)
+void Camera::SetFarPlane(float farPlane)
 {
 	m_FarPlane = farPlane;
-	OnMarkedDirty(GetTransform());
+	OnMarkedDirty(m_pNode);
 }
 
 bool Camera::Raycast(RaycastResult& result) const
@@ -181,17 +187,27 @@ bool Camera::Raycast(RaycastResult& result) const
 	result = RaycastResult();
 
 	if (m_pScene == nullptr)
+	{
 		return false;
+	}
 	PhysicsScene* pPhysicsScene = m_pScene->GetComponent<PhysicsScene>();
 	if (pPhysicsScene == nullptr)
+	{
 		return false;
+	}
+	return pPhysicsScene->Raycast(GetMouseRay(), result);
+}
 
-	Vector3 rayStart, rayDir;
-	GetMouseRay(rayStart, rayDir);
-
-	return pPhysicsScene->Raycast(
-		rayStart,
-		rayDir,
-		result
-	);
+void Camera::CreateUI()
+{
+	bool unchanged = true;
+	unchanged &= ImGui::SliderFloat("FoV", &m_FoV, 1, 179);
+	unchanged &= ImGui::SliderFloat("Orthographic Size", &m_Size, 1, 200);
+	unchanged &= ImGui::Checkbox("Perspective", &m_Perspective);
+	unchanged &= ImGui::SliderFloat("Near Plane", &m_NearPlane, 0.001f, 1000.0f);
+	unchanged &= ImGui::SliderFloat("Far Plane", &m_FarPlane, 10.0f, 100000.0f);
+	if (unchanged == false)
+	{
+		m_pNode->MarkDirty();
+	}
 }

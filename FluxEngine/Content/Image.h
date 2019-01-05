@@ -2,10 +2,15 @@
 
 #include "Resource.h"
 
+struct SDL_Surface;
+
 enum class ImageFormat
 {
 	RGBA = 0,
 	BGRA,
+	RGB32,
+	RGBA16,
+	RGBA32,
 	DXT1,
 	DXT3,
 	DXT5,
@@ -59,6 +64,7 @@ public:
 	int GetDepth() const { return m_Depth; }
 	int GetComponents() const { return m_Components; }
 	bool IsSRGB() const { return m_sRgb; }
+	bool IsHDR() const { return m_IsHdr; }
 
 	SDL_Surface* GetSDLSurface();
 	unsigned char* GetWritableData() { return m_Pixels.data(); }
@@ -75,6 +81,7 @@ public:
 private:
 	bool LoadDds(InputStream& inputStream);
 	bool LoadStbi(InputStream& inputStream);
+	bool LoadExr(InputStream& inputStream);
 
 	int m_Width = 0;
 	int m_Height = 0;
@@ -84,8 +91,9 @@ private:
 	int m_BBP = 0;
 	bool m_sRgb = false;
 	bool m_IsArray = false;
+	bool m_IsHdr = false;
 	std::unique_ptr<Image> m_pNextImage;
-	ImageFormat m_Format = ImageFormat::RGBA;
+	ImageFormat m_Format = ImageFormat::MAX;
 	std::vector<unsigned char> m_Pixels;
 	std::vector<uint32> m_MipLevelDataOffsets;
 };

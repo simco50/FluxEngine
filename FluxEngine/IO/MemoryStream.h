@@ -5,8 +5,12 @@
 class MemoryStream : public InputStream, public OutputStream
 {
 public:
-	MemoryStream(void* pData, const size_t size) : 
-		InputStream(size), m_pBuffer(pData)
+	MemoryStream()
+		: InputStream(0), m_pBuffer(nullptr)
+	{}
+
+	MemoryStream(void* pData, const size_t size)
+		: InputStream(size), m_pBuffer(pData)
 	{}
 
 	virtual ~MemoryStream()
@@ -16,6 +20,6 @@ public:
 	virtual size_t Read(void* pDestination, const size_t size) override;
 
 private:
-	void* Current() { return (char*)m_pBuffer + m_FilePointer; }
+	void* Current() const;
 	void* m_pBuffer;
 };

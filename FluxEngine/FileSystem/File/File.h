@@ -19,11 +19,7 @@ enum class ContentType
 class File : public IOStream
 {
 public:
-	File(const std::string& fileName) :
-		m_FileName(fileName)
-	{
-		m_Source = fileName;
-	}
+	File(const std::string& fileName);
 	virtual ~File() {}
 
 	virtual bool OpenRead(bool allowWrite = false) = 0;
@@ -33,9 +29,7 @@ public:
 	virtual bool Close() = 0;
 	virtual bool IsOpen() const = 0;
 
+	bool Exists() const;
 	std::string GetDirectoryPath() const;
 	std::string GetFileName() const;
-
-protected:
-	std::string m_FileName;
 };

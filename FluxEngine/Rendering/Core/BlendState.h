@@ -11,8 +11,8 @@ public:
 
 	DELETE_COPY(BlendState)
 
-	void SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage);
-	void SetColorWrite(const ColorWrite colorWriteMask = ColorWrite::ALL);
+	void SetBlendMode(const BlendMode& blendMode, bool alphaToCoverage);
+	void SetColorWrite(ColorWrite colorWriteMask = ColorWrite::ALL);
 
 	void* GetOrCreate(Graphics* pGraphics);
 	bool IsDirty() const { return m_IsDirty; }
