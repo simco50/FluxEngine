@@ -48,6 +48,15 @@ ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderTy
 	return nullptr;
 }
 
+bool Graphics::UsingTessellation() const
+{
+#ifdef SHADER_TESSELLATION_ENABLE
+	return m_CurrentShaders[(size_t)ShaderType::DomainShader] && m_CurrentShaders[(size_t)ShaderType::HullShader];
+#else
+	return false;
+#endif
+}
+
 RenderTarget* Graphics::GetRenderTarget() const
 {
 	return m_CurrentRenderTargets[0] ? m_CurrentRenderTargets[0] : m_pDefaultRenderTarget->GetRenderTarget();

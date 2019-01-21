@@ -14,19 +14,11 @@ class Subsystem;
         static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
 		static constexpr const TypeInfo* GetTypeInfoStatic() { return &TYPE_INFO; } \
 	private: \
-		virtual void NOTYPEINFO() override {} \
 		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic()); \
-
 
 class Object
 {
 public:
-	Object(Context* pContext) 
-		: m_pContext(pContext) 
-	{}
-	virtual ~Object() 
-	{}
-
 	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
 	virtual const char* GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
 	virtual const TypeInfo* GetTypeInfo() const { return GetTypeInfoStatic(); }
@@ -51,8 +43,11 @@ public:
 	}
 
 protected:
-	//This enforces the FLUX_OBJECT on all classes that inherit from Object
-	virtual void NOTYPEINFO() = 0;
+	Object(Context* pContext)
+		: m_pContext(pContext)
+	{}
+	virtual ~Object()
+	{}
 
 	Context* m_pContext = nullptr;
 
@@ -63,7 +58,7 @@ private:
 template<typename T>
 T* DynamicCast(Object* pObject)
 {
-	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	if (pObject->IsTypeOf(T::GetTypeStatic()))
 	{
 		return static_cast<T*>(pObject);
 	}
@@ -73,7 +68,7 @@ T* DynamicCast(Object* pObject)
 template<typename T>
 std::shared_ptr<T> DynamicCastPtr(const std::shared_ptr<Object>& pObject)
 {
-	if (pObject->GetTypeInfo()->IsTypeOf<T>())
+	if (pObject->IsTypeOf(T::GetTypeStatic()))
 	{
 		return std::static_pointer_cast<T>(pObject);
 	}

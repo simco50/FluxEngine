@@ -19,8 +19,8 @@ PostProcessing::PostProcessing(Context* pContext)
 {
 	AUTOPROFILE(PostProcessing_Create);
 
-	m_pGraphics = m_pContext->GetSubsystem<Graphics>();
-	m_pRenderer = m_pContext->GetSubsystem<Renderer>();
+	m_pGraphics = GetSubsystem<Graphics>();
+	m_pRenderer = GetSubsystem<Renderer>();
 
 	m_pRenderTexture = std::make_unique<Texture2D>(m_pContext);
 	m_pDepthTexture = std::make_unique<Texture2D>(m_pContext);
@@ -86,16 +86,18 @@ void PostProcessing::OnNodeSet(SceneNode* pNode)
 
 	m_pCamera = pNode->GetComponent<Camera>();
 	checkf(m_pCamera, "[PostProcessing::OnNodeSet] Post Processing requires a Camera component");
-	OnResize(m_pCamera->GetViewport());
+	const FloatRect& viewport = m_pCamera->GetViewport();
+	OnResize((int)viewport.GetWidth(), (int)viewport.GetHeight());
+	GetSubsystem<InputEngine>()->OnWindowSizeChanged().AddRaw(this, &PostProcessing::OnResize);
 
 	Renderer* pRenderer = GetSubsystem<Renderer>();
 	pRenderer->AddPostProcessing(this);
 }
 
-void PostProcessing::OnResize(const FloatRect& viewport)
+void PostProcessing::OnResize(const int width, const int height)
 {
 	int msaa = m_pCamera->GetRenderTarget()->GetParentTexture()->GetMultiSample();
-	m_pRenderTexture->SetSize((int)viewport.GetWidth(), (int)viewport.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, msaa, nullptr);
+	m_pRenderTexture->SetSize(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, msaa, nullptr);
 	m_pRenderTexture->SetAddressMode(TextureAddressMode::CLAMP);
-	m_pDepthTexture->SetSize((int)viewport.GetWidth(), (int)viewport.GetHeight(), DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, msaa, nullptr);
+	m_pDepthTexture->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, msaa, nullptr);
 }

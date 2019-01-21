@@ -37,6 +37,7 @@
 //Engine core include
 #include "Core/Types.h"
 #include "Misc/Misc.h"
+#include "Core/BitField.h"
 #include "Helpers/StringHash.h"
 #include "Helpers/Utility.h"
 #include "Math/MathTypes.h"

@@ -78,6 +78,8 @@ public:
 	Shader* GetShader(const std::string& filePath);
 	ShaderVariation* GetShader(const std::string& filePath, ShaderType type, const std::string& defines = "");
 
+	bool UsingTessellation() const;
+
 	bool SetShaderParameter(StringHash hash, const void* pData);
 	bool SetShaderParameter(StringHash hash, const void* pData, int stride, int count);
 	bool SetShaderParameter(StringHash hash, float value);
@@ -116,6 +118,7 @@ public:
 
 	void FlushRenderTargetChanges(bool force);
 	void FlushSRVChanges(bool force);
+
 private:
 	void PrepareDraw();
 
@@ -125,6 +128,7 @@ private:
 	void UpdateSwapchain(int windowWidth, int windowHeight);
 
 	void UpdateShaderProgram();
+	void UpdateShaders();
 
 	DelegateHandle m_WindowSizeChangedHandle;
 	SDL_Window* m_pWindow = nullptr;
@@ -163,6 +167,7 @@ private:
 
 	std::unique_ptr<Texture2D> m_pDefaultRenderTarget;
 	std::unique_ptr<Texture2D> m_pDefaultDepthStencil;
+	BitField<int(ShaderType::MAX)> m_DirtyShaders;
 
 	//Debug data
 	unsigned int m_BatchCount = 0;

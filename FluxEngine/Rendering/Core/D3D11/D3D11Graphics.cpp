@@ -268,91 +268,107 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	}
 }
 
-bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
+void Graphics::UpdateShaders()
 {
-	if (m_CurrentShaders[(unsigned int)type] != pShader)
-	{
-		AUTOPROFILE_DESC(Graphics_SetShader, pShader ? pShader->GetName() : "NULL Shader");
-		m_CurrentShaders[(unsigned int)type] = pShader;
-		switch (type)
-		{
-		case ShaderType::VertexShader:
-			m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
-		case ShaderType::PixelShader:
-			m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
+	AUTOPROFILE(Graphics_UpdateShaders);
 
-#ifdef SHADER_GEOMETRY_ENABLE
-		case ShaderType::GeometryShader:
-			m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
-		case ShaderType::ComputeShader:
-			m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
-		case ShaderType::DomainShader:
-			m_pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
-		case ShaderType::HullShader:
-			m_pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
-			break;
-#endif
-		default:
-			FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
-			return false;
-		}
-		m_pImpl->m_ShaderProgramDirty = true;
-	}
-
-	if (pShader)
+	if (m_DirtyShaders.AnyBitSet())
 	{
-		AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader ? pShader->GetName() : "NULL Shader");
-		bool buffersChanged = false;
-		const auto& buffers = pShader->GetConstantBuffers();
-		for (unsigned int i = 0; i < buffers.size(); ++i)
+		for(BitField<(size_t)ShaderType::MAX>::SetBitsIterator iterator = m_DirtyShaders.GetSetBitsIterator(); iterator.Valid(); ++iterator)
 		{
-			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
-			{
-				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
-				buffersChanged = true;
-			}
-		}
-		if (buffersChanged)
-		{
+			ShaderType type = (ShaderType)iterator.Value();
+			ShaderVariation* pShader = m_CurrentShaders[(unsigned int)type];
 			switch (type)
 			{
 			case ShaderType::VertexShader:
-				m_pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
 			case ShaderType::PixelShader:
-				m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
+
 #ifdef SHADER_GEOMETRY_ENABLE
 			case ShaderType::GeometryShader:
-				m_pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
 #endif
 #ifdef SHADER_COMPUTE_ENABLE
 			case ShaderType::ComputeShader:
-				m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
 #endif
 #ifdef SHADER_TESSELLATION_ENABLE
 			case ShaderType::DomainShader:
-				m_pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
 			case ShaderType::HullShader:
-				m_pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				m_pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
 				break;
 #endif
 			default:
-				break;
+				FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
+				return;
 			}
-		}
+
+			if (pShader)
+			{
+				AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader ? pShader->GetName() : "NULL Shader");
+				bool buffersChanged = false;
+				const auto& buffers = pShader->GetConstantBuffers();
+				for (unsigned int i = 0; i < buffers.size(); ++i)
+				{
+					if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
+					{
+						m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
+						buffersChanged = true;
+					}
+				}
+				if (buffersChanged)
+				{
+					switch (type)
+					{
+					case ShaderType::VertexShader:
+						m_pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+					case ShaderType::PixelShader:
+						m_pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+#ifdef SHADER_GEOMETRY_ENABLE
+					case ShaderType::GeometryShader:
+						m_pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
+					case ShaderType::ComputeShader:
+						m_pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+					case ShaderType::DomainShader:
+						m_pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+					case ShaderType::HullShader:
+						m_pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+						break;
+#endif
+					default:
+						break;
+					}
+				}
+			}
+
+		};
+		m_DirtyShaders.ClearAll();
+	}
+}
+
+bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
+{
+	if (m_CurrentShaders[(unsigned int)type] != pShader)
+	{
+		m_CurrentShaders[(unsigned int)type] = pShader;
+		m_DirtyShaders.SetBit((unsigned int)type);
+		m_pImpl->m_ShaderProgramDirty = true;
 	}
 	return true;
 }
@@ -729,6 +745,8 @@ void Graphics::PrepareDraw()
 
 	FlushRenderTargetChanges(false);
 	FlushSRVChanges(false);
+
+	UpdateShaders();
 
 	if (m_pDepthStencilState->IsDirty())
 	{

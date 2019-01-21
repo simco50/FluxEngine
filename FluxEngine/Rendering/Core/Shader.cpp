@@ -88,7 +88,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 		return pIt->second.get();
 	}
 
-	Graphics* pGraphics = m_pContext->GetSubsystem<Graphics>();
+	Graphics* pGraphics = GetSubsystem<Graphics>();
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(pGraphics, this, type);
 
 	std::stringstream cacheName;

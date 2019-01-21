@@ -28,7 +28,7 @@ protected:
 	virtual void OnNodeSet(SceneNode* pNode) override;
 
 private:
-	void OnResize(const FloatRect& viewport);
+	void OnResize(const int width, const int height);
 
 	std::unique_ptr<Texture2D> m_pRenderTexture;
 	std::unique_ptr<Texture2D> m_pDepthTexture;

@@ -49,13 +49,13 @@ void Light::SetShadowCasting(const bool enabled)
 
 void Light::OnSceneSet(Scene* /*pScene*/)
 {
-	m_pContext->GetSubsystem<Renderer>()->AddLight(this);
+	GetSubsystem<Renderer>()->AddLight(this);
 	OnMarkedDirty(m_pNode);
 }
 
 void Light::OnSceneRemoved()
 {
-	m_pContext->GetSubsystem<Renderer>()->RemoveLight(this);
+	GetSubsystem<Renderer>()->RemoveLight(this);
 }
 
 void Light::OnMarkedDirty(const SceneNode* pNode)
