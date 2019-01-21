@@ -1,19 +1,6 @@
 #include "FluxEngine.h"
 #include "TypeInfo.h"
 
-
-TypeInfo::TypeInfo(const char* typeName, const TypeInfo* baseTypeInfo)
-	: m_TypeName(typeName),
-	m_Type(typeName),
-	m_pBaseTypeInfo(baseTypeInfo)
-{
-}
-
-TypeInfo::~TypeInfo()
-{
-
-}
-
 bool TypeInfo::IsTypeOf(const TypeInfo* typeInfo) const
 {
 	check(typeInfo);

@@ -8,26 +8,31 @@ class Subsystem;
         using ClassName = typeName; \
         using BaseClass = baseTypeName; \
         virtual StringHash GetType() const override { return GetTypeInfoStatic()->GetType(); } \
-        virtual const std::string& GetTypeName() const override { return GetTypeInfoStatic()->GetTypeName(); } \
+        virtual const char* GetTypeName() const override { return GetTypeInfoStatic()->GetTypeName(); } \
         virtual const TypeInfo* GetTypeInfo() const override { return GetTypeInfoStatic(); } \
-        static StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
-        static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
-        static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic(#typeName, baseTypeName::GetTypeInfoStatic()); return &typeInfoStatic; } \
+        static constexpr StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
+        static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
+		static constexpr const TypeInfo* GetTypeInfoStatic() { return &TYPE_INFO; } \
 	private: \
 		virtual void NOTYPEINFO() override {} \
+		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic()); \
+
 
 class Object
 {
 public:
-	Object(Context* pContext) : m_pContext(pContext) {}
-	virtual ~Object() {}
+	Object(Context* pContext) 
+		: m_pContext(pContext) 
+	{}
+	virtual ~Object() 
+	{}
 
 	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
-	virtual const std::string& GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
+	virtual const char* GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
 	virtual const TypeInfo* GetTypeInfo() const { return GetTypeInfoStatic(); }
-	static StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); }
-	static const std::string& GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
-	static const TypeInfo* GetTypeInfoStatic() { static const TypeInfo typeInfoStatic("Object", nullptr); return &typeInfoStatic; }
+	static constexpr StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); }
+	static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); }
+	static constexpr const TypeInfo* GetTypeInfoStatic() { return &TYPE_INFO; }
 
 	bool IsTypeOf(const TypeInfo* pTypeInfo) const;
 	bool IsTypeOf(StringHash type) const;
@@ -36,14 +41,23 @@ public:
 
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>
-	T* GetSubsystem(bool required = true) const { return m_pContext->GetSubsystem<T>(required); }
-	Context* GetContext() const { return m_pContext; }
+	inline T* GetSubsystem(bool required = true) const 
+	{ 
+		return static_cast<T*>(m_pContext->GetSubsystem(T::GetTypeStatic(), required));
+	}
+	inline Context* GetContext() const 
+	{
+		return m_pContext; 
+	}
 
 protected:
 	//This enforces the FLUX_OBJECT on all classes that inherit from Object
 	virtual void NOTYPEINFO() = 0;
 
 	Context* m_pContext = nullptr;
+
+private:
+	static constexpr TypeInfo TYPE_INFO = TypeInfo("Object", nullptr);
 };
 
 template<typename T>

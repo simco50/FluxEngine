@@ -28,6 +28,11 @@ public:
 	{
 	}
 
+	constexpr StringHash(const StringHash& other)
+		: m_Hash(other.m_Hash)
+	{
+	}
+
 	explicit constexpr StringHash(const size_t hash) noexcept
 		: m_Hash(hash)
 	{
@@ -41,6 +46,16 @@ public:
 	explicit StringHash(const std::string& text)
 		: m_Hash(Hash_Internal(text.c_str(), val_const))
 	{
+	}
+
+	constexpr bool operator==(const StringHash& other)
+	{
+		return m_Hash == other.m_Hash;
+	}
+
+	constexpr bool operator!=(const StringHash& other)
+	{
+		return m_Hash != other.m_Hash;
 	}
 
 	inline constexpr operator size_t() const { return m_Hash; }

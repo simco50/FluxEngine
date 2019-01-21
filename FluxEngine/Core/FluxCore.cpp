@@ -358,7 +358,7 @@ void FluxCore::RenderUI()
 
 		for (Component* pComponent : m_pSelectedNode->GetComponents())
 		{
-			if (ImGui::TreeNode(pComponent->GetTypeName().c_str()))
+			if (ImGui::TreeNode(pComponent->GetTypeName()))
 			{
 				pComponent->CreateUI();
 				ImGui::TreePop();

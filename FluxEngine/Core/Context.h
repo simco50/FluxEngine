@@ -7,11 +7,10 @@ public:
 	Context();
 	~Context();
 
-	Subsystem* GetSubsystem(StringHash type) const;
-
 	void InitSDLSystem(unsigned int flag);
-
 	void ShutdownSDL();
+
+	Subsystem* GetSubsystem(StringHash type, bool required = true) const;
 
 	template<typename T>
 	T* GetSubsystem(bool required = true) const
@@ -21,7 +20,7 @@ public:
 		{
 			if (required)
 			{
-				FLUX_LOG(Warning, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic().c_str());
+				FLUX_LOG(Warning, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic());
 			}
 			return nullptr;
 		}
@@ -34,10 +33,10 @@ public:
 		auto pIt = m_Systems.find(T::GetTypeStatic());
 		if (pIt != m_Systems.end())
 		{
-			FLUX_LOG(Warning, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic().c_str());
+			FLUX_LOG(Warning, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic());
 			return nullptr;
 		}
-		m_SystemCache.push_back(std::make_unique<T>(this, args...));
+		m_SystemCache.push_back(std::make_unique<T>(this, std::forward<Args>(args)...));
 		Subsystem* pSystem = m_SystemCache[m_SystemCache.size() - 1].get();
 		StringHash type = pSystem->GetType();
 		m_Systems[type] = pSystem;

@@ -39,11 +39,15 @@ void Context::ShutdownSDL()
 	}
 }
 
-Subsystem* Context::GetSubsystem(StringHash type) const
+Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 {
 	auto pIt = m_Systems.find(type);
 	if (pIt == m_Systems.end())
 	{
+		if (required)
+		{
+			checkNoEntry();
+		}
 		return nullptr;
 	}
 	return pIt->second;

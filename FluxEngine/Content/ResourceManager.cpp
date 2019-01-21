@@ -161,7 +161,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, const std::string
 	std::unique_ptr<File> pFile = FileSystem::GetFile(filePath);
 	if (pFile == nullptr)
 	{
-		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'. File not found", pResource->GetTypeName().c_str(), filePath.c_str());
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'. File not found", pResource->GetTypeName(), filePath.c_str());
 		return false;
 	}
 	if (pFile->OpenRead() == false)
@@ -178,7 +178,7 @@ bool ResourceManager::LoadResourcePrivate(Resource* pResource, InputStream& inpu
 {
 	if (!pResource->Load(inputStream))
 	{
-		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName().c_str(), inputStream.GetSource().c_str());
+		FLUX_LOG(Warning, "[ResourceManager::LoadResourcePrivate] > Failed to load %s at '%s'", pResource->GetTypeName(), inputStream.GetSource().c_str());
 		return false;
 	}
 	return true;
