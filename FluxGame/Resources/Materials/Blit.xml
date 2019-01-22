@@ -7,6 +7,7 @@
 	<Properties>
 		<CullMode value="Back"/>
 		<BlendMode value="Replace"/>
+		<DepthWrite value="False"/>
 	</Properties>
 	<Parameters>
 	</Parameters>

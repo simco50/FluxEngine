@@ -179,6 +179,8 @@ void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMat
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
 	m_pGraphics->SetRenderTarget(0, pTarget);
 	SetPerMaterialParameters(pMaterial);
+	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
+	m_pGraphics->GetDepthStencilState()->SetDepthWrite(false);
 	GetQuadGeometry()->Draw(m_pGraphics);
 }
 
@@ -244,11 +246,15 @@ void Renderer::SetPerCameraParameters(Camera* pCamera)
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 {
 	if (pMaterial == m_pCurrentMaterial)
+	{
 		return;
+	}
 	m_pCurrentMaterial = pMaterial;
 
 	for (int i = 0; i < (int)ShaderType::MAX; ++i)
+	{
 		m_pGraphics->SetShader((ShaderType)i, m_pCurrentMaterial->GetShader((ShaderType)i));
+	}
 
 	const auto& pParameters = m_pCurrentMaterial->GetShaderParameters();
 	for (const auto& pParameter : pParameters)

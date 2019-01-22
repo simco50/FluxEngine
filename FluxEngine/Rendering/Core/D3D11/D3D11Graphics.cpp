@@ -98,10 +98,7 @@ bool Graphics::SetMode(
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
-	m_pBlendState = std::make_unique<BlendState>();
-	m_pRasterizerState = std::make_unique<RasterizerState>();
-	m_pRasterizerState->SetMultisampleEnabled(m_Multisample > 1);
-	m_pDepthStencilState = std::make_unique<DepthStencilState>();
+	m_RasterizerState.SetMultisampleEnabled(m_Multisample > 1);
 
 	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
@@ -139,7 +136,9 @@ bool Graphics::OpenWindow()
 	}
 	m_pWindow = SDL_CreateWindow(m_WindowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_WindowWidth, m_WindowHeight, flags);
 	if (!m_pWindow)
+	{
 		return false;
+	}
 
 	//Hardcode the logo into the binary
 	unsigned int pLogo[] =
@@ -163,7 +162,9 @@ bool Graphics::OpenWindow()
 	};
 	SDL_Surface* pSurface = SDL_CreateRGBSurfaceFrom(pLogo, 16, 16, 4 * 8, 16 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 	if (pSurface == nullptr)
+	{
 		return false;
+	}
 	SDL_SetWindowIcon(m_pWindow, pSurface);
 	return true;
 }
@@ -208,29 +209,28 @@ void Graphics::SetDepthOnly(bool enable)
 
 void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
 {
-	SetVertexBuffers({ pBuffer });
+	SetVertexBuffers(&pBuffer, 1);
 }
 
-void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset)
+void Graphics::SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsigned int instanceOffset /*= 0*/)
 {
-	if (pBuffers.size() > GraphicsConstants::MAX_VERTEX_BUFFERS)
-	{
-		FLUX_LOG(Error, "[Graphics::SetVertexBuffers] > More than %i vertex buffers is not allowed", GraphicsConstants::MAX_VERTEX_BUFFERS);
-		return;
-	}
+	checkf(bufferCount <= GraphicsConstants::MAX_VERTEX_BUFFERS, "Vertex buffer count exceeded")
 
-	for (unsigned int i = 0; i < GraphicsConstants::MAX_VERTEX_BUFFERS; ++i)
+	for (int i = 0; i < GraphicsConstants::MAX_VERTEX_BUFFERS; ++i)
 	{
-		VertexBuffer* pBuffer = i >= pBuffers.size() ? nullptr : pBuffers[i];
+		VertexBuffer* pBuffer = i >= bufferCount ? nullptr : pBuffers[i];
 		bool changed = false;
 
 		if (pBuffer)
 		{
-			m_CurrentVertexBuffers[i] = pBuffer;
-			m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
-			m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
-			m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetResource();
-			changed = true;
+			if (m_CurrentVertexBuffers[i] != pBuffer)
+			{
+				m_CurrentVertexBuffers[i] = pBuffer;
+				m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
+				m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
+				m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetResource();
+				changed = true;
+			}
 		}
 		else if (m_CurrentVertexBuffers[i])
 		{
@@ -243,10 +243,8 @@ void Graphics::SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsi
 		if (changed)
 		{
 			m_pImpl->m_VertexBuffersDirty = true;
-			if (i < m_pImpl->m_FirstDirtyVertexBuffer)
-				m_pImpl->m_FirstDirtyVertexBuffer = i;
-			if (i > m_pImpl->m_LastDirtyVertexBuffer)
-				m_pImpl->m_LastDirtyVertexBuffer = i;
+			m_pImpl->m_FirstDirtyVertexBuffer = Math::Min((uint32)i, m_pImpl->m_FirstDirtyVertexBuffer);
+			m_pImpl->m_LastDirtyVertexBuffer = Math::Max((uint32)i, m_pImpl->m_LastDirtyVertexBuffer);
 		}
 	}
 }
@@ -278,6 +276,8 @@ void Graphics::UpdateShaders()
 		{
 			ShaderType type = (ShaderType)iterator.Value();
 			ShaderVariation* pShader = m_CurrentShaders[(unsigned int)type];
+			AUTOPROFILE_DESC(Graphics_UpdateShader, pShader ? pShader->GetName() : "None");
+
 			switch (type)
 			{
 			case ShaderType::VertexShader:
@@ -312,7 +312,7 @@ void Graphics::UpdateShaders()
 
 			if (pShader)
 			{
-				AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader ? pShader->GetName() : "NULL Shader");
+				AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader->GetName());
 				bool buffersChanged = false;
 				const auto& buffers = pShader->GetConstantBuffers();
 				for (unsigned int i = 0; i < buffers.size(); ++i)
@@ -426,89 +426,8 @@ bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride
 	{
 		return false;
 	}
-	if (stride * count > pParameter->Size)
-	{
-		FLUX_LOG(Warning, "[Graphics::SetShaderParameter] Parameter input too large");
-		return false;
-	}
+	checkf(stride * count <= pParameter->Size, "[Graphics::SetShaderParameter] Parameter input too large");
 	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, float value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(float), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, int value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(int), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const Vector2& value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector2), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const Vector3& value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector3), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const Vector4& value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Vector4), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const Color& value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Color), &value);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const Matrix& value)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, sizeof(Matrix), &value);
 }
 
 void Graphics::SetViewport(const FloatRect& rect)
@@ -527,11 +446,7 @@ void Graphics::SetViewport(const FloatRect& rect)
 
 void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 {
-	if (slot >= TextureSlot::MAX)
-	{
-		FLUX_LOG(Warning, "[Graphics::SetTexture] > Can't assign a texture to a slot out of range");
-		return;
-	}
+	checkf(slot < TextureSlot::MAX, "[Graphics::SetTexture] > Can't assign a texture to a slot out of range");
 
 	if (pTexture && (pTexture->GetResourceView() == m_pImpl->m_ShaderResourceViews[(unsigned int)slot] && pTexture->GetSamplerState() == m_pImpl->m_SamplerStates[(unsigned int)slot]))
 	{
@@ -548,14 +463,8 @@ void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
 	m_pImpl->m_SamplerStates[(size_t)slot] = pTexture ? (ID3D11SamplerState*)pTexture->GetSamplerState() : nullptr;
 
 	m_pImpl->m_TexturesDirty = true;
-	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
-	{
-		m_pImpl->m_FirstDirtyTexture = (int)slot;
-	}
-	if (m_pImpl->m_LastDirtyTexture < (int)slot)
-	{
-		m_pImpl->m_LastDirtyTexture = (int)slot;
-	}
+	m_pImpl->m_FirstDirtyTexture = Math::Min(m_pImpl->m_FirstDirtyTexture, (int)slot);
+	m_pImpl->m_LastDirtyTexture = Math::Max(m_pImpl->m_LastDirtyTexture, (int)slot);
 }
 
 void Graphics::SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer)
@@ -575,14 +484,8 @@ void Graphics::SetStructuredBuffer(const TextureSlot slot, const StructuredBuffe
 	m_pImpl->m_SamplerStates[(size_t)slot] = nullptr;
 
 	m_pImpl->m_TexturesDirty = true;
-	if (m_pImpl->m_FirstDirtyTexture > (int)slot)
-	{
-		m_pImpl->m_FirstDirtyTexture = (int)slot;
-	}
-	if (m_pImpl->m_LastDirtyTexture < (int)slot)
-	{
-		m_pImpl->m_LastDirtyTexture = (int)slot;
-	}
+	m_pImpl->m_FirstDirtyTexture = Math::Min(m_pImpl->m_FirstDirtyTexture, (int)slot);
+	m_pImpl->m_LastDirtyTexture = Math::Max(m_pImpl->m_LastDirtyTexture, (int)slot);
 }
 
 
@@ -722,14 +625,22 @@ void Graphics::FlushSRVChanges(bool force)
 {
 	if ((m_pImpl->m_TexturesDirty || force) && m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1 > 0)
 	{
-		m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
-
+		if (m_CurrentShaders[(int)ShaderType::VertexShader])
+		{
+			m_pImpl->m_pDeviceContext->VSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+			m_pImpl->m_pDeviceContext->VSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		}
+		if (m_CurrentShaders[(int)ShaderType::PixelShader])
+		{
+			m_pImpl->m_pDeviceContext->PSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+			m_pImpl->m_pDeviceContext->PSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		}
 #ifdef SHADER_TESSELLATION_ENABLE
-		m_pImpl->m_pDeviceContext->DSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
-		m_pImpl->m_pDeviceContext->DSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		if (m_CurrentShaders[(int)ShaderType::DomainShader])
+		{
+			m_pImpl->m_pDeviceContext->DSSetShaderResources(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_ShaderResourceViews.data() + m_pImpl->m_FirstDirtyTexture);
+			m_pImpl->m_pDeviceContext->DSSetSamplers(m_pImpl->m_FirstDirtyTexture, m_pImpl->m_LastDirtyTexture - m_pImpl->m_FirstDirtyTexture + 1, m_pImpl->m_SamplerStates.data() + m_pImpl->m_FirstDirtyTexture);
+		}
 #endif
 
 		m_pImpl->m_TexturesDirty = false;
@@ -748,24 +659,24 @@ void Graphics::PrepareDraw()
 
 	UpdateShaders();
 
-	if (m_pDepthStencilState->IsDirty())
+	if (m_DepthStencilState.IsDirty())
 	{
 		AUTOPROFILE(Graphics_PrepareDraw_SetDepthStencilState);
-		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_pDepthStencilState->GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetDepthStencilState(pState, m_pDepthStencilState->GetStencilRef());
+		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_DepthStencilState.GetOrCreate(this);
+		m_pImpl->m_pDeviceContext->OMSetDepthStencilState(pState, m_DepthStencilState.GetStencilRef());
 	}
 
-	if (m_pRasterizerState->IsDirty())
+	if (m_RasterizerState.IsDirty())
 	{
 		AUTOPROFILE(Graphics_PrepareDraw_SetRasterizerState);
-		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_pRasterizerState->GetOrCreate(this);
+		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_RasterizerState.GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->RSSetState(pState);
 	}
 
-	if (m_pBlendState->IsDirty())
+	if (m_BlendState.IsDirty())
 	{
 		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
-		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_pBlendState->GetOrCreate(this);
+		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_BlendState.GetOrCreate(this);
 		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, UINT_MAX);
 	}
 
@@ -804,7 +715,9 @@ void Graphics::PrepareDraw()
 		{
 			auto pInputLayout = m_pImpl->m_InputLayoutMap.find(hash);
 			if (pInputLayout != m_pImpl->m_InputLayoutMap.end())
+			{
 				m_pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetResource());
+			}
 			else
 			{
 				std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(this);
@@ -836,11 +749,15 @@ void Graphics::PrepareDraw()
 	{
 		ShaderVariation* pShader = m_CurrentShaders[i];
 		if (pShader == nullptr)
+		{
 			continue;
+		}
 		for (ConstantBuffer* pBuffer : pShader->GetConstantBuffers())
 		{
 			if (pBuffer)
+			{
 				pBuffer->Apply();
+			}
 		}
 	}
 }

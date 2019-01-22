@@ -39,7 +39,9 @@ void DebugRenderer::Render()
 	int totalPrimitives = m_LinePrimitives + m_TrianglePrimitives;
 
 	if (totalPrimitives == 0 || m_pCamera == nullptr)
+	{
 		return;
+	}
 
 	AUTOPROFILE(DebugRenderer_Render);
 
@@ -89,11 +91,15 @@ void DebugRenderer::Render()
 	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int start = 0;
-	if(m_LinePrimitives != 0)
+	if (m_LinePrimitives != 0)
+	{
 		m_pGraphics->Draw(PrimitiveType::LINELIST, start, m_LinePrimitives);
+	}
 	start += m_LinePrimitives;
-	if(m_TrianglePrimitives != 0)
+	if (m_TrianglePrimitives != 0)
+	{
 		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, start, m_TrianglePrimitives);
+	}
 }
 
 void DebugRenderer::EndFrame()

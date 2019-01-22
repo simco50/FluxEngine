@@ -1,6 +1,9 @@
 #pragma once
 #include "GraphicsDefines.h"
 #include "Core\Subsystem.h"
+#include "BlendState.h"
+#include "RasterizerState.h"
+#include "DepthStencilState.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -8,17 +11,12 @@ class RenderTarget;
 class ShaderVariation;
 class InputLayout;
 class Texture;
-class BlendState;
-class RasterizerState;
-class DepthStencilState;
 class ConstantBuffer;
 class Shader;
 class ShaderProgram;
 class Texture2D;
 class StructuredBuffer;
-
 class GraphicsImpl;
-
 struct SDL_Window;
 
 struct AdapterInfo
@@ -55,7 +53,7 @@ public:
 	void SetDepthOnly(bool enable);
 
 	void SetVertexBuffer(VertexBuffer* pBuffer);
-	void SetVertexBuffers(const std::vector<VertexBuffer*>& pBuffers, unsigned int instanceOffset = 0);
+	void SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsigned int instanceOffset = 0);
 
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer);
 
@@ -108,9 +106,9 @@ public:
 
 	RenderTarget* GetRenderTarget() const;
 	RenderTarget* GetDepthStencil() const { return m_pCurrentDepthStencil; }
-	BlendState* GetBlendState() const { return m_pBlendState.get(); }
-	RasterizerState* GetRasterizerState() const { return m_pRasterizerState.get(); }
-	DepthStencilState* GetDepthStencilState() const { return m_pDepthStencilState.get(); }
+	BlendState* GetBlendState() { return &m_BlendState; }
+	RasterizerState* GetRasterizerState() { return &m_RasterizerState; }
+	DepthStencilState* GetDepthStencilState() { return &m_DepthStencilState; }
 
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
@@ -143,9 +141,9 @@ private:
 
 	std::unique_ptr<GraphicsImpl> m_pImpl;
 
-	std::unique_ptr<BlendState> m_pBlendState;
-	std::unique_ptr<RasterizerState> m_pRasterizerState;
-	std::unique_ptr<DepthStencilState> m_pDepthStencilState;
+	BlendState m_BlendState;
+	RasterizerState m_RasterizerState;
+	DepthStencilState m_DepthStencilState;
 
 	//All ConstantBuffers
 	std::map<size_t, std::unique_ptr<ConstantBuffer>> m_ConstantBuffers;
@@ -162,12 +160,12 @@ private:
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	std::array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
-	std::array<RenderTarget*, GraphicsConstants::MAX_RENDERTARGETS> m_CurrentRenderTargets;
+	std::array<RenderTarget*, GraphicsConstants::MAX_RENDERTARGETS> m_CurrentRenderTargets = {};
 	RenderTarget* m_pCurrentDepthStencil = nullptr;
 
 	std::unique_ptr<Texture2D> m_pDefaultRenderTarget;
 	std::unique_ptr<Texture2D> m_pDefaultDepthStencil;
-	BitField<int(ShaderType::MAX)> m_DirtyShaders;
+	BitField<(int)ShaderType::MAX> m_DirtyShaders;
 
 	//Debug data
 	unsigned int m_BatchCount = 0;

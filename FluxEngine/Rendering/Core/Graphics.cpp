@@ -24,7 +24,7 @@ void Graphics::InvalidateShaders()
 
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
-	m_pRasterizerState->SetScissorEnabled(enabled);
+	m_RasterizerState.SetScissorEnabled(enabled);
 
 	if (enabled && rect != m_CurrentScissorRect)
 	{
@@ -66,4 +66,39 @@ void Graphics::GetDebugInfo(unsigned int& batchCount, unsigned int& primitiveCou
 {
 	batchCount = m_BatchCount;
 	primitiveCount = m_PrimitiveCount;
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, float value)
+{
+	return SetShaderParameter(hash, &value, sizeof(float), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, int value)
+{
+	return SetShaderParameter(hash, &value, sizeof(int), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, const Vector2& value)
+{
+	return SetShaderParameter(hash, &value, sizeof(Vector2), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, const Vector3& value)
+{
+	return SetShaderParameter(hash, &value, sizeof(Vector3), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, const Vector4& value)
+{
+	return SetShaderParameter(hash, &value, sizeof(Vector4), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, const Color& value)
+{
+	return SetShaderParameter(hash, &value, sizeof(Color), 1);
+}
+
+bool Graphics::SetShaderParameter(StringHash hash, const Matrix& value)
+{
+	return SetShaderParameter(hash, &value, sizeof(Matrix), 1);
 }

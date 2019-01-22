@@ -154,15 +154,32 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 	HR(D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)pShaderReflection.GetAddressOf()));
 	pShaderReflection->GetDesc(&shaderDesc);
 
-	std::map<std::string, UINT> cbRegisterMap;
+	std::map<std::string, uint32> cbRegisterMap;
 
 	for (unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 	{
 		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
 		pShaderReflection->GetResourceBindingDesc(i, &resourceDesc);
-		std::string resourceName(resourceDesc.Name);
-		if (resourceDesc.Type == D3D_SIT_CBUFFER)
-			cbRegisterMap[resourceName] = resourceDesc.BindPoint;
+
+		switch (resourceDesc.Type)
+		{
+		case D3D_SIT_CBUFFER:
+		case D3D_SIT_TBUFFER:
+			cbRegisterMap[resourceDesc.Name] = resourceDesc.BindPoint;
+			break;
+		case D3D_SIT_TEXTURE:
+		case D3D_SIT_SAMPLER:
+		case D3D_SIT_UAV_RWTYPED:
+		case D3D_SIT_STRUCTURED:
+		case D3D_SIT_UAV_RWSTRUCTURED:
+		case D3D_SIT_BYTEADDRESS:
+		case D3D_SIT_UAV_RWBYTEADDRESS:
+		case D3D_SIT_UAV_APPEND_STRUCTURED:
+		case D3D_SIT_UAV_CONSUME_STRUCTURED:
+		case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+		default:
+			break;
+		}
 	}
 
 	for (unsigned int c = 0; c < shaderDesc.ConstantBuffers; ++c)
@@ -170,16 +187,8 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 		ID3D11ShaderReflectionConstantBuffer* pReflectionConstantBuffer = pShaderReflection->GetConstantBufferByIndex(c);
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		pReflectionConstantBuffer->GetDesc(&bufferDesc);
-		unsigned cbRegister = cbRegisterMap[std::string(bufferDesc.Name)];
-
-		if (cbRegister >= m_ConstantBuffers.size())
-		{
-			FLUX_LOG(Error, "[ShaderVariation::ShaderReflection] > The buffer '%s' with register index '%i' exceeds the maximum amount (%i) of constant buffers. See 'ShaderParameterType::MAX'",
-				bufferDesc.Name,
-				cbRegister,
-				ShaderParameterType::MAX);
-			return;
-		}
+		uint32 cbRegister = cbRegisterMap[std::string(bufferDesc.Name)];
+		checkf(cbRegister < m_ConstantBuffers.size(), "[ShaderVariation::ShaderReflection] > The buffer exceeds the maximum amount of constant buffers. See 'ShaderParameterType::MAX'")
 
 		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(cbRegister, bufferDesc.Size);
 		m_ConstantBuffers[cbRegister] = pConstantBuffer;
