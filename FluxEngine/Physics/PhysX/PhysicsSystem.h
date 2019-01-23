@@ -10,7 +10,7 @@ class PhysicsSystem : public Subsystem
 	FLUX_OBJECT(PhysicsSystem, Subsystem)
 
 public:
-	PhysicsSystem(Context* pContext);
+	explicit PhysicsSystem(Context* pContext);
 	~PhysicsSystem();
 
 	bool InitializeCuda();

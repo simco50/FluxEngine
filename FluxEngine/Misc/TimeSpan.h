@@ -27,7 +27,7 @@ struct TimeSpan
 {
 	TimeSpan();
 
-	TimeSpan(unsigned long long ticks);
+	explicit TimeSpan(unsigned long long ticks);
 
 	int GetMilliSeconds() const;
 	int GetSeconds() const;

@@ -15,7 +15,7 @@ class Graphics;
 class ConstantBuffer : public GraphicsObject
 {
 public:
-	ConstantBuffer(Graphics* pGraphics);
+	explicit ConstantBuffer(Graphics* pGraphics);
 	~ConstantBuffer();
 
 	DELETE_COPY(ConstantBuffer)

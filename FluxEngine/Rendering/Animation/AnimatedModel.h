@@ -12,7 +12,7 @@ class AnimatedModel : public Model
 	FLUX_OBJECT(AnimatedModel, Drawable)
 
 public:
-	AnimatedModel(Context* pContext);
+	explicit AnimatedModel(Context* pContext);
 	virtual ~AnimatedModel();
 
 	virtual void Update() override;

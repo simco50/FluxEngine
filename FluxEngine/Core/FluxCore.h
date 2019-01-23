@@ -18,7 +18,7 @@ class FluxCore : public Object
 	FLUX_OBJECT(FluxCore, Object)
 
 public:
-	FluxCore(Context* pContext);
+	explicit FluxCore(Context* pContext);
 	virtual ~FluxCore();
 
 	DELETE_COPY(FluxCore)

@@ -8,7 +8,7 @@ class Light : public Component
 	FLUX_OBJECT(Light, Component)
 
 public:
-	Light(Context* pContext);
+	explicit Light(Context* pContext);
 	~Light();
 
 	enum class Type : unsigned int

@@ -7,6 +7,9 @@ class Graphics;
 class JoystickState
 {
 public:
+	JoystickState()
+	{}
+
 	static const int MAX_BUTTONS = SDL_CONTROLLER_BUTTON_MAX;
 	static const int MAX_AXIS = SDL_CONTROLLER_BUTTON_MAX;
 	static const int MAX_HATS = 4;
@@ -41,10 +44,10 @@ private:
 	SDL_GameController* pController = nullptr;
 	SDL_Haptic* pHaptic = nullptr;
 
-	bool Buttons[MAX_BUTTONS];
-	bool ButtonsPressed[MAX_BUTTONS];
-	float Axes[MAX_AXIS];
-	int Hats[MAX_HATS];
+	bool Buttons[MAX_BUTTONS] = {};
+	bool ButtonsPressed[MAX_BUTTONS] = {};
+	float Axes[MAX_AXIS] = {};
+	int Hats[MAX_HATS] = {};
 };
 
 DECLARE_MULTICAST_DELEGATE(OnSDLEvent, void*);
@@ -55,7 +58,7 @@ class InputEngine : public Subsystem
 	FLUX_OBJECT(InputEngine, Subsystem)
 
 public:
-	InputEngine(Context* pContext);
+	explicit InputEngine(Context* pContext);
 	~InputEngine();
 
 	DELETE_COPY(InputEngine)

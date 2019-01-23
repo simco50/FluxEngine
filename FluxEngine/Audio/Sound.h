@@ -6,7 +6,7 @@ class Sound : public Resource
 	FLUX_OBJECT(Sound, Resource)
 
 public:
-	Sound(Context* pContext);
+	explicit Sound(Context* pContext);
 	bool Load(InputStream& inputStream) override;
 
 	void SetMode(const uint32 mode);

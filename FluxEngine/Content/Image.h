@@ -37,7 +37,7 @@ class Image : public Resource
 	DELETE_COPY(Image)
 
 public:
-	Image(Context* pContext);
+	explicit Image(Context* pContext);
 	virtual ~Image();
 
 	virtual bool Load(InputStream& inputStream) override;

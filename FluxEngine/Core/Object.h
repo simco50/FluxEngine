@@ -43,7 +43,7 @@ public:
 	}
 
 protected:
-	Object(Context* pContext)
+	explicit Object(Context* pContext)
 		: m_pContext(pContext)
 	{}
 	virtual ~Object()

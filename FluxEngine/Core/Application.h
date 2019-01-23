@@ -7,12 +7,11 @@ class FluxCore;
 class Application : public Object
 {
 	FLUX_OBJECT(Application, Object)
+	DELETE_COPY(Application)
 
 public:
 	Application();
 	virtual ~Application();
-
-	DELETE_COPY(Application)
 
 	int Run();
 	virtual void Start() {}

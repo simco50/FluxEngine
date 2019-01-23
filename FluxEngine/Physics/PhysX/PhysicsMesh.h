@@ -8,7 +8,7 @@ class PhysicsMesh : public Resource
 	FLUX_OBJECT(PhysicsMesh, Resource)
 
 public:
-	PhysicsMesh(Context* pContext);
+	explicit PhysicsMesh(Context* pContext);
 	virtual ~PhysicsMesh();
 
 	virtual bool Load(InputStream& inputStream) override;
@@ -30,7 +30,7 @@ private:
 	class PhysxInputStream : public physx::PxInputStream
 	{
 	public:
-		PhysxInputStream(InputStream& inputStream) :
+		explicit PhysxInputStream(InputStream& inputStream) :
 			m_pStream(&inputStream)
 		{}
 

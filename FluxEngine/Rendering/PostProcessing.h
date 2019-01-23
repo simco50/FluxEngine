@@ -13,7 +13,7 @@ class PostProcessing : public Component
 	FLUX_OBJECT(PostProcessing, Component)
 
 public:
-	PostProcessing(Context* pContext);
+	explicit PostProcessing(Context* pContext);
 	virtual ~PostProcessing();
 
 	void Draw();

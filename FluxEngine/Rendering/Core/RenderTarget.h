@@ -7,7 +7,7 @@ class RenderTarget
 	friend class Texture;
 
 public:
-	RenderTarget(Texture* pTexture);
+	explicit RenderTarget(Texture* pTexture);
 	~RenderTarget();
 
 	DELETE_COPY(RenderTarget)

@@ -4,7 +4,7 @@ struct ConfigValue
 {
 	ConfigValue()
 	{}
-	ConfigValue(const std::string& value)
+	explicit ConfigValue(const std::string& value)
 		: Value(value)
 	{}
 

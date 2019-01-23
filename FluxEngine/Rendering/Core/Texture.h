@@ -32,7 +32,7 @@ class Texture : public Resource, public GraphicsObject
 	FLUX_OBJECT(Texture, Resource)
 
 public:
-	Texture(Context* pContext);
+	explicit Texture(Context* pContext);
 	virtual ~Texture();
 
 	DELETE_COPY(Texture)

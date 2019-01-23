@@ -200,7 +200,7 @@ bool Console::CleanupLogs(const TimeSpan& age)
 
 	struct LogCleaner : public FileVisitor
 	{
-		LogCleaner(const TimeSpan& maxAge) :
+		explicit LogCleaner(const TimeSpan& maxAge) :
 			MaxAge(maxAge), Now(DateTime::Now())
 		{
 		}

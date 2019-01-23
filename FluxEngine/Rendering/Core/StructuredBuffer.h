@@ -4,7 +4,7 @@
 class StructuredBuffer : public GraphicsObject
 {
 public:
-	StructuredBuffer(Graphics* pGraphics);
+	explicit StructuredBuffer(Graphics* pGraphics);
 	~StructuredBuffer();
 
 	DELETE_COPY(StructuredBuffer)

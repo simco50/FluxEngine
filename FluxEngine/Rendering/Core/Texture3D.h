@@ -6,7 +6,7 @@ class Texture3D : public Texture
 	FLUX_OBJECT(Texture3D, Texture)
 
 public:
-	Texture3D(Context* pContext);
+	explicit Texture3D(Context* pContext);
 	virtual ~Texture3D();
 
 	virtual void Release() override;

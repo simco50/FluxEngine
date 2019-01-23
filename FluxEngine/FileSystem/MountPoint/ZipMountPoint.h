@@ -71,7 +71,7 @@ struct EndOfCentralDirectoryRecord
 class ZipMountPoint : public IMountPoint
 {
 public:
-	ZipMountPoint(const std::string& physicalPath);
+	explicit ZipMountPoint(const std::string& physicalPath);
 	virtual ~ZipMountPoint();
 
 	virtual bool OnMount() override;

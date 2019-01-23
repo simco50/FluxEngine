@@ -17,7 +17,7 @@ class Mesh : public Resource
 	FLUX_OBJECT(Mesh, Resource)
 
 public:
-	Mesh(Context* pContext);
+	explicit Mesh(Context* pContext);
 	virtual ~Mesh();
 
 	DELETE_COPY(Mesh)

@@ -10,7 +10,7 @@ class Animator : public Component
 	FLUX_OBJECT(Animator, Component)
 
 public:
-	Animator(Context* pContext);
+	explicit Animator(Context* pContext);
 	virtual ~Animator();
 
 	void Play();

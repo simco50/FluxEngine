@@ -7,7 +7,7 @@ class Component : public Object
 	FLUX_OBJECT(Component, Object)
 
 public:
-	Component(Context* pContext);
+	explicit Component(Context* pContext);
 	virtual ~Component();
 
 	virtual void OnSceneSet(Scene* pScene);

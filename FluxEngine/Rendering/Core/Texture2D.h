@@ -9,7 +9,7 @@ class Texture2D : public Texture
 	FLUX_OBJECT(Texture2D, Texture)
 
 public:
-	Texture2D(Context* pContext);
+	explicit Texture2D(Context* pContext);
 	virtual ~Texture2D();
 
 	virtual bool Load(InputStream& inputStream) override;

@@ -7,7 +7,7 @@ public:
 	ComPtr()
 	{}
 
-	ComPtr(T* pPtr)
+	explicit ComPtr(T* pPtr)
 	{
 		if(pPtr != nullptr)
 		{

@@ -35,7 +35,7 @@ class PhysicsScene : public Component, public physx::PxSimulationEventCallback
 	FLUX_OBJECT(PhysicsScene, Component)
 
 public:
-	PhysicsScene(Context* pContext);
+	explicit PhysicsScene(Context* pContext);
 	~PhysicsScene();
 
 	virtual void OnSceneSet(Scene* pScene) override;

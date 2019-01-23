@@ -114,7 +114,7 @@ void Animator::CreateUI()
 	int current = currentAnimation;
 	ImGui::Combo("Animation", &current, [](void* pData, int i, const char** pName)
 	{
-		Animator* pAnimator = (Animator*)pData;
+		Animator* pAnimator = static_cast<Animator*>(pData);
 		if (i < (int)pAnimator->m_pAnimations.size())
 		{
 			*pName = pAnimator->m_pAnimations[i]->GetName().c_str();

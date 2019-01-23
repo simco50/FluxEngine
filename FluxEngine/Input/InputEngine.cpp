@@ -121,8 +121,8 @@ void InputEngine::Update()
 		case SDL_JOYAXISMOTION:
 		{
 			SDL_JoystickID joystickId = event.jaxis.which;
-			JoystickState& state = m_Joysticks[joystickId];
 
+			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
 				if (event.jaxis.axis < JoystickState::MAX_AXIS)
@@ -135,8 +135,8 @@ void InputEngine::Update()
 		case SDL_JOYHATMOTION:
 		{
 			SDL_JoystickID joystickId = event.jhat.which;
-			JoystickState& state = m_Joysticks[joystickId];
 
+			JoystickState& state = m_Joysticks[joystickId];
 			if (!state.pController)
 			{
 				if (event.jhat.which < JoystickState::MAX_HATS)
@@ -150,9 +150,9 @@ void InputEngine::Update()
 		{
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
-			JoystickState& state = m_Joysticks[joystickId];
 			if (button < JoystickState::MAX_BUTTONS)
 			{
+				JoystickState& state = m_Joysticks[joystickId];
 				state.Buttons[button] = true;
 				state.ButtonsPressed[button] = true;
 			}
@@ -162,9 +162,9 @@ void InputEngine::Update()
 		{
 			int button = event.cbutton.button;
 			SDL_JoystickID joystickId = event.cbutton.which;
-			JoystickState& state = m_Joysticks[joystickId];
 			if (button < JoystickState::MAX_BUTTONS)
 			{
+				JoystickState& state = m_Joysticks[joystickId];
 				state.Buttons[button] = false;
 			}
 			break;
@@ -172,10 +172,10 @@ void InputEngine::Update()
 		case SDL_CONTROLLERAXISMOTION:
 		{
 			SDL_JoystickID joystickId = event.caxis.which;
-			JoystickState& state = m_Joysticks[joystickId];
 
 			if (event.caxis.axis < JoystickState::MAX_AXIS)
 			{
+				JoystickState& state = m_Joysticks[joystickId];
 				state.Axes[event.caxis.axis] = Math::Clamp((float)event.caxis.value / 32767.0f, 1.0f, -1.0f);
 			}
 			break;

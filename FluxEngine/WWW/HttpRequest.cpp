@@ -52,7 +52,7 @@ namespace WinInet
 			}
 		}
 
-		HttpRequest* pRequest = (HttpRequest*)context;
+		HttpRequest* pRequest = reinterpret_cast<HttpRequest*>(context);
 		HttpResponse* pResponse = pRequest->GetResponse();
 
 		bool debugLog = pRequest->IsDebug();

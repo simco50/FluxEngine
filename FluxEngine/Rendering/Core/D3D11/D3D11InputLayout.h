@@ -6,7 +6,7 @@ class ShaderVariation;
 class InputLayout : public GraphicsObject
 {
 public:
-	InputLayout(Graphics* pGraphics);
+	explicit InputLayout(Graphics* pGraphics);
 	~InputLayout();
 
 	DELETE_COPY(InputLayout)

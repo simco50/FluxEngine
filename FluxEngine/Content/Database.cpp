@@ -33,7 +33,7 @@ namespace SQLiteFunctions
 
 	static int Read(sqlite3_file* pFile, void* zBuf, int iAmt, sqlite_int64 iOfst)
 	{
-		SQLiteFile *p = (SQLiteFile*)pFile;
+		SQLiteFile *p = static_cast<SQLiteFile*>(pFile);
 		p->pFile->SetPointer((size_t)iOfst);
 		p->pFile->Read(zBuf, iAmt);
 		return SQLITE_OK;
@@ -58,7 +58,7 @@ namespace SQLiteFunctions
 
 	static int FileSize(sqlite3_file *pFile, sqlite_int64 *pSize)
 	{
-		SQLiteFile *p = (SQLiteFile*)pFile;
+		SQLiteFile *p = static_cast<SQLiteFile*>(pFile);
 		*pSize = p->pFile->GetSize();
 		return SQLITE_OK;
 	}
@@ -96,7 +96,7 @@ namespace SQLiteFunctions
 
 	static int DBOpen(sqlite3_vfs* pVfs, const char* /*zName*/, sqlite3_file* pFile, int /*flags*/, int* /*pOutFlags*/)
 	{
-		SQLiteVFS* v = (SQLiteVFS*)pVfs;
+		SQLiteVFS *v = static_cast<SQLiteVFS*>(pVfs);
 
 		static const sqlite3_io_methods io =
 		{
@@ -115,7 +115,7 @@ namespace SQLiteFunctions
 			DeviceCharacteristics     /* xDeviceCharacteristics */
 		};
 
-		SQLiteFile *p = (SQLiteFile*)pFile;
+		SQLiteFile *p = static_cast<SQLiteFile*>(pFile);
 		p->pFile = v->pMemStream;
 		p->pMethods = &io;
 		return SQLITE_OK;
@@ -130,7 +130,7 @@ namespace SQLiteFunctions
 void Database::RegisterVFS()
 {
 	sqlite3_vfs * pOriginal = sqlite3_vfs_find(nullptr);
-	g_pVfs = (SQLiteVFS*)pOriginal;
+	g_pVfs = static_cast<SQLiteVFS*>(pOriginal);
 	g_pVfs->szOsFile = sizeof(SQLiteFile);
 	g_pVfs->zName = "memvfs";
 	g_pVfs->xOpen = &SQLiteFunctions::DBOpen;
@@ -182,7 +182,7 @@ bool Database::Load(InputStream& inputStream)
 	return true;
 }
 
-PreparedStatement Database::Prepare(const std::string query)
+PreparedStatement Database::Prepare(const std::string& query)
 {
 	PreparedStatement s(this, query);
 	sqlite3_prepare_v2(m_pDatabase, query.c_str(), -1, &s.pStatement, nullptr);

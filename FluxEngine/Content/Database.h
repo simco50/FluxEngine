@@ -55,12 +55,12 @@ class Database : public Resource
 	FLUX_OBJECT(Database, Resource);
 
 public:
-	Database(Context* pContext);
+	explicit Database(Context* pContext);
 	~Database();
 
 	virtual bool Load(InputStream& inputStream) override;
 
-	PreparedStatement Prepare(const std::string query);
+	PreparedStatement Prepare(const std::string& query);
 	bool Execute(const std::string& query, const DatabaseExecuteDelegate& callback);
 
 	std::string GetLastError();

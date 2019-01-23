@@ -12,7 +12,7 @@ using FileHandle = HANDLE;
 class PhysicalFile : public File
 {
 public:
-	PhysicalFile(const std::string& fileName);
+	explicit PhysicalFile(const std::string& fileName);
 	virtual ~PhysicalFile();
 
 	virtual bool OpenRead(bool allowWrite = false) override;

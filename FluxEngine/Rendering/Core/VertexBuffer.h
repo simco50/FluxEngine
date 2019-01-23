@@ -91,7 +91,7 @@ struct VertexElement
 class VertexBuffer : public GraphicsObject
 {
 public:
-	VertexBuffer(Graphics* pGraphics);
+	explicit VertexBuffer(Graphics* pGraphics);
 	~VertexBuffer();
 
 	DELETE_COPY(VertexBuffer)

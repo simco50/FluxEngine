@@ -290,7 +290,7 @@ void Material::ParseValue(const std::string& name, const std::string& valueStrin
 		if (stringValue.find('.') != std::string::npos)
 		{
 			float fVal = stof(stringValue);
-			values.push_back(*(int*)&fVal);
+			values.push_back(*reinterpret_cast<int*>(&fVal));
 		}
 		else
 		{

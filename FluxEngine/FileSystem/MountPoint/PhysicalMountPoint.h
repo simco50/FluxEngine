@@ -7,7 +7,7 @@ class PakFile;
 
 struct PhysicalFileEntry
 {
-	PhysicalFileEntry(const std::string& filePath):
+	explicit PhysicalFileEntry(const std::string& filePath):
 		FilePath(filePath)
 	{}
 	std::string FilePath;
@@ -16,7 +16,7 @@ struct PhysicalFileEntry
 class PhysicalMountPoint : public IMountPoint
 {
 public:
-	PhysicalMountPoint(const std::string& physicalPath);
+	explicit PhysicalMountPoint(const std::string& physicalPath);
 	virtual ~PhysicalMountPoint();
 
 	virtual bool OnMount() override;

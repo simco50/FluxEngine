@@ -4,7 +4,7 @@
 struct DateTime
 {
 	DateTime();
-	DateTime(unsigned long long ticks);
+	explicit DateTime(unsigned long long ticks);
 	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
 	void Split(TimeStamp& timestamp) const;

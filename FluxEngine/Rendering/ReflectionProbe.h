@@ -26,7 +26,7 @@ class ReflectionProbe : public Component
 	FLUX_OBJECT(ReflectionProbe, Component)
 
 public:
-	ReflectionProbe(Context* pContext);
+	explicit ReflectionProbe(Context* pContext);
 	~ReflectionProbe();
 
 	void Capture();

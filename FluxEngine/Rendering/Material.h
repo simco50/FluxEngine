@@ -17,7 +17,7 @@ class Material : public Resource
 	FLUX_OBJECT(Material, Resource)
 
 public:
-	Material(Context* pContext);
+	explicit Material(Context* pContext);
 	~Material();
 
 	class ParameterEntry

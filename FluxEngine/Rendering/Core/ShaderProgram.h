@@ -7,7 +7,7 @@ struct ShaderParameter;
 class ShaderProgram
 {
 public:
-	ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX>& shaders);
+	explicit ShaderProgram(const std::array<ShaderVariation*, (size_t)ShaderType::MAX>& shaders);
 	~ShaderProgram();
 
 	bool SetParameter(const std::string& name, const void* pData);

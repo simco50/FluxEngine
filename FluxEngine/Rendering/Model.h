@@ -9,7 +9,7 @@ class Model : public Drawable
 	FLUX_OBJECT(Model, Drawable)
 
 public:
-	Model(Context* pContext);
+	explicit Model(Context* pContext);
 	virtual ~Model();
 
 	virtual void SetMesh(Mesh* pMesh);

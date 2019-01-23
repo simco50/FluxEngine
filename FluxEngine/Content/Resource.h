@@ -9,7 +9,7 @@ class Resource : public Object
 	DELETE_COPY(Resource)
 
 public:
-	Resource(Context* pContext);
+	explicit Resource(Context* pContext);
 	virtual ~Resource();
 
 	virtual bool Load(InputStream& inputStream) = 0;

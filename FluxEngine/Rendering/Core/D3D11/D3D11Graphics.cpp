@@ -180,7 +180,7 @@ void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
 	{
 		m_CurrentRenderTargets[index] = pRenderTarget;
 
-		if (pRenderTarget->GetParentTexture()->GetMultiSample() > 1)
+		if (pRenderTarget && pRenderTarget->GetParentTexture()->GetMultiSample() > 1)
 		{
 			pRenderTarget->GetParentTexture()->SetResolveDirty(true);
 		}

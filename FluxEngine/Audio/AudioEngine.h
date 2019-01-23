@@ -8,7 +8,7 @@ class AudioEngine : public Subsystem
 	FLUX_OBJECT(AudioEngine, Subsystem)
 
 public:
-	AudioEngine(Context* pContext);
+	explicit AudioEngine(Context* pContext);
 	~AudioEngine();
 
 	FMOD::System* GetSystem() const { return m_pSystem; }

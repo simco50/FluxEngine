@@ -33,7 +33,7 @@ class Animation : public Resource
 	FLUX_OBJECT(Animation, Resource)
 
 public:
-	Animation(Context* pContext);
+	explicit Animation(Context* pContext);
 	virtual ~Animation();
 
 	virtual bool Load(InputStream& inputStream) override;

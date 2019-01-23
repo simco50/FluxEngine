@@ -19,7 +19,7 @@ enum class ContentType
 class File : public IOStream
 {
 public:
-	File(const std::string& fileName);
+	explicit File(const std::string& fileName);
 	virtual ~File() {}
 
 	virtual bool OpenRead(bool allowWrite = false) = 0;

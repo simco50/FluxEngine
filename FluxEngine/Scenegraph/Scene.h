@@ -17,7 +17,7 @@ class Scene : public SceneNode
 	FLUX_OBJECT(Scene, SceneNode);
 
 public:
-	Scene(Context* pContext);
+	explicit Scene(Context* pContext);
 	virtual ~Scene();
 
 	virtual void Initialize();

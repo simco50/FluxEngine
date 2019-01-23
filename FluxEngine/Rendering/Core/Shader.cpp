@@ -26,7 +26,7 @@ bool Shader::Load(InputStream& inputStream)
 
 	std::vector<std::string> dependencies;
 
-	m_LastModifiedTimestamp = 0;
+	m_LastModifiedTimestamp = DateTime(0);
 	{
 		AUTOPROFILE(Shader_ProcessSource);
 		std::stringstream codeStream;

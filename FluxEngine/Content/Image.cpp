@@ -22,7 +22,7 @@ namespace STBI
 {
 	int ReadCallback(void* pUser, char* pData, int size)
 	{
-		InputStream* pStream = (InputStream*)pUser;
+		InputStream* pStream = static_cast<InputStream*>(pUser);
 		if (pStream == nullptr)
 		{
 			return 0;
@@ -32,7 +32,7 @@ namespace STBI
 
 	void SkipCallback(void* pUser, int n)
 	{
-		InputStream* pStream = (InputStream*)pUser;
+		InputStream* pStream = static_cast<InputStream*>(pUser);
 		if (pStream)
 		{
 			pStream->MovePointer(n);
@@ -41,7 +41,7 @@ namespace STBI
 
 	int EofCallback(void* pUser)
 	{
-		InputStream* pStream = (InputStream*)pUser;
+		InputStream* pStream = static_cast<InputStream*>(pUser);
 		if (pStream == nullptr)
 		{
 			return 1;
@@ -160,7 +160,7 @@ bool Image::SavePng(OutputStream& outputStream)
 {
 	const int result = stbi_write_png_to_func([](void *context, void *data, int size)
 	{
-		OutputStream* pStream = (OutputStream*)context;
+		OutputStream* pStream = static_cast<OutputStream*>(context);
 		if (!pStream->Write((char*)data, size))
 		{
 			return;
@@ -174,7 +174,7 @@ bool Image::SaveBmp(OutputStream& outputStream)
 {
 	const int result = stbi_write_bmp_to_func([](void *context, void *data, int size)
 	{
-		OutputStream* pStream = (OutputStream*)context;
+		OutputStream* pStream = static_cast<OutputStream*>(context);
 		if (!pStream->Write((char*)data, size))
 		{
 			return;
@@ -187,7 +187,7 @@ bool Image::SaveJpg(OutputStream& outputStream, const int quality /*= 100*/)
 {
 	const int result = stbi_write_jpg_to_func([](void *context, void *data, int size)
 	{
-		OutputStream* pStream = (OutputStream*)context;
+		OutputStream* pStream = static_cast<OutputStream*>(context);
 		if (!pStream->Write((char*)data, size))
 		{
 			return;
@@ -200,7 +200,7 @@ bool Image::SaveTga(OutputStream& outputStream)
 {
 	const int result = stbi_write_tga_to_func([](void *context, void *data, int size)
 	{
-		OutputStream* pStream = (OutputStream*)context;
+		OutputStream* pStream = static_cast<OutputStream*>(context);
 		if (!pStream->Write((char*)data, size))
 		{
 			return;

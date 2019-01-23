@@ -21,7 +21,7 @@ class TextureCube : public Texture
 	FLUX_OBJECT(TextureCube, Texture)
 
 public:
-	TextureCube(Context* pContext);
+	explicit TextureCube(Context* pContext);
 	virtual ~TextureCube();
 
 	virtual void Release() override;

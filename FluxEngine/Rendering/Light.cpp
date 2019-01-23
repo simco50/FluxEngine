@@ -32,13 +32,13 @@ void Light::SetShadowCasting(const bool enabled)
 		{
 			//need TextureCube
 			m_pShadowTexture = std::make_unique<TextureCube>(m_pContext);
-			((TextureCube*)m_pShadowTexture.get())->SetSize(512, 512, DXGI_FORMAT_R32_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
+			static_cast<TextureCube*>(m_pShadowTexture.get())->SetSize(512, 512, DXGI_FORMAT_R32_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
 		}
 		else if ((m_pShadowTexture == nullptr || m_pShadowTexture->IsTypeOf<TextureCube>()) && m_Data.Type != Type::Point)
 		{
 			//need Texture2D
 			m_pShadowTexture = std::make_unique<Texture2D>(m_pContext);
-			((Texture2D*)m_pShadowTexture.get())->SetSize(512, 512, DXGI_FORMAT_R32_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
+			static_cast<Texture2D*>(m_pShadowTexture.get())->SetSize(512, 512, DXGI_FORMAT_R32_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
 		};
 	}
 	else

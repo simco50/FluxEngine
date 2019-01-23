@@ -4,7 +4,7 @@
 class IndexBuffer : public GraphicsObject
 {
 public:
-	IndexBuffer(Graphics* pGraphics);
+	explicit IndexBuffer(Graphics* pGraphics);
 	~IndexBuffer();
 
 	DELETE_COPY(IndexBuffer)

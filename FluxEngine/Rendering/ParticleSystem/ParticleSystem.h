@@ -31,7 +31,7 @@ class ParticleSystem : public Resource
 	DELETE_COPY(ParticleSystem)
 public:
 
-	ParticleSystem(Context* pContext)
+	explicit ParticleSystem(Context* pContext)
 		: Resource(pContext)
 	{}
 	virtual ~ParticleSystem() = default;

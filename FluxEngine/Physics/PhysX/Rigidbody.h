@@ -16,7 +16,7 @@ class Rigidbody : public Component
 	FLUX_OBJECT(Rigidbody, Component)
 
 public:
-	Rigidbody(Context* pContext);
+	explicit Rigidbody(Context* pContext);
 	virtual ~Rigidbody();
 
 	virtual void OnSceneSet(Scene* pScene) override;

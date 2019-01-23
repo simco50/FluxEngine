@@ -13,7 +13,7 @@ private:
 	using ResourceCache = std::map<StringHash, ResourceGroup>;
 
 public:
-	ResourceManager(Context* pContext);
+	explicit ResourceManager(Context* pContext);
 	~ResourceManager();
 
 	DELETE_COPY(ResourceManager)
@@ -62,7 +62,7 @@ public:
 	}
 
 	template<typename T>
-	T* CreateResource(const std::string filePath)
+	T* CreateResource(const std::string& filePath)
 	{
 		std::string path = Paths::Normalize(filePath);
 		Resource* pResource = new T(m_pContext);

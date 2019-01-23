@@ -11,7 +11,7 @@ class Graphics;
 class GraphicsObject
 {
 public:
-	GraphicsObject(Graphics* pGraphics);
+	explicit GraphicsObject(Graphics* pGraphics);
     void SetName(const std::string& name);
 
 #ifdef GRAPHICS_D3D11

@@ -30,7 +30,7 @@ public:
 		: m_Components({})
 	{}
 
-	RequestUrl(const std::string& url)
+	explicit RequestUrl(const std::string& url)
 		: m_Url(url), m_Components({})
 	{}
 
@@ -55,7 +55,7 @@ class HttpRequest;
 class HttpResponse
 {
 public:
-	HttpResponse(HttpRequest* pOwner) :
+	explicit HttpResponse(HttpRequest* pOwner) :
 		m_pOwner(pOwner)
 	{}
 
@@ -85,7 +85,7 @@ DECLARE_DELEGATE(OnHttpProcessComplete, const HttpRequest&, bool);
 class HttpRequest
 {
 public:
-	HttpRequest(bool debug = false);
+	explicit HttpRequest(bool debug = false);
 
 	bool StartRequest();
 	void FinishRequest();

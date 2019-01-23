@@ -46,7 +46,7 @@ public:
 	class SetBitsIterator
 	{
 	public:
-		SetBitsIterator(const BitField* pBitField)
+		explicit SetBitsIterator(const BitField* pBitField)
 			: m_CurrentIndex(0), m_pBitField(pBitField)
 		{
 		}
@@ -82,7 +82,7 @@ public:
 		ClearAll();
 	}
 
-	BitField(const bool set)
+	explicit BitField(const bool set)
 	{
 		if (set)
 		{
@@ -136,7 +136,7 @@ public:
 
 	void ClearAll()
 	{
-		for (uint32 i = 0; i < Elements(); i++)
+		for (uint32 i = 0; i < Elements(); ++i)
 		{
 			Data[i] = Storage();
 		}
@@ -144,7 +144,7 @@ public:
 
 	void SetAll()
 	{
-		for (uint32 i = 0; i < Elements(); i++)
+		for (uint32 i = 0; i < Elements(); ++i)
 		{
 			Data[i] = ((Storage)~0);
 		}

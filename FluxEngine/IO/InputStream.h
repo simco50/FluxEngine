@@ -6,7 +6,7 @@ public:
 	InputStream()
 		: m_Size(0), m_FilePointer(0)
 	{}
-	InputStream(const size_t size)
+	explicit InputStream(const size_t size)
 		: m_Size(size), m_FilePointer(0)
 	{}
 	virtual ~InputStream() = default;

@@ -21,7 +21,8 @@ class Drawable : public Component
 	FLUX_OBJECT(Drawable, Component)
 
 public:
-	Drawable(Context* pContext) : Component(pContext) {}
+	explicit Drawable(Context* pContext) 
+		: Component(pContext) {}
 	virtual ~Drawable() {}
 	virtual void Update() {}
 

@@ -8,7 +8,7 @@ class AudioListener : public Component
 	FLUX_OBJECT(AudioListener, Component)
 
 public:
-	AudioListener(Context* pContext);
+	explicit AudioListener(Context* pContext);
 	~AudioListener();
 
 private:

@@ -16,7 +16,7 @@ class ImmediateUI : public Subsystem
 	FLUX_OBJECT(ImmediateUI, Subsystem)
 
 public:
-	ImmediateUI(Context* pContext);
+	explicit ImmediateUI(Context* pContext);
 	~ImmediateUI();
 
 	DELETE_COPY(ImmediateUI)
