@@ -1,4 +1,5 @@
 #pragma once
+#include "Object.h"
 class Subsystem;
 
 class Context
@@ -43,11 +44,33 @@ public:
 		return static_cast<T*>(pSystem);
 	}
 
+
+	template<typename T>
+	void RegisterFactory()
+	{
+		m_Factories[T::GetTypeStatic()] = [](Context* pContext) { return static_cast<Object*>(new T(pContext)); };
+	}
+
+	Object* CreateObject(const char* pClassName, bool assertOnFailure = false)
+	{
+		StringHash hash = StringHash(pClassName);
+		auto pIt = m_Factories.find(hash);
+		if (pIt != m_Factories.end())
+		{
+			return pIt->second(this);
+		}
+		checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
+		return nullptr;
+	}
+
 private:
 	//A collection of subsystems
 	std::unordered_map<StringHash, Subsystem*> m_Systems;
 	//Vector to keep order of destruction
 	std::vector<std::unique_ptr<Subsystem>> m_SystemCache;
+
+	using ObjectFactoryFunction = Object * (*)(Context*);
+	std::unordered_map<StringHash, ObjectFactoryFunction> m_Factories;
 
 	int m_SdlInits = 0;
 };

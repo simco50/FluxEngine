@@ -49,6 +49,17 @@ void SceneNode::OnSceneRemoved()
 	}
 }
 
+Component* SceneNode::CreateComponent(const char* pComponentName)
+{
+	Object* pObject = m_pContext->CreateObject(pComponentName);
+	Component* pComponent = DynamicCast<Component>(pObject);
+	if (pComponent)
+	{
+		AddComponent(pComponent);
+	}
+	return pComponent;
+}
+
 SceneNode* SceneNode::CreateChild(const std::string& name)
 {
 	SceneNode* pNode = new SceneNode(m_pContext, name);

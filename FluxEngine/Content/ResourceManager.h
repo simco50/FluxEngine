@@ -20,6 +20,8 @@ public:
 
 	void Update();
 
+	Resource* Load(const std::string& filePath, const char* typeName);
+
 	//Get the resource, if it is already loaded, take that
 	template <typename T>
 	T* Load(const std::string& filePath)

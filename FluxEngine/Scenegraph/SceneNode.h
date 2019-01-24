@@ -19,6 +19,8 @@ public:
 	virtual void OnSceneSet(Scene* pScene);
 	virtual void OnSceneRemoved();
 
+	Component* CreateComponent(const char* pComponentName);
+
 	template<typename T, typename ...Args>
 	T* CreateComponent(Args ...args)
 	{

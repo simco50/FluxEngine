@@ -12,7 +12,15 @@ bool Sound::Load(InputStream& inputStream)
 {
 	AUTOPROFILE_DESC(Sound_Load, inputStream.GetSource().c_str());
 	AudioEngine* pAudio = GetSubsystem<AudioEngine>();
-	FLUX_LOG_FMOD(pAudio->GetSystem()->createSound(inputStream.GetSource().c_str(), m_Mode, nullptr, &m_pSound));
+	std::vector<unsigned char> data;
+	inputStream.ReadAllBytes(data);
+
+	FMOD_CREATESOUNDEXINFO info;
+	memset(&info, 0, sizeof(info));
+	info.cbsize = sizeof(info);
+	info.length = (uint32)data.size();
+
+	FLUX_LOG_FMOD(pAudio->GetSystem()->createSound((char*)data.data(), FMOD_OPENMEMORY, &info, &m_pSound));
 	SetMemoryUsage((uint32)inputStream.GetSize());
 	return m_pSound != nullptr;
 }

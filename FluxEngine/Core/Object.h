@@ -19,6 +19,9 @@ class Subsystem;
 class Object
 {
 public:
+	virtual ~Object()
+	{}
+
 	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
 	virtual const char* GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
 	virtual const TypeInfo* GetTypeInfo() const { return GetTypeInfoStatic(); }
@@ -46,8 +49,6 @@ protected:
 	explicit Object(Context* pContext)
 		: m_pContext(pContext)
 	{}
-	virtual ~Object()
-	{}
 
 	Context* m_pContext = nullptr;
 
@@ -58,7 +59,7 @@ private:
 template<typename T>
 T* DynamicCast(Object* pObject)
 {
-	if (pObject->IsTypeOf(T::GetTypeStatic()))
+	if (pObject && pObject->IsTypeOf(T::GetTypeStatic()))
 	{
 		return static_cast<T*>(pObject);
 	}

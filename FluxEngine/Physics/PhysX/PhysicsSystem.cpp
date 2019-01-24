@@ -1,10 +1,13 @@
 #include "FluxEngine.h"
 #include "PhysicsSystem.h"
 #include "Rendering\Core\Graphics.h"
+#include "Collider.h"
+#include "Rigidbody.h"
 
 #ifdef GRAPHICS_D3D11
 #include "Rendering\Core\D3D11\D3D11GraphicsImpl.h"
 #endif
+#include "PhysicsMesh.h"
 
 using namespace physx;
 
@@ -52,6 +55,13 @@ PhysicsSystem::PhysicsSystem(Context* pContext) :
 	m_pCpuDispatcher = PxDefaultCpuDispatcherCreate(Misc::GetCoreCount() - 1);
 
 	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+
+	pContext->RegisterFactory<BoxCollider>();
+	pContext->RegisterFactory<SphereCollider>();
+	pContext->RegisterFactory<CapsuleCollider>();
+	pContext->RegisterFactory<PlaneCollider>();
+	pContext->RegisterFactory<Rigidbody>();
+	pContext->RegisterFactory<PhysicsMesh>();
 }
 
 PhysicsSystem::~PhysicsSystem()

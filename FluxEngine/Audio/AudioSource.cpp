@@ -4,6 +4,12 @@
 #include "AudioEngine.h"
 #include "Sound.h"
 
+AudioSource::AudioSource(Context* pContext)
+	: Component(pContext), m_Mode(0), m_pSound(nullptr)
+{
+	m_pAudio = pContext->GetSubsystem<AudioEngine>();
+}
+
 AudioSource::AudioSource(Context* pContext, const std::string& filePath, const FMOD_MODE& mode)
 	: Component(pContext), m_FilePath(filePath), m_Mode(mode)
 {
@@ -19,6 +25,7 @@ AudioSource::AudioSource(Context* pContext, const std::string& filePath, const F
 AudioSource::AudioSource(Context* pContext, Sound* pSound)
 	: Component(pContext), m_Mode(0), m_pSound(pSound)
 {
+	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
 
 AudioSource::~AudioSource()
