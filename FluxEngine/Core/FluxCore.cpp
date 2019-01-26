@@ -337,7 +337,7 @@ void FluxCore::RenderUI()
 	float height = m_pGraphics->GetWindowHeight() * 0.4f;
 	ImGui::SetNextWindowPos(ImVec2(0.0f, y), 0, ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(300.0f, height));
-	ImGui::Begin("Outliner", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin("Outliner", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ObjectUI(m_pScene.get());
 	ImGui::End();
 
@@ -345,7 +345,7 @@ void FluxCore::RenderUI()
 
 	ImGui::SetNextWindowPos(ImVec2(0.0f, y), 0, ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(300.0f, m_pGraphics->GetWindowHeight() * 0.5f));
-	ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	if (m_pSelectedNode)
 	{
 		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());

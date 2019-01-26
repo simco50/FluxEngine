@@ -84,7 +84,9 @@ void Rigidbody::SetKinematic(const bool isKinematic)
 void Rigidbody::SetBodyType(const Type type)
 {
 	if (m_Type == type)
+	{
 		return;
+	}
 	CreateBody(type);
 }
 
@@ -147,8 +149,6 @@ void Rigidbody::CreateBody(const Type type)
 
 	if (m_pBody)
 	{
-		FLUX_LOG(Warning, "[Rigidbody::SetType] > Rigidbody already attached to the scene! Recreating body and transferring colliders. Set type before adding it to the node.");
-
 		//Remove all the shapes from the old body and attach to the new one
 		std::vector<PxShape*> shapes(m_pBody->getNbShapes());
 		m_pBody->getShapes(shapes.data(), (PxU32)shapes.size(), 0);
@@ -168,5 +168,25 @@ void Rigidbody::CreateBody(const Type type)
 	if (m_pScene)
 	{
 		m_pPhysicsScene->GetScene()->addActor(*m_pBody);
+	}
+}
+
+void Rigidbody::CreateUI()
+{
+	static const char* types[] = {
+		"Static",
+		"Dynamic",
+		"Kinematic",
+	};
+	int current = (int)m_Type;
+	ImGui::Combo("Type", &current, [](void* data, int index, const char** pOut) 
+	{
+		const char** pText = (const char**)data;
+		*pOut = pText[index];
+		return true; 
+	}, &types, sizeof(types) / sizeof(types[0]));
+	if (current != (int)m_Type)
+	{
+		SetBodyType((Type)current);
 	}
 }

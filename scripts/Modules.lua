@@ -4,66 +4,78 @@ function AddPhysX(isTarget)
 
 	includedirs 
 	{ 
-		"../Libraries/PhysX 3.4/PhysX_3.4/include",
-		"../Libraries/PhysX 3.4/PxShared/include"
+		"../Libraries/PhysX/PhysX/include",
+		"../Libraries/PhysX/PxShared/include"
 	}
-
-	libdirs
-	{
-		"../Libraries/PhysX 3.4/PhysX_3.4/lib/%{cfg.platform}",
-		"../Libraries/PhysX 3.4/PxShared/lib/%{cfg.platform}"
-    }
     
     if(isTarget == true) then
 
-        filter { "configurations:Debug" }
-            postbuildcommands
-            { 
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\%{cfg.platform}\\PhysX3CommonDEBUG_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\%{cfg.platform}\\PhysX3DEBUG_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\%{cfg.platform}\\PxFoundationDEBUG_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\%{cfg.platform}\\PxPvdSDKDEBUG_%{cfg.platform}.dll\" \"$(OutDir)\"",
-            }
-
-        filter { "configurations:Release or Test" }
-            postbuildcommands
-            { 
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\%{cfg.platform}\\PhysX3Common_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\%{cfg.platform}\\PhysX3_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\%{cfg.platform}\\PxFoundation_%{cfg.platform}.dll\" \"$(OutDir)\"",
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PxShared\\bin\\%{cfg.platform}\\PxPvdSDK_%{cfg.platform}.dll\" \"$(OutDir)\"",
-            }
-
         filter { "platforms:x64" }
-            postbuildcommands
-            { 
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x64\\nvToolsExt64_1.dll\" \"$(OutDir)\""
+            links
+            {
+                "PhysX_64.lib",
+                "PhysxFoundation_64.lib",
+                "PhysXTask_static_64.lib",
+                "PhysXExtensions_static_64.lib",
             }
 
         filter { "platforms:x86" }
             postbuildcommands
             { 
-                "{COPY} \"$(SolutionDir)Libraries\\PhysX 3.4\\PhysX_3.4\\bin\\x86\\nvToolsExt32_1.dll\" \"$(OutDir)\""
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\\PhysXCommon_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\\PhysX_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\\PhysXFoundation_32.dll\" \"$(OutDir)\"",
+            }
+            links
+            {
+                "PhysX_32.lib",
+                "PhysxFoundation_32.lib",
+                "PhysXTask_static_32.lib",
+                "PhysXExtensions_static_32.lib",
             }
 
-        filter { "configurations:Debug" }
-            links
-            {
-                "PhysX3DEBUG_%{cfg.platform}.lib",
-                "PhysX3ExtensionsDEBUG.lib",
-                "PxFoundationDEBUG_%{cfg.platform}.lib",
-                "PxTaskDEBUG_%{cfg.platform}.lib",
-                "PxPvdSDKDEBUG_%{cfg.platform}.lib",
+        filter { "platforms:x86", "configurations:Debug" }
+            links { "PhysXPvdSDK_static_32.lib" }
+
+        filter { "platforms:x64", "configurations:Debug" }
+            links { "PhysXPvdSDK_static_64.lib" }
+
+        filter {"platforms:x64", "configurations:Release or Test"}
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysXCommon_64.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysX_64.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysXFoundation_64.dll\" \"$(OutDir)\"",
             }
-        filter { "configurations:Release or Test" }
-            links
-            {
-                "PhysX3_%{cfg.platform}.lib",
-                "PhysX3Extensions.lib",
-                "PxFoundation_%{cfg.platform}.lib",
-                "PxTask_%{cfg.platform}.lib",
-                "PxPvdSDK_%{cfg.platform}.lib",
+            libdirs { "$(SolutionDir)Libraries/PhysX/PhysX/lib/%{cfg.platform}/Release" }
+
+        filter {"platforms:x64", "configurations:Debug"}
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysXCommon_64.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysX_64.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysXFoundation_64.dll\" \"$(OutDir)\"",
             }
+            libdirs { "$(SolutionDir)Libraries/PhysX/PhysX/lib/%{cfg.platform}/Debug" }
+
+        filter {"platforms:x86", "configurations:Release or Test"}
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysXCommon_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysX_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Release\\PhysXFoundation_32.dll\" \"$(OutDir)\"",
+            }
+            libdirs { "$(SolutionDir)Libraries/PhysX/PhysX/lib/%{cfg.platform}/Release" }
+
+        filter {"platforms:x86", "configurations:Debug"}
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysXCommon_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysX_32.dll\" \"$(OutDir)\"",
+                "{COPY} \"$(SolutionDir)Libraries\\PhysX\\PhysX\\bin\\%{cfg.platform}\\Debug\\PhysXFoundation_32.dll\" \"$(OutDir)\"",
+            }
+        libdirs { "$(SolutionDir)Libraries/PhysX/PhysX/lib/%{cfg.platform}/Debug" }
+
         end
     filter {}
 end

@@ -76,13 +76,14 @@ public:
 	OnColliderDelegate& OnCollisionEnter() { return m_OnCollisionEnterEvent; }
 	OnColliderDelegate& OnCollisionExit() { return m_OnCollisionExitEvent; }
 
+	virtual void CreateUI() override;
+
 private:
 	void CreateBody(const Rigidbody::Type type);
 
 	PhysicsScene* m_pPhysicsScene = nullptr;
 	PhysicsSystem* m_pPhysicsSystem = nullptr;
 
-	bool m_Dynamic = false;
 	Constraint m_Constraints = Constraint::None;
 	Rigidbody::Type m_Type = Type::Static;
 
