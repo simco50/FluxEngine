@@ -59,8 +59,8 @@ Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 
 Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= false*/)
 {
-	auto pIt = m_Factories.find(typeHash);
-	if (pIt != m_Factories.end())
+	auto pIt = m_RegisteredTypes.find(typeHash);
+	if (pIt != m_RegisteredTypes.end())
 	{
 		if (pIt->second->IsAbstract())
 		{
@@ -76,22 +76,15 @@ Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= f
 std::vector<const TypeInfo*> Context::GetAllTypesOf(StringHash type, bool includeAbstract)
 {
 	std::vector<const TypeInfo*> typeData;
-	GetAllTypesOf(type, typeData, includeAbstract);
-	return typeData;
-}
-
-void Context::GetAllTypesOf(StringHash type, std::vector<const TypeInfo*>& typeData, bool includeAbstract)
-{
-	auto pIt = m_TypeTrees.find(type);
-	if (pIt != m_TypeTrees.end())
+	for (const auto& pair : m_RegisteredTypes)
 	{
-		for (const TypeInfo* pTypeInfo : pIt->second)
+		if (includeAbstract || !pair.second->IsAbstract())
 		{
-			if (includeAbstract || !pTypeInfo->IsAbstract())
+			if (pair.second->IsTypeOf(type))
 			{
-				typeData.push_back(pTypeInfo);
+				typeData.push_back(pair.second);
 			}
-			GetAllTypesOf(pTypeInfo->GetType(), typeData, includeAbstract);
 		}
 	}
+	return typeData;
 }

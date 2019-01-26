@@ -52,6 +52,7 @@ Resource* ResourceManager::Load(const std::string& filePath, const char* typeNam
 	else
 	{
 		delete pResource;
+		pResource = nullptr;
 	}
 	return pResource;
 }

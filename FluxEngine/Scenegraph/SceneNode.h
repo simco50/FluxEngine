@@ -28,6 +28,7 @@ public:
 		if (!AddComponent(pComponent))
 		{
 			delete pComponent;
+			pComponent = nullptr;
 		}
 		return pComponent;
 	}

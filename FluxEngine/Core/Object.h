@@ -59,13 +59,7 @@ public:
 	template<typename T>
 	T* NewObject(StringHash type = T::GetTypeStatic()) const
 	{
-		Object* pObject = NewObject(type);
-		if (pObject->IsTypeOf(T::GetTypeStatic()))
-		{
-			return static_cast<T*>(pObject);
-		}
-		delete pObject;
-		return nullptr;
+		return static_cast<T*>(NewObject(type));
 	}
 
 protected:

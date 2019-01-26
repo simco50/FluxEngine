@@ -28,8 +28,7 @@ public:
 	template<typename T>
 	void RegisterFactory()
 	{
-		m_TypeTrees[T::GetTypeInfoStatic()->GetBaseTypeInfo()->GetType()].insert(T::GetTypeInfoStatic());
-		m_Factories[T::GetTypeStatic()] = T::GetTypeInfoStatic();
+		m_RegisteredTypes[T::GetTypeStatic()] = T::GetTypeInfoStatic();
 	}
 
 	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool includeAbstract = true);
@@ -37,8 +36,6 @@ public:
 	Object* NewObject(const StringHash typeHash, bool assertOnFailure = false);
 
 private:
-	void GetAllTypesOf(StringHash type, std::vector<const TypeInfo*>& typeData, bool includeAbstract);
-
 	using SubsystemCreateFunction = Subsystem * (*)(Context*);
 
 	Subsystem* RegisterSubsystem(StringHash typeHash, SubsystemCreateFunction createFunction)
@@ -59,8 +56,7 @@ private:
 	std::unordered_map<StringHash, Subsystem*> m_Systems;
 	//Vector to keep order of destruction
 	std::vector<Subsystem*> m_SystemCache;
-	std::unordered_map<StringHash, const TypeInfo*> m_Factories;
-	std::unordered_map<StringHash, std::set<const TypeInfo*>> m_TypeTrees;
+	std::unordered_map<StringHash, const TypeInfo*> m_RegisteredTypes;
 
 	int m_SdlInits = 0;
 };
