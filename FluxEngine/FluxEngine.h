@@ -24,15 +24,6 @@
 #include <queue>
 #pragma endregion STL
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-
-#ifdef MODULE_PHYSX
-#include <PxPhysicsAPI.h>
-#endif
-
-#include "External/Imgui/imgui.h"
-
 #pragma region
 //Engine core include
 #include "Core/Types.h"
@@ -65,3 +56,10 @@
 
 #include "Content/ResourceManager.h"
 #pragma endregion ENGINE INCLUDES
+
+#include "External/Imgui/imgui.h"
+
+
+#ifdef MODULE_PHYSX
+#include <PxPhysicsAPI.h>
+#endif

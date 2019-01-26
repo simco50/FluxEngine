@@ -9,11 +9,13 @@
 #define STBI_NO_PNM
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_ASSERT(x) check(x)
 #include "External/Stb/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "External/Stb/stb_image_write.h"
 
 #define TINYEXR_IMPLEMENTATION
+#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
 #include "External/TinyExr/tinyexr.h"
 
 #include <SDL_surface.h>
@@ -609,8 +611,9 @@ bool Image::LoadDds(InputStream& inputStream)
 		DDSCAPS2_CUBEMAP = 0x00000200U,
 	};
 
+#ifndef MAKEFOURCC
 #define MAKEFOURCC(a, b, c, d) (unsigned int)((unsigned char)(a) | (unsigned char)(b) << 8 | (unsigned char)(c) << 16 | (unsigned char)(d) << 24)
-
+#endif
 	char magic[5];
 	magic[4] = '\0';
 	inputStream.Read(magic, 4);
