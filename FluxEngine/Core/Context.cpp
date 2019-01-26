@@ -59,6 +59,7 @@ Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 
 Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= false*/)
 {
+	assertOnFailure;
 	auto pIt = m_RegisteredTypes.find(typeHash);
 	if (pIt != m_RegisteredTypes.end())
 	{

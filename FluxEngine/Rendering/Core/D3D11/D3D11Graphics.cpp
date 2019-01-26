@@ -214,7 +214,7 @@ void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
 
 void Graphics::SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsigned int instanceOffset /*= 0*/)
 {
-	checkf(bufferCount <= GraphicsConstants::MAX_VERTEX_BUFFERS, "Vertex buffer count exceeded")
+	checkf(bufferCount <= GraphicsConstants::MAX_VERTEX_BUFFERS, "Vertex buffer count exceeded");
 
 	for (int i = 0; i < GraphicsConstants::MAX_VERTEX_BUFFERS; ++i)
 	{
