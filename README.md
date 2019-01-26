@@ -1,5 +1,6 @@
 # README #
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fdd4ce1e113d4424b599ed68ba27c099)](https://app.codacy.com/app/simco50/FluxEngine?utm_source=github.com&utm_medium=referral&utm_content=simco50/FluxEngine&utm_campaign=Badge_Grade_Settings)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 ## Build Status
