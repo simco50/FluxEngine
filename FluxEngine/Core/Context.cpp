@@ -10,6 +10,10 @@ Context::Context()
 
 Context::~Context()
 {
+	for (Subsystem* pSystem : m_SystemCache)
+	{
+		delete pSystem;
+	}
 	m_SystemCache.clear();
 	if (m_SdlInits > 0)
 	{
@@ -53,3 +57,13 @@ Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 	return pIt->second;
 }
 
+Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= false*/)
+{
+	auto pIt = m_Factories.find(typeHash);
+	if (pIt != m_Factories.end())
+	{
+		return pIt->second(this);
+	}
+	checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
+	return nullptr;
+}

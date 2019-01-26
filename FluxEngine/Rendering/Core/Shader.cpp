@@ -5,6 +5,7 @@
 #include "Content\ResourceManager.h"
 #include "Graphics.h"
 #include "Core\CommandLine.h"
+#include "FileSystem\File\PhysicalFile.h"
 
 #define USE_SHADER_LINE_DIRECTIVE
 
@@ -27,17 +28,6 @@ bool Shader::Load(InputStream& inputStream)
 	std::vector<std::string> dependencies;
 
 	m_LastModifiedTimestamp = DateTime(0);
-	{
-		AUTOPROFILE(Shader_ProcessSource);
-		std::stringstream codeStream;
-		std::vector<StringHash> processedIncludes;
-		if (!ProcessSource(inputStream, codeStream, processedIncludes, dependencies))
-		{
-			return false;
-		}
-
-		m_ShaderSource = codeStream.str();
-	}
 
 	if (ReloadVariations() == false)
 	{
@@ -71,6 +61,10 @@ bool Shader::ReloadVariations()
 			{
 				continue;
 			}
+			if (m_ShaderSource.length() == 0)
+			{
+				LoadSource();
+			}
 			success = p.second->Create() ? success : false;
 		}
 	}
@@ -89,28 +83,36 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 	}
 
 	Graphics* pGraphics = GetSubsystem<Graphics>();
-	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(pGraphics, this, type);
 
 	std::stringstream cacheName;
 	cacheName << m_Name + Shader::GetEntryPoint(type) << "_" << hash;
-	if (CommandLine::GetBool("NoShaderCache") == false && pVariation->LoadFromCache(cacheName.str()))
+	std::string filePath = Printf("%s%s.bin", Paths::ShaderCacheDir().c_str(), cacheName.str().c_str());
+
+	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(pGraphics, this, type);
+
+	if (TryLoadFromCache(filePath, pVariation))
 	{
-		if (!pVariation->CreateShader(GetSubsystem<Graphics>(), type))
+		if (pVariation->CreateShader(pGraphics, type) == false)
 		{
+			FLUX_LOG(Warning, "[Shader::GetOrCreateVariation] Failed to load shader from the shader cache");
 			return nullptr;
 		}
-		m_ShaderCache[(size_t)type][hash] = std::move(pVariation);
-		return m_ShaderCache[(size_t)type][hash].get();
 	}
 	else
 	{
+		if (m_ShaderSource.length() == 0)
+		{
+			LoadSource();
+		}
+
 		pVariation->SetDefines(defines);
 		if (!pVariation->Create())
 		{
 			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to load shader variation");
 			return nullptr;
 		}
-		if(pVariation->SaveToCache(cacheName.str()) == false)
+
+		if (TrySaveToCache(filePath, pVariation) == false)
 		{
 			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to save shader variation to cache");
 		}
@@ -207,6 +209,68 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 		++linesProcessed;
 	}
 	return true;
+}
+
+bool Shader::LoadSource()
+{
+	AUTOPROFILE_DESC(Shader_LoadSource, m_Name);
+	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
+	pResourceManager->ResetDependencies(this);
+
+	std::vector<std::string> dependencies;
+	std::unique_ptr<File> pFile = FileSystem::GetFile(m_FilePath);
+	if (pFile == nullptr)
+	{
+		FLUX_LOG(Warning, "[Shader::GetOrCreateVariation() Failed to file file at '%s']", m_FilePath.c_str());
+		return false;
+	}
+	if (!pFile->OpenRead())
+	{
+		FLUX_LOG(Warning, "[Shader::GetOrCreateVariation() Failed to open file at '%s']", m_FilePath.c_str());
+		return false;
+	}
+	std::stringstream codeStream;
+	std::vector<StringHash> processedIncludes;
+	ProcessSource(*pFile, codeStream, processedIncludes, dependencies);
+	m_ShaderSource = codeStream.str();
+
+	for (const std::string& dep : dependencies)
+	{
+		pResourceManager->AddResourceDependency(this, dep);
+	}
+
+	return true;
+}
+
+bool Shader::TryLoadFromCache(const std::string& path, std::unique_ptr<ShaderVariation>& pVariation)
+{
+	if (CommandLine::GetBool("NoShaderCache"))
+	{
+		return false;
+	}
+
+	DateTime shaderTime = FileSystem::GetLastModifiedTime(path);
+	if (shaderTime == DateTime(0) || shaderTime < m_LastModifiedTimestamp)
+	{
+		return false;
+	}
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(path);
+	if (pFile->OpenRead() == false)
+	{
+		return false;
+	}
+
+	return pVariation->LoadFromCache(*pFile);
+}
+
+bool Shader::TrySaveToCache(const std::string& path, std::unique_ptr<ShaderVariation>& pVariation)
+{
+	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(path);
+	if (pFile->OpenWrite() == false)
+	{
+		return false;
+	}
+	return pVariation->SaveToCache(*pFile);
 }
 
 void Shader::RefreshMemoryUsage()

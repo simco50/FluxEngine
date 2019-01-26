@@ -21,9 +21,10 @@ class AsyncTaskQueue : public Subsystem
 	DELETE_COPY(AsyncTaskQueue)
 
 public:
-	AsyncTaskQueue(Context* pContext, size_t count);
+	AsyncTaskQueue(Context* pContext);
 	~AsyncTaskQueue();
 
+	void Initialize(uint32 threads);
 	void JoinAll();
 	void ProcessItems(int index);
 	void AddWorkItem(const AsyncTaskDelegate& action, int priority = 0);

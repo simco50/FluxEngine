@@ -56,12 +56,11 @@ void Renderer::Draw()
 
 	{
 		AUTOPROFILE(Renderer_UpdateDrawables);
-		AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i)
+		for(size_t i = 0; i < m_Drawables.size(); ++i)
 		{
 			AUTOPROFILE(Renderer_UpdateDrawable);
 			m_Drawables[i]->Update();
-		}));
+		}
 	}
 
 	{

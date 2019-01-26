@@ -51,8 +51,7 @@ void SceneNode::OnSceneRemoved()
 
 Component* SceneNode::CreateComponent(const char* pComponentName)
 {
-	Object* pObject = m_pContext->CreateObject(pComponentName);
-	Component* pComponent = DynamicCast<Component>(pObject);
+	Component* pComponent = NewObject<Component>(StringHash(pComponentName));
 	if (pComponent)
 	{
 		AddComponent(pComponent);

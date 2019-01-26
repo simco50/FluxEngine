@@ -28,9 +28,9 @@ void Particle::Update()
 	//Constant velocity
 	movement += m_Direction * m_StartVelocity;
 	//World space velocity
-	movement += m_pEmitterSettings->Velocity[m_LifeTimer];
+	movement += m_pEmitterSettings->Velocity.GetValue(m_LifeTimer);
 	//Local space velocity
-	Vector3 localVel = m_pEmitterSettings->LocalVelocity[m_LifeTimer];
+	Vector3 localVel = m_pEmitterSettings->LocalVelocity.GetValue(m_LifeTimer);
 	if (localVel.LengthSquared() > 0)
 	{
 		Vector3 up = Vector3(0, 1, 0);
@@ -42,10 +42,10 @@ void Particle::Update()
 	}
 	m_VertexInfo.Position += movement * deltaTime;
 
-	Vector3 color = m_pEmitterSettings->Color[m_LifeTimer];
-	m_VertexInfo.Color = Vector4(color.x, color.y, color.z, m_pEmitterSettings->Transparancy[m_LifeTimer]);
-	m_VertexInfo.Size = m_pEmitterSettings->Size[m_LifeTimer] * m_StartSize;
-	m_VertexInfo.Rotation = m_StartRotation + m_pEmitterSettings->Rotation[m_LifeTimer];
+	Vector3 color = m_pEmitterSettings->Color.GetValue(m_LifeTimer);
+	m_VertexInfo.Color = Vector4(color.x, color.y, color.z, m_pEmitterSettings->Transparancy.GetValue(m_LifeTimer));
+	m_VertexInfo.Size = m_pEmitterSettings->Size.GetValue(m_LifeTimer) * m_StartSize;
+	m_VertexInfo.Rotation = m_StartRotation + m_pEmitterSettings->Rotation.GetValue(m_LifeTimer);
 }
 
 void Particle::Init()

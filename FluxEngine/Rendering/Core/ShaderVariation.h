@@ -26,8 +26,8 @@ public:
 	void AddDefine(const std::string& define);
 	void SetDefines(const std::string& defines);
 
-	bool SaveToCache(const std::string& cacheName) const;
-	bool LoadFromCache(const std::string& cacheName);
+	bool SaveToCache(OutputStream& outputStream) const;
+	bool LoadFromCache(InputStream& inputStream);
 
 	const std::map<StringHash, ShaderParameter>& GetParameters() const { return m_ShaderParameters; }
 	const std::array<ConstantBuffer*, (unsigned int)ShaderParameterType::MAX>& GetConstantBuffers() const { return m_ConstantBuffers; }

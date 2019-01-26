@@ -41,8 +41,7 @@ void ResourceManager::Update()
 
 Resource* ResourceManager::Load(const std::string& filePath, const char* typeName)
 {
-	Object* pObject = m_pContext->CreateObject(typeName);
-	Resource* pResource = DynamicCast<Resource>(pObject);
+	Resource* pResource = NewObject<Resource>(StringHash(typeName));
 	if (pResource)
 	{
 		LoadResourcePrivate(pResource, filePath);
@@ -52,7 +51,7 @@ Resource* ResourceManager::Load(const std::string& filePath, const char* typeNam
 	}
 	else
 	{
-		delete pObject;
+		delete pResource;
 	}
 	return pResource;
 }

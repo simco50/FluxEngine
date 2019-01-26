@@ -1,98 +1,103 @@
 #pragma once
 
-template <typename T>
+template<typename T>
 struct KeyframeValue
 {
-	KeyframeValue() : ConstantValue(T()) {}
-
-	KeyframeValue(T defaultValue) : ConstantValue(defaultValue) {}
-
-	void Add(float key, T value)
+	struct Key
 	{
-		Values[key] = value;
+		float Time;
+		T Value;
+	};
+
+	KeyframeValue()
+	{}
+
+	KeyframeValue(T constant)
+	{
+		SetConstant(constant);
 	}
 
-	void Set(float key, T value)
+	void SetConstant(T constant)
 	{
-		auto v = Values.find(key);
-		if (v != Values.end())
-			v->second = value;
-		else
-			FLUX_LOG(LogType::Error, "Keyframe at key %f does not exist!", key);
+		m_Keys.resize(1);
+		m_Keys[0].Time = 0.0f;
+		m_Keys[0].Value = constant;
 	}
 
-	void SetConstant(T value)
+	void Set(float time, T value)
 	{
-		Values.clear();
-		ConstantValue = value;
-	}
-
-	void Move(float source, float target)
-	{
-		auto s = Values.find(source);
-		if (s != Values.end())
+		for (Key& key : m_Keys)
 		{
-			Values[target] = s->second;
-			Values.erase(s);
-		}
-		else
-			FLUX_LOG(LogType::Error, "Keyframe at key %f does not exist!", source);
-	}
-
-	T operator[](float interpValue)
-	{
-		//If the value is constant
-		if(Values.size() == 0)
-			return ConstantValue;
-		//If there is only one keyframe
-		if(Values.size() == 1)
-		{
-			auto it = Values.begin();
-			if (interpValue >= it->first)
-				return it->second;
-			float blendA = (it->first - interpValue) / it->first;
-			T result = (ConstantValue * blendA) + (it->second * (1 - blendA));
-			return result;
-		}
-
-		//If there is more than one key
-		if(interpValue < Values.begin()->first)
-			return Values.begin()->second;
-
-		for (auto value = Values.begin(); value != Values.end(); ++value)
-		{
-			if (value->first == interpValue)
-				return value->second;
-			if (value->first > interpValue)
+			if (key.Time == time)
 			{
-				auto v2 = value;
-				auto v1 = --value;
-				float length = abs(v2->first - v1->first);
-				float blendA = (v2->first - interpValue) / length;
-				T result = (v1->second * blendA) + (v2->second * (1 - blendA));
-				return result;
+				key.Value = value;
+				return;
 			}
 		}
-		return Values.rbegin()->second;
+		checkNoEntry();
+	}
+
+	void Add(float time, T value, bool sort = true)
+	{
+		check(std::find_if(m_Keys.begin(), m_Keys.end(), [time](const Key& a) {return a.Time == time; }) == m_Keys.end());
+		Key k;
+		k.Time = time;
+		k.Value = value;
+		m_Keys.push_back(k);
+		if (sort)
+		{
+			std::sort(m_Keys.begin(), m_Keys.end(), [](const Key& a, const Key& b) {return a.Time < b.Time; });
+		}
+	}
+
+	T GetValue(float time) const
+	{
+		if (m_Keys.size() == 0)
+		{
+			return T();
+		}
+		if (m_Keys.size() == 1)
+		{
+			return m_Keys[0].Value;
+		}
+		for (int i = 0; i < (int)m_Keys.size(); ++i)
+		{
+			const Key& a = m_Keys[i];
+			if (a.Time > time)
+			{
+				int previousKey = (int)(i - 1 + m_Keys.size()) % m_Keys.size();
+				const Key& b = m_Keys[previousKey];
+				float t = (time - b.Time) / abs(a.Time - b.Time);
+				return b.Value + t * (a.Value - b.Value);
+			}
+		}
+		return T();
 	}
 
 	void Clear()
 	{
-		Values.clear();
-	}
-	
-
-	const std::map<float, T>& GetData() const
-	{
-		return Values;
+		m_Keys.clear();
+		m_PreviousKey = 0;
 	}
 
 	size_t ByteSize() const
 	{
-		return Values.size() * sizeof(T);
+		return m_Keys.size() * sizeof(Key);
 	}
 
-	T ConstantValue;
+	using ConstIterator = typename std::vector<Key>::const_iterator;
+
+	ConstIterator begin()
+	{
+		return m_Keys.cbegin();
+	}
+
+	ConstIterator end()
+	{
+		return m_Keys.cend();
+	}
+
 private:
-	std::map<float, T> Values;
+	mutable int m_PreviousKey = 0;
+	std::vector<Key> m_Keys;
 };

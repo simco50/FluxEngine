@@ -53,7 +53,7 @@ public:
 
 	//Emission
 	int Emission = 10;
-	std::map<float, int> Bursts;
+	KeyframeValue<int> Bursts;
 
 	//Shape
 	enum class ShapeType
@@ -89,5 +89,8 @@ public:
 	static const int VERSION = 2;
 
 private:
+	void LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue);
+	void LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue);
+
 	void RefreshMemoryUsage();
 };

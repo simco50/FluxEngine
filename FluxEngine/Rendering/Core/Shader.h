@@ -28,6 +28,9 @@ public:
 
 private:
 	bool ProcessSource(InputStream& inputStream, std::stringstream& output, std::vector<StringHash>& processedIncludes, std::vector<std::string>& dependencies);
+	bool LoadSource();
+	bool TryLoadFromCache(const std::string& path, std::unique_ptr<ShaderVariation>& pVariation);
+	bool TrySaveToCache(const std::string& path, std::unique_ptr<ShaderVariation>& pVariation);
 
 	std::string m_Name;
 	std::string m_ShaderSource;

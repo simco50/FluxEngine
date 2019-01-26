@@ -39,7 +39,6 @@ bool FluxCore::m_Exiting;
 FluxCore::FluxCore(Context* pContext) :
 	Object(pContext)
 {
-
 }
 
 FluxCore::~FluxCore()
@@ -91,7 +90,8 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 	m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
 	m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
-	m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount() - 1);
+	AsyncTaskQueue* pQueue = m_pContext->RegisterSubsystem<AsyncTaskQueue>();
+	pQueue->Initialize(Misc::GetCoreCount() - 1);
 	m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 	m_pContext->RegisterSubsystem<Renderer>();
 

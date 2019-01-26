@@ -1,5 +1,6 @@
 #pragma once
 #include "Rendering/Drawable.h"
+#include "Math/KeyframeValue.h"
 
 class Particle;
 class Texture2D;
@@ -48,7 +49,7 @@ private:
 	bool m_Playing = false;
 	float m_Timer = 0.0f;
 
-	std::map<float, int>::iterator m_BurstIterator;
+	KeyframeValue<int>::ConstIterator m_BurstIterator;
 
 	std::vector<Particle*> m_Particles;
 	ParticleSystem* m_pParticleSystem = nullptr;

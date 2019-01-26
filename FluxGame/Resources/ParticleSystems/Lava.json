@@ -6,7 +6,7 @@
   "LifetimeVariance": 0.2,
   "StartVelocity": 2.20000029,
   "StartVelocityVariance": 0.2,
-  "StartSize": 1.0,
+  "StartSize": 20.0,
   "StartSizeVariance": 0.200000033,
   "RandomStartRotation": false,
   "PlayOnAwake": true,
@@ -98,5 +98,5 @@
   },
   "SortingMode": 0,
   "BlendMode": 0,
-  "ImagePath": "./Resources/DefaultParticleImage.png"
+  "ImagePath": "./DefaultParticleImage.png"
 }

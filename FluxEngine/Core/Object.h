@@ -45,6 +45,21 @@ public:
 		return m_pContext; 
 	}
 
+	Object* NewObject(const char* typeName) const;
+	Object* NewObject(StringHash type) const;
+
+	template<typename T>
+	T* NewObject(StringHash type = T::GetTypeStatic()) const
+	{
+		Object* pObject = NewObject(type);
+		if (pObject->IsTypeOf(T::GetTypeStatic()))
+		{
+			return static_cast<T*>(pObject);
+		}
+		delete pObject;
+		return nullptr;
+	}
+
 protected:
 	explicit Object(Context* pContext)
 		: m_pContext(pContext)

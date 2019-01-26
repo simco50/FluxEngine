@@ -192,11 +192,12 @@ void ParticleEmitter::CalculateBoundingBox()
 void ParticleEmitter::Update()
 {
 	if (m_Playing == false)
+	{
 		return;
+	}
 
 	AUTOPROFILE(ParticleEmitter_Update);
 	CalculateBoundingBox();
-
 
 	m_Timer += GameTimer::DeltaTime();
 	if (m_Timer >= m_pParticleSystem->Duration && m_pParticleSystem->Loop)
@@ -236,7 +237,7 @@ void ParticleEmitter::Update()
 			++m_ParticleCount;
 		}
 		//Spawn particle on burst tick
-		else if(m_BurstIterator != m_pParticleSystem->Bursts.end() && m_Timer > m_BurstIterator->first && burstParticles < m_BurstIterator->second)
+		else if(m_BurstIterator != m_pParticleSystem->Bursts.end() && m_Timer > m_BurstIterator->Time && burstParticles < m_BurstIterator->Value)
 		{
 			p->Init();
 			pBuffer[m_ParticleCount] = p->GetVertexInfo();
