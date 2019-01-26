@@ -26,15 +26,26 @@ public:
 	}
 
 	template<typename T>
-	void RegisterFactory()
+	typename std::enable_if<T::GetTypeInfoStatic()->IsAbstract() == false>::type RegisterFactory()
 	{
 		m_Factories[T::GetTypeStatic()] = [](Context* pContext) { return static_cast<Object*>(new T(pContext)); };
+		m_TypeTrees[T::GetTypeInfoStatic()->GetBaseTypeInfo()->GetType()].insert(T::GetTypeInfoStatic());
 	}
+
+	template<typename T, class = typename std::enable_if<T::GetTypeInfoStatic()->IsAbstract()>::type>
+	void RegisterFactory()
+	{
+		m_TypeTrees[T::GetTypeInfoStatic()->GetBaseTypeInfo()->GetType()].insert(T::GetTypeInfoStatic());
+	}
+
+	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool includeAbstract = true);
 
 	Object* NewObject(const StringHash typeHash, bool assertOnFailure = false);
 
 private:
-	using SubsystemCreateFunction = Subsystem* (*)(Context*);
+	void GetAllTypesOf(StringHash type, std::vector<const TypeInfo*>& typeData, bool includeAbstract);
+
+	using SubsystemCreateFunction = Subsystem * (*)(Context*);
 
 	Subsystem* RegisterSubsystem(StringHash typeHash, SubsystemCreateFunction createFunction)
 	{
@@ -56,6 +67,7 @@ private:
 	std::vector<Subsystem*> m_SystemCache;
 	using ObjectCreateFunction = Object * (*)(Context*);
 	std::unordered_map<StringHash, ObjectCreateFunction> m_Factories;
+	std::unordered_map<StringHash, std::set<const TypeInfo*>> m_TypeTrees;
 
 	int m_SdlInits = 0;
 };

@@ -18,7 +18,7 @@ struct Batch
 
 class Drawable : public Component
 {
-	FLUX_OBJECT(Drawable, Component)
+	FLUX_OBJECT_ABSTRACT(Drawable, Component)
 
 public:
 	explicit Drawable(Context* pContext) 

@@ -4,10 +4,11 @@ class TypeInfo
 {
 public:
 	template<size_t size>
-	constexpr TypeInfo(const char (&typeName)[size], const TypeInfo* baseTypeInfo) 
+	constexpr TypeInfo(const char (&typeName)[size], const TypeInfo* baseTypeInfo, const bool isAbstract) 
 		: m_TypeName{},
 		m_Type(typeName),
-		m_pBaseTypeInfo(baseTypeInfo)
+		m_pBaseTypeInfo(baseTypeInfo),
+		m_IsAbstract(isAbstract)
 	{
 		static_assert(size <= TYPENAME_SIZE, "Size of typename is too long");
 		constexpr size_t min = Math::Min<size_t>(size, TYPENAME_SIZE);
@@ -26,10 +27,12 @@ public:
 	constexpr StringHash GetType() const { return m_Type; }
 	constexpr const char* GetTypeName() const { return m_TypeName; }
 	constexpr const TypeInfo* GetBaseTypeInfo() const { return m_pBaseTypeInfo; }
+	constexpr bool IsAbstract() const { return m_IsAbstract; }
 
 private:
 	static constexpr size_t TYPENAME_SIZE = 32;
 	char m_TypeName[TYPENAME_SIZE];
 	StringHash m_Type;
 	const TypeInfo* m_pBaseTypeInfo = nullptr;
+	bool m_IsAbstract;
 };

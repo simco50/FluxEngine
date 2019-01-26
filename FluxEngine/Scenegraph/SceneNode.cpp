@@ -49,12 +49,15 @@ void SceneNode::OnSceneRemoved()
 	}
 }
 
-Component* SceneNode::CreateComponent(const char* pComponentName)
+Component* SceneNode::CreateComponent(StringHash typeHash)
 {
-	Component* pComponent = NewObject<Component>(StringHash(pComponentName));
+	Component* pComponent = NewObject<Component>(typeHash);
 	if (pComponent)
 	{
-		AddComponent(pComponent);
+		if (!AddComponent(pComponent))
+		{
+			delete pComponent;
+		}
 	}
 	return pComponent;
 }
@@ -74,12 +77,12 @@ void SceneNode::AddChild(SceneNode* pNode)
 	m_pScene->TrackChild(pNode);
 }
 
-void SceneNode::AddComponent(Component* pComponent)
+bool SceneNode::AddComponent(Component* pComponent)
 {
 	if (GetComponent(pComponent->GetType()) != nullptr && !pComponent->CanHaveMultiple())
 	{
-		FLUX_LOG(Error, "[SceneNode::AddComponent] > SceneNode already has a %s", pComponent->GetTypeName());
-		return;
+		FLUX_LOG(Warning, "[SceneNode::AddComponent] > SceneNode already has a %s", pComponent->GetTypeName());
+		return false;
 	}
 
 	m_Components.push_back(pComponent);
@@ -90,6 +93,7 @@ void SceneNode::AddComponent(Component* pComponent)
 	{
 		pComponent->OnSceneSet(m_pScene);
 	}
+	return true;
 }
 
 Component* SceneNode::GetComponent(StringHash type) const

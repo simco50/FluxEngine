@@ -5,7 +5,7 @@ class OutputStream;
 
 class Resource : public Object
 {
-	FLUX_OBJECT(Resource, Object)
+	FLUX_OBJECT_ABSTRACT(Resource, Object)
 	DELETE_COPY(Resource)
 
 public:

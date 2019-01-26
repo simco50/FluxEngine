@@ -19,13 +19,16 @@ public:
 	virtual void OnSceneSet(Scene* pScene);
 	virtual void OnSceneRemoved();
 
-	Component* CreateComponent(const char* pComponentName);
+	Component* CreateComponent(StringHash typeHash);
 
 	template<typename T, typename ...Args>
 	T* CreateComponent(Args ...args)
 	{
 		T* pComponent = new T(m_pContext, args...);
-		AddComponent(pComponent);
+		if (!AddComponent(pComponent))
+		{
+			delete pComponent;
+		}
 		return pComponent;
 	}
 
@@ -125,7 +128,7 @@ protected:
 	Scene* m_pScene = nullptr;
 
 private:
-	void AddComponent(Component* pComponent);
+	bool AddComponent(Component* pComponent);
 	void UpdateWorld() const;
 
 	std::string m_Name;

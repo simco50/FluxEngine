@@ -21,7 +21,7 @@ inline CollisionGroup& operator|=(CollisionGroup& a, const CollisionGroup b) { a
 
 class Collider : public Component
 {
-	FLUX_OBJECT(Collider, Component)
+	FLUX_OBJECT_ABSTRACT(Collider, Component)
 
 public:
 	Collider(Context* pContext, physx::PxMaterial* pMaterial, physx::PxShapeFlags shapeFlags);

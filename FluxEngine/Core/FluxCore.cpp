@@ -383,18 +383,35 @@ void FluxCore::RenderUI()
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
 		ImGui::Separator();
 		ImGui::SliderInt("Frames", &m_FramesToCapture, 1, 10);
-		if (ImGui::Button("Capture frame"))
+		if (ImGui::MenuItem("Capture frame"))
 		{
 			Profiler::Instance()->Capture(m_FramesToCapture);
 		}
 		ImGui::EndMenu();
 	}
-	if (ImGui::BeginMenu("Post Processing"))
+	if (ImGui::BeginMenu("Selected Node"))
 	{
-		PostProcessing* pPost = m_pCamera->GetComponent<PostProcessing>();
-		for (uint32 i = 0; i < pPost->GetMaterialCount(); ++i)
+		if (ImGui::MenuItem("Create Child"))
 		{
-			ImGui::Checkbox(pPost->GetMaterial(i)->GetName().c_str(), &pPost->GetMaterialActive(i));
+			if (m_pSelectedNode)
+			{
+				m_pSelectedNode = m_pSelectedNode->CreateChild("Node");
+			}
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginMenu("Create Component"))
+	{
+		std::vector<const TypeInfo*> types = m_pContext->GetAllTypesOf(Component::GetTypeStatic(), false);
+		for (const TypeInfo* pType : types)
+		{
+			if (ImGui::MenuItem(pType->GetTypeName()))
+			{
+				if (m_pSelectedNode)
+				{
+					m_pSelectedNode->CreateComponent(pType->GetType());
+				}
+			}
 		}
 		ImGui::EndMenu();
 	}

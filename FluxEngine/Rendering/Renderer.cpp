@@ -37,6 +37,7 @@ Renderer::Renderer(Context* pContext) :
 	pContext->RegisterFactory<ParticleSystem>();
 	pContext->RegisterFactory<ParticleEmitter>();
 	pContext->RegisterFactory<Mesh>();
+	pContext->RegisterFactory<Drawable>();
 	pContext->RegisterFactory<Model>();
 	pContext->RegisterFactory<PostProcessing>();
 	pContext->RegisterFactory<ReflectionProbe>();

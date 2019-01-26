@@ -29,13 +29,12 @@ enum class TextureAddressMode
 
 class Texture : public Resource, public GraphicsObject
 {
-	FLUX_OBJECT(Texture, Resource)
+	FLUX_OBJECT_ABSTRACT(Texture, Resource)
+	DELETE_COPY(Texture)
 
 public:
 	explicit Texture(Context* pContext);
 	virtual ~Texture();
-
-	DELETE_COPY(Texture)
 
 	virtual void Release() = 0;
 	virtual bool Resolve(bool force) = 0;

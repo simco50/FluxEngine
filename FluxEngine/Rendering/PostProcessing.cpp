@@ -101,3 +101,11 @@ void PostProcessing::OnResize(const int width, const int height)
 	m_pRenderTexture->SetAddressMode(TextureAddressMode::CLAMP);
 	m_pDepthTexture->SetSize(width, height, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, msaa, nullptr);
 }
+
+void PostProcessing::CreateUI()
+{
+	for (uint32 i = 0; i < m_Materials.size(); ++i)
+	{
+		ImGui::Checkbox(m_Materials[i].second->GetName().c_str(), &m_Materials[i].first);
+	}
+}

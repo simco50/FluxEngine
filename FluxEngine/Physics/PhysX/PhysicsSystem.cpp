@@ -56,6 +56,7 @@ PhysicsSystem::PhysicsSystem(Context* pContext) :
 
 	m_pDefaultMaterial = m_pPhysics->createMaterial(0.5f, 0.5f, 0.5f);
 
+	pContext->RegisterFactory<Collider>();
 	pContext->RegisterFactory<BoxCollider>();
 	pContext->RegisterFactory<SphereCollider>();
 	pContext->RegisterFactory<CapsuleCollider>();

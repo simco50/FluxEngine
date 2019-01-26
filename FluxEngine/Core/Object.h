@@ -3,18 +3,22 @@
 class Context;
 class Subsystem;
 
-#define FLUX_OBJECT(typeName, baseTypeName) \
-    public: \
-        using ClassName = typeName; \
-        using BaseClass = baseTypeName; \
-        virtual StringHash GetType() const override { return GetTypeInfoStatic()->GetType(); } \
-        virtual const char* GetTypeName() const override { return GetTypeInfoStatic()->GetTypeName(); } \
-        virtual const TypeInfo* GetTypeInfo() const override { return GetTypeInfoStatic(); } \
-        static constexpr StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
-        static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
+#define FLUX_OBJECT_BASE(typeName, baseTypeName, isAbstract) \
+	public: \
+		using ClassName = typeName; \
+		using BaseClass = baseTypeName; \
+		virtual StringHash GetType() const override { return GetTypeInfoStatic()->GetType(); } \
+		virtual const char* GetTypeName() const override { return GetTypeInfoStatic()->GetTypeName(); } \
+		virtual const TypeInfo* GetTypeInfo() const override { return GetTypeInfoStatic(); } \
+		static constexpr StringHash GetTypeStatic() { return GetTypeInfoStatic()->GetType(); } \
+		static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
 		static constexpr const TypeInfo* GetTypeInfoStatic() { return &TYPE_INFO; } \
 	private: \
-		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic()); \
+		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic(), isAbstract); \
+
+#define FLUX_OBJECT(typeName, baseTypeName) FLUX_OBJECT_BASE(typeName, baseTypeName, false)
+
+#define FLUX_OBJECT_ABSTRACT(typeName, baseTypeName) FLUX_OBJECT_BASE(typeName, baseTypeName, true)
 
 class Object
 {
@@ -36,13 +40,13 @@ public:
 
 	Subsystem* GetSubsystem(StringHash type) const;
 	template<typename T>
-	inline T* GetSubsystem(bool required = true) const 
-	{ 
+	inline T* GetSubsystem(bool required = true) const
+	{
 		return static_cast<T*>(m_pContext->GetSubsystem(T::GetTypeStatic(), required));
 	}
-	inline Context* GetContext() const 
+	inline Context* GetContext() const
 	{
-		return m_pContext; 
+		return m_pContext;
 	}
 
 	Object* NewObject(const char* typeName) const;
@@ -68,7 +72,7 @@ protected:
 	Context* m_pContext = nullptr;
 
 private:
-	static constexpr TypeInfo TYPE_INFO = TypeInfo("Object", nullptr);
+	static constexpr TypeInfo TYPE_INFO = TypeInfo("Object", nullptr, true);
 };
 
 template<typename T>

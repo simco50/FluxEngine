@@ -18,11 +18,9 @@ public:
 
 	void Draw();
 	void AddEffect(Material* pMaterial, const bool active = true);
-	uint32 GetMaterialCount() const { return (uint32)m_Materials.size(); }
-	Material* GetMaterial(const uint32 index) const { return m_Materials[index].second; }
-	void SetMaterialActive(const uint32 index, const bool active) { m_Materials[index].first = active; }
-	bool& GetMaterialActive(const uint32 index) { return m_Materials[index].first; }
 	Camera* GetCamera() const { return m_pCamera; }
+
+	virtual void CreateUI() override;
 
 protected:
 	virtual void OnNodeSet(SceneNode* pNode) override;

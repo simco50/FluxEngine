@@ -67,3 +67,26 @@ Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= f
 	checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
 	return nullptr;
 }
+
+std::vector<const TypeInfo*> Context::GetAllTypesOf(StringHash type, bool includeAbstract)
+{
+	std::vector<const TypeInfo*> typeData;
+	GetAllTypesOf(type, typeData, includeAbstract);
+	return typeData;
+}
+
+void Context::GetAllTypesOf(StringHash type, std::vector<const TypeInfo*>& typeData, bool includeAbstract)
+{
+	auto pIt = m_TypeTrees.find(type);
+	if (pIt != m_TypeTrees.end())
+	{
+		for (const TypeInfo* pTypeInfo : pIt->second)
+		{
+			if (includeAbstract || !pTypeInfo->IsAbstract())
+			{
+				typeData.push_back(pTypeInfo);
+			}
+			GetAllTypesOf(pTypeInfo->GetType(), typeData, includeAbstract);
+		}
+	}
+}
