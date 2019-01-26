@@ -3,7 +3,7 @@
 #include "FluxCore.h"
 
 Application::Application()
-	: Object(new Context())
+	: m_pContext(new Context)
 {
 	m_pEngine = new FluxCore(m_pContext);
 }

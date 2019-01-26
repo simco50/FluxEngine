@@ -10,6 +10,10 @@ Context::Context()
 
 Context::~Context()
 {
+	for (Subsystem* pSystem : m_SystemCache)
+	{
+		delete pSystem;
+	}
 	m_SystemCache.clear();
 	if (m_SdlInits > 0)
 	{
@@ -53,3 +57,35 @@ Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 	return pIt->second;
 }
 
+Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= false*/)
+{
+	assertOnFailure;
+	auto pIt = m_RegisteredTypes.find(typeHash);
+	if (pIt != m_RegisteredTypes.end())
+	{
+		if (pIt->second->IsAbstract())
+		{
+			checkf(assertOnFailure, "[Context::CreateObject] Can't create instance of abstract class");
+			return nullptr;
+		}
+		return pIt->second->CreateInstance(this);
+	}
+	checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
+	return nullptr;
+}
+
+std::vector<const TypeInfo*> Context::GetAllTypesOf(StringHash type, bool includeAbstract)
+{
+	std::vector<const TypeInfo*> typeData;
+	for (const auto& pair : m_RegisteredTypes)
+	{
+		if (includeAbstract || !pair.second->IsAbstract())
+		{
+			if (pair.second->IsTypeOf(type))
+			{
+				typeData.push_back(pair.second);
+			}
+		}
+	}
+	return typeData;
+}

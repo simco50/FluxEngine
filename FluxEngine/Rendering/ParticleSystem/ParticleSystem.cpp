@@ -16,10 +16,6 @@ using json = nlohmann::json;
 		(name).Add(stof(it.key()), Vector3(j["X"].get<float>(), j["Y"].get<float>(), j["Z"].get<float>()));\
 	}\
 }\
-{\
-	json constantData = (jsonData)[#name]["Constant"];\
-	(name).ConstantValue = Vector3(constantData["X"].get<float>(),constantData["Y"].get<float>(),constantData["Z"].get<float>());\
-} \
 
 #define LOAD_FLOAT_KEY(jsonData, name) \
 {\
@@ -28,7 +24,6 @@ using json = nlohmann::json;
 	for (auto it = keys.begin(); it != keys.end(); ++it)\
 		(name).Add(stof(it.key()), it.value());\
 }\
-(name).ConstantValue = data[#name]["Constant"]
 
 bool ParticleSystem::Load(InputStream& inputStream)
 {
@@ -66,9 +61,11 @@ bool ParticleSystem::Load(InputStream& inputStream)
 		//Emission
 		Emission = data["Emission"];
 		json keyData = data["Bursts"];
-		Bursts.clear();
+		Bursts.Clear();
 		for (auto it = keyData.begin(); it != keyData.end(); ++it)
-			Bursts[stof(it.key())] = it.value();
+		{
+			Bursts.Add(stof(it.key()), it.value());
+		}
 
 		//Shape
 		Shape.ShapeType = (ParticleSystem::ShapeType)data["Shape"]["ShapeType"].get<int>();
@@ -78,18 +75,12 @@ bool ParticleSystem::Load(InputStream& inputStream)
 		Shape.Angle = data["Shape"]["Angle"];
 
 		//Animation
-		keyData = data["Size"]["Keys"];
-		Size.Clear();
-		for (auto it = keyData.begin(); it != keyData.end(); ++it)
-			Size.Add(stof(it.key()), it.value());
-		Size.ConstantValue = data["Size"]["Constant"];
-
-		LOAD_FLOAT_KEY(data, Size);
-		LOAD_VECTOR3_KEY(data, Velocity);
-		LOAD_VECTOR3_KEY(data, LocalVelocity);
-		LOAD_VECTOR3_KEY(data, Color);
-		LOAD_FLOAT_KEY(data, Transparancy);
-		LOAD_FLOAT_KEY(data, Rotation);
+		LoadKeyframeValue(Size, "Size", data);
+		LoadKeyframeValue(Velocity, "Velocity", data);
+		LoadKeyframeValue(LocalVelocity, "LocalVelocity", data);
+		LoadKeyframeValue(Color, "Color", data);
+		LoadKeyframeValue(Transparancy, "Transparancy", data);
+		LoadKeyframeValue(Rotation, "Rotation", data);
 
 		//Rendering
 		SortingMode = (ParticleSortingMode)data["SortingMode"].get<int>();
@@ -123,6 +114,27 @@ bool ParticleSystem::Load(InputStream& inputStream)
 	RefreshMemoryUsage();
 
 	return true;
+}
+
+void ParticleSystem::LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue)
+{
+	value.Clear();
+	json keys = jsonValue[name]["Keys"];
+	for (auto it = keys.begin(); it != keys.end(); ++it)
+	{
+		value.Add(stof(it.key()), it.value());
+	}
+}
+
+void ParticleSystem::LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue)
+{
+	value.Clear();
+	json keys = (jsonValue)[name]["Keys"];
+	for (auto it = keys.begin(); it != keys.end(); ++it)
+	{
+		json j = it.value();
+		value.Add(stof(it.key()), Vector3(j["X"].get<float>(), j["Y"].get<float>(), j["Z"].get<float>()));
+	}
 }
 
 void ParticleSystem::RefreshMemoryUsage()

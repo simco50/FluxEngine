@@ -36,110 +36,80 @@ void ShaderVariation::SetDefines(const std::string& defines)
 	}
 }
 
-bool ShaderVariation::SaveToCache(const std::string& cacheName) const
+bool ShaderVariation::SaveToCache(OutputStream& outputStream) const
 {
-	AUTOPROFILE_DESC(ShaderVariation_SaveToCache, cacheName);
+	AUTOPROFILE(ShaderVariation_SaveToCache);
 
-	std::stringstream filePathStream;
-	filePathStream << Paths::ShaderCacheDir() << "\\" << cacheName << ".bin";
-	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
-	if (pFile->OpenWrite() == false)
-	{
-		return false;
-	}
-	pFile->WriteSizedString("SHDR");
-	pFile->WriteInt(SHADER_CACHE_VERSION);
-	pFile->WriteSizedString(m_Name);
-	pFile->WriteUByte((unsigned char)m_ShaderType);
-	pFile->WriteUByte((unsigned char)m_Defines.size());
+	outputStream.WriteSizedString("SHDR");
+	outputStream.WriteInt(SHADER_CACHE_VERSION);
+	outputStream.WriteSizedString(m_Name);
+	outputStream.WriteUByte((unsigned char)m_ShaderType);
+	outputStream.WriteUByte((unsigned char)m_Defines.size());
 	for (const std::string& define : m_Defines)
 	{
-		pFile->WriteSizedString(define);
+		outputStream.WriteSizedString(define);
 	}
-	pFile->WriteUByte((unsigned char)m_ShaderParameters.size());
+	outputStream.WriteUByte((unsigned char)m_ShaderParameters.size());
 	for (const auto& pair : m_ShaderParameters)
 	{
-		pFile->WriteInt64((int64)pair.first.m_Hash);
+		outputStream.WriteInt64((int64)pair.first.m_Hash);
 		const ShaderParameter& parameter = pair.second;
-		pFile->WriteSizedString(parameter.Name);
-		pFile->WriteInt(parameter.Buffer);
-		pFile->WriteInt(parameter.Size);
-		pFile->WriteInt(parameter.Offset);
+		outputStream.WriteSizedString(parameter.Name);
+		outputStream.WriteInt(parameter.Buffer);
+		outputStream.WriteInt(parameter.Size);
+		outputStream.WriteInt(parameter.Offset);
 	}
 	for (size_t size : m_ConstantBufferSizes)
 	{
-		pFile->WriteInt((int)size);
+		outputStream.WriteInt((int)size);
 	}
-	pFile->WriteInt((int)m_ShaderByteCode.size());
-	pFile->Write(m_ShaderByteCode.data(), m_ShaderByteCode.size());
-	if (pFile->Close() == false)
-	{
-		return false;
-	}
+	outputStream.WriteInt((int)m_ShaderByteCode.size());
+	outputStream.Write(m_ShaderByteCode.data(), m_ShaderByteCode.size());
 	return true;
 }
 
-bool ShaderVariation::LoadFromCache(const std::string& cacheName)
+bool ShaderVariation::LoadFromCache(InputStream& inputStream)
 {
-	AUTOPROFILE_DESC(ShaderVariation_LoadFromCache, cacheName);
-
-	std::stringstream filePathStream;
-	filePathStream << Paths::ShaderCacheDir() << cacheName << ".bin";
-	std::unique_ptr<PhysicalFile> pFile = std::make_unique<PhysicalFile>(filePathStream.str());
-
-	DateTime timeStamp = FileSystem::GetLastModifiedTime(filePathStream.str());
-	if (timeStamp.m_Ticks && timeStamp < m_pParentShader->GetLastModifiedTimestamp())
-	{
-		return false;
-	}
-	if (pFile->OpenRead() == false)
-	{
-		//Shader is not cached, we have to compile from scratch
-		return false;
-	}
-	std::string id = pFile->ReadSizedString();
+	AUTOPROFILE_DESC(ShaderVariation_LoadFromCache, inputStream.GetSource());
+	std::string id = inputStream.ReadSizedString();
 	if (id != "SHDR")
 	{
 		return false;
 	}
-	int version = pFile->ReadInt();
+	int version = inputStream.ReadInt();
 	if (version != SHADER_CACHE_VERSION)
 	{
 		FLUX_LOG(Warning, "[ShaderVariation::LoadFromCache()] > Cached shader version mismatch: %i, expected %i", version, SHADER_CACHE_VERSION);
 		return false;
 	}
-	m_Name = pFile->ReadSizedString();
-	m_ShaderType = (ShaderType)pFile->ReadUByte();
-	m_Defines.resize((size_t)pFile->ReadByte());
+	m_Name = inputStream.ReadSizedString();
+	m_ShaderType = (ShaderType)inputStream.ReadUByte();
+	m_Defines.resize((size_t)inputStream.ReadByte());
 	for (std::string& define : m_Defines)
 	{
-		define = pFile->ReadSizedString();
+		define = inputStream.ReadSizedString();
 	}
 	m_ShaderParameters.clear();
-	unsigned char parameterCount = pFile->ReadByte();
-	for (unsigned char i = 0; i < parameterCount ; i++)
+	unsigned char parameterCount = inputStream.ReadByte();
+	for (unsigned char i = 0; i < parameterCount; i++)
 	{
-		StringHash parameterHash = StringHash((size_t)pFile->ReadInt64());
+		StringHash parameterHash = StringHash((size_t)inputStream.ReadInt64());
 		ShaderParameter& parameter = m_ShaderParameters[parameterHash];
 
-		parameter.Name = pFile->ReadSizedString();
-		parameter.Buffer = pFile->ReadInt();
-		parameter.Size = pFile->ReadInt();
-		parameter.Offset = pFile->ReadInt();
+		parameter.Name = inputStream.ReadSizedString();
+		parameter.Buffer = inputStream.ReadInt();
+		parameter.Size = inputStream.ReadInt();
+		parameter.Offset = inputStream.ReadInt();
 	}
 	for (size_t& size : m_ConstantBufferSizes)
 	{
-		size = (size_t)pFile->ReadInt();
+		size = (size_t)inputStream.ReadInt();
 	}
 
-	m_ShaderByteCode.resize((size_t)pFile->ReadInt());
-	pFile->Read(m_ShaderByteCode.data(), m_ShaderByteCode.size());
-	if (pFile->Close() == false)
-	{
-		return false;
-	}
+	m_ShaderByteCode.resize((size_t)inputStream.ReadInt());
+	inputStream.Read(m_ShaderByteCode.data(), m_ShaderByteCode.size());
 
-	for (size_t i = 0; i < m_ConstantBufferSizes.size() ; i++)
+	for (size_t i = 0; i < m_ConstantBufferSizes.size(); i++)
 	{
 		if (m_ConstantBufferSizes[i] > 0)
 		{

@@ -18,6 +18,11 @@
 #include "Core/RenderTarget.h"
 #include "Content/ResourceManager.h"
 #include "Core/Texture.h"
+#include "ParticleSystem/ParticleSystem.h"
+#include "ParticleSystem/ParticleEmitter.h"
+#include "Mesh.h"
+#include "Model.h"
+#include "ReflectionProbe.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -25,6 +30,17 @@ Renderer::Renderer(Context* pContext) :
 	m_pGraphics = pContext->GetSubsystem<Graphics>();
 	CreateQuadGeometry();
 	m_pBlitMaterial = pContext->GetSubsystem<ResourceManager>()->Load<Material>("Materials/Blit.xml");
+
+	pContext->RegisterFactory<Light>();
+	pContext->RegisterFactory<Camera>();
+	pContext->RegisterFactory<Material>();
+	pContext->RegisterFactory<ParticleSystem>();
+	pContext->RegisterFactory<ParticleEmitter>();
+	pContext->RegisterFactory<Mesh>();
+	pContext->RegisterFactory<Drawable>();
+	pContext->RegisterFactory<Model>();
+	pContext->RegisterFactory<PostProcessing>();
+	pContext->RegisterFactory<ReflectionProbe>();
 }
 
 Renderer::~Renderer()
@@ -41,12 +57,11 @@ void Renderer::Draw()
 
 	{
 		AUTOPROFILE(Renderer_UpdateDrawables);
-		AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
-		pQueue->ParallelFor((int)m_Drawables.size(), ParallelForDelegate::CreateLambda([this](int i)
+		for(size_t i = 0; i < m_Drawables.size(); ++i)
 		{
 			AUTOPROFILE(Renderer_UpdateDrawable);
 			m_Drawables[i]->Update();
-		}));
+		}
 	}
 
 	{

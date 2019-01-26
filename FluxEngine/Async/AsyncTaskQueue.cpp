@@ -2,17 +2,11 @@
 #include "AsyncTaskQueue.h"
 #include "Thread.h"
 
-AsyncTaskQueue::AsyncTaskQueue(Context* pContext, size_t count)
+AsyncTaskQueue::AsyncTaskQueue(Context* pContext)
 	: Subsystem(pContext)
 {
-	AUTOPROFILE(AsyncTaskQueue_Construct);
 
-#ifdef THREADING
-	CreateThreads(count);
-	PreAllocateJobs(100);
-#else
-	count;
-#endif
+
 }
 
 AsyncTaskQueue::~AsyncTaskQueue()
@@ -21,6 +15,17 @@ AsyncTaskQueue::~AsyncTaskQueue()
 
 	m_Tasks.clear();
 	m_Threads.clear();
+}
+
+void AsyncTaskQueue::Initialize(uint32 threads)
+{
+	AUTOPROFILE(AsyncTaskQueue_Initialize);
+#ifdef THREADING
+	CreateThreads(threads);
+	PreAllocateJobs(100);
+#else
+	count;
+#endif
 }
 
 void AsyncTaskQueue::PreAllocateJobs(size_t count)

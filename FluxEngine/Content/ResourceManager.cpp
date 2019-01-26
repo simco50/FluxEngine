@@ -3,11 +3,14 @@
 #include "Resource.h"
 #include "FileSystem\File\File.h"
 #include "FileSystem\FileWatcher.h"
+#include "Image.h"
+#include "Database.h"
 
 ResourceManager::ResourceManager(Context* pContext)
 	: Subsystem(pContext)
 {
-
+	pContext->RegisterFactory<Image>();
+	pContext->RegisterFactory<Database>();
 }
 
 ResourceManager::~ResourceManager()
@@ -34,6 +37,24 @@ void ResourceManager::Update()
 			ReloadDependencies(resource);
 		}
 	}
+}
+
+Resource* ResourceManager::Load(const std::string& filePath, const char* typeName)
+{
+	Resource* pResource = NewObject<Resource>(StringHash(typeName));
+	if (pResource)
+	{
+		LoadResourcePrivate(pResource, filePath);
+		StringHash fileHash(filePath);
+		StringHash typeHash(typeName);
+		m_Resources[typeHash][fileHash] = pResource;
+	}
+	else
+	{
+		delete pResource;
+		pResource = nullptr;
+	}
+	return pResource;
 }
 
 void ResourceManager::EnableAutoReload(bool enable)

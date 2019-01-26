@@ -110,11 +110,6 @@ SphereCollider::SphereCollider(Context* pContext, physx::PxMaterial* pMaterial /
 
 }
 
-SphereCollider::~SphereCollider()
-{
-	delete m_pGeometry;
-}
-
 void SphereCollider::CreateGeometry()
 {
 	if (m_Radius <= 0.0f)
@@ -216,6 +211,12 @@ MeshCollider::MeshCollider(Context* pContext, const std::string& filePath, PxMat
 	: Collider(pContext, pMaterial, shapeFlags)
 {
 	m_pMesh = GetSubsystem<ResourceManager>()->Load<PhysicsMesh>(filePath);
+}
+
+MeshCollider::MeshCollider(Context* pContext)
+	: Collider(pContext, nullptr, (physx::PxShapeFlags)0)
+{
+
 }
 
 void MeshCollider::CreateGeometry()

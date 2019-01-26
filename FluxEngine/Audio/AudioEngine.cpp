@@ -2,6 +2,9 @@
 #include "AudioEngine.h"
 
 #include <fmod_errors.h>
+#include "Sound.h"
+#include "AudioSource.h"
+#include "AudioListener.h"
 
 namespace FmodCallbacks
 {
@@ -73,6 +76,10 @@ AudioEngine::AudioEngine(Context* pContext)
 	FLUX_LOG_FMOD(m_pSystem->init(512, FMOD_INIT_NORMAL, nullptr));
 	FLUX_LOG_FMOD(m_pSystem->setUserData(this));
 	FLUX_LOG_FMOD(m_pSystem->setFileSystem(FmodCallbacks::FileOpenCallback, FmodCallbacks::FileCloseCallback, FmodCallbacks::FileReadCallback, FmodCallbacks::FileSeekCallback, nullptr, nullptr, -1));
+
+	pContext->RegisterFactory<Sound>();
+	pContext->RegisterFactory<AudioSource>();
+	pContext->RegisterFactory<AudioListener>();
 }
 
 AudioEngine::~AudioEngine()

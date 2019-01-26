@@ -17,15 +17,18 @@ Geometry::~Geometry()
 
 void Geometry::Draw(Graphics* pGraphics) const
 {
-	pGraphics->SetIndexBuffer(m_pIndexBuffer);
-	pGraphics->SetVertexBuffer(m_pVertexBuffer);
-	if (m_pIndexBuffer)
+	if (m_pVertexBuffer)
 	{
-		pGraphics->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
-	}
-	else
-	{
-		pGraphics->Draw(m_PrimitiveType, 0, m_VertexCount);
+		pGraphics->SetIndexBuffer(m_pIndexBuffer);
+		pGraphics->SetVertexBuffer(m_pVertexBuffer);
+		if (m_pIndexBuffer)
+		{
+			pGraphics->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
+		}
+		else
+		{
+			pGraphics->Draw(m_PrimitiveType, 0, m_VertexCount);
+		}
 	}
 }
 

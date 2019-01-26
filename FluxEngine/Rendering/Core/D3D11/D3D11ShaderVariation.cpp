@@ -188,7 +188,7 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		pReflectionConstantBuffer->GetDesc(&bufferDesc);
 		uint32 cbRegister = cbRegisterMap[std::string(bufferDesc.Name)];
-		checkf(cbRegister < m_ConstantBuffers.size(), "[ShaderVariation::ShaderReflection] > The buffer exceeds the maximum amount of constant buffers. See 'ShaderParameterType::MAX'")
+		checkf(cbRegister < m_ConstantBuffers.size(), "[ShaderVariation::ShaderReflection] > The buffer exceeds the maximum amount of constant buffers. See 'ShaderParameterType::MAX'");
 
 		ConstantBuffer* pConstantBuffer = pGraphics->GetOrCreateConstantBuffer(cbRegister, bufferDesc.Size);
 		m_ConstantBuffers[cbRegister] = pConstantBuffer;

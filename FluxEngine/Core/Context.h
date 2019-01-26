@@ -1,4 +1,5 @@
 #pragma once
+#include "Object.h"
 class Subsystem;
 
 class Context
@@ -15,39 +16,47 @@ public:
 	template<typename T>
 	T* GetSubsystem(bool required = true) const
 	{
-		T* pSystem = static_cast<T*>(GetSubsystem(T::GetTypeStatic()));
-		if (pSystem == nullptr)
+		return static_cast<T*>(GetSubsystem(T::GetTypeStatic(), required));
+	}
+
+	template<typename T>
+	T* RegisterSubsystem()
+	{
+		return static_cast<T*>(RegisterSubsystem(T::GetTypeStatic(), [](Context* pContext) { return static_cast<Subsystem*>(new T(pContext)); }));
+	}
+
+	template<typename T>
+	void RegisterFactory()
+	{
+		m_RegisteredTypes[T::GetTypeStatic()] = T::GetTypeInfoStatic();
+	}
+
+	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool includeAbstract = true);
+
+	Object* NewObject(const StringHash typeHash, bool assertOnFailure = false);
+
+private:
+	using SubsystemCreateFunction = Subsystem * (*)(Context*);
+
+	Subsystem* RegisterSubsystem(StringHash typeHash, SubsystemCreateFunction createFunction)
+	{
+		auto pIt = m_Systems.find(typeHash);
+		if (pIt != m_Systems.end())
 		{
-			if (required)
-			{
-				FLUX_LOG(Warning, "[Context::GetSubsystem] System '%s' is not registered", T::GetTypeNameStatic());
-			}
-			return nullptr;
+			FLUX_LOG(Warning, "[Content::RegisterSubsystem] > A subsystem with type '%d' is already registered", typeHash.m_Hash);
+			return pIt->second;
 		}
+		Subsystem* pSystem = createFunction(this);
+		m_SystemCache.push_back(pSystem);
+		m_Systems[typeHash] = pSystem;
 		return pSystem;
 	}
 
-	template<typename T, typename ...Args>
-	T* RegisterSubsystem(Args... args)
-	{
-		auto pIt = m_Systems.find(T::GetTypeStatic());
-		if (pIt != m_Systems.end())
-		{
-			FLUX_LOG(Warning, "[Content::RegisterSubsystem] > A subsystem with type '%s' is already registered", T::GetTypeNameStatic());
-			return nullptr;
-		}
-		m_SystemCache.push_back(std::make_unique<T>(this, std::forward<Args>(args)...));
-		Subsystem* pSystem = m_SystemCache[m_SystemCache.size() - 1].get();
-		StringHash type = pSystem->GetType();
-		m_Systems[type] = pSystem;
-		return static_cast<T*>(pSystem);
-	}
-
-private:
 	//A collection of subsystems
 	std::unordered_map<StringHash, Subsystem*> m_Systems;
 	//Vector to keep order of destruction
-	std::vector<std::unique_ptr<Subsystem>> m_SystemCache;
+	std::vector<Subsystem*> m_SystemCache;
+	std::unordered_map<StringHash, const TypeInfo*> m_RegisteredTypes;
 
 	int m_SdlInits = 0;
 };

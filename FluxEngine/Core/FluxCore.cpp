@@ -39,7 +39,6 @@ bool FluxCore::m_Exiting;
 FluxCore::FluxCore(Context* pContext) :
 	Object(pContext)
 {
-
 }
 
 FluxCore::~FluxCore()
@@ -91,7 +90,8 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 	m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
 	m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
-	m_pContext->RegisterSubsystem<AsyncTaskQueue>(Misc::GetCoreCount() - 1);
+	AsyncTaskQueue* pQueue = m_pContext->RegisterSubsystem<AsyncTaskQueue>();
+	pQueue->Initialize(Misc::GetCoreCount() - 1);
 	m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 	m_pContext->RegisterSubsystem<Renderer>();
 
@@ -320,7 +320,7 @@ void FluxCore::RenderUI()
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;
 	std::string time = timeStr.str();
 	ImGui::SetNextWindowPos(ImVec2((float)m_pGraphics->GetWindowWidth(), 30), 0, ImVec2(1, 0));
-	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin("Debug Info", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Game Time : %s", time.c_str());
 	ImGui::Text("Configuration: %s", BuildConfiguration::ToString(BuildConfiguration::Configuration));
 	ImGui::SameLine(150);
@@ -383,18 +383,35 @@ void FluxCore::RenderUI()
 		ImGui::Checkbox("Debug Physics", &m_DebugPhysics);
 		ImGui::Separator();
 		ImGui::SliderInt("Frames", &m_FramesToCapture, 1, 10);
-		if (ImGui::Button("Capture frame"))
+		if (ImGui::MenuItem("Capture frame"))
 		{
 			Profiler::Instance()->Capture(m_FramesToCapture);
 		}
 		ImGui::EndMenu();
 	}
-	if (ImGui::BeginMenu("Post Processing"))
+	if (ImGui::BeginMenu("Selected Node"))
 	{
-		PostProcessing* pPost = m_pCamera->GetComponent<PostProcessing>();
-		for (uint32 i = 0; i < pPost->GetMaterialCount(); ++i)
+		if (ImGui::MenuItem("Create Child"))
 		{
-			ImGui::Checkbox(pPost->GetMaterial(i)->GetName().c_str(), &pPost->GetMaterialActive(i));
+			if (m_pSelectedNode)
+			{
+				m_pSelectedNode = m_pSelectedNode->CreateChild("Node");
+			}
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginMenu("Create Component"))
+	{
+		std::vector<const TypeInfo*> types = m_pContext->GetAllTypesOf(Component::GetTypeStatic(), false);
+		for (const TypeInfo* pType : types)
+		{
+			if (ImGui::MenuItem(pType->GetTypeName()))
+			{
+				if (m_pSelectedNode)
+				{
+					m_pSelectedNode->CreateComponent(pType->GetType());
+				}
+			}
 		}
 		ImGui::EndMenu();
 	}

@@ -15,3 +15,13 @@ Subsystem* Object::GetSubsystem(StringHash type) const
 {
 	return m_pContext->GetSubsystem(type);
 }
+
+Object* Object::NewObject(const char* typeName) const
+{
+	return m_pContext->NewObject(StringHash(typeName));
+}
+
+Object* Object::NewObject(StringHash type) const
+{
+	return m_pContext->NewObject(type);
+}

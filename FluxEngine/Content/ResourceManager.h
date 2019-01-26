@@ -20,6 +20,8 @@ public:
 
 	void Update();
 
+	Resource* Load(const std::string& filePath, const char* typeName);
+
 	//Get the resource, if it is already loaded, take that
 	template <typename T>
 	T* Load(const std::string& filePath)
@@ -44,31 +46,7 @@ public:
 	template <typename T>
 	T* Load(InputStream& inputStream)
 	{
-		std::string path = Paths::Normalize(inputStream.GetSource());
-		Resource* pResource = FindResource(path, T::GetTypeStatic());
-		if (pResource)
-		{
-			return static_cast<T*>(pResource);
-		}
-		pResource = new T(m_pContext);
-		if (!LoadResourcePrivate(pResource, inputStream))
-		{
-			delete pResource;
-			return nullptr;
-		}
-		StringHash hash(path);
-		m_Resources[T::GetTypeStatic()][hash] = pResource;
-		return static_cast<T*>(pResource);
-	}
-
-	template<typename T>
-	T* CreateResource(const std::string& filePath)
-	{
-		std::string path = Paths::Normalize(filePath);
-		Resource* pResource = new T(m_pContext);
-		StringHash hash = path;
-		m_Resources[T::GetTypeStatic()][hash] = pResource;
-		return static_cast<T*>(pResource);
+		return Load(inputStream.GetSource());
 	}
 
 	void EnableAutoReload(bool enable);

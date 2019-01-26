@@ -1,6 +1,10 @@
 #pragma once
 
 #ifdef MODULE_D3D11
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
 #include "External/SimpleMath/SimpleMath.h"
 using BoundingBox = DirectX::BoundingBox;
 using BoundingFrustum = DirectX::BoundingFrustum;

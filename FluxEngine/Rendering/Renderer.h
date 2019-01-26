@@ -20,8 +20,7 @@ class Renderer : public Subsystem
 	FLUX_OBJECT(Renderer, Subsystem)
 
 public:
-
-	Renderer(Context* pContext);
+	explicit Renderer(Context* pContext);
 	~Renderer();
 
 	void Draw();

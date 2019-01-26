@@ -25,3 +25,5 @@ FluxGame/FluxGame_vs2015.vcxproj.user
 Old/
 SourceAssets/
 /RenderDocSettings.cap
+*.cap
+.vscode
