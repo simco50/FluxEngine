@@ -62,7 +62,12 @@ Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= f
 	auto pIt = m_Factories.find(typeHash);
 	if (pIt != m_Factories.end())
 	{
-		return pIt->second(this);
+		if (pIt->second->IsAbstract())
+		{
+			checkf(assertOnFailure, "[Context::CreateObject] Can't create instance of abstract class");
+			return nullptr;
+		}
+		return pIt->second->CreateInstance(this);
 	}
 	checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
 	return nullptr;

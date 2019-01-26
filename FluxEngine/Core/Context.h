@@ -26,16 +26,10 @@ public:
 	}
 
 	template<typename T>
-	typename std::enable_if<T::GetTypeInfoStatic()->IsAbstract() == false>::type RegisterFactory()
-	{
-		m_Factories[T::GetTypeStatic()] = [](Context* pContext) { return static_cast<Object*>(new T(pContext)); };
-		m_TypeTrees[T::GetTypeInfoStatic()->GetBaseTypeInfo()->GetType()].insert(T::GetTypeInfoStatic());
-	}
-
-	template<typename T, class = typename std::enable_if<T::GetTypeInfoStatic()->IsAbstract()>::type>
 	void RegisterFactory()
 	{
 		m_TypeTrees[T::GetTypeInfoStatic()->GetBaseTypeInfo()->GetType()].insert(T::GetTypeInfoStatic());
+		m_Factories[T::GetTypeStatic()] = T::GetTypeInfoStatic();
 	}
 
 	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool includeAbstract = true);
@@ -65,8 +59,7 @@ private:
 	std::unordered_map<StringHash, Subsystem*> m_Systems;
 	//Vector to keep order of destruction
 	std::vector<Subsystem*> m_SystemCache;
-	using ObjectCreateFunction = Object * (*)(Context*);
-	std::unordered_map<StringHash, ObjectCreateFunction> m_Factories;
+	std::unordered_map<StringHash, const TypeInfo*> m_Factories;
 	std::unordered_map<StringHash, std::set<const TypeInfo*>> m_TypeTrees;
 
 	int m_SdlInits = 0;

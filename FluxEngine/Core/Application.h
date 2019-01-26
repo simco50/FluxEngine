@@ -1,14 +1,9 @@
 #pragma once
 
-#include "Object.h"
-
 class FluxCore;
 
-class Application : public Object
+class Application
 {
-	FLUX_OBJECT(Application, Object)
-	DELETE_COPY(Application)
-
 public:
 	Application();
 	virtual ~Application();
@@ -18,5 +13,6 @@ public:
 	virtual void Stop() {}
 
 private:
+	Context* m_pContext;
 	FluxCore* m_pEngine = nullptr;
 };
