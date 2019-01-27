@@ -237,7 +237,7 @@ function AddAnsel(isTarget)
                 "{COPY} \"$(SolutionDir)Libraries\\Ansel\\bin\\AnselSDK64.dll\" \"$(OutDir)\""
             }
             links "AnselSDK64.lib"
-        filter { "platforms:x64" }
+        filter { "platforms:x86" }
             postbuildcommands
             { 
                 "{COPY} \"$(SolutionDir)Libraries\\Ansel\\bin\\AnselSDK32.dll\" \"$(OutDir)\""
