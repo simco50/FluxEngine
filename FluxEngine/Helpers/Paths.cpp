@@ -127,6 +127,13 @@ void Paths::Combine(const std::vector<std::string>& elements, std::string& outpu
 	output = stream.str();
 }
 
+std::string Paths::Combine(const std::string& a, const std::string& b)
+{
+	std::string output;
+	Combine({a, b}, output);
+	return output;
+}
+
 bool Paths::FileExists(const std::string& filePath)
 {
 #ifdef PLATFORM_WINDOWS

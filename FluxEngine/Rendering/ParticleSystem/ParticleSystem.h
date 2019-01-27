@@ -89,8 +89,8 @@ public:
 	static const int VERSION = 2;
 
 private:
-	void LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue);
-	void LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue);
+	void LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue) const;
+	void LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue) const;
 
 	void RefreshMemoryUsage();
 };

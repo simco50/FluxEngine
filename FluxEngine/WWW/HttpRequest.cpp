@@ -299,7 +299,7 @@ void RequestUrl::SetUrl(const std::string& url)
 	m_Url = url;
 }
 
-const std::string& RequestUrl::GetUrl()
+const std::string& RequestUrl::GetUrl() const
 {
 	return m_Url;
 }
@@ -474,7 +474,7 @@ bool HttpResponse::QueryResponseHeaders()
 	return true;
 }
 
-bool HttpResponse::QueryHeaderString(uint32 httpQueryInfoLevel, const std::string& /*headerName*/, std::string& outHeaderString)
+bool HttpResponse::QueryHeaderString(uint32 httpQueryInfoLevel, const std::string& /*headerName*/, std::string& outHeaderString) const
 {
 	DWORD headerSize = 0;
 	char headerBuffer[128];
@@ -555,7 +555,7 @@ bool HttpConnection::ShutdownConnection()
 	return true;
 }
 
-bool HttpConnection::IsConnected()
+bool HttpConnection::IsConnected() const
 {
 	return m_InternetHandle != nullptr;
 }

@@ -62,7 +62,9 @@ void PhysicsScene::Update()
 
 	float frameTime = GameTimer::DeltaTime();
 	if (frameTime > 0.25f)
+	{
 		frameTime = 0.25f;
+	}
 	m_TimeAccumulator += frameTime;
 	while (m_TimeAccumulator >= FIXED_TIME_STEP)
 	{
@@ -82,7 +84,9 @@ void PhysicsScene::Update()
 #endif
 
 	for (Rigidbody* pRigidbody : m_Rigidbodies)
+	{
 		pRigidbody->UpdateBody();
+	}
 }
 
 bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float length) const
@@ -90,7 +94,9 @@ bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float
 	outResult = RaycastResult();
 
 	if (m_pPhysicsScene == nullptr)
+	{
 		return false;
+	}
 
 	PxRaycastBuffer buffer;
 	bool hit = m_pPhysicsScene->raycast(
@@ -102,7 +108,9 @@ bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float
 		PxQueryFilterData()
 	);
 	if (!hit)
+	{
 		return false;
+	}
 
 	outResult.pCollider = static_cast<Collider*>(buffer.block.shape->userData);
 	outResult.pRigidbody = static_cast<Rigidbody*>(buffer.block.actor->userData);
@@ -114,8 +122,10 @@ bool PhysicsScene::Raycast(const Ray& ray, RaycastResult& outResult, const float
 
 void PhysicsScene::SetGravity(const float x, const float y, const float z)
 {
-	if(m_pPhysicsScene)
+	if (m_pPhysicsScene)
+	{
 		m_pPhysicsScene->setGravity(PxVec3(x, y, z));
+	}
 }
 
 void PhysicsScene::AddRigidbody(Rigidbody* pRigidbody)
@@ -142,7 +152,9 @@ void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 	{
 		// ignore pairs when shapes have been deleted
 		if (pairs[i].flags & PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER)
+		{
 			continue;
+		}
 
 		Collider* pShapeA = reinterpret_cast<Collider*>(pairs[i].triggerShape->userData);
 		Collider* pShapeB = reinterpret_cast<Collider*>(pairs[i].otherShape->userData);
@@ -152,9 +164,13 @@ void PhysicsScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 			if (pBody)
 			{
 				if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				{
 					pBody->OnTriggerEnter().Broadcast(pShapeB);
+				}
 				else if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_LOST)
+				{
 					pBody->OnTriggerExit().Broadcast(pShapeB);
+				}
 			}
 		}
 	}
@@ -195,5 +211,16 @@ void PhysicsScene::onContact(const PxContactPairHeader& pairHeader, const PxCont
 				}
 			}
 		}
+	}
+}
+
+void PhysicsScene::CreateUI()
+{
+	physx::PxVec3 gravity = m_pPhysicsScene->getGravity();
+	physx::PxVec3 newGravity = gravity;
+	ImGui::InputFloat3("Gravity", &newGravity.x);
+	if (newGravity != gravity)
+	{
+		m_pPhysicsScene->setGravity(newGravity);
 	}
 }

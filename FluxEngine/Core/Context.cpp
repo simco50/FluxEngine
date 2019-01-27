@@ -57,33 +57,36 @@ Subsystem* Context::GetSubsystem(StringHash type, bool required) const
 	return pIt->second;
 }
 
-Object* Context::NewObject(const StringHash typeHash, bool assertOnFailure /*= false*/)
+const TypeInfo* Context::GetTypeInfo(StringHash type) const
 {
-	assertOnFailure;
-	auto pIt = m_RegisteredTypes.find(typeHash);
+	auto pIt = m_RegisteredTypes.find(type);
 	if (pIt != m_RegisteredTypes.end())
 	{
-		if (pIt->second->IsAbstract())
-		{
-			checkf(assertOnFailure, "[Context::CreateObject] Can't create instance of abstract class");
-			return nullptr;
-		}
-		return pIt->second->CreateInstance(this);
+		return pIt->second;
 	}
-	checkf(assertOnFailure, "[Context::CreateObject] Type is not registered");
 	return nullptr;
 }
 
-std::vector<const TypeInfo*> Context::GetAllTypesOf(StringHash type, bool includeAbstract)
+std::vector<const TypeInfo*> Context::GetAllTypesOf(StringHash type, bool subChildren, bool includeAbstract /*= true*/)
 {
 	std::vector<const TypeInfo*> typeData;
 	for (const auto& pair : m_RegisteredTypes)
 	{
 		if (includeAbstract || !pair.second->IsAbstract())
 		{
-			if (pair.second->IsTypeOf(type))
+			if (subChildren)
 			{
-				typeData.push_back(pair.second);
+				if (pair.second->IsTypeOf(type))
+				{
+					typeData.push_back(pair.second);
+				}
+			}
+			else
+			{
+				if (pair.second->GetBaseTypeInfo()->GetType() == type)
+				{
+					typeData.push_back(pair.second);
+				}
 			}
 		}
 	}

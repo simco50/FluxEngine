@@ -1,5 +1,5 @@
 #pragma once
-#include "SceneGraph\SceneNode.h"
+#include "SceneGraph/SceneNode.h"
 
 class SceneNode;
 class Drawable;

@@ -4,7 +4,6 @@
 #include <d3d11.h>
 
 #include "Rendering/Core/GraphicsDefines.h"
-#include "Rendering/Core/D3DCommon/D3DHelpers.h"
 
 class InputLayout;
 class ShaderProgram;

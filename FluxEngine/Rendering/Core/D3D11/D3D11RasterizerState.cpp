@@ -2,6 +2,7 @@
 #include "../RasterizerState.h"
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
+#include "../D3DCommon/D3DHelpers.h"
 
 void* RasterizerState::GetOrCreate(Graphics* pGraphics)
 {

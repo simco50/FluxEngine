@@ -68,7 +68,7 @@ void Particle::Reset()
 	m_LifeTimer = 0.0f;
 }
 
-void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction)
+void Particle::GetPositionAndDirection(Vector3& position, Vector3& direction) const
 {
 	direction = Vector3(Math::RandomRange(0.0f, 1.0f), 0, 0);
 	if (m_pEmitterSettings->Shape.ShapeType == ParticleSystem::ShapeType::CIRCLE)

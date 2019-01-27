@@ -5,6 +5,7 @@
 #include "../Shader.h"
 
 #include <d3dcompiler.h>
+#include "../D3DCommon/D3DHelpers.h"
 
 bool ShaderVariation::Create()
 {

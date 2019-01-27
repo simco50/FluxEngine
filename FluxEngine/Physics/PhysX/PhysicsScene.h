@@ -56,6 +56,8 @@ public:
 	void AddRigidbody(Rigidbody* pRigidbody);
 	void RemoveRigidbody(Rigidbody* pRigidbody);
 
+	virtual void CreateUI() override;
+
 private:
 	static const float FIXED_TIME_STEP;
 

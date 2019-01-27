@@ -3,6 +3,7 @@
 #include "../Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "Content/Image.h"
+#include "../D3DCommon/D3DHelpers.h"
 
 void Texture::UpdateParameters()
 {

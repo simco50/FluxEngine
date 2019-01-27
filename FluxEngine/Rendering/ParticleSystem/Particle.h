@@ -11,13 +11,13 @@ public:
 	void Init();
 
 	const ParticleVertex &GetVertexInfo() const { return m_VertexInfo; }
-	bool IsActive() { return m_IsActive; }
+	bool IsActive() const { return m_IsActive; }
 	void Reset();
 
 	float GetLifeTimer() const { return m_LifeTimer; }
 
 private:
-	void GetPositionAndDirection(Vector3& position, Vector3& direction);
+	void GetPositionAndDirection(Vector3& position, Vector3& direction) const;
 	ParticleVertex m_VertexInfo = ParticleVertex();
 	ParticleSystem* m_pEmitterSettings;
 	float m_LifeTimer = 0.0f;

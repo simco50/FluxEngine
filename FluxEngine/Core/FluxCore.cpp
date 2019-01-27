@@ -308,6 +308,29 @@ void FluxCore::ObjectUI(SceneNode* pNode)
 	}
 }
 
+void FluxCore::ComponentUI(StringHash type)
+{
+	std::vector<const TypeInfo*> types = m_pContext->GetAllTypesOf(type, false, true);
+	for (const TypeInfo* pType : types)
+	{
+		if (pType->IsAbstract())
+		{
+			if (ImGui::BeginMenu(pType->GetTypeName()))
+			{
+				ComponentUI(pType->GetType());
+				ImGui::EndMenu();
+			}
+		}
+		else if (ImGui::MenuItem(pType->GetTypeName()))
+		{
+			if (pType->IsAbstract() == false && m_pSelectedNode)
+			{
+				m_pSelectedNode->CreateComponent(pType->GetType());
+			}
+		}
+	}
+}
+
 void FluxCore::RenderUI()
 {
 	AUTOPROFILE(FluxCore_RenderUI);
@@ -333,19 +356,14 @@ void FluxCore::RenderUI()
 	ImGui::Text("Batches: %i", batchCount);
 	ImGui::End();
 
-	float y = 30;
-	float height = m_pGraphics->GetWindowHeight() * 0.4f;
-	ImGui::SetNextWindowPos(ImVec2(0.0f, y), 0, ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(300.0f, height));
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 20.0f));
+	ImGui::SetNextWindowSize(ImVec2(300.0f, m_pGraphics->GetWindowHeight() - 20.0f));
 	ImGui::Begin("Outliner", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::BeginChild("Outline", ImVec2(300, ImGui::GetContentRegionAvail().y / 2), true, ImGuiWindowFlags_AlwaysAutoResize);
 	ObjectUI(m_pScene.get());
-	ImGui::End();
-
-	y += height;
-
-	ImGui::SetNextWindowPos(ImVec2(0.0f, y), 0, ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(300.0f, m_pGraphics->GetWindowHeight() * 0.5f));
-	ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::EndChild();
+	ImGui::Separator();
+	ImGui::BeginChild("Inspector", ImVec2(300, ImGui::GetContentRegionAvail().y), true, ImGuiWindowFlags_AlwaysAutoResize);
 	if (m_pSelectedNode)
 	{
 		ImGui::Text("Name: %s", m_pSelectedNode->GetName().c_str());
@@ -372,6 +390,7 @@ void FluxCore::RenderUI()
 			}
 		}
 	}
+	ImGui::EndChild();
 	ImGui::End();
 
 	m_pInput->DrawDebugJoysticks();
@@ -402,17 +421,7 @@ void FluxCore::RenderUI()
 	}
 	if (ImGui::BeginMenu("Create Component"))
 	{
-		std::vector<const TypeInfo*> types = m_pContext->GetAllTypesOf(Component::GetTypeStatic(), false);
-		for (const TypeInfo* pType : types)
-		{
-			if (ImGui::MenuItem(pType->GetTypeName()))
-			{
-				if (m_pSelectedNode)
-				{
-					m_pSelectedNode->CreateComponent(pType->GetType());
-				}
-			}
-		}
+		ComponentUI(Component::GetTypeStatic());
 		ImGui::EndMenu();
 	}
 	ImGui::EndMainMenuBar();

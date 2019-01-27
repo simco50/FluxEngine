@@ -28,7 +28,7 @@ struct FileVisitor
 class FileSystem
 {
 public:
-	using MountPointPtr = UniquePtr<IMountPoint>;
+	using MountPointPtr = std::unique_ptr<IMountPoint>;
 
 	FileSystem();
 	~FileSystem();

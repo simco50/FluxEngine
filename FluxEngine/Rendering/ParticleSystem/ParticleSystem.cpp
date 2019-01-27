@@ -116,7 +116,7 @@ bool ParticleSystem::Load(InputStream& inputStream)
 	return true;
 }
 
-void ParticleSystem::LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue)
+void ParticleSystem::LoadKeyframeValue(KeyframeValue<float>& value, const std::string& name, const nlohmann::json& jsonValue) const
 {
 	value.Clear();
 	json keys = jsonValue[name]["Keys"];
@@ -126,7 +126,7 @@ void ParticleSystem::LoadKeyframeValue(KeyframeValue<float>& value, const std::s
 	}
 }
 
-void ParticleSystem::LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue)
+void ParticleSystem::LoadKeyframeValue(KeyframeValue<Vector3>& value, const std::string& name, const nlohmann::json& jsonValue) const
 {
 	value.Clear();
 	json keys = (jsonValue)[name]["Keys"];

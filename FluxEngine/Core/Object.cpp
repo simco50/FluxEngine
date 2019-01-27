@@ -18,10 +18,22 @@ Subsystem* Object::GetSubsystem(StringHash type) const
 
 Object* Object::NewObject(const char* typeName) const
 {
-	return m_pContext->NewObject(StringHash(typeName));
+	return NewObject(StringHash(typeName));
 }
 
 Object* Object::NewObject(StringHash type) const
 {
-	return m_pContext->NewObject(type);
+	const TypeInfo* pType = m_pContext->GetTypeInfo(type);
+	return NewObject(pType);
+}
+
+Object* Object::NewObject(const TypeInfo* pType) const
+{
+	if (pType == nullptr)
+	{
+		FLUX_LOG(Warning, "[Object::NewObject] Type is not registed");
+		return nullptr;
+	}
+	checkf(pType->IsAbstract() == false, "[Object::NewObject] Can't create instance of an abstract class");
+	return pType->CreateInstance(m_pContext);
 }

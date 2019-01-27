@@ -10,8 +10,8 @@ public:
 	bool InitializeConnection();
 	bool ShutdownConnection();
 
-	bool IsConnected();
-	HINTERNET GetHandle() { return m_InternetHandle; }
+	bool IsConnected() const;
+	HINTERNET GetHandle() const { return m_InternetHandle; }
 	Mutex& RequestLock() { return m_RequestMutex; }
 
 private:
@@ -36,7 +36,7 @@ public:
 
 	bool CrackUrl();
 	void SetUrl(const std::string& url);
-	const std::string& GetUrl();
+	const std::string& GetUrl() const;
 	const URL_COMPONENTS& GetComponents();
 
 	std::string GetHost();
@@ -70,7 +70,7 @@ private:
 	bool QueryResponse(uint32 contentLength, bool& finished);
 	bool QueryResponseCode();
 	bool QueryResponseHeaders();
-	bool QueryHeaderString(uint32 httpQueryInfoLevel, const std::string& headerName, std::string& outHeaderString);
+	bool QueryHeaderString(uint32 httpQueryInfoLevel, const std::string& headerName, std::string& outHeaderString) const;
 
 	HttpRequest* m_pOwner;
 	std::vector<char> m_Response;

@@ -16,13 +16,7 @@ struct Paths
 
 	static std::string MakeRelativePath(const std::string& basePath, const std::string& filePath);
 
-	template<typename ...StringType>
-	static std::string Combine(StringType... elements)
-	{
-		std::string output;
-		Combine(std::vector<std::string>{elements...}, output);
-		return output;
-	}
+	static std::string Combine(const std::string& a, const std::string& b);
 	static void Combine(const std::vector<std::string>& elements, std::string& output);
 
 	static bool FileExists(const std::string& filePath);

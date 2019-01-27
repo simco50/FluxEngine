@@ -35,6 +35,8 @@ private:
 	void GameUpdate();
 	void ObjectUI(SceneNode* pNode);
 
+	void ComponentUI(StringHash type);
+
 	std::unique_ptr<Scene> m_pScene;
 	FreeCamera* m_pCamera = nullptr;
 

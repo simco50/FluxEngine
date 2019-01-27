@@ -326,7 +326,8 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 		return;
 	}
 
-	char* pDataLocation = new char[vertexStride * pGeometry->GetVertexCount()];
+	std::vector<char> data(vertexStride * pGeometry->GetVertexCount());
+	char* pDataLocation = data.data();
 	char* pVertexDataStart = pDataLocation;
 
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
@@ -367,8 +368,6 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	pVertexBuffer->SetData(pVertexDataStart);
 	pGeometry->SetVertexBuffer(pVertexBuffer.get());
 	m_VertexBuffers.push_back(std::move(pVertexBuffer));
-
-	delete[] pVertexDataStart;
 }
 
 void Mesh::RefreshMemoryUsage()

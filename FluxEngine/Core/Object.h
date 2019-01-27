@@ -27,8 +27,7 @@ class Subsystem;
 class Object
 {
 public:
-	virtual ~Object()
-	{}
+	virtual ~Object() = default;
 
 	virtual StringHash GetType() const { return GetTypeInfoStatic()->GetType(); }
 	virtual const char* GetTypeName() const { return GetTypeInfoStatic()->GetTypeName(); }
@@ -55,6 +54,7 @@ public:
 
 	Object* NewObject(const char* typeName) const;
 	Object* NewObject(StringHash type) const;
+	Object* NewObject(const TypeInfo* pType) const;
 
 	template<typename T>
 	T* NewObject(StringHash type = T::GetTypeStatic()) const

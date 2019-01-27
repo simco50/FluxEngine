@@ -105,7 +105,7 @@ SphereCollider::SphereCollider(Context* pContext, float radius, PxMaterial* pMat
 
 SphereCollider::SphereCollider(Context* pContext, physx::PxMaterial* pMaterial /*= nullptr*/, physx::PxShapeFlags shapeFlags /*= physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE | physx::PxShapeFlag::eVISUALIZATION*/)
 	: Collider(pContext, pMaterial, shapeFlags),
-	m_Radius(0)
+	m_Radius(1.0f)
 {
 
 }

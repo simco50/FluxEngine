@@ -23,6 +23,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "ReflectionProbe.h"
+#include "Animation/AnimatedModel.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -41,6 +42,7 @@ Renderer::Renderer(Context* pContext) :
 	pContext->RegisterFactory<Model>();
 	pContext->RegisterFactory<PostProcessing>();
 	pContext->RegisterFactory<ReflectionProbe>();
+	pContext->RegisterFactory<AnimatedModel>();
 }
 
 Renderer::~Renderer()

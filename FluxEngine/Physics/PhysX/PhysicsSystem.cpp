@@ -11,8 +11,8 @@
 
 using namespace physx;
 
-PhysicsSystem::PhysicsSystem(Context* pContext) :
-	Subsystem(pContext)
+PhysicsSystem::PhysicsSystem(Context* pContext)
+	: Subsystem(pContext)
 {
 	AUTOPROFILE(PhysicsSystem_CreatePhysics);
 

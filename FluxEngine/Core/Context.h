@@ -31,9 +31,9 @@ public:
 		m_RegisteredTypes[T::GetTypeStatic()] = T::GetTypeInfoStatic();
 	}
 
-	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool includeAbstract = true);
+	const TypeInfo* GetTypeInfo(StringHash type) const;
 
-	Object* NewObject(const StringHash typeHash, bool assertOnFailure = false);
+	std::vector<const TypeInfo*> GetAllTypesOf(StringHash type, bool subChildren, bool includeAbstract = true);
 
 private:
 	using SubsystemCreateFunction = Subsystem * (*)(Context*);

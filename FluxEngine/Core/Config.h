@@ -55,8 +55,9 @@ public:
 	static const std::string& GetString(const std::string& name, const std::string& section, const std::string& defaultValue = "", const Type type = Type::EngineIni);
 	static bool GetBool(const std::string& name, const std::string& section, const bool defaultValue = false, const Type type = Type::EngineIni);
 
-	template<typename T>
-	static bool SetValue(const std::string& name, const std::string& section, const T& value, const Type type = Type::EngineIni);
+	static bool SetValue(const std::string& name, const std::string& section, const int value, const Type type = Type::EngineIni);
+	static bool SetValue(const std::string& name, const std::string& section, const float value, const Type type = Type::EngineIni);
+	static bool SetValue(const std::string& name, const std::string& section, const std::string& value, const Type type = Type::EngineIni);
 
 	//!Writes a specific (or all) config values to the proper file
 	static bool Flush(const Type t = Type::MAX_TYPES);
@@ -70,13 +71,3 @@ private:
 
 	static std::map<Type, ConfigFile> m_Configs;
 };
-
-template<typename T>
-bool Config::SetValue(const std::string& name, const std::string& section, const T& value, const Type type /*= Type::EngineIni*/)
-{
-	std::stringstream stream;
-	stream << value;
-	m_Configs[type].Sections[section].Values[name] = stream.str();
-	m_Configs[type].Sections[section].Name = section;
-	return true;
-}

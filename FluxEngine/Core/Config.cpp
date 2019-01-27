@@ -63,6 +63,27 @@ bool Config::GetBool(const std::string& name, const std::string& section, const 
 	return stoi(pValue->Value) == 1;
 }
 
+bool Config::SetValue(const std::string& name, const std::string& section, const int value, const Type type /*= Type::EngineIni*/)
+{
+	m_Configs[type].Sections[section].Values[name] = ConfigValue(std::to_string(value));
+	m_Configs[type].Sections[section].Name = section;
+	return true;
+}
+
+bool Config::SetValue(const std::string& name, const std::string& section, const float value, const Type type /*= Type::EngineIni*/)
+{
+	m_Configs[type].Sections[section].Values[name] = ConfigValue(std::to_string(value));
+	m_Configs[type].Sections[section].Name = section;
+	return true;
+}
+
+bool Config::SetValue(const std::string& name, const std::string& section, const std::string& value, const Type type /*= Type::EngineIni*/)
+{
+	m_Configs[type].Sections[section].Values[name] = ConfigValue(value);
+	m_Configs[type].Sections[section].Name = section;
+	return true;
+}
+
 bool Config::Flush(const Type t /*= Type::MAX_TYPES*/)
 {
 	if (t == Type::MAX_TYPES)
