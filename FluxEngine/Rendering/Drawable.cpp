@@ -19,7 +19,7 @@ DirectX::BoundingBox Drawable::GetWorldBoundingBox() const
 
 void Drawable::CreateUI()
 {
-	ImGui::Checkbox("Draw", &m_Draw);
+	ImGui::Checkbox("Draw", &m_Enabled);
 	ImGui::Checkbox("Cull", &m_Cull);
 	ImGui::Text("Bounding Box");
 	ImGui::InputFloat3("Center", &m_BoundingBox.Center.x);

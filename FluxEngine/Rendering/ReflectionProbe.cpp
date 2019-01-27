@@ -9,7 +9,11 @@
 ReflectionProbe::ReflectionProbe(Context* pContext) :
 	Component(pContext)
 {
-
+	for (View& view : m_Views)
+	{
+		view.NearPlane = m_NearClip;
+		view.FarPlane = m_FarClip;
+	}
 }
 
 ReflectionProbe::~ReflectionProbe()
@@ -19,38 +23,43 @@ ReflectionProbe::~ReflectionProbe()
 
 void ReflectionProbe::Capture(const CubeMapFace face)
 {
-	Matrix projection = DirectX::XMMatrixPerspectiveFovLH(Math::PIDIV2, 1.0f, m_NearClip, m_FarClip);
-	std::unique_ptr<Camera>& pCamera = m_Cameras[(int)face];
-	pCamera->SetProjection(projection);
+	check((int)face < 6);
+	View& view = m_Views[(int)face];
 
+	Matrix projection = Math::CreatePerspectiveMatrix(Math::PIDIV2, 1.0f, m_NearClip, m_FarClip);
 	Vector3 position = m_pNode->GetWorldPosition();
 
 	switch (face)
 	{
 	case CubeMapFace::POSITIVE_X:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 		break;
 	case CubeMapFace::NEGATIVE_X:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 		break;
 	case CubeMapFace::POSITIVE_Y:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
 		break;
 	case CubeMapFace::NEGATIVE_Y:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
 		break;
 	case CubeMapFace::POSITIVE_Z:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f));
 		break;
 	case CubeMapFace::NEGATIVE_Z:
-		pCamera->SetView(Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f)));
+		view.ViewMatrix = Matrix::CreateLookAt(position, position + Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f));
 		break;
 	case CubeMapFace::MAX:
 	default:
 		break;
 	}
-	pCamera->UpdateFrustum();
-	m_pRenderer->QueueCamera(pCamera.get());
+	view.ViewMatrix.Invert(view.ViewInverseMatrix);
+	view.ViewProjectionMatrix = view.ViewMatrix * view.ViewProjectionMatrix;
+
+	BoundingFrustum::CreateFromMatrix(view.Frustum, projection);
+	view.Frustum.Transform(view.Frustum, view.ViewInverseMatrix);
+
+	m_pRenderer->QueueView(&view);
 }
 
 void ReflectionProbe::Capture()
@@ -61,12 +70,13 @@ void ReflectionProbe::Capture()
 	}
 }
 
-void ReflectionProbe::SetResolution(const int resolution)
+void ReflectionProbe::SetResolution(const int resolution, const bool force /* = true*/)
 {
-	if (resolution != m_Resolution)
+	if (resolution != m_Resolution || force)
 	{
 		m_Resolution = resolution;
 		m_pCubeTexture->SetSize(resolution, resolution, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, 1, nullptr);
+		m_pDepthStencilTexture->SetSize(resolution, resolution, DXGI_FORMAT_R24G8_TYPELESS, TextureUsage::DEPTHSTENCILBUFFER, 1, nullptr);
 	}
 }
 
@@ -77,16 +87,13 @@ void ReflectionProbe::OnSceneSet(Scene* pScene)
 	m_pRenderer = GetSubsystem<Renderer>();
 
 	m_pCubeTexture = std::make_unique<TextureCube>(m_pContext);
-	m_pCubeTexture->SetSize(m_Resolution, m_Resolution, DXGI_FORMAT_R8G8B8A8_UNORM, TextureUsage::RENDERTARGET, 1, nullptr);
+	m_pDepthStencilTexture = std::make_unique<Texture2D>(m_pContext);
+	SetResolution(m_Resolution, true);
 
-	for (size_t i = 0; i < m_Cameras.size(); ++i)
+	for (size_t i = 0; i < m_Views.size(); ++i)
 	{
-		std::unique_ptr<Camera>& pCamera = m_Cameras[i];
-		if (pCamera == nullptr)
-		{
-			pCamera = std::make_unique<Camera>(m_pContext);
-		}
-		pCamera->SetRenderTarget(m_pCubeTexture->GetRenderTarget((CubeMapFace)i));
+		m_Views[i].pRenderTarget = m_pCubeTexture->GetRenderTarget((CubeMapFace)i);
+		m_Views[i].pDepthStencil = m_pDepthStencilTexture.get()->GetRenderTarget();
 	}
 
 	m_PreRenderHandle = m_pRenderer->OnPreRender().AddRaw(this, &ReflectionProbe::OnRender);
@@ -95,7 +102,7 @@ void ReflectionProbe::OnSceneSet(Scene* pScene)
 void ReflectionProbe::OnSceneRemoved()
 {
 	Component::OnSceneRemoved();
-	m_Cameras = {};
+	m_Views = {};
 	m_pCubeTexture.reset();
 	m_pRenderer->OnPreRender().Remove(m_PreRenderHandle);
 }

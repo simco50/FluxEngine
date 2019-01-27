@@ -4,7 +4,6 @@
 class Graphics;
 class VertexBuffer;
 class ShaderVariation;
-class Camera;
 class PhysicsScene;
 class Mesh;
 class Skeleton;
@@ -12,6 +11,7 @@ class Light;
 class SceneNode;
 struct Bone;
 struct VertexElement;
+struct View;
 
 struct DebugLine
 {
@@ -85,7 +85,7 @@ public:
 	void Render();
 	void EndFrame();
 
-	void SetCamera(Camera* pCamera) { m_pCamera = pCamera; }
+	void SetCamera(const View* pView) { m_pView = pView; }
 
 	void AddLine(const Vector3& start, const Vector3& end, const Color& color);
 	void AddLine(const Vector3& start, const Vector3& end, const Color& colorStart, const Color& colorEnd);
@@ -109,7 +109,7 @@ public:
 	void AddBone(const Matrix& matrix, const float length, const Color& color);
 
 	Graphics* m_pGraphics;
-	Camera* m_pCamera = nullptr;
+	const View* m_pView = nullptr;
 	std::unique_ptr<VertexBuffer> m_pVertexBuffer;
 	std::vector<VertexElement> m_ElementDesc;
 	ShaderVariation* m_pVertexShader = nullptr;

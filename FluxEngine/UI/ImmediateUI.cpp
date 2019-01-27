@@ -146,12 +146,16 @@ void ImmediateUI::Render()
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough
-	if((int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
+	if ((int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
+	{
 		m_pVertexBuffer->Create(m_pVertexBuffer->GetVertexCount() + 5000, m_VertexElements, true);
+	}
 
 	//Recreate the indexbuffer if it is not large enough
 	if ((int)m_pIndexBuffer->GetCount() < pDrawData->TotalIdxCount)
+	{
 		m_pIndexBuffer->Create(m_pIndexBuffer->GetCount() + 10000, true, true);
+	}
 
 	//Copy the new data to the buffers
 	ImDrawVert* pVertexData = (ImDrawVert*)m_pVertexBuffer->Map(true);
@@ -187,7 +191,7 @@ void ImmediateUI::Render()
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
-	Matrix projectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
+	Matrix projectionMatrix = Math::CreateOrthographicOffCenterMatrix(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int vertexOffset = 0;

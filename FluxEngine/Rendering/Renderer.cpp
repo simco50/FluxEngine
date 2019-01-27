@@ -55,7 +55,6 @@ void Renderer::Draw()
 	AUTOPROFILE(Renderer_Draw);
 
 	m_pCurrentMaterial = nullptr;
-	m_pCurrentCamera = nullptr;
 
 	{
 		AUTOPROFILE(Renderer_UpdateDrawables);
@@ -71,29 +70,32 @@ void Renderer::Draw()
 		m_OnPreRender.Broadcast();
 	}
 
-	std::vector<Camera*> cameras = m_CameraQueue;
-	m_CameraQueue.clear();
+	std::vector<const View*> pViews = m_ViewQueue;
+	m_ViewQueue.clear();
 	for (Camera* pCamera : m_Cameras)
 	{
-		cameras.push_back(pCamera);
+		if (pCamera->IsEnabled())
+		{
+			pViews.push_back(&pCamera->GetViewData());
+		}
 	}
 
 	{
 		AUTOPROFILE(Renderer_Draw_All);
 
-		for (Camera* pCamera : cameras)
+		for (const View* pView : pViews)
 		{
 			AUTOPROFILE(Renderer_Draw_Camera);
 
-			if (pCamera == nullptr)
+			if (pView == nullptr)
 			{
 				continue;
 			}
 
-			m_pGraphics->SetRenderTarget(0, pCamera->GetRenderTarget());
-			m_pGraphics->SetDepthStencil(pCamera->GetDepthStencil());
-			m_pGraphics->SetViewport(pCamera->GetViewport());
-			m_pGraphics->Clear(pCamera->GetClearFlags(), pCamera->GetClearColor(), 1.0f, 1);
+			m_pGraphics->SetRenderTarget(0, pView->pRenderTarget);
+			m_pGraphics->SetDepthStencil(pView->pDepthStencil);
+			m_pGraphics->SetViewport(pView->Viewport.Scale((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
+			m_pGraphics->Clear(pView->ClearFlags, pView->ClearColor, 1.0f, 1);
 
 			m_pCurrentMaterial = nullptr;
 
@@ -105,15 +107,10 @@ void Renderer::Draw()
 				{
 					continue;
 				}
-				if (!pDrawable->DrawEnabled())
+				if (pDrawable->GetCullingEnabled() && !pView->Frustum.Intersects(pDrawable->GetWorldBoundingBox()))
 				{
 					continue;
 				}
-				if (pDrawable->GetCullingEnabled() && !pCamera->GetFrustum().Intersects(pDrawable->GetWorldBoundingBox()))
-				{
-					continue;
-				}
-
 
 				const std::vector<Batch>& batches = pDrawable->GetBatches();
 				for (const Batch& batch : batches)
@@ -124,9 +121,9 @@ void Renderer::Draw()
 					}
 
 					SetPerMaterialParameters(batch.pMaterial);
-					SetPerBatchParameters(batch, pCamera);
+					SetPerBatchParameters(batch, pView);
 					SetPerFrameParameters();
-					SetPerCameraParameters(pCamera);
+					SetPerViewParameters(pView);
 
 					batch.pGeometry->Draw(m_pGraphics);
 				}
@@ -136,7 +133,10 @@ void Renderer::Draw()
 
 	for (PostProcessing* pPost : m_PostProcessing)
 	{
-		pPost->Draw();
+		if (pPost->IsEnabled())
+		{
+			pPost->Draw();
+		}
 	}
 }
 
@@ -201,9 +201,9 @@ void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMat
 	GetQuadGeometry()->Draw(m_pGraphics);
 }
 
-void Renderer::QueueCamera(Camera * pCamera)
+void Renderer::QueueView(const View* pView)
 {
-	m_CameraQueue.push_back(pCamera);
+	m_ViewQueue.push_back(pView);
 }
 
 void Renderer::CreateQuadGeometry()
@@ -250,14 +250,13 @@ void Renderer::SetPerFrameParameters()
 	m_pGraphics->SetShaderParameter(ShaderConstant::cElapsedTime, GameTimer::GameTime());
 }
 
-void Renderer::SetPerCameraParameters(Camera* pCamera)
+void Renderer::SetPerViewParameters(const View* pView)
 {
-	m_pCurrentCamera = pCamera;
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, pCamera->GetViewProjection());
-	m_pGraphics->SetShaderParameter(ShaderConstant::cView, pCamera->GetView());
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewInverse, pCamera->GetViewInverse());
-	m_pGraphics->SetShaderParameter(ShaderConstant::cNearClip, pCamera->GetNearPlane());
-	m_pGraphics->SetShaderParameter(ShaderConstant::cFarClip, pCamera->GetFarPlane());
+	m_pGraphics->SetShaderParameter(ShaderConstant::cView, pView->ViewMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, pView->ViewProjectionMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cViewInverse, pView->ViewInverseMatrix);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cNearClip, pView->NearPlane);
+	m_pGraphics->SetShaderParameter(ShaderConstant::cFarClip, pView->FarPlane);
 }
 
 void Renderer::SetPerMaterialParameters(const Material* pMaterial)
@@ -305,7 +304,7 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	m_pGraphics->GetDepthStencilState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
 }
 
-void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
+void Renderer::SetPerBatchParameters(const Batch& batch, const View* pView)
 {
 	if (batch.NumSkinMatrices > 0)
 	{
@@ -315,7 +314,7 @@ void Renderer::SetPerBatchParameters(const Batch& batch, Camera* pCamera)
 	else
 	{
 		m_pGraphics->SetShaderParameter(ShaderConstant::cWorld, *batch.pWorldMatrices);
-		Matrix wvp = *batch.pWorldMatrices * pCamera->GetViewProjection();
+		Matrix wvp = *batch.pWorldMatrices * pView->ViewProjectionMatrix;
 		m_pGraphics->SetShaderParameter(ShaderConstant::cWorldViewProj, wvp);
 	}
 }

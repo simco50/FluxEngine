@@ -96,6 +96,7 @@ public:
 	void TakeScreenshot(OutputStream& outputStream);
 
 	//Getters
+	const std::string& GetWindowTitle() const { return m_WindowTitle; }
 	HWND GetWindow() const;
 	SDL_Window* GetSDLWindow() const { return m_pWindow; }
 	int GetWindowWidth() const { return m_WindowWidth; }

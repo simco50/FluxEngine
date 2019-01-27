@@ -1,8 +1,8 @@
 #pragma once
 #include "Scenegraph/Component.h"
+#include "Camera/Camera.h"
 
 class TextureCube;
-class Camera;
 class Texture2D;
 class Renderer;
 
@@ -32,7 +32,7 @@ public:
 	void Capture();
 	void Capture(const CubeMapFace face);
 	void SetUpdateMode(const ReflectionUpdateMode mode) { m_UpdateMode = mode; }
-	void SetResolution(const int resolution);
+	void SetResolution(const int resolution, const bool force);
 	void SetTimeSlicingMethod(const ReflectionSlicingMethod method) { m_SlicingMethod = method; }
 	TextureCube* GetTexture() const { return m_pCubeTexture.get(); }
 
@@ -53,8 +53,9 @@ private:
 	DelegateHandle m_PreRenderHandle;
 	ReflectionSlicingMethod m_SlicingMethod = ReflectionSlicingMethod::OnePerFrame;
 	std::unique_ptr<TextureCube> m_pCubeTexture;
+	std::unique_ptr<Texture2D> m_pDepthStencilTexture;
 
-	std::array<std::unique_ptr<Camera>, 6> m_Cameras;
+	std::array<View, 6> m_Views;
 	float m_FarClip = 100.0f;
 	float m_NearClip = 0.1f;
 

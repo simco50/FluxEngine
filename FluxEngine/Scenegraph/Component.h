@@ -31,7 +31,12 @@ public:
 
 	virtual void CreateUI() {};
 
+	void SetEnabled(const bool enabled) { m_Enabled = enabled; }
+	bool IsEnabled() const { return m_Enabled; }
+
 protected:
+	bool m_Enabled = true;
+
 	Scene* m_pScene = nullptr;
 	SceneNode* m_pNode = nullptr;
 };

@@ -35,12 +35,9 @@ public:
 	const BoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 	BoundingBox GetWorldBoundingBox() const;
 
-	bool DrawEnabled() const { return m_Draw; }
-
 	virtual void CreateUI() override;
 
 protected:
-	bool m_Draw = true;
 	bool m_Cull = true;
 	std::vector<Batch> m_Batches;
 	BoundingBox m_BoundingBox;

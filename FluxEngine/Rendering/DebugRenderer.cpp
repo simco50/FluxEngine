@@ -38,7 +38,7 @@ void DebugRenderer::Render()
 {
 	int totalPrimitives = m_LinePrimitives + m_TrianglePrimitives;
 
-	if (totalPrimitives == 0 || m_pCamera == nullptr)
+	if (totalPrimitives == 0 || m_pView == nullptr)
 	{
 		return;
 	}
@@ -87,7 +87,7 @@ void DebugRenderer::Render()
 	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
 	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
 
-	Matrix projectionMatrix = m_pCamera->GetViewProjection();
+	const Matrix& projectionMatrix = m_pView->ViewProjectionMatrix;
 	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int start = 0;
@@ -295,7 +295,7 @@ void DebugRenderer::AddAxisSystem(const Matrix& transform, const float lineLengt
 {
 	Matrix newMatrix = Matrix::CreateScale(Math::ScaleFromMatrix(transform));
 	newMatrix.Invert(newMatrix);
-	newMatrix *= Matrix::CreateScale(Vector3::Distance(m_pCamera->GetNode()->GetWorldPosition(), transform.Translation()) / 5.0f);
+	newMatrix *= Matrix::CreateScale(Vector3::Distance(m_pView->ViewInverseMatrix.Translation(), transform.Translation()) / 5.0f);
 	newMatrix *= transform;
 	Vector3 origin(Vector3::Transform(Vector3(), transform));
 	Vector3 x(Vector3::Transform(Vector3(lineLength, 0, 0), newMatrix));

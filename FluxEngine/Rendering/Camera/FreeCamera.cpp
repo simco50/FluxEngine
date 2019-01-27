@@ -36,13 +36,16 @@ void FreeCamera::OnSceneRemoved()
 
 void FreeCamera::Update()
 {
-	if (m_UseMouseAndKeyboard)
+	if (m_pCamera->IsEnabled())
 	{
-		KeyboardMouse();
-	}
-	else
-	{
-		Controller();
+		if (m_UseMouseAndKeyboard)
+		{
+			KeyboardMouse();
+		}
+		else
+		{
+			Controller();
+		}
 	}
 }
 

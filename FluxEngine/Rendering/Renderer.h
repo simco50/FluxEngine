@@ -10,6 +10,7 @@ class VertexBuffer;
 class Geometry;
 class Light;
 class RenderTarget;
+struct View;
 struct Batch;
 class PostProcessing;
 
@@ -40,7 +41,7 @@ public:
 
 	Geometry* GetQuadGeometry() const { return m_pQuadGeometry.get(); }
 
-	void QueueCamera(Camera* pCamera);
+	void QueueView(const View* pView);
 
 	OnSceneUpdateDelegate& OnPreRender() { return m_OnPreRender; }
 
@@ -48,9 +49,9 @@ private:
 	void CreateQuadGeometry();
 
 	void SetPerFrameParameters();
-	void SetPerCameraParameters(Camera* pCamera);
+	void SetPerViewParameters(const View* pView);
 	void SetPerMaterialParameters(const Material* pMaterial);
-	void SetPerBatchParameters(const Batch& batch, Camera* pCamera);
+	void SetPerBatchParameters(const Batch& batch, const View* pView);
 
 	const Material* m_pCurrentMaterial = nullptr;
 
@@ -63,10 +64,9 @@ private:
 	std::vector<PostProcessing*> m_PostProcessing;
 
 	int m_CurrentFrame = 0;
-	Camera* m_pCurrentCamera = nullptr;
 	Material* m_pBlitMaterial = nullptr;
 
-	std::vector<Camera*> m_CameraQueue;
+	std::vector<const View*> m_ViewQueue;
 
 	std::unique_ptr<VertexBuffer> m_pQuadVertexBuffer;
 	std::unique_ptr<IndexBuffer> m_pQuadIndexBuffer;

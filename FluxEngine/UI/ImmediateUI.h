@@ -4,10 +4,8 @@
 class Graphics;
 class VertexBuffer;
 class IndexBuffer;
-class Shader;
 class ShaderVariation;
 struct VertexElement;
-class ConstantBuffer;
 class Texture2D;
 class InputEngine;
 

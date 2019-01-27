@@ -20,7 +20,6 @@ public:
 	void UseMouseAndKeyboard(const bool use) { m_UseMouseAndKeyboard = use; }
 
 	void SetSpeed(const float speed) { m_MoveSpeed = speed; }
-
 private:
 	InputEngine* m_pInput = nullptr;
 

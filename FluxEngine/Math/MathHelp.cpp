@@ -27,6 +27,42 @@ namespace Math
 		return (value - a) / (b - a);
 	}
 
+	Matrix CreatePerspectiveMatrix(float FoV, float aspectRatio, float nearPlane, float farPlane)
+	{
+#ifdef WORLD_RIGHT_HANDED
+		return DirectX::XMMatrixPerspectiveFovRH(FoV, aspectRatio, nearPlane, farPlane);
+#else
+		return DirectX::XMMatrixPerspectiveFovLH(FoV, aspectRatio, nearPlane, farPlane);
+#endif
+	}
+
+	Matrix CreatePerspectiveOffCenterMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+	{
+#ifdef WORLD_RIGHT_HANDED
+		return DirectX::XMMatrixPerspectiveOffCenterRH(left, right, bottom, top, nearPlane, farPlane);
+#else
+		return DirectX::XMMatrixPerspectiveOffCenterLH(left, right, bottom, top, nearPlane, farPlane);
+#endif
+	}
+
+	Matrix CreateOrthographicMatrix(float width, float height, float nearPlane, float farPlane)
+	{
+#ifdef WORLD_RIGHT_HANDED
+		return DirectX::XMMatrixOrthographicRH(width, height, nearPlane, farPlane);
+#else
+		return DirectX::XMMatrixOrthographicLH(width, height, nearPlane, farPlane);
+#endif
+	}
+
+	Matrix CreateOrthographicOffCenterMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+	{
+#ifdef WORLD_RIGHT_HANDED
+		return DirectX::XMMatrixOrthographicOffCenterRH(left, right, bottom, top, nearPlane, farPlane);
+#else
+		return DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearPlane, farPlane);
+#endif
+	}
+
 	DirectX::SimpleMath::Vector3 ScaleFromMatrix(const Matrix& m)
 	{
 		return Vector3(

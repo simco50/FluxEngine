@@ -43,6 +43,16 @@ struct RectT
 	T GetWidth() const { return Right - Left; }
 	T GetHeight() const { return Bottom - Top; }
 
+	RectT Scale(const float scale) const
+	{
+		return RectT(Left * scale, Top * scale, Right * scale, Bottom * scale);
+	}
+
+	RectT Scale(const float scaleX, const float scaleY) const
+	{
+		return RectT(Left * scaleX, Top * scaleY, Right * scaleX, Bottom * scaleY);
+	}
+
 	bool operator==(const RectT& other) const
 	{
 		return Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;

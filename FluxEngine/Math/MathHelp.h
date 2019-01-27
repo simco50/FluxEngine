@@ -114,6 +114,11 @@ namespace Math
 
 	float InverseLerp(float a, float b, float value);
 
+	Matrix CreatePerspectiveMatrix(float FoV, float aspectRatio, float nearPlane, float farPlane);
+	Matrix CreatePerspectiveOffCenterMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+	Matrix CreateOrthographicMatrix(float width, float height, float nearPlane, float farPlane);
+	Matrix CreateOrthographicOffCenterMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+
 	Vector3 ScaleFromMatrix(const Matrix& m);
 
 	Quaternion LookRotation(const Vector3& direction);

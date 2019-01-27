@@ -110,7 +110,7 @@ void FluxCore::InitGame()
 	Camera* pCamera = m_pCamera->GetCamera();
 	pCamera->SetNearPlane(10);
 	pCamera->SetFarPlane(10000);
-	m_pDebugRenderer->SetCamera(m_pCamera->GetCamera());
+	m_pDebugRenderer->SetCamera(&m_pCamera->GetCamera()->GetViewData());
 
 	PostProcessing* post = m_pCamera->CreateComponent<PostProcessing>();
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
