@@ -25,6 +25,8 @@
 #include <set>
 #pragma endregion STL
 
+#include "Core/MinWindows.h"
+
 #pragma region
 //Engine core include
 #include "Core/Types.h"
