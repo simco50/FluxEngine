@@ -69,6 +69,7 @@ workspace (engineName)
 		AddAssimp(false)
 		AddDX11(false)
 		AddWininet(false)
+		AddAnsel(false)
 
 		filter "files:**/External/**.*"
 			flags "NoPCH"
@@ -100,3 +101,4 @@ workspace (engineName)
 		AddAssimp(true)
 		AddDX11(true)
 		AddWininet(true)
+		AddAnsel(true)

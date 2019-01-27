@@ -221,3 +221,27 @@ function AddWininet(isTarget)
         links "wininet.lib"
     end
 end
+
+function AddAnsel(isTarget)
+    
+    defines { "MODULE_ANSEL" }
+
+	includedirs "../Libraries/Ansel/include"
+
+    libdirs	"../Libraries/Ansel/lib/"
+
+    if(isTarget == true) then
+        filter { "platforms:x64" }
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\Ansel\\bin\\AnselSDK64.dll\" \"$(OutDir)\""
+            }
+            links "AnselSDK64.lib"
+        filter { "platforms:x64" }
+            postbuildcommands
+            { 
+                "{COPY} \"$(SolutionDir)Libraries\\Ansel\\bin\\AnselSDK32.dll\" \"$(OutDir)\""
+            }
+            links "AnselSDK32.lib"
+    end
+end

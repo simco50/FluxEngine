@@ -33,6 +33,7 @@
 #include "Rendering/Animation/Animation.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/Geometry.h"
+#include "Ansel.h"
 
 bool FluxCore::m_Exiting;
 
@@ -94,6 +95,7 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	pQueue->Initialize(Misc::GetCoreCount() - 1);
 	m_pDebugRenderer = m_pContext->RegisterSubsystem<DebugRenderer>();
 	m_pContext->RegisterSubsystem<Renderer>();
+	m_pContext->RegisterSubsystem<Ansel>();
 
 	InitGame();
 	GameTimer::Reset();
@@ -111,6 +113,8 @@ void FluxCore::InitGame()
 	pCamera->SetNearPlane(10);
 	pCamera->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(&m_pCamera->GetCamera()->GetViewData());
+
+	GetSubsystem<Ansel>()->SetCamera(pCamera);
 
 	PostProcessing* post = m_pCamera->CreateComponent<PostProcessing>();
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
@@ -252,10 +256,17 @@ void FluxCore::ProcessFrame()
 
 	m_pScene->Update();
 
-	m_pDebugRenderer->Render();
-	m_pDebugRenderer->EndFrame();
+	if (GetSubsystem<Ansel>()->IsInSession())
+	{
+		GetSubsystem<Ansel>()->Update();
+	}
+	else
+	{
+		m_pDebugRenderer->Render();
+		m_pDebugRenderer->EndFrame();
+		RenderUI();
+	}
 
-	RenderUI();
 	m_pGraphics->EndFrame();
 }
 
