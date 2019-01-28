@@ -1,3 +1,15 @@
+function SetupTarget(name, applicationType)
+project (name)
+	filename (name)
+	location (ROOT .. name)
+	targetdir (ROOT .. "Build/" .. name .. "_$(Platform)_$(Configuration)")
+	objdir ("!" .. ROOT .. "Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)")
+
+	pchheader (name .. ".h")
+	pchsource (ROOT .. name .. "/" .. name .. ".cpp")
+	kind (applicationType)
+end
+
 function AddSourceFiles(directoryPath)
     files
     { 

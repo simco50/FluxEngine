@@ -38,7 +38,7 @@ public:
 	bool CreateShader(Graphics* pGraphics, ShaderType type);
 
 private:
-	static const int SHADER_CACHE_VERSION = 4;
+	static const int SHADER_CACHE_VERSION = 5;
 
 	bool Compile(Graphics* pGraphics);
 

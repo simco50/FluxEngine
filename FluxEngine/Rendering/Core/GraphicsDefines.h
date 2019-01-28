@@ -32,11 +32,9 @@ namespace GraphicsConstants
 {
 	constexpr int MAX_VERTEX_BUFFERS = 2;
 	constexpr int MAX_RENDERTARGETS = 2;
-
 	constexpr int MAX_LIGHTS = 20;
 	constexpr int MAX_BONES = 50;
 	constexpr int MAX_BONES_PER_VERTEX = 4;
-
 	constexpr int MAX_UV_CHANNELS = 3;
 }
 

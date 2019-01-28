@@ -4,17 +4,12 @@ class StringHash
 {
 private:
 
-#ifdef x86
-	static constexpr size_t val_const{ 0x811c9dc5 };
-	static constexpr size_t prime_const{ 0x1000193 };
-#else
-	static constexpr size_t val_const{ 0xcbf29ce484222325 };
-	static constexpr size_t prime_const{ 0x100000001b3 };
-#endif
+	static constexpr uint32 val_const{ 0x811c9dc5 };
+	static constexpr uint32 prime_const{ 0x1000193 };
 
-	static inline constexpr size_t Hash_Internal(const char* const str, const size_t value) noexcept
+	static inline constexpr uint32 Hash_Internal(const char* const str, const uint32 value) noexcept
 	{
-		return (str[0] == '\0') ? value : Hash_Internal(&str[1], (value ^ size_t(str[0])) * prime_const);
+		return (str[0] == '\0') ? value : Hash_Internal(&str[1], (value ^ uint64(str[0])) * prime_const);
 	}
 
 public:
@@ -33,7 +28,7 @@ public:
 	{
 	}
 
-	explicit constexpr StringHash(const size_t hash) noexcept
+	explicit constexpr StringHash(const uint32 hash) noexcept
 		: m_Hash(hash)
 	{
 	}
@@ -58,14 +53,14 @@ public:
 		return m_Hash != other.m_Hash;
 	}
 
-	inline constexpr operator size_t() const { return m_Hash; }
+	inline constexpr operator uint32() const { return m_Hash; }
 
 	inline bool operator==(const StringHash& rhs) const { return m_Hash == rhs.m_Hash; }
 	inline bool operator!=(const StringHash& rhs) const { return m_Hash != rhs.m_Hash; }
 	inline bool operator<(const StringHash& rhs) const { return m_Hash < rhs.m_Hash; }
 	inline bool operator>(const StringHash& rhs) const { return m_Hash > rhs.m_Hash; }
 
-	size_t m_Hash;
+	uint32 m_Hash;
 };
 
 namespace std
@@ -73,7 +68,7 @@ namespace std
 	template <>
 	struct hash<StringHash>
 	{
-		std::size_t operator()(const StringHash& hash) const
+		uint32 operator()(const StringHash& hash) const
 		{
 			return hash.m_Hash;
 		}

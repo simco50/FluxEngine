@@ -52,7 +52,7 @@ bool ShaderVariation::SaveToCache(OutputStream& outputStream) const
 	outputStream.WriteUByte((unsigned char)m_ShaderParameters.size());
 	for (const auto& pair : m_ShaderParameters)
 	{
-		outputStream.WriteInt64((int64)pair.first.m_Hash);
+		outputStream.WriteInt((int64)pair.first.m_Hash);
 		const ShaderParameter& parameter = pair.second;
 		outputStream.WriteSizedString(parameter.Name);
 		outputStream.WriteInt(parameter.Buffer);
@@ -93,7 +93,7 @@ bool ShaderVariation::LoadFromCache(InputStream& inputStream)
 	unsigned char parameterCount = inputStream.ReadByte();
 	for (unsigned char i = 0; i < parameterCount; i++)
 	{
-		StringHash parameterHash = StringHash((size_t)inputStream.ReadInt64());
+		StringHash parameterHash = StringHash((uint32)inputStream.ReadInt());
 		ShaderParameter& parameter = m_ShaderParameters[parameterHash];
 
 		parameter.Name = inputStream.ReadSizedString();

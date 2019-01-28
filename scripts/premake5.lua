@@ -4,27 +4,28 @@ require "Utility"
 local engineName = "FluxEngine"
 local gameName = "FluxGame"
 
+ROOT = "../"
+
 workspace (engineName)
 	filename (engineName)
-	basedir "../"
+	basedir (ROOT)
 	configurations { "Debug", "Test", "Release" }
     platforms {"x86", "x64"}
     warnings "Extra"
     rtti "Off"
 	characterset ("MBCS")
-	defines { "_CONSOLE", "THREADING"}
-	flags {"FatalWarnings"}
+	defines { "_CONSOLE", "THREADING", "PLATFORM_WINDOWS"}
+	flags {"FatalWarnings", "MultiProcessorCompile"}
 	language "C++"
-	disablewarnings "4307"
 	startproject (gameName)
 
     filter { "platforms:x64" }
-		architecture "x64"
-		defines {"x64", "PLATFORM_WINDOWS"}
+		architecture "x86_64"
+		defines {"x64", "_AMD64_"}
 
 	filter { "platforms:x86" }
-		architecture "x32"
-		defines {"x86", "PLATFORM_WINDOWS"}	
+		architecture "x86"
+		defines {"x86", "_X86_"}	
 
 	filter { "configurations:Debug" }
 		runtime "Debug"
@@ -42,24 +43,20 @@ workspace (engineName)
 	 	runtime "Release"
 		defines { "FLUX_RELEASE", "NDEBUG" }
 	 	symbols "Off"
-	 	optimize "Full"
+		 optimize "Full"
+
+	filter {}
 
 	project (engineName)
-		filename (engineName)
-		location ("../" .. engineName)
-		targetdir ("../Build/" .. gameName .. "_$(Platform)_$(Configuration)")
-		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
-
-		pchheader (engineName .. ".h")
-		pchsource ("../" .. engineName .. "/" .. engineName .. ".cpp")
-		kind "StaticLib"
-
+		SetupTarget(engineName, "StaticLib")
 		AddSourceFiles(engineName)
 		
-		includedirs 
-		{ 
-			"$(ProjectDir)"
-		}
+		includedirs { "$(ProjectDir)" }
+
+		filter { "files:**/External/**.*"}
+			flags "NoPCH"
+
+		filter {}
 
 		AddPhysX(false)
 		AddFmod(false)
@@ -70,27 +67,13 @@ workspace (engineName)
 		AddDX11(false)
 		AddWininet(false)
 
-		filter "files:**/External/**.*"
-			flags "NoPCH"
-
 	project (gameName)
-		filename (gameName)
-		location ("../" .. gameName)
-		targetdir "../Build/$(ProjectName)_$(Platform)_$(Configuration)"
-		objdir "!../Build/Intermediate/$(ProjectName)_$(Platform)_$(Configuration)"
-
-		pchheader (gameName .. ".h")
-		pchsource ("../" .. gameName .. "/" .. gameName .. ".cpp")
-		kind "WindowedApp"
-
-		links { (engineName) }
+		SetupTarget(gameName, "WindowedApp")
 
 		AddSourceFiles(gameName)
 
-		includedirs 
-		{ 
-			("../" .. engineName)
-		}
+		links { (engineName) }
+		includedirs { (ROOT .. engineName) }
 
 		AddPhysX(true)
 		AddFmod(true)
