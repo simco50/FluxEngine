@@ -33,5 +33,5 @@ private:
 
 	Vector3 m_LastPosition;
 	std::string m_FilePath;
-	FMOD_MODE m_Mode;
+	FMOD_MODE m_Mode = 0;
 };

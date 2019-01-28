@@ -178,17 +178,6 @@ void Console::LogFormat(LogType type, const char* format, ...)
 	Log(&consoleInstance->m_ConvertBuffer[0], type);
 }
 
-void Console::LogFormat(LogType type, const std::string& format, ...)
-{
-	va_list ap;
-
-	const char* f = format.c_str();
-	va_start(ap, f);
-	_vsnprintf_s(&consoleInstance->m_ConvertBuffer[0], consoleInstance->m_ConvertBufferSize, consoleInstance->m_ConvertBufferSize, f, ap);
-	va_end(ap);
-	Log(&consoleInstance->m_ConvertBuffer[0], type);
-}
-
 void Console::SetVerbosity(LogType type)
 {
 	consoleInstance->m_Verbosity = type;

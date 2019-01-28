@@ -84,7 +84,6 @@ void Light::OnMarkedDirty(const SceneNode* pNode)
 void Light::CreateUI()
 {
 	ImGui::Checkbox("Enabled", (bool*)&m_Data.Enabled);
-	static int selected = 0;
 	ImGui::Combo("Type", (int*)&m_Data.Type, [](void*, int selected, const char** pName)
 	{
 		Light::Type type = (Light::Type)selected;

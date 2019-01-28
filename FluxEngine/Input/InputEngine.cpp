@@ -298,7 +298,6 @@ void InputEngine::DrawDebugJoysticks()
 	ImGui::SetNextWindowSize(ImVec2(500, 200.0f * joySticks));
 	ImGui::Begin("Joystick", nullptr, ImGuiWindowFlags_NoResize);
 
-	const unsigned int white = 0xffffffff;
 	const unsigned int grey = 0xffcccccc;
 
 	ImDrawList* pDrawList = ImGui::GetWindowDrawList();

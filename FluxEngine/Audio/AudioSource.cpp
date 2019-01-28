@@ -5,7 +5,7 @@
 #include "Sound.h"
 
 AudioSource::AudioSource(Context* pContext)
-	: Component(pContext), m_Mode(0), m_pSound(nullptr)
+	: Component(pContext)
 {
 	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
@@ -23,7 +23,7 @@ AudioSource::AudioSource(Context* pContext, const std::string& filePath, const F
 }
 
 AudioSource::AudioSource(Context* pContext, Sound* pSound)
-	: Component(pContext), m_Mode(0), m_pSound(pSound)
+	: Component(pContext), m_pSound(pSound), m_Mode(0)
 {
 	m_pAudio = pContext->GetSubsystem<AudioEngine>();
 }
@@ -97,7 +97,8 @@ void AudioSource::OnMarkedDirty(const SceneNode* pNode)
 {
 	if (m_Mode == FMOD_3D)
 	{
-		Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+		Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition);
+		velocity /= GameTimer::DeltaTime();
 
 		Vector3 wPos = pNode->GetWorldPosition();
 

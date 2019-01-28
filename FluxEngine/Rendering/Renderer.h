@@ -63,7 +63,6 @@ private:
 	std::vector<Light*> m_Lights;
 	std::vector<PostProcessing*> m_PostProcessing;
 
-	int m_CurrentFrame = 0;
 	Material* m_pBlitMaterial = nullptr;
 
 	std::vector<const View*> m_ViewQueue;

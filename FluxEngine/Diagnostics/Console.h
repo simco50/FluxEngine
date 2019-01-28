@@ -34,7 +34,6 @@ public:
 	static bool LogHRESULT(char* source, HRESULT hr);
 	static void Log(const std::string &message, LogType type = LogType::Info);
 	static void LogFormat(LogType type, const char* format, ...);
-	static void LogFormat(LogType type, const std::string& format, ...);
 	static void SetVerbosity(LogType type);
 	static bool CleanupLogs(const TimeSpan& age);
 	static bool Flush();

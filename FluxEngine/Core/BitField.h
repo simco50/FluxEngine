@@ -36,10 +36,10 @@ namespace BitOperations
 	}
 }
 
-template<typename uint32 Bits, typename Storage = uint32>
+template<uint32 Bits, typename Storage = uint32>
 class BitField;
 
-template<typename uint32 Bits, typename Storage>
+template<uint32 Bits, typename Storage>
 class BitField
 {
 public:

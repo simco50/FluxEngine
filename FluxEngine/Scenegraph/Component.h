@@ -29,7 +29,7 @@ public:
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
 
-	virtual void CreateUI() {};
+	virtual void CreateUI() {}
 
 	void SetEnabled(const bool enabled) { m_Enabled = enabled; }
 	bool IsEnabled() const { return m_Enabled; }

@@ -112,7 +112,13 @@ namespace SQLiteFunctions
 			CheckReservedLock,        /* xCheckReservedLock */
 			FileControl,              /* xFileControl */
 			SectorSize,               /* xSectorSize */
-			DeviceCharacteristics     /* xDeviceCharacteristics */
+			DeviceCharacteristics,    /* xDeviceCharacteristics */
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr
 		};
 
 		SQLiteFile *p = static_cast<SQLiteFile*>(pFile);
@@ -138,8 +144,8 @@ void Database::RegisterVFS()
 	sqlite3_vfs_register(g_pVfs, 1);
 }
 
-PreparedStatement::PreparedStatement(Database* pDb, const std::string& query)
-	: m_pDatabase(pDb), m_ParametersSet(0), m_Query(query)
+PreparedStatement::PreparedStatement(const std::string& query)
+	: m_ParametersSet(0), m_Query(query)
 {
 	size_t idx = query.find('?');
 	while (idx != std::string::npos)
@@ -184,9 +190,9 @@ bool Database::Load(InputStream& inputStream)
 
 PreparedStatement Database::Prepare(const std::string& query)
 {
-	PreparedStatement s(this, query);
+	PreparedStatement s(query);
 	sqlite3_prepare_v2(m_pDatabase, query.c_str(), -1, &s.pStatement, nullptr);
-	return std::move(s);
+	return s;
 }
 
 bool Database::Execute(const std::string& query, const DatabaseExecuteDelegate& callback)
@@ -301,7 +307,7 @@ void PreparedStatement::GetColumn(int index, float* pValue) const
 	*pValue = static_cast<float>(sqlite3_column_double(pStatement, index));
 }
 
-const int PreparedStatement::Columns() const
+int PreparedStatement::Columns() const
 {
 	return sqlite3_column_count(pStatement);
 }

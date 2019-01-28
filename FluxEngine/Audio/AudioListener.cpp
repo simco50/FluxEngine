@@ -22,7 +22,8 @@ void AudioListener::OnNodeSet(SceneNode* pNode)
 
 void AudioListener::OnMarkedDirty(const SceneNode* pNode)
 {
-	Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition) / GameTimer::DeltaTime();
+	Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition);
+	velocity /= GameTimer::DeltaTime();
 
 	Vector3 wPos = pNode->GetWorldPosition();
 	Vector3 fwd = pNode->GetForward();

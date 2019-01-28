@@ -8,7 +8,7 @@ __int64 GameTimer::m_PrevTime = 0;
 __int64 GameTimer::m_CurrTime = 0;
 
 double GameTimer::m_SecondsPerCount = 0.0;
-double GameTimer::m_DeltaTime = 0.0;
+double GameTimer::m_DeltaTime = 0.016f;
 
 bool GameTimer::m_IsStopped = false;
 

@@ -12,7 +12,7 @@ class Database;
 struct PreparedStatement
 {
 public:
-	PreparedStatement(Database* pDb, const std::string& query);
+	PreparedStatement(const std::string& query);
 	~PreparedStatement();
 
 	bool Step();
@@ -21,7 +21,7 @@ public:
 	void GetColumn(int index, const char** pText) const;
 	void GetColumn(int index, int* pValue) const;
 	void GetColumn(int index, float* pValue) const;
-	const int Columns() const;
+	int Columns() const;
 	const char* GetColumnName(int index) const;
 
 	bool BindParameter(const int index, const std::string& value);
@@ -45,7 +45,6 @@ private:
 
 	int m_CurrentIndex = 0;
 	sqlite3_stmt* pStatement = nullptr;
-	Database* m_pDatabase = nullptr;
 	State m_State = State::BindState;
 	std::string m_Query;
 };

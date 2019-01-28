@@ -10,7 +10,7 @@ DECLARE_DELEGATE(ParallelForDelegate, int);
 
 struct AsyncTask
 {
-	unsigned Priority = 0;
+	int Priority = 0;
 	bool IsCompleted = false;
 	AsyncTaskDelegate Action;
 };

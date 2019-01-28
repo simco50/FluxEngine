@@ -303,7 +303,7 @@ void FluxCore::ObjectUI(SceneNode* pNode)
 			m_pSelectedNode = pNode;
 		}
 		ImGui::SameLine();
-		ImGui::Text(pNode->GetName().c_str());
+		ImGui::Text("%s", pNode->GetName().c_str());
 		ImGui::PopID();
 	}
 }

@@ -174,7 +174,7 @@ bool HookableThread::RunThread()
 DWORD WINAPI HookableThread::ThreadFunctionStatic(void* pData)
 {
 	HookableThread* pThread = static_cast<HookableThread*>(pData);
-	return pThread->ThreadFunction();
+	return (DWORD)pThread->ThreadFunction();
 }
 
 //WORKER THREAD

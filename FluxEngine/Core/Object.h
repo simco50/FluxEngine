@@ -4,6 +4,8 @@ class Context;
 class Subsystem;
 
 #define FLUX_OBJECT_BASE(typeName, baseTypeName, isAbstract) \
+	private: \
+		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic(), &typeName::CreateInstanceStatic, isAbstract); \
 	public: \
 		using ClassName = typeName; \
 		using BaseClass = baseTypeName; \
@@ -14,7 +16,6 @@ class Subsystem;
 		static constexpr const char* GetTypeNameStatic() { return GetTypeInfoStatic()->GetTypeName(); } \
 		static constexpr const TypeInfo* GetTypeInfoStatic() { return &TYPE_INFO; } \
 	private: \
-		static constexpr TypeInfo TYPE_INFO = TypeInfo(#typeName, baseTypeName::GetTypeInfoStatic(), &typeName::CreateInstanceStatic, isAbstract); \
 
 #define FLUX_OBJECT(typeName, baseTypeName) \
 	static Object* CreateInstanceStatic(Context* pContext) { return static_cast<Object*>(new typeName(pContext)); } \
@@ -26,6 +27,9 @@ class Subsystem;
 
 class Object
 {
+private:
+	static Object* CreateInstanceStatic(Context*) { return nullptr; }
+	static constexpr TypeInfo TYPE_INFO = TypeInfo("Object", nullptr, &Object::CreateInstanceStatic, true);
 public:
 	virtual ~Object() = default;
 
@@ -68,10 +72,6 @@ protected:
 	{}
 
 	Context* m_pContext = nullptr;
-
-private:
-	static Object* CreateInstanceStatic(Context*) { return nullptr; }
-	static constexpr TypeInfo TYPE_INFO = TypeInfo("Object", nullptr, &Object::CreateInstanceStatic, true);
 };
 
 template<typename T>

@@ -57,7 +57,7 @@ void Model::CreateUI()
 {
 	if (m_pMesh)
 	{
-		ImGui::LabelText("Mesh", m_pMesh->GetFilePath().c_str());
+		ImGui::LabelText("Mesh", "%s", m_pMesh->GetFilePath().c_str());
 	}
 	Drawable::CreateUI();
 }

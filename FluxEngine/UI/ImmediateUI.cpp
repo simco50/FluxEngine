@@ -22,7 +22,8 @@ void* ImGuiAllocate(const size_t size, void*)
 
 void ImGuiFree(void* pData, void*)
 {
-	delete[] pData;
+	char* pD = static_cast<char*>(pData);
+	delete[] pD;
 }
 
 ImmediateUI::ImmediateUI(Context* pContext)

@@ -10,11 +10,11 @@ public:
 
 	template<size_t size>
 	constexpr TypeInfo(const char (&typeName)[size], const TypeInfo* baseTypeInfo, ObjectCreateFunction createFunction, const bool isAbstract) 
-		: m_TypeName{},
+		: m_pBaseTypeInfo(baseTypeInfo),
+		m_CreateFunction(createFunction),
 		m_Type(typeName),
-		m_pBaseTypeInfo(baseTypeInfo),
 		m_IsAbstract(isAbstract),
-		m_CreateFunction(createFunction)
+		m_TypeName {}
 	{
 		static_assert(size <= TYPENAME_SIZE, "Size of typename is too long");
 		constexpr size_t min = Math::Min<size_t>(size, TYPENAME_SIZE);
@@ -38,9 +38,9 @@ public:
 
 private:
 	static constexpr size_t TYPENAME_SIZE = 32;
-	char m_TypeName[TYPENAME_SIZE];
-	StringHash m_Type;
 	const TypeInfo* m_pBaseTypeInfo = nullptr;
-	bool m_IsAbstract;
 	ObjectCreateFunction m_CreateFunction;
+	StringHash m_Type;
+	bool m_IsAbstract;
+	char m_TypeName[TYPENAME_SIZE];
 };

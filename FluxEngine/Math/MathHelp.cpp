@@ -98,7 +98,7 @@ namespace Math
 			number /= base;
 			++count;
 		}
-		for (count; count <= 8; ++count)
+		for (; count <= 8; ++count)
 		{
 			nr << '0';
 		}
