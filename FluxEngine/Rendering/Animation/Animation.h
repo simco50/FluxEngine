@@ -1,5 +1,5 @@
 #pragma once
-#include "Content\Resource.h"
+#include "Content/Resource.h"
 
 class Skeleton;
 struct Bone;

@@ -6,13 +6,10 @@
 class IOStream : public InputStream, public OutputStream
 {
 public:
-	IOStream()
-	{}
+	IOStream() = default;
+	virtual ~IOStream() = default;
 
 	IOStream(const size_t size)
 		: InputStream(size)
-	{}
-
-	virtual ~IOStream()
 	{}
 };

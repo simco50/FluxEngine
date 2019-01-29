@@ -3,7 +3,6 @@
 #include "Rendering/Mesh.h"
 #include "Scenegraph/SceneNode.h"
 #include "Animation.h"
-#include "Rendering/Core/GraphicsDefines.h"
 
 AnimatedModel::AnimatedModel(Context* pContext)
 	: Model(pContext)

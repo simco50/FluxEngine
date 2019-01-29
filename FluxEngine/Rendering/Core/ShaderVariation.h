@@ -1,5 +1,4 @@
 #pragma once
-#include "GraphicsDefines.h"
 #include "GraphicsObject.h"
 class Shader;
 class ConstantBuffer;

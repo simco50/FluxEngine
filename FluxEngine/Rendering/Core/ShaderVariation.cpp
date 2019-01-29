@@ -41,7 +41,7 @@ bool ShaderVariation::SaveToCache(OutputStream& outputStream) const
 	AUTOPROFILE(ShaderVariation_SaveToCache);
 
 	outputStream.WriteSizedString("SHDR");
-	outputStream.WriteInt(SHADER_CACHE_VERSION);
+	outputStream.WriteInt32(SHADER_CACHE_VERSION);
 	outputStream.WriteSizedString(m_Name);
 	outputStream.WriteUByte((unsigned char)m_ShaderType);
 	outputStream.WriteUByte((unsigned char)m_Defines.size());
@@ -52,18 +52,18 @@ bool ShaderVariation::SaveToCache(OutputStream& outputStream) const
 	outputStream.WriteUByte((unsigned char)m_ShaderParameters.size());
 	for (const auto& pair : m_ShaderParameters)
 	{
-		outputStream.WriteInt((int64)pair.first.m_Hash);
+		outputStream.WriteUint32(pair.first.m_Hash);
 		const ShaderParameter& parameter = pair.second;
 		outputStream.WriteSizedString(parameter.Name);
-		outputStream.WriteInt(parameter.Buffer);
-		outputStream.WriteInt(parameter.Size);
-		outputStream.WriteInt(parameter.Offset);
+		outputStream.WriteInt32(parameter.Buffer);
+		outputStream.WriteInt32(parameter.Size);
+		outputStream.WriteInt32(parameter.Offset);
 	}
 	for (size_t size : m_ConstantBufferSizes)
 	{
-		outputStream.WriteInt((int)size);
+		outputStream.WriteInt32((int)size);
 	}
-	outputStream.WriteInt((int)m_ShaderByteCode.size());
+	outputStream.WriteInt32((int)m_ShaderByteCode.size());
 	outputStream.Write(m_ShaderByteCode.data(), m_ShaderByteCode.size());
 	return true;
 }
@@ -76,7 +76,7 @@ bool ShaderVariation::LoadFromCache(InputStream& inputStream)
 	{
 		return false;
 	}
-	int version = inputStream.ReadInt();
+	int version = inputStream.ReadInt32();
 	if (version != SHADER_CACHE_VERSION)
 	{
 		FLUX_LOG(Warning, "[ShaderVariation::LoadFromCache()] > Cached shader version mismatch: %i, expected %i", version, SHADER_CACHE_VERSION);
@@ -93,20 +93,20 @@ bool ShaderVariation::LoadFromCache(InputStream& inputStream)
 	unsigned char parameterCount = inputStream.ReadByte();
 	for (unsigned char i = 0; i < parameterCount; i++)
 	{
-		StringHash parameterHash = StringHash((uint32)inputStream.ReadInt());
+		StringHash parameterHash = StringHash(inputStream.ReadUint32());
 		ShaderParameter& parameter = m_ShaderParameters[parameterHash];
 
 		parameter.Name = inputStream.ReadSizedString();
-		parameter.Buffer = inputStream.ReadInt();
-		parameter.Size = inputStream.ReadInt();
-		parameter.Offset = inputStream.ReadInt();
+		parameter.Buffer = inputStream.ReadInt32();
+		parameter.Size = inputStream.ReadInt32();
+		parameter.Offset = inputStream.ReadInt32();
 	}
 	for (size_t& size : m_ConstantBufferSizes)
 	{
-		size = (size_t)inputStream.ReadInt();
+		size = (size_t)inputStream.ReadInt32();
 	}
 
-	m_ShaderByteCode.resize((size_t)inputStream.ReadInt());
+	m_ShaderByteCode.resize((size_t)inputStream.ReadInt32());
 	inputStream.Read(m_ShaderByteCode.data(), m_ShaderByteCode.size());
 
 	for (size_t i = 0; i < m_ConstantBufferSizes.size(); i++)

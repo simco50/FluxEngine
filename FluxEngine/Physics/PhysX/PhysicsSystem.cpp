@@ -11,12 +11,65 @@
 
 using namespace physx;
 
+class PhysxAllocator : public physx::PxAllocatorCallback
+{
+
+public:
+	virtual void* allocate(size_t size, const char* typeName, const char* filename, int line) override
+	{
+#ifdef PHYSX_DEBUG_ALLOCATIONS
+		FLUX_LOG(Log, "[PhysxAllocator::allocate()] Allocated %d bytes for %s at %s (%d)", size, typename, filename, line);
+#else
+		UNREFERENCED_PARAMETER(typeName);
+		UNREFERENCED_PARAMETER(filename);
+		UNREFERENCED_PARAMETER(line);
+#endif
+
+		return _aligned_malloc(size, 16);
+	}
+
+	virtual void deallocate(void* ptr) override
+	{
+		_aligned_free(ptr);
+	}
+};
+
+class PhysxErrorCallback : public physx::PxErrorCallback
+{
+public:
+	virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override
+	{
+		switch (code)
+		{
+		case physx::PxErrorCode::eDEBUG_INFO:
+			FLUX_LOG(Info, "[PhysX] > %s", message);
+			break;
+		case physx::PxErrorCode::ePERF_WARNING:
+		case physx::PxErrorCode::eDEBUG_WARNING:
+			FLUX_LOG(Warning, "[PhysX] > %s", message);
+			break;
+		case physx::PxErrorCode::eINVALID_PARAMETER:
+		case physx::PxErrorCode::eINVALID_OPERATION:
+		case physx::PxErrorCode::eOUT_OF_MEMORY:
+		case physx::PxErrorCode::eINTERNAL_ERROR:
+		case physx::PxErrorCode::eABORT:
+			FLUX_LOG(Error, "[PhysX] > %s in '%s' - Line %i", message, file, line);
+		case physx::PxErrorCode::eMASK_ALL:
+		case physx::PxErrorCode::eNO_ERROR:
+		default:
+			break;
+		}
+	}
+};
+
 PhysicsSystem::PhysicsSystem(Context* pContext)
 	: Subsystem(pContext)
 {
 	AUTOPROFILE(PhysicsSystem_CreatePhysics);
 
-	m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_AllocatorCallback, m_ErrorCallback);
+	static PhysxErrorCallback errorCallback;
+	static PhysxAllocator physxAllocator;
+	m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, physxAllocator, errorCallback);
 	if (m_pFoundation == nullptr)
 	{
 		FLUX_LOG(Error, "[PhysxSystem::Initialize()] > Failed to create PxFoundation");

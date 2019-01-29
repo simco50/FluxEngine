@@ -22,9 +22,10 @@ public:
 
 	std::string ReadSizedString();
 	std::string ReadString();
-	int ReadInt();
+	int32 ReadInt32();
+	uint32 ReadUint32();
 	int64 ReadInt64();
-	unsigned int ReadUInt();
+	uint64 ReadUint64();
 	float ReadFloat();
 	double ReadDouble();
 	char ReadByte();

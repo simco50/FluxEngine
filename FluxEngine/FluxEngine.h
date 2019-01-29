@@ -42,6 +42,7 @@
 #include "Helpers/AssertMacros.h"
 #include "Misc/TimeSpan.h"
 #include "Misc/DateTime.h"
+#include "Rendering/Core/GraphicsDefines.h"
 
 #include "Diagnostics/Console.h"
 #include "Diagnostics/Profiler.h"

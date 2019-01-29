@@ -74,7 +74,7 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 
 	inputStream.Read((char*)&m_BoundingBox, sizeof(BoundingBox));
 
-	m_GeometryCount = inputStream.ReadInt();
+	m_GeometryCount = inputStream.ReadInt32();
 
 	for (int i = 0; i < m_GeometryCount; ++i)
 	{
@@ -91,8 +91,8 @@ bool Mesh::LoadFlux(InputStream& inputStream)
 				break;
 			}
 
-			const unsigned int length = inputStream.ReadUInt();
-			const unsigned int stride = inputStream.ReadUInt();
+			const unsigned int length = inputStream.ReadUint32();
+			const unsigned int stride = inputStream.ReadUint32();
 
 			pGeometry->GetVertexDataUnsafe(block).pData = new char[length * stride];
 			pGeometry->GetVertexDataUnsafe(block).Count = length;

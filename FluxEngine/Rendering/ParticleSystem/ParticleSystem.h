@@ -1,7 +1,6 @@
 #pragma once
 #include "Math/KeyframeValue.h"
 #include "Content/Resource.h"
-#include "Rendering/Core/GraphicsDefines.h"
 
 struct ParticleVertex
 {

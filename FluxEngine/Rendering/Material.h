@@ -1,5 +1,4 @@
 #pragma once
-#include "Rendering\Core\GraphicsDefines.h"
 #include "Content\Resource.h"
 
 class Shader;

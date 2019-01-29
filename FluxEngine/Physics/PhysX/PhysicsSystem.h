@@ -1,7 +1,5 @@
 #pragma once
-#include "PhysxAllocator.h"
-#include "PhysxErrorCallback.h"
-#include "Core\Subsystem.h"
+#include "Core/Subsystem.h"
 
 class Graphics;
 
@@ -29,9 +27,6 @@ public:
 	physx::PxMaterial* GetDefaultMaterial() const { return m_pDefaultMaterial; }
 
 private:
-	PhysxAllocator m_AllocatorCallback;
-	PhysxErrorCallback m_ErrorCallback;
-
 	physx::PxCpuDispatcher* m_pCpuDispatcher = nullptr;
 
 	physx::PxFoundation* m_pFoundation = nullptr;

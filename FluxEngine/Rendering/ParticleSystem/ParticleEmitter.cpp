@@ -11,7 +11,6 @@
 #include "Rendering/Material.h"
 #include "Rendering/Camera/Camera.h"
 #include "Rendering/Core/VertexBuffer.h"
-#include "Rendering/Core/GraphicsDefines.h"
 #include "Rendering/Core/Graphics.h"
 #include "Rendering/Core/Texture2D.h"
 

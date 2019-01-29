@@ -1,5 +1,4 @@
 #pragma once
-#include "GraphicsDefines.h"
 #include "Core\Subsystem.h"
 #include "BlendState.h"
 #include "RasterizerState.h"

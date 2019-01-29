@@ -1,5 +1,4 @@
 #pragma once
-#include "GraphicsDefines.h"
 
 class ShaderVariation;
 struct ShaderParameter;

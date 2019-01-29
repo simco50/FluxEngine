@@ -61,7 +61,7 @@ std::string InputStream::ReadString()
 	return str.str();
 }
 
-int InputStream::ReadInt()
+int32 InputStream::ReadInt32()
 {
 	int out;
 	return Read(&out, sizeof(int)) == sizeof(int) ? out : 0;
@@ -73,7 +73,13 @@ int64 InputStream::ReadInt64()
 	return Read(&out, sizeof(int64)) == sizeof(int64) ? out : 0;
 }
 
-unsigned int InputStream::ReadUInt()
+uint64 InputStream::ReadUint64()
+{
+	uint64 out;
+	return Read(&out, sizeof(uint64)) == sizeof(uint64) ? out : 0;
+}
+
+uint32 InputStream::ReadUint32()
 {
 	unsigned int out;
 	return Read(&out, sizeof(unsigned int)) == sizeof(unsigned int) ? out : 0;

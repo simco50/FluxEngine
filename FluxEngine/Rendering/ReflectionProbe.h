@@ -1,6 +1,6 @@
 #pragma once
 #include "Scenegraph/Component.h"
-#include "Camera/Camera.h"
+#include "View.h"
 
 class TextureCube;
 class Texture2D;

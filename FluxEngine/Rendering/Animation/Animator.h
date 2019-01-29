@@ -1,5 +1,5 @@
 #pragma once
-#include "Scenegraph\Component.h"
+#include "Scenegraph/Component.h"
 
 class AnimationState;
 class AnimatedModel;

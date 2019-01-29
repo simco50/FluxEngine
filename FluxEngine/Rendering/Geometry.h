@@ -1,5 +1,4 @@
 #pragma once
-#include "Rendering/Core/GraphicsDefines.h"
 
 class Graphics;
 class IndexBuffer;

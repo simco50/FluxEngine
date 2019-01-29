@@ -1,16 +1,15 @@
 #pragma once
-#include "InputStream.h"
-#include "OutputStream.h"
+#include "IOStream.h"
 
-class MemoryStream : public InputStream, public OutputStream
+class MemoryStream : public IOStream
 {
 public:
 	MemoryStream()
-		: InputStream(0), m_pBuffer(nullptr)
+		: IOStream(0), m_pBuffer(nullptr)
 	{}
 
 	MemoryStream(void* pData, const size_t size)
-		: InputStream(size), m_pBuffer(pData)
+		: IOStream(size), m_pBuffer(pData)
 	{}
 
 	virtual ~MemoryStream()

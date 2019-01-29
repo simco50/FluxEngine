@@ -1,6 +1,5 @@
 #pragma once
 #include "Content/Resource.h"
-#include "GraphicsDefines.h"
 
 class Graphics;
 class ShaderVariation;

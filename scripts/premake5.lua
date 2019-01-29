@@ -18,6 +18,7 @@ workspace (engineName)
 	flags {"FatalWarnings", "MultiProcessorCompile"}
 	language "C++"
 	startproject (gameName)
+	systemversion "latest"
 
     filter { "platforms:x64" }
 		architecture "x86_64"

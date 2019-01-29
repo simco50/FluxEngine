@@ -3,8 +3,6 @@
 #include <dxgi.h>
 #include <d3d11.h>
 
-#include "Rendering/Core/GraphicsDefines.h"
-
 class InputLayout;
 class ShaderProgram;
 

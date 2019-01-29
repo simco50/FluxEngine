@@ -4,8 +4,6 @@
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
 
-#include "Rendering/Core/GraphicsDefines.h"
-
 class AssimpHelpers
 {
 public:
