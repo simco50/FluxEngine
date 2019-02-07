@@ -22,6 +22,8 @@
 #include <SDL_syswm.h>
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
+const int Graphics::RENDERTARGET_FORMAT = (int)DXGI_FORMAT_R8G8B8A8_UNORM;
+const int Graphics::DEPTHSTENCIL_FORMAT = (int)DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 Graphics::Graphics(Context* pContext)
 	: Subsystem(pContext),
@@ -62,34 +64,25 @@ HWND Graphics::GetWindow() const
 	return sysInfo.info.win.window;
 }
 
-bool Graphics::SetMode(
-	const std::string& windowTitle,
-	const int width,
-	const int height,
-	WindowType windowType,
-	const bool resizable,
-	const bool vsync,
-	const int multiSample,
-	const int refreshRate)
+bool Graphics::SetMode(const GraphicsCreateInfo& createInfo)
 {
 	AUTOPROFILE(Graphics_SetMode);
 
-	m_WindowWidth = width;
-	m_WindowHeight = height;
-	m_WindowType = windowType;
-	m_Resizable = resizable;
-	m_WindowTitle = windowTitle;
-
-	m_Vsync = vsync;
-	m_RefreshRate = refreshRate;
-	m_Multisample = multiSample;
+	m_WindowWidth = createInfo.WindowWidth;
+	m_WindowHeight = createInfo.WindowHeight;
+	m_WindowType = createInfo.WindowType;
+	m_Resizable = createInfo.Resizable;
+	m_WindowTitle = createInfo.Title;
+	m_Vsync = createInfo.VSync;
+	m_RefreshRate = createInfo.RefreshRate;
+	m_Multisample = createInfo.MultiSample;
 
 	if (!OpenWindow())
 	{
 		return false;
 	}
 
-	if (!m_pImpl->m_pDevice.IsValid() || m_Multisample != multiSample)
+	if (!m_pImpl->m_pDevice.IsValid())
 	{
 		if (!CreateDevice(m_WindowWidth, m_WindowHeight))
 		{

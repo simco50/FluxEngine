@@ -21,7 +21,7 @@ void GraphicsObject::SetName(const std::string& name)
 
 #else
 
-void GraphicsObject::SetName(const std::string& name)
+void GraphicsObject::SetName(const std::string& /*name*/)
 {
 
 }

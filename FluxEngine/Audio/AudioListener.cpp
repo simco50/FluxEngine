@@ -22,20 +22,20 @@ void AudioListener::OnNodeSet(SceneNode* pNode)
 
 void AudioListener::OnMarkedDirty(const SceneNode* pNode)
 {
-	Vector3 velocity = (pNode->GetWorldPosition() - m_LastPosition);
+	Vector3 worldPos = pNode->GetWorldPosition();
+	Vector3 velocity = (worldPos - m_LastPosition);
 	velocity /= GameTimer::DeltaTime();
 
-	Vector3 wPos = pNode->GetWorldPosition();
 	Vector3 fwd = pNode->GetForward();
 	Vector3 up = pNode->GetUp();
 
 	m_pAudio->GetSystem()->set3DListenerAttributes(
 		0,
-		reinterpret_cast<const FMOD_VECTOR*>(&wPos),
+		reinterpret_cast<const FMOD_VECTOR*>(&worldPos),
 		reinterpret_cast<const FMOD_VECTOR*>(&velocity),
 		reinterpret_cast<const FMOD_VECTOR*>(&fwd),
 		reinterpret_cast<const FMOD_VECTOR*>(&up)
 	);
 
-	m_LastPosition = pNode->GetWorldPosition();
+	m_LastPosition = worldPos;
 }

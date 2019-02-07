@@ -8,6 +8,9 @@ environment:
 platform:
   - x64
   - Win32
+branches:
+  except:
+    - d3d12
 #init:
 #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #on_finish:

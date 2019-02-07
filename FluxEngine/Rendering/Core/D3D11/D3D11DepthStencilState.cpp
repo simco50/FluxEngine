@@ -2,7 +2,7 @@
 #include "D3D11GraphicsImpl.h"
 #include "../DepthStencilState.h"
 #include "../Graphics.h"
-#include "../D3DCommon/D3DHelpers.h"
+#include "D3D11Helpers.h"
 
 void* DepthStencilState::GetOrCreate(Graphics* pGraphics)
 {

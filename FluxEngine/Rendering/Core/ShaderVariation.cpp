@@ -43,6 +43,8 @@ bool ShaderVariation::SaveToCache(OutputStream& outputStream) const
 	outputStream.WriteSizedString("SHDR");
 	outputStream.WriteInt32(SHADER_CACHE_VERSION);
 	outputStream.WriteSizedString(m_Name);
+	outputStream.WriteInt32(m_ShaderModel.MajVersion);
+	outputStream.WriteInt32(m_ShaderModel.MinVersion);
 	outputStream.WriteUByte((unsigned char)m_ShaderType);
 	outputStream.WriteUByte((unsigned char)m_Defines.size());
 	for (const std::string& define : m_Defines)
@@ -83,6 +85,13 @@ bool ShaderVariation::LoadFromCache(InputStream& inputStream)
 		return false;
 	}
 	m_Name = inputStream.ReadSizedString();
+	m_ShaderModel.MajVersion = inputStream.ReadInt32();
+	m_ShaderModel.MinVersion = inputStream.ReadInt32();
+	ShaderModel desired = GetDesiredShaderModel();
+	if (desired.MajVersion != m_ShaderModel.MajVersion || desired.MinVersion != m_ShaderModel.MinVersion)
+	{
+		return false;
+	}
 	m_ShaderType = (ShaderType)inputStream.ReadUByte();
 	m_Defines.resize((size_t)inputStream.ReadByte());
 	for (std::string& define : m_Defines)

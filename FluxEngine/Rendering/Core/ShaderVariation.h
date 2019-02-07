@@ -37,7 +37,18 @@ public:
 	bool CreateShader(Graphics* pGraphics, ShaderType type);
 
 private:
-	static const int SHADER_CACHE_VERSION = 5;
+	struct ShaderModel
+	{
+		ShaderModel() {}
+		ShaderModel(int maj, int min) :
+			MajVersion(maj), MinVersion(min)
+		{}
+		int MajVersion = 0;
+		int MinVersion = 0;
+	};
+	ShaderModel GetDesiredShaderModel();
+
+	static const int SHADER_CACHE_VERSION = 8;
 
 	bool Compile(Graphics* pGraphics);
 
@@ -46,6 +57,7 @@ private:
 	Shader* m_pParentShader;
 	ShaderType m_ShaderType;
 
+	ShaderModel m_ShaderModel;
 	std::string m_Name;
 	std::vector<std::string> m_Defines;
 	std::vector<char> m_ShaderByteCode;

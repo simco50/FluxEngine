@@ -1,11 +1,11 @@
 #include "FluxEngine.h"
-#include "D3D11GraphicsImpl.h"
 #include "../ShaderVariation.h"
 #include "../Graphics.h"
 #include "../Shader.h"
 
 #include <d3dcompiler.h>
 #include "../D3DCommon/D3DHelpers.h"
+#include "D3D12GraphicsImpl.h"
 
 bool ShaderVariation::Create()
 {
@@ -151,17 +151,17 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 {
 	AUTOPROFILE(ShaderVariation_ShaderReflection);
 
-	ComPtr<ID3D11ShaderReflection> pShaderReflection;
-	D3D11_SHADER_DESC shaderDesc;
+	ComPtr<ID3D12ShaderReflection> pShaderReflection;
+	D3D12_SHADER_DESC shaderDesc;
 
-	HR(D3DReflect(pBuffer, bufferSize, IID_ID3D11ShaderReflection, (void**)pShaderReflection.GetAddressOf()));
+	HR(D3DReflect(pBuffer, bufferSize, IID_ID3D12ShaderReflection, (void**)pShaderReflection.GetAddressOf()));
 	pShaderReflection->GetDesc(&shaderDesc);
 
 	std::map<std::string, uint32> cbRegisterMap;
 
 	for (unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 	{
-		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
+		D3D12_SHADER_INPUT_BIND_DESC resourceDesc;
 		pShaderReflection->GetResourceBindingDesc(i, &resourceDesc);
 
 		switch (resourceDesc.Type)
@@ -187,8 +187,8 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 
 	for (unsigned int c = 0; c < shaderDesc.ConstantBuffers; ++c)
 	{
-		ID3D11ShaderReflectionConstantBuffer* pReflectionConstantBuffer = pShaderReflection->GetConstantBufferByIndex(c);
-		D3D11_SHADER_BUFFER_DESC bufferDesc;
+		ID3D12ShaderReflectionConstantBuffer* pReflectionConstantBuffer = pShaderReflection->GetConstantBufferByIndex(c);
+		D3D12_SHADER_BUFFER_DESC bufferDesc;
 		pReflectionConstantBuffer->GetDesc(&bufferDesc);
 		uint32 cbRegister = cbRegisterMap[std::string(bufferDesc.Name)];
 		checkf(cbRegister < m_ConstantBuffers.size(), "[ShaderVariation::ShaderReflection] > The buffer exceeds the maximum amount of constant buffers. See 'ShaderParameterType::MAX'");
@@ -199,8 +199,8 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 
 		for (unsigned v = 0; v < bufferDesc.Variables; ++v)
 		{
-			ID3D11ShaderReflectionVariable* pVariable = pReflectionConstantBuffer->GetVariableByIndex(v);
-			D3D11_SHADER_VARIABLE_DESC variableDesc;
+			ID3D12ShaderReflectionVariable* pVariable = pReflectionConstantBuffer->GetVariableByIndex(v);
+			D3D12_SHADER_VARIABLE_DESC variableDesc;
 			pVariable->GetDesc(&variableDesc);
 
 			ShaderParameter parameter = {};
@@ -214,43 +214,12 @@ void ShaderVariation::ShaderReflection(char* pBuffer, unsigned bufferSize, Graph
 	}
 }
 
-bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
+bool ShaderVariation::CreateShader(Graphics* /*pGraphics*/, const ShaderType /*type*/)
 {
 	AUTOPROFILE_DESC(ShaderVariation_CreateShader, m_Name);
 
 	if (m_ShaderByteCode.size() == 0)
 	{
-		return false;
-	}
-	switch (type)
-	{
-	case ShaderType::VertexShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateVertexShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11VertexShader**)&m_pResource));
-		break;
-	case ShaderType::PixelShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pResource));
-		break;
-#ifdef SHADER_GEOMETRY_ENABLE
-	case ShaderType::GeometryShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pResource));
-		break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
-	case ShaderType::ComputeShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pResource));
-		break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
-	case ShaderType::DomainShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateDomainShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11DomainShader**)&m_pResource));
-		break;
-	case ShaderType::HullShader:
-		HR(pGraphics->GetImpl()->GetDevice()->CreateHullShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11HullShader**)&m_pResource));
-		break;
-#endif
-	case ShaderType::MAX:
-	default:
-		FLUX_LOG(Warning, "[ShaderVariation::CreateShader] Shader type unknown");
 		return false;
 	}
 	return true;
@@ -259,7 +228,32 @@ bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
 ShaderVariation::ShaderModel ShaderVariation::GetDesiredShaderModel()
 {
 	ShaderVariation::ShaderModel model;
-	model.MajVersion = 5;
-	model.MinVersion = 0;
+	D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+	shaderModel.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+	HR(m_pGraphics->GetImpl()->GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(D3D12_FEATURE_DATA_SHADER_MODEL)));
+	switch (shaderModel.HighestShaderModel)
+	{
+	case D3D_SHADER_MODEL_5_1:
+		model = ShaderModel(5, 1);
+		break;
+	case D3D_SHADER_MODEL_6_0:
+		model = ShaderModel(6, 0);
+		break;
+	case D3D_SHADER_MODEL_6_1:
+		model = ShaderModel(6, 1);
+		break;
+	case D3D_SHADER_MODEL_6_2:
+		model = ShaderModel(6, 2);
+		break;
+	case D3D_SHADER_MODEL_6_3:
+		model = ShaderModel(6, 3);
+		break;
+	case D3D_SHADER_MODEL_6_4:
+		model = ShaderModel(6, 4);
+		break;
+	default:
+		check(false);
+	}
+
 	return model;
 }

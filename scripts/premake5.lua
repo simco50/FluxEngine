@@ -1,8 +1,8 @@
 require "Modules"
 require "Utility"
 
-local engineName = "FluxEngine"
-local gameName = "FluxGame"
+engineName = "FluxEngine"
+gameName = "FluxGame"
 
 ROOT = "../"
 
@@ -15,7 +15,8 @@ workspace (engineName)
     rtti "Off"
 	characterset ("MBCS")
 	defines { "_CONSOLE", "THREADING", "PLATFORM_WINDOWS"}
-	flags {"FatalWarnings", "MultiProcessorCompile"}
+	--flags { "FatalWarnings" }
+	flags { "MultiProcessorCompile" }
 	language "C++"
 	startproject (gameName)
 	systemversion "latest"
@@ -65,7 +66,7 @@ workspace (engineName)
 		AddZlib(false)
 		AddSDL2(false)
 		AddAssimp(false)
-		AddDX11(false)
+		AddDX12(false)
 		AddWininet(false)
 
 	project (gameName)
@@ -82,5 +83,5 @@ workspace (engineName)
 		AddZlib(true)
 		AddSDL2(true)
 		AddAssimp(true)
-		AddDX11(true)
+		AddDX12(true)
 		AddWininet(true)

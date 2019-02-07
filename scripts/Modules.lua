@@ -151,7 +151,7 @@ function AddAssimp(isTarget)
 end
 
 function AddDX11(isTarget)
-    defines { "MODULE_D3D11", "GRAPHICS_D3D11" }
+    defines { "MODULE_D3D11", "GRAPHICS_D3D11", "GRAPHICS_D3D" }
 
     if(isTarget == true) then
         links
@@ -160,6 +160,32 @@ function AddDX11(isTarget)
             "d3d11.lib",
             "d3dcompiler.lib",
             "dxguid.lib",
+        }
+    else
+        files 
+        { 
+            (ROOT .. engineName .. "/Rendering/Core/D3DCommon/**"),
+            (ROOT .. engineName .. "/Rendering/Core/D3D11/**") 
+        }
+    end
+end
+
+function AddDX12(isTarget)
+    defines { "MODULE_D3D12", "GRAPHICS_D3D12", "GRAPHICS_D3D" }
+
+    if(isTarget == true) then
+        links
+        {
+            "dxgi.lib",
+            "d3d12.lib",
+            "d3dcompiler.lib",
+            "dxguid.lib",
+        }
+    else
+        files 
+        { 
+            (ROOT .. engineName .. "/Rendering/Core/D3D12/**"),
+            (ROOT .. engineName .. "/Rendering/Core/D3DCommon/**") 
         }
     end
 end

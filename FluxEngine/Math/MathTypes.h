@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef MODULE_D3D11
+#ifdef GRAPHICS_D3D
 
 #include "External/SimpleMath/SimpleMath.h"
 using BoundingBox = DirectX::BoundingBox;

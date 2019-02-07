@@ -8,7 +8,6 @@ class VertexBuffer;
 class IndexBuffer;
 class RenderTarget;
 class ShaderVariation;
-class InputLayout;
 class Texture;
 class ConstantBuffer;
 class Shader;
@@ -27,6 +26,18 @@ struct AdapterInfo
 	unsigned int VendorId = 0;
 };
 
+struct GraphicsCreateInfo
+{
+	std::string Title = "FluxEngine";
+	int WindowWidth = 1240;
+	int WindowHeight = 720;
+	WindowType WindowType = WindowType::WINDOWED;
+	bool Resizable = true;
+	bool VSync = true;
+	int MultiSample = 1;
+	int RefreshRate = 60;
+};
+
 class Graphics : public Subsystem
 {
 	FLUX_OBJECT(Graphics, Subsystem)
@@ -37,15 +48,7 @@ public:
 
 	DELETE_COPY(Graphics)
 
-	bool SetMode(
-		const std::string& windowTitle,
-		int width,
-		int height,
-		WindowType windowType,
-		bool resizable,
-		bool vsync,
-		int multiSample,
-		int refreshRate);
+	bool SetMode(const GraphicsCreateInfo& createInfo);
 
 	void SetRenderTarget(int index, RenderTarget* pRenderTarget);
 	void SetDepthStencil(RenderTarget* pRenderTarget);
@@ -127,6 +130,9 @@ private:
 
 	void UpdateShaderProgram();
 	void UpdateShaders();
+
+	static const int RENDERTARGET_FORMAT;
+	static const int DEPTHSTENCIL_FORMAT;
 
 	DelegateHandle m_WindowSizeChangedHandle;
 	SDL_Window* m_pWindow = nullptr;
