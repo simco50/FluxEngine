@@ -31,4 +31,5 @@ private:
 	bool m_IsDirty = false;
 	unsigned int m_Size = 0;
 	unsigned char* m_pShadowData = nullptr;
+	char* m_pMemoryHandle = nullptr;
 };
