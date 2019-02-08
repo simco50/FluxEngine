@@ -4,6 +4,7 @@
 #include "../Graphics.h"
 #include "../ShaderVariation.h"
 #include "../VertexBuffer.h"
+#include "../D3DCommon/D3DDefines.h"
 
 InputLayout::InputLayout(Graphics* pGraphics)
 	: GraphicsObject(pGraphics)
@@ -31,8 +32,8 @@ void InputLayout::Create(VertexBuffer** vertexBuffers, unsigned int bufferCount,
 		for (const VertexElement& e : vertexBuffers[i]->GetElements())
 		{
 			D3D11_INPUT_ELEMENT_DESC desc;
-			desc.SemanticName = VertexElement::GetSemanticOfType(e.Semantic);
-			desc.Format = VertexElement::GetFormatOfType(e.Type);
+			desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
+			desc.Format = D3DCommon::GetFormatOfType(e.Type);
 			desc.AlignedByteOffset = e.Offset;
 			desc.InputSlotClass = e.PerInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
 			desc.InputSlot = i;

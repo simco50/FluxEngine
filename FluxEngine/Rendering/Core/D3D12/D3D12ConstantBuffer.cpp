@@ -2,7 +2,6 @@
 #include "D3D12GraphicsImpl.h"
 #include "../ConstantBuffer.h"
 #include "../Graphics.h"
-#include "d3dx12.h"
 
 void ConstantBuffer::SetSize(const unsigned int size)
 {
@@ -10,8 +9,6 @@ void ConstantBuffer::SetSize(const unsigned int size)
 
 	Release();
 	m_Size = size;
-
-	m_pShadowData = new unsigned char[m_Size];
 
 	D3D12_RESOURCE_DESC desc = {};
 	desc.Alignment = 0;
@@ -47,10 +44,5 @@ void ConstantBuffer::SetSize(const unsigned int size)
 	// app closes. Keeping things mapped for the lifetime of the resource is okay.
 	// We do not intend to read from this resource on the CPU.
 	CD3DX12_RANGE readRange(0, 0);
-	pResource->Map(0, &readRange, reinterpret_cast<void**>(&m_pMemoryHandle));
-}
-
-void ConstantBuffer::Apply()
-{
-
+	pResource->Map(0, &readRange, reinterpret_cast<void**>(&m_pMappedData));
 }

@@ -220,7 +220,7 @@ void Graphics::SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsign
 			{
 				m_CurrentVertexBuffers[i] = pBuffer;
 				m_pImpl->m_CurrentOffsets[i] = pBuffer->GetElements()[0].PerInstance ? instanceOffset : 0;
-				m_pImpl->m_CurrentStrides[i] = pBuffer->GetVertexStride();
+				m_pImpl->m_CurrentStrides[i] = pBuffer->GetElementStride();
 				m_pImpl->m_CurrentVertexBuffers[i] = (ID3D11Buffer*)pBuffer->GetResource();
 				changed = true;
 			}
@@ -249,7 +249,7 @@ void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 		AUTOPROFILE(Graphics_SetIndexBuffer);
 		if (pIndexBuffer)
 		{
-			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetResource(), pIndexBuffer->IsSmallStride() ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+			m_pImpl->m_pDeviceContext->IASetIndexBuffer((ID3D11Buffer*)pIndexBuffer->GetResource(), pIndexBuffer->GetElementStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 		}
 		else
 		{
@@ -408,7 +408,7 @@ bool Graphics::SetShaderParameter(StringHash hash, const void* pData)
 	{
 		return false;
 	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, pParameter->Size, pData);
+	return pParameter->pBuffer->SetData(pData, pParameter->Offset, pParameter->Size, false);
 }
 
 bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
@@ -420,7 +420,7 @@ bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride
 		return false;
 	}
 	checkf(stride * count <= pParameter->Size, "[Graphics::SetShaderParameter] Parameter input too large");
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
+	return pParameter->pBuffer->SetData(pData, pParameter->Offset, stride * count, false);
 }
 
 void Graphics::SetViewport(const FloatRect& rect)

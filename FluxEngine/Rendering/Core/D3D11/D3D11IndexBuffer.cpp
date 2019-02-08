@@ -8,55 +8,16 @@ void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*=
 	AUTOPROFILE(IndexBuffer_Create);
 	SafeRelease(m_pResource);
 
-	m_IndexCount = indexCount;
-	m_SmallIndexStride = smallIndexStride;
+	m_ElementCount = indexCount;
+	m_ElementStride = smallIndexStride ? 2 : 4;
 	m_Dynamic = dynamic;
+	m_Size = indexCount * m_ElementStride;
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc.ByteWidth = indexCount * (smallIndexStride ? 2 : 4);
+	desc.ByteWidth = m_Size;
 	desc.CPUAccessFlags = dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.Usage = dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateBuffer(&desc, nullptr, (ID3D11Buffer**)&m_pResource));
-}
-
-void IndexBuffer::SetData(void* pData)
-{
-	check(m_pResource);
-
-	AUTOPROFILE(IndexBuffer_SetData);
-
-	D3D11_BOX destBox;
-	destBox.left = 0;
-	destBox.right = m_IndexCount * (m_SmallIndexStride ? 2 : 4);
-	destBox.top = 0;
-	destBox.bottom = 1;
-	destBox.front = 0;
-	destBox.back = 1;
-
-	m_pGraphics->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)m_pResource, 0, &destBox, pData, 0, 0);
-}
-
-void* IndexBuffer::Map(bool discard)
-{
-	check(m_pResource);
-
-	D3D11_MAPPED_SUBRESOURCE mappedData;
-	mappedData.pData = nullptr;
-
-	HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &mappedData));
-	void* pBuffer = mappedData.pData;
-
-	m_HardwareLocked = true;
-	return pBuffer;
-}
-
-void IndexBuffer::Unmap()
-{
-	if (m_HardwareLocked)
-	{
-		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);
-		m_HardwareLocked = false;
-	}
 }

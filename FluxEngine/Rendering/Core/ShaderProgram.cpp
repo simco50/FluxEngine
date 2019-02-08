@@ -36,7 +36,7 @@ bool ShaderProgram::SetParameter(StringHash hash, const void* pData)
 	{
 		return false;
 	}
-	return pParameter->second->pBuffer->SetParameter(pParameter->second->Offset, pParameter->second->Size, pData);
+	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, pParameter->second->Size, false);
 }
 
 const ShaderParameter* ShaderProgram::GetShaderParameter(const std::string& name) const

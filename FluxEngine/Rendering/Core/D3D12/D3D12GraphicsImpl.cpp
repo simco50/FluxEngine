@@ -80,3 +80,8 @@ bool GraphicsImpl::CheckMultisampleQuality(const DXGI_FORMAT format, const unsig
 		return data.NumQualityLevels > 0; // D3D10.0 and below: use the best quality
 	}
 }
+
+ID3D12GraphicsCommandList* GraphicsImpl::GetTemporaryCommandList()
+{
+	return nullptr;
+}

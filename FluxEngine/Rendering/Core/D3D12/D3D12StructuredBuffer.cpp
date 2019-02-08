@@ -7,23 +7,3 @@ void StructuredBuffer::Create(const int elementCount, const int elementStride, b
 {
 
 }
-
-void StructuredBuffer::SetData(void* pData)
-{
-
-}
-
-void* StructuredBuffer::Map(bool discard)
-{
-	return nullptr;
-}
-
-void StructuredBuffer::Unmap()
-{
-
-}
-
-void StructuredBuffer::Release()
-{
-
-}

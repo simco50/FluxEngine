@@ -2,29 +2,18 @@
 #include "../IndexBuffer.h"
 #include "D3D12GraphicsImpl.h"
 #include "../Graphics.h"
-#include "d3dx12.h"
 
 void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*= false*/)
 {
 	AUTOPROFILE(IndexBuffer_Create);
 	SafeRelease(m_pResource);
 
-	m_IndexCount = indexCount;
-	m_SmallIndexStride = smallIndexStride;
+	m_ElementCount = indexCount;
+	m_ElementStride = smallIndexStride ? 2 : 4;
 	m_Dynamic = dynamic;
+	m_Size = indexCount * m_ElementStride;
 
-	D3D12_RESOURCE_DESC desc = {};
-	desc.Alignment = 0;
-	desc.DepthOrArraySize = 1;
-	desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	desc.Format = DXGI_FORMAT_UNKNOWN;
-	desc.Width = indexCount * (smallIndexStride ? 2 : 4);
-	desc.Height = 1;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.MipLevels = 1;
-	desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(m_Size);
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -33,19 +22,4 @@ void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*=
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS((ID3D12Resource**)&m_pResource)));
-}
-
-void IndexBuffer::SetData(void* pData)
-{
-	
-}
-
-void* IndexBuffer::Map(bool discard)
-{
-	return nullptr;
-}
-
-void IndexBuffer::Unmap()
-{
-	
 }

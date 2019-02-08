@@ -8,7 +8,8 @@ void StructuredBuffer::Create(const int elementCount, const int elementStride, b
 	Release();
 
 	m_ElementCount = elementCount;
-	m_Stride = elementStride;
+	m_ElementStride = elementStride;
+	m_Size = elementStride * elementCount;
 
 	D3D11_BUFFER_DESC desc;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -26,39 +27,4 @@ void StructuredBuffer::Create(const int elementCount, const int elementStride, b
 	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 
 	HR(m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Buffer*)m_pResource, &viewDesc, (ID3D11ShaderResourceView**)&m_pShaderResourceView));
-}
-
-void StructuredBuffer::SetData(void* pData)
-{
-	void* pTarget = Map(true);
-	memcpy(pTarget, pData, m_ElementCount * m_Stride);
-	Unmap();
-}
-
-void* StructuredBuffer::Map(bool discard)
-{
-	assert(m_pResource);
-	if (m_Mapped == false)
-	{
-		D3D11_MAPPED_SUBRESOURCE data;
-		HR(m_pGraphics->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)m_pResource, 0, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE, 0, &data));
-		m_pMappedData = data.pData;
-		m_Mapped = true;
-	}
-	return m_pMappedData;
-}
-
-void StructuredBuffer::Unmap()
-{
-	if (m_Mapped)
-	{
-		m_pGraphics->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)m_pResource, 0);
-		m_Mapped = false;
-	}
-}
-
-void StructuredBuffer::Release()
-{
-	SafeRelease(m_pResource);
-	SafeRelease(m_pShaderResourceView);
 }

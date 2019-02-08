@@ -72,16 +72,16 @@ int FluxCore::Run(HINSTANCE /*hInstance*/)
 	m_pResourceManager->EnableAutoReload(Config::GetBool("AutoReload", "Resources", true));
 
 	//Graphics
+	GraphicsCreateInfo info = {};
 
-	GraphicsCreateInfo createInfo = {};
 	m_pGraphics = m_pContext->RegisterSubsystem<Graphics>();
-	if (!m_pGraphics->SetMode(createInfo))
+	if (!m_pGraphics->SetMode(info))
 	{
 		FLUX_LOG(Error, "[FluxCore::Run] Failed to initialize graphics");
 	}
 
 	m_pInput = m_pContext->RegisterSubsystem<InputEngine>();
-	//m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
+	m_pImmediateUI = m_pContext->RegisterSubsystem<ImmediateUI>();
 	m_pPhysics = m_pContext->RegisterSubsystem<PhysicsSystem>();
 	m_pAudioEngine = m_pContext->RegisterSubsystem<AudioEngine>();
 	AsyncTaskQueue* pQueue = m_pContext->RegisterSubsystem<AsyncTaskQueue>();
@@ -105,6 +105,119 @@ void FluxCore::InitGame()
 	pCamera->SetNearPlane(10);
 	pCamera->SetFarPlane(10000);
 	m_pDebugRenderer->SetCamera(&m_pCamera->GetCamera()->GetViewData());
+
+	PostProcessing* post = m_pCamera->CreateComponent<PostProcessing>();
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/LUT.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/Vignette.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
+	post->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
+
+	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Meshes/UnitPlane.flux");
+	std::vector<VertexElement> planeDesc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+	};
+	pPlaneMesh->CreateBuffers(planeDesc);
+	Model* pPlaneModel = pPlaneNode->CreateComponent<Model>();
+	Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Materials/Default.xml");
+	pPlaneModel->SetMesh(pPlaneMesh);
+	pPlaneModel->SetMaterial(pDefaultMaterial);
+	pPlaneNode->SetScale(5000);
+	pPlaneNode->CreateComponent<Rigidbody>();
+	pPlaneNode->CreateComponent<PlaneCollider>();
+
+	Mesh* pManMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Man_Walking.dae");
+	std::vector<VertexElement> manDesc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
+		VertexElement(VertexElementType::INT4, VertexElementSemantic::BLENDINDICES),
+		VertexElement(VertexElementType::FLOAT4, VertexElementSemantic::BLENDWEIGHTS),
+	};
+	pManMesh->CreateBuffers(manDesc);
+
+	Material* pManMaterial = m_pResourceManager->Load<Material>("Materials/ManAnimated.xml");
+	SceneNode* pMan = m_pScene->CreateChild("Man - Matrix Skinning - DAE");
+	AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
+	pManModel->SetMesh(pManMesh);
+	pManModel->SetMaterial(pManMaterial);
+	Animator* pAnimator = pMan->CreateComponent<Animator>();
+	Animation* pAnimation = m_pResourceManager->Load<Animation>("Meshes/obj/Man_Walking.dae");
+	pAnimator->Play(pAnimation);
+
+	SceneNode* pLights = m_pScene->CreateChild("Lights");
+
+	float spacing = 350.0f;
+	int countX = 3;
+	int countZ = 3;
+
+	for (int x = 0; x < countX; ++x)
+	{
+		for (int z = 0; z < countZ; ++z)
+		{
+			int idx = z + x * countZ;
+
+			SceneNode* pLight = pLights->CreateChild(Printf("Light %d", idx));
+			Light* pL = pLight->CreateComponent<Light>();
+			pL->SetShadowCasting(true);
+			pL->SetType(Light::Type::Point);
+			pL->SetRange(300);
+			pL->SetColor(Color(Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), Math::RandomRange(0.0f, 1.0f), 1.0));
+			pLight->Rotate(45, 0, 0);
+			pLight->SetPosition(x * spacing - countX * spacing / 2.0f, 150.0f, z * spacing + 100 - countZ * spacing / 2.0f);
+		}
+	}
+
+	{
+		SceneNode* pLight = m_pScene->CreateChild("Light 0");
+		Light* pL = pLight->CreateComponent<Light>();
+		pL->SetShadowCasting(true);
+		pL->SetType(Light::Type::Directional);
+		pL->SetRange(300);
+		pL->SetColor(Color(1,1,1,1));
+		pLight->Rotate(45, -135, 0);
+	}
+
+	{
+		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
+		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
+		std::vector<VertexElement> cubeDesc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		};
+		pCubeMesh->CreateBuffers(cubeDesc);
+		pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
+		SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
+		Model* pCubeModel = pCubeNode->CreateComponent<Model>();
+		pCubeModel->SetMesh(pCubeMesh);
+		pCubeModel->SetMaterial(pMat);
+		pCubeNode->SetScale(50);
+	}
+
+
+	/*{
+		Mesh* pMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/Pot.dae");
+		std::vector<VertexElement> meshDesc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD, 1),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		};
+		pMesh->CreateBuffers(meshDesc);
+		Material* pMaterial = m_pResourceManager->Load<Material>("Materials/VertexAnimation.xml");
+		SceneNode* pNode = m_pScene->CreateChild("Vertex Animation");
+		Model* pModel = pNode->CreateComponent<Model>();
+		pModel->SetMesh(pMesh);
+		pModel->SetMaterial(pMaterial);
+	}*/
 }
 
 void FluxCore::ProcessFrame()
@@ -116,27 +229,27 @@ void FluxCore::ProcessFrame()
 	m_pInput->Update();
 	m_pConsole->FlushThreadedMessages();
 
-	//if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::GetIO().WantCaptureMouse)
-	//{
-	//	Vector3 position, direction;
-	//	Ray ray = m_pCamera->GetCamera()->GetMouseRay();
-	//	m_pSelectedNode = m_pScene->PickNode(ray);
-	//}
+	if (m_pInput->IsMouseButtonPressed(MouseKey::LEFT_BUTTON) && !ImGui::GetIO().WantCaptureMouse)
+	{
+		Vector3 position, direction;
+		Ray ray = m_pCamera->GetCamera()->GetMouseRay();
+		m_pSelectedNode = m_pScene->PickNode(ray);
+	}
 	m_pResourceManager->Update();
 	m_pAudioEngine->Update();
 	m_pGraphics->BeginFrame();
 
-	//GameUpdate();
+	GameUpdate();
 	//m_pScene->FindNode("MainCube")->Rotate(0, GameTimer::DeltaTime() * 50, 0, Space::Self);
 	//m_pScene->FindNode("SecondCube")->Rotate(0, 0, GameTimer::DeltaTime() * 100, Space::Self);
 	//m_pScene->FindNode("LastCube")->Rotate(-GameTimer::DeltaTime() * 80, 0, 0, Space::Self);
 
-	//m_pScene->Update();
+	m_pScene->Update();
 
-	//m_pDebugRenderer->Render();
-	//m_pDebugRenderer->EndFrame();
+	m_pDebugRenderer->Render();
+	m_pDebugRenderer->EndFrame();
 
-	//RenderUI();
+	RenderUI();
 	m_pGraphics->EndFrame();
 }
 
@@ -291,7 +404,6 @@ void FluxCore::RenderUI()
 	}
 	if (ImGui::BeginMenu("Selected Node"))
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, m_pSelectedNode ? 1.0f : 0.5f);
 		if (ImGui::MenuItem("Create Child"))
 		{
 			if (m_pSelectedNode)
@@ -299,19 +411,13 @@ void FluxCore::RenderUI()
 				m_pSelectedNode = m_pSelectedNode->CreateChild("Node");
 			}
 		}
-		ImGui::PopStyleVar();
 		ImGui::EndMenu();
 	}
-	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, m_pSelectedNode ? 1.0f : 0.5f);
 	if (ImGui::BeginMenu("Create Component"))
 	{
-		if (m_pSelectedNode)
-		{
-			ComponentUI(Component::GetTypeStatic());
-		}
+		ComponentUI(Component::GetTypeStatic());
 		ImGui::EndMenu();
 	}
-	ImGui::PopStyleVar();
 	ImGui::EndMainMenuBar();
 
 	m_pImmediateUI->Render();

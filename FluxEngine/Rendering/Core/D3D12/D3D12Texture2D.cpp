@@ -4,7 +4,6 @@
 #include "D3D12GraphicsImpl.h"
 #include "Content/Image.h"
 #include "Rendering/Core/RenderTarget.h"
-#include "d3dx12.h"
 
 Texture2D::Texture2D(Context* pContext)
 	: Texture(pContext)
@@ -18,24 +17,92 @@ Texture2D::~Texture2D()
 
 void Texture2D::Release()
 {
+	SafeRelease(m_pResource);
+	SafeRelease(m_pShaderResourceView);
+	SafeRelease(m_pSamplerState);
+	SafeRelease(m_pResolvedResource);
+
+	m_pRenderTarget.reset();
 }
 
 bool Texture2D::Load(InputStream& inputStream)
 {
 	AUTOPROFILE(Texture2D_Load);
-	return false;
+
+	m_pImage = std::make_unique<Image>(m_pContext);
+	if (m_pImage->Load(inputStream) == false)
+	{
+		return false;
+	}
+
+	if (SetImage(*m_pImage) == false)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool Texture2D::SetImage(const Image& image)
 {
 	AUTOPROFILE_DESC(Texture2D_SetImage, image.GetFilePath().c_str());
-	return false;
+
+	uint32 memoryUsage = 0;
+
+	ImageFormat compressionFormat = image.GetFormat();
+	m_MipLevels = image.GetMipLevels();
+
+	if (!SetSize(image.GetWidth(), image.GetHeight(), TextureFormatFromCompressionFormat(compressionFormat, image.IsSRGB()), TextureUsage::STATIC, 1, nullptr))
+	{
+		return false;
+	}
+
+	AUTOPROFILE_DESC(Texture2D_SetImage_Compressed, "Compressed load");
+	for (int mipLevel = 0; mipLevel < image.GetMipLevels(); ++mipLevel)
+	{
+		MipLevelInfo mipData = image.GetMipInfo(mipLevel);
+		if (!SetData(mipLevel, 0, 0, mipData.Width, mipData.Height, image.GetData(mipLevel)))
+		{
+			return false;
+		}
+		memoryUsage += mipData.DataSize;
+	}
+
+	SetMemoryUsage(memoryUsage);
+
+	return true;
 }
 
 bool Texture2D::SetSize(int width, int height, unsigned int format, TextureUsage usage, int multiSample, void* pTexture)
 {
 	AUTOPROFILE(Texture2D_SetSize);
-	return false;
+
+	if (multiSample > 1 && usage != TextureUsage::DEPTHSTENCILBUFFER && usage != TextureUsage::RENDERTARGET)
+	{
+		FLUX_LOG(Error, "[Texture::SetSize()] > Multisampling is only supported for rendertarget or depth-stencil textures");
+		return false;
+	}
+
+	Release();
+
+	m_Width = width;
+	m_Height = height;
+	m_Depth = 1;
+	m_TextureFormat = format;
+	m_Usage = usage;
+	m_MultiSample = multiSample;
+	m_pResource = (ID3D12Resource*)pTexture;
+
+	if (usage == TextureUsage::RENDERTARGET || usage == TextureUsage::DEPTHSTENCILBUFFER)
+	{
+		m_pRenderTarget = std::make_unique<RenderTarget>(this);
+	}
+
+	if (!Create())
+	{
+		return false;
+	}
+	return true;
 }
 
 bool Texture2D::SetData(unsigned int mipLevel, int x, int y, int width, int height, const void* pData)

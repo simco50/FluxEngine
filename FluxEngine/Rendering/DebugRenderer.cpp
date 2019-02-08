@@ -49,7 +49,7 @@ void DebugRenderer::Render()
 	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
 	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
 
-	if (totalPrimitives > (int)m_pVertexBuffer->GetVertexCount())
+	if (totalPrimitives > (int)m_pVertexBuffer->GetElementCount())
 	{
 		m_pVertexBuffer->Create(totalPrimitives + 100, m_ElementDesc, true);
 	}

@@ -2,6 +2,7 @@
 
 #include <dxgi.h>
 #include <d3d12.h>
+#include "d3dx12.h"
 
 class ShaderProgram;
 
@@ -15,6 +16,11 @@ public:
 
 	unsigned int GetMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
 	bool CheckMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
+
+	ID3D12GraphicsCommandList* GetTemporaryCommandList();
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() { return m_pDsvHeap->GetCPUDescriptorHandleForHeapStart(); }
+	D3D12_CPU_DESCRIPTOR_HANDLE GetRtv(int frameIndex) { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pRtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, m_RtvDescriptorSize); }
 
 private:
 	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D12_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);

@@ -1,5 +1,5 @@
 #pragma once
-#include "GraphicsObject.h"
+#include "GraphicsResource.h"
 
 class Graphics;
 
@@ -12,24 +12,13 @@ class Graphics;
 	See 'Rendering/Core/GraphicsDefines.h'
 */
 
-class ConstantBuffer : public GraphicsObject
+class ConstantBuffer : public GraphicsResource
 {
 public:
 	explicit ConstantBuffer(Graphics* pGraphics);
-	~ConstantBuffer();
+	~ConstantBuffer() = default;
 
 	DELETE_COPY(ConstantBuffer)
 
 	void SetSize(unsigned int size);
-	void Apply();
-	bool SetParameter(unsigned int offset, unsigned int size, const void* pData);
-	bool IsDirty() const { return m_IsDirty; }
-	void Release();
-	int GetSize() const { return m_Size; }
-
-private:
-	bool m_IsDirty = false;
-	unsigned int m_Size = 0;
-	unsigned char* m_pShadowData = nullptr;
-	char* m_pMemoryHandle = nullptr;
 };

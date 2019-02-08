@@ -3,21 +3,20 @@
 #include "Graphics.h"
 
 VertexBuffer::VertexBuffer(Graphics* pGraphics)
-	: GraphicsObject(pGraphics)
+	: GraphicsResource(pGraphics)
 {
 }
 
 VertexBuffer::~VertexBuffer()
 {
-	Release();
 }
 
 void VertexBuffer::SetVertexSize(const std::vector<VertexElement>& elements)
 {
-	m_VertexStride = 0;
+	m_ElementStride = 0;
 	for (const VertexElement& element : elements)
 	{
-		m_VertexStride += VertexElement::GetSizeOfType(element.Type);
+		m_ElementStride += VertexElement::GetSizeOfType(element.Type);
 	}
 }
 
@@ -33,9 +32,4 @@ void VertexBuffer::UpdateOffsets(std::vector<VertexElement>& elements)
 		element.Offset = offset;
 		offset += VertexElement::GetSizeOfType(element.Type);
 	}
-}
-
-void VertexBuffer::Release()
-{
-	SafeRelease(m_pResource);
 }

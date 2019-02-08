@@ -147,15 +147,15 @@ void ImmediateUI::Render()
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 
 	//Recreate the vertexbuffer if it is not large enough
-	if ((int)m_pVertexBuffer->GetVertexCount() < pDrawData->TotalVtxCount)
+	if ((int)m_pVertexBuffer->GetElementCount() < pDrawData->TotalVtxCount)
 	{
-		m_pVertexBuffer->Create(m_pVertexBuffer->GetVertexCount() + 5000, m_VertexElements, true);
+		m_pVertexBuffer->Create(m_pVertexBuffer->GetElementCount() + 5000, m_VertexElements, true);
 	}
 
 	//Recreate the indexbuffer if it is not large enough
-	if ((int)m_pIndexBuffer->GetCount() < pDrawData->TotalIdxCount)
+	if ((int)m_pIndexBuffer->GetElementCount() < pDrawData->TotalIdxCount)
 	{
-		m_pIndexBuffer->Create(m_pIndexBuffer->GetCount() + 10000, true, true);
+		m_pIndexBuffer->Create(m_pIndexBuffer->GetElementCount() + 10000, true, true);
 	}
 
 	//Copy the new data to the buffers

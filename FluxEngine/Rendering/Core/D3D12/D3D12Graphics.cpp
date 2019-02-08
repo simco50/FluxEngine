@@ -19,7 +19,6 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
-#include "d3dx12.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 const int Graphics::RENDERTARGET_FORMAT = (int)DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -212,7 +211,7 @@ bool Graphics::SetShaderParameter(StringHash hash, const void* pData)
 	{
 		return false;
 	}
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, pParameter->Size, pData);
+	return pParameter->pBuffer->SetData(pData, pParameter->Offset, pParameter->Size, false);
 }
 
 bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
@@ -224,12 +223,12 @@ bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride
 		return false;
 	}
 	checkf(stride * count <= pParameter->Size, "[Graphics::SetShaderParameter] Parameter input too large");
-	return pParameter->pBuffer->SetParameter(pParameter->Offset, stride * count, pData);
+	return pParameter->pBuffer->SetData(pData, pParameter->Offset, stride * count, false);
 }
 
 void Graphics::SetViewport(const FloatRect& rect)
 {
-
+	m_CurrentViewport = rect;
 }
 
 void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
@@ -436,14 +435,13 @@ void Graphics::UpdateSwapchain(int width, int height)
 		height, 
 		(DXGI_FORMAT)RENDERTARGET_FORMAT,
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+
 	m_pImpl->m_CurrentBackBufferIndex = 0;
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pImpl->m_pRtvHeap->GetCPUDescriptorHandleForHeapStart());
 	for (int i = 0; i < GraphicsImpl::FRAME_COUNT; ++i)
 	{
 		m_pImpl->m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(m_pImpl->m_RenderTargets[i].GetAddressOf()));
-		m_pImpl->m_pDevice->CreateRenderTargetView(m_pImpl->m_RenderTargets[i].Get(), nullptr, handle);
-		handle.Offset(1, m_pImpl->m_RtvDescriptorSize);
+		m_pImpl->m_pDevice->CreateRenderTargetView(m_pImpl->m_RenderTargets[i].Get(), nullptr, m_pImpl->GetRtv(i));
 	}
 
 	D3D12_RESOURCE_DESC desc = {};
@@ -470,7 +468,7 @@ void Graphics::UpdateSwapchain(int width, int height)
 		D3D12_RESOURCE_STATE_COMMON,
 		&clearValue,
 		IID_PPV_ARGS(m_pImpl->m_pDepthStencilBuffer.GetAddressOf())));
-	m_pImpl->m_pDevice->CreateDepthStencilView(m_pImpl->m_pDepthStencilBuffer.Get(), nullptr, m_pImpl->m_pDsvHeap->GetCPUDescriptorHandleForHeapStart());
+	m_pImpl->m_pDevice->CreateDepthStencilView(m_pImpl->m_pDepthStencilBuffer.Get(), nullptr, m_pImpl->GetDsv());
 	
 	m_CurrentViewport.Left = 0;
 	m_CurrentViewport.Top = 0;
