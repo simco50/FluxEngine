@@ -1,10 +1,12 @@
 #include "FluxEngine.h"
 #include "../PipelineState.h"
 #include "../Graphics.h"
-#include "D3D11GraphicsImpl.h"
-#include "D3D11Helpers.h"
 #include "../ShaderVariation.h"
 #include "../ConstantBuffer.h"
+#include "../VertexBuffer.h"
+#include "../D3DCommon/D3DDefines.h"
+#include "D3D11GraphicsImpl.h"
+#include "D3D11Helpers.h"
 
 bool PipelineState::SetParameter(const std::string& name, const void* pData)
 {
@@ -259,6 +261,73 @@ void PipelineState::ApplyShader(ShaderType type)
 			default:
 				break;
 			}
+		}
+	}
+}
+
+void GraphicsPipelineState::ApplyInputLayout(VertexBuffer** pVertexBuffers, int count)
+{
+	//Calculate the input element description hash to find the correct input layout
+	unsigned long long hash = 0;
+
+	for (int i = 0; i < count; ++i)
+	{
+		if (pVertexBuffers[i])
+		{
+			hash <<= pVertexBuffers[i]->GetElements().size() * 10;
+			hash |= pVertexBuffers[i]->GetBufferHash();
+		}
+		else
+		{
+			hash <<= 1;
+		}
+	}
+
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+
+	if (hash == 0)
+	{
+		pImpl->m_pDeviceContext->IASetInputLayout(nullptr);
+	}
+	else
+	{
+		auto pIt = pImpl->m_InputLayoutMap.find(hash);
+		if (pIt != pImpl->m_InputLayoutMap.end())
+		{
+			pImpl->m_pDeviceContext->IASetInputLayout(pIt->second.Get());
+		}
+		else
+		{
+			checkf(m_pVertexShader, "[GraphicsCommandContext] No vertex shader set");
+		
+			std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
+
+			for (int i = 0; i < count; ++i)
+			{
+				if (pVertexBuffers[i] == nullptr)
+				{
+					continue;
+				}
+
+				for (const VertexElement& e : pVertexBuffers[i]->GetElements())
+				{
+					D3D11_INPUT_ELEMENT_DESC desc;
+					desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
+					desc.Format = D3DCommon::GetFormatOfType(e.Type);
+					desc.AlignedByteOffset = e.Offset;
+					desc.InputSlotClass = e.PerInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+					desc.InputSlot = i;
+					desc.InstanceDataStepRate = e.PerInstance ? 1 : 0;
+					desc.SemanticIndex = e.Index;
+
+					elementDesc.push_back(desc);
+				}
+			}
+			const std::vector<char>& byteCode = m_pVertexShader->GetByteCode();
+
+			ComPtr<ID3D11InputLayout>& pInputLayout = pImpl->m_InputLayoutMap[hash];
+			HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), pInputLayout.GetAddressOf()));
+			pImpl->m_pDeviceContext->IASetInputLayout(pInputLayout.Get());
 		}
 	}
 }

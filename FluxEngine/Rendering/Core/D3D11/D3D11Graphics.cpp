@@ -3,16 +3,13 @@
 #include "../Graphics.h"
 #include "../RenderTarget.h"
 #include "../ShaderVariation.h"
-#include "../IndexBuffer.h"
 #include "../ConstantBuffer.h"
-#include "../VertexBuffer.h"
 #include "../Texture2D.h"
-#include "../D3D11/D3D11InputLayout.h"
-#include "../../../FileSystem/File/PhysicalFile.h"
-#include "../../../Content/Image.h"
 #include "../../Renderer.h"
 #include "../../Geometry.h"
 #include "../StructuredBuffer.h"
+#include "FileSystem/File/PhysicalFile.h"
+#include "Content/Image.h"
 
 #include <SDL.h>
 #include <SDL_syswm.h>

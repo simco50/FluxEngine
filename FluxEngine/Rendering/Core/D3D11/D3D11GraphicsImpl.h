@@ -39,7 +39,7 @@ private:
 	std::array<ID3D11ShaderResourceView*, (size_t)TextureSlot::MAX> m_ShaderResourceViews = {};
 
 	//InputLayouts
-	std::map<unsigned long long, std::unique_ptr<InputLayout>> m_InputLayoutMap;
+	std::map<unsigned long long, ComPtr<ID3D11InputLayout>> m_InputLayoutMap;
 
 	//Render Target
 	std::array<ID3D11RenderTargetView*, GraphicsConstants::MAX_RENDERTARGETS> m_RenderTargetViews = {};

@@ -9,7 +9,6 @@
 #include "../StructuredBuffer.h"
 #include "../../Geometry.h"
 #include "../../Renderer.h"
-#include "D3D11InputLayout.h"
 #include "../ConstantBuffer.h"
 #include "../ShaderVariation.h"
 #include "../PipelineState.h"
@@ -54,42 +53,7 @@ void GraphicsCommandContext::PrepareDraw()
 			&pImpl->m_CurrentStrides[pImpl->m_FirstDirtyVertexBuffer],
 			&pImpl->m_CurrentOffsets[pImpl->m_FirstDirtyVertexBuffer]);
 
-		//Calculate the input element description hash to find the correct input layout
-		unsigned long long hash = 0;
-		for (VertexBuffer* pBuffer : m_CurrentVertexBuffers)
-		{
-			if (pBuffer)
-			{
-				hash <<= pBuffer->GetElements().size() * 10;
-				hash |= pBuffer->GetBufferHash();
-			}
-			else
-			{
-				hash <<= 1;
-			}
-		}
-
-		if (hash == 0)
-		{
-			pImpl->m_pDeviceContext->IASetInputLayout(nullptr);
-		}
-		else
-		{
-			auto pInputLayout = pImpl->m_InputLayoutMap.find(hash);
-			if (pInputLayout != pImpl->m_InputLayoutMap.end())
-			{
-				pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pInputLayout->second->GetResource());
-			}
-			else
-			{
-				ShaderVariation* pVertexShader = GetGraphicsPipelineState()->GetVertexShader();
-				checkf(pVertexShader, "[GraphicsCommandContext] No vertex shader set");
-				std::unique_ptr<InputLayout> pNewInputLayout = std::make_unique<InputLayout>(m_pGraphics);
-				pNewInputLayout->Create(m_CurrentVertexBuffers.data(), (unsigned int)m_CurrentVertexBuffers.size(), pVertexShader);
-				pImpl->m_pDeviceContext->IASetInputLayout((ID3D11InputLayout*)pNewInputLayout->GetResource());
-				pImpl->m_InputLayoutMap[hash] = std::move(pNewInputLayout);
-			}
-		}
+		GetGraphicsPipelineState()->ApplyInputLayout(m_CurrentVertexBuffers.data(), m_CurrentVertexBuffers.size());
 
 		pImpl->m_FirstDirtyVertexBuffer = UINT_MAX;
 		pImpl->m_LastDirtyVertexBuffer = 0;

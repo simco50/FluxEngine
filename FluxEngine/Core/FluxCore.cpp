@@ -330,7 +330,8 @@ void FluxCore::RenderUI()
 	AUTOPROFILE(FluxCore_RenderUI);
 	m_pImmediateUI->NewFrame();
 
-	unsigned int batchCount, primitiveCount;
+	unsigned int batchCount = 0;
+	unsigned int primitiveCount = 0;
 
 	std::stringstream timeStr;
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;

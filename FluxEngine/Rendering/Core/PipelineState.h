@@ -1,6 +1,7 @@
 #pragma once
 class Graphics;
 class ShaderVariation;
+class VertexBuffer;
 struct ShaderParameter;
 
 #ifdef GRAPHICS_D3D11
@@ -70,7 +71,7 @@ public:
 	bool SetHullShader(ShaderVariation* pShader);
 	bool SetDomainShader(ShaderVariation* pShader);
 
-	ShaderVariation* GetVertexShader() const { return m_pVertexShader; }
+	void ApplyInputLayout(VertexBuffer** pVertexBuffers, int count);
 
 private:
 	bool m_IsDirty = false;
