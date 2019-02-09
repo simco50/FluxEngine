@@ -4,13 +4,16 @@
 #include <d3d11.h>
 
 class InputLayout;
-class ShaderProgram;
 
 class GraphicsImpl
 {
 public:
 	friend class Graphics;
 	friend class PipelineState;
+	friend class GraphicsPipelineState;
+	friend class CommandContext;
+	friend class GraphicsCommandContext;
+	friend class ComputeCommandContext;
 
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ComPtr<ID3D11Device>& GetDeviceCom() { return m_pDevice; }
@@ -54,11 +57,6 @@ private:
 	unsigned int m_FirstDirtyVertexBuffer = UINT_MAX;
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
-
-	//Shader programs
-	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	std::map<uint64, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
-	bool m_ShaderProgramDirty = false;
 
 	//Pipeline state
 	bool m_RasterizerStateDirty = false;

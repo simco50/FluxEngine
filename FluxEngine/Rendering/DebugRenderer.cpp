@@ -10,6 +10,8 @@
 #include "Light.h"
 #include "IO/MemoryStream.h"
 #include "Scenegraph\SceneNode.h"
+#include "Core\CommandContext.h"
+#include "Core\PipelineState.h"
 
 DebugRenderer::DebugRenderer(Context* pContext) :
 	Subsystem(pContext)
@@ -42,9 +44,10 @@ void DebugRenderer::Render()
 
 	AUTOPROFILE(DebugRenderer_Render);
 
-	m_pGraphics->InvalidateShaders();
-	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
-	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
+	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
+
+	pCommandContext->GetGraphicsPipelineState()->SetVertexShader(m_pVertexShader);
+	pCommandContext->GetGraphicsPipelineState()->SetPixelShader(m_pPixelShader);
 
 	if (totalPrimitives > (int)m_pVertexBuffer->GetElementCount())
 	{
@@ -72,28 +75,28 @@ void DebugRenderer::Render()
 
 	m_pVertexBuffer->Unmap();
 
-	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
-	m_pGraphics->SetIndexBuffer(nullptr);
+	pCommandContext->SetVertexBuffer(m_pVertexBuffer.get());
+	pCommandContext->SetIndexBuffer(nullptr);
 
-	m_pGraphics->GetPipelineState()->SetDepthEnabled(true);
-	m_pGraphics->GetPipelineState()->SetDepthTest(CompareMode::LESSEQUAL);
-	m_pGraphics->GetPipelineState()->SetColorWrite(ColorWrite::ALL);
-	m_pGraphics->GetPipelineState()->SetBlendMode(BlendMode::REPLACE, false);
-	m_pGraphics->GetPipelineState()->SetCullMode(CullMode::BACK);
-	m_pGraphics->GetPipelineState()->SetFillMode(FillMode::SOLID);
+	pCommandContext->GetGraphicsPipelineState()->SetDepthEnabled(true);
+	pCommandContext->GetGraphicsPipelineState()->SetDepthTest(CompareMode::LESSEQUAL);
+	pCommandContext->GetGraphicsPipelineState()->SetColorWrite(ColorWrite::ALL);
+	pCommandContext->GetGraphicsPipelineState()->SetBlendMode(BlendMode::REPLACE, false);
+	pCommandContext->GetGraphicsPipelineState()->SetCullMode(CullMode::BACK);
+	pCommandContext->GetGraphicsPipelineState()->SetFillMode(FillMode::SOLID);
 
 	const Matrix& projectionMatrix = m_pView->ViewProjectionMatrix;
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
+	pCommandContext->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int start = 0;
 	if (m_LinePrimitives != 0)
 	{
-		m_pGraphics->Draw(PrimitiveType::LINELIST, start, m_LinePrimitives);
+		pCommandContext->Draw(PrimitiveType::LINELIST, start, m_LinePrimitives);
 	}
 	start += m_LinePrimitives;
 	if (m_TrianglePrimitives != 0)
 	{
-		m_pGraphics->Draw(PrimitiveType::TRIANGLELIST, start, m_TrianglePrimitives);
+		pCommandContext->Draw(PrimitiveType::TRIANGLELIST, start, m_TrianglePrimitives);
 	}
 }
 

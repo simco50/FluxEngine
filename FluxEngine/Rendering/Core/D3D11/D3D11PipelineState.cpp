@@ -3,8 +3,25 @@
 #include "../Graphics.h"
 #include "D3D11GraphicsImpl.h"
 #include "D3D11Helpers.h"
+#include "../ShaderVariation.h"
+#include "../ConstantBuffer.h"
 
-void PipelineState::Finalize(bool& hasUpdated)
+bool PipelineState::SetParameter(const std::string& name, const void* pData)
+{
+	return SetParameter(StringHash(name), pData);
+}
+
+bool PipelineState::SetParameter(StringHash hash, const void* pData)
+{
+	auto pParameter = m_ShaderParameters.find(hash);
+	if (pParameter == m_ShaderParameters.end())
+	{
+		return false;
+	}
+	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, pParameter->second->Size, false);
+}
+
+void GraphicsPipelineState::Finalize(bool& hasUpdated)
 {
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	m_IsDirty = false;
@@ -136,5 +153,154 @@ void PipelineState::Finalize(bool& hasUpdated)
 		}
 	}
 
+	m_ShaderParameters.clear();
+	LoadShaderParametersOfShader(m_pVertexShader);
+	LoadShaderParametersOfShader(m_pPixelShader);
+	LoadShaderParametersOfShader(m_pGeometryShader);
+	LoadShaderParametersOfShader(m_pHullShader);
+	LoadShaderParametersOfShader(m_pDomainShader);
+
 	m_IsCreated = true;
+}
+
+
+void PipelineState::ApplyShader(ShaderType type)
+{
+	ShaderVariation* pShader = nullptr;
+
+	AUTOPROFILE_DESC(Graphics_UpdateShader, pShader ? pShader->GetName() : "None");
+
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+
+	if (pShader != nullptr)
+	{
+		for (ConstantBuffer* pBuffer : pShader->GetConstantBuffers())
+		{
+			if (pBuffer)
+			{
+				pBuffer->Apply();
+			}
+		}
+	}
+
+	switch (type)
+	{
+	case ShaderType::VertexShader:
+		pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+	case ShaderType::PixelShader:
+		pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+
+#ifdef SHADER_GEOMETRY_ENABLE
+	case ShaderType::GeometryShader:
+		pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
+	case ShaderType::ComputeShader:
+		pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+	case ShaderType::DomainShader:
+		pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+	case ShaderType::HullShader:
+		pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		break;
+#endif
+	default:
+		FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
+		return;
+	}
+
+	if (pShader)
+	{
+		AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader->GetName());
+		bool buffersChanged = false;
+		const auto& buffers = pShader->GetConstantBuffers();
+		for (unsigned int i = 0; i < buffers.size(); ++i)
+		{
+			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
+			{
+				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
+				buffersChanged = true;
+			}
+		}
+		if (buffersChanged)
+		{
+			switch (type)
+			{
+			case ShaderType::VertexShader:
+				pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::PixelShader:
+				pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#ifdef SHADER_GEOMETRY_ENABLE
+			case ShaderType::GeometryShader:
+				pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#endif
+#ifdef SHADER_COMPUTE_ENABLE
+			case ShaderType::ComputeShader:
+				pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#endif
+#ifdef SHADER_TESSELLATION_ENABLE
+			case ShaderType::DomainShader:
+				pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+			case ShaderType::HullShader:
+				pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+				break;
+#endif
+			default:
+				break;
+			}
+		}
+	}
+}
+
+bool GraphicsPipelineState::SetVertexShader(ShaderVariation* pShader)
+{
+	m_pVertexShader = pShader;
+	m_VertexShaderDirty = true;
+	return true;
+}
+
+bool GraphicsPipelineState::SetPixelShader(ShaderVariation* pShader)
+{
+	m_pPixelShader = pShader;
+	m_PixelShaderDirty = true;
+	return true;
+}
+
+bool GraphicsPipelineState::SetGeometryShader(ShaderVariation* pShader)
+{
+	m_pGeometryShader = pShader;
+	m_GeometryShaderDirty = true;
+	return true;
+}
+
+bool GraphicsPipelineState::SetHullShader(ShaderVariation* pShader)
+{
+	m_pHullShader = pShader;
+	m_HullShaderDirty = true;
+	return true;
+}
+
+bool GraphicsPipelineState::SetDomainShader(ShaderVariation* pShader)
+{
+	m_pDomainShader = pShader;
+	m_DomainShaderDirty = true;
+	return true;
+}
+
+void ComputePipelineState::Finalize(bool& hasUpdated)
+{
+	hasUpdated = true;
+	m_ShaderParameters.clear();
+	LoadShaderParametersOfShader(m_pComputeShader);
 }

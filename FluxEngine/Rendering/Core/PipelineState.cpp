@@ -2,6 +2,9 @@
 #include "PipelineState.h"
 #include "Graphics.h"
 #include "D3D11/D3D11GraphicsImpl.h"
+#include "ShaderVariation.h"
+
+//PipelineState
 
 PipelineState::PipelineState(Graphics* pGraphics)
 	: m_pGraphics(pGraphics)
@@ -19,7 +22,33 @@ const PipelineStateData& PipelineState::GetData() const
 	return m_Data;
 }
 
-void PipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
+void PipelineState::LoadShaderParametersOfShader(ShaderVariation* pShader)
+{
+	if (pShader == nullptr)
+	{
+		return;
+	}
+	const std::map<StringHash, ShaderParameter>& parameters = pShader->GetParameters();
+	for (const auto& parameter : parameters)
+	{
+		m_ShaderParameters[parameter.first] = &parameter.second;
+	}
+}
+
+//GraphicsPipelineState
+
+GraphicsPipelineState::GraphicsPipelineState(Graphics* pGraphics)
+	: PipelineState(pGraphics)
+{
+
+}
+
+GraphicsPipelineState::~GraphicsPipelineState()
+{
+
+}
+
+void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
 {
 	if (blendMode != m_BlendMode || alphaToCoverage != m_AlphaToCoverage)
 	{
@@ -30,7 +59,7 @@ void PipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToC
 	}
 }
 
-void PipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::ALL*/)
+void GraphicsPipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::ALL*/)
 {
 	if (m_ColorWriteMask != colorWriteMask)
 	{
@@ -40,7 +69,7 @@ void PipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite
 	}
 }
 
-void PipelineState::SetDepthEnabled(const bool enabled)
+void GraphicsPipelineState::SetDepthEnabled(const bool enabled)
 {
 	if (enabled != m_DepthEnabled)
 	{
@@ -50,7 +79,7 @@ void PipelineState::SetDepthEnabled(const bool enabled)
 	}
 }
 
-void PipelineState::SetDepthWrite(const bool enabled)
+void GraphicsPipelineState::SetDepthWrite(const bool enabled)
 {
 	if (enabled != m_DepthWrite)
 	{
@@ -60,7 +89,7 @@ void PipelineState::SetDepthWrite(const bool enabled)
 	}
 }
 
-void PipelineState::SetDepthTest(const CompareMode& comparison)
+void GraphicsPipelineState::SetDepthTest(const CompareMode& comparison)
 {
 	if (comparison != m_DepthCompareMode)
 	{
@@ -70,7 +99,7 @@ void PipelineState::SetDepthTest(const CompareMode& comparison)
 	}
 }
 
-void PipelineState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
+void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
 {
 	if (stencilEnabled != m_StencilTestEnabled)
 	{
@@ -122,7 +151,7 @@ void PipelineState::SetStencilTest(bool stencilEnabled, const CompareMode mode, 
 	}
 }
 
-void PipelineState::SetFillMode(FillMode fillMode)
+void GraphicsPipelineState::SetFillMode(FillMode fillMode)
 {
 	if (fillMode != m_FillMode)
 	{
@@ -132,7 +161,7 @@ void PipelineState::SetFillMode(FillMode fillMode)
 	}
 }
 
-void PipelineState::SetCullMode(CullMode cullMode)
+void GraphicsPipelineState::SetCullMode(CullMode cullMode)
 {
 	if (cullMode != m_CullMode)
 	{
@@ -142,7 +171,7 @@ void PipelineState::SetCullMode(CullMode cullMode)
 	}
 }
 
-void PipelineState::SetLineAntialias(bool lineAntiAlias)
+void GraphicsPipelineState::SetLineAntialias(bool lineAntiAlias)
 {
 	if (lineAntiAlias != m_LineAntiAlias)
 	{
@@ -152,7 +181,7 @@ void PipelineState::SetLineAntialias(bool lineAntiAlias)
 	}
 }
 
-void PipelineState::SetScissorEnabled(bool enabled)
+void GraphicsPipelineState::SetScissorEnabled(bool enabled)
 {
 	if (enabled != m_ScissorEnabled)
 	{
@@ -162,7 +191,7 @@ void PipelineState::SetScissorEnabled(bool enabled)
 	}
 }
 
-void PipelineState::SetMultisampleEnabled(bool enabled)
+void GraphicsPipelineState::SetMultisampleEnabled(bool enabled)
 {
 	if (enabled != m_MultisampleEnabled)
 	{
@@ -170,4 +199,15 @@ void PipelineState::SetMultisampleEnabled(bool enabled)
 		m_IsDirty = true;
 		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
 	}
+}
+
+ComputePipelineState::ComputePipelineState(Graphics* pGraphics)
+	: PipelineState(pGraphics)
+{
+
+}
+
+ComputePipelineState::~ComputePipelineState()
+{
+
 }

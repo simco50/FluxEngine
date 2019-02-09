@@ -331,7 +331,6 @@ void FluxCore::RenderUI()
 	m_pImmediateUI->NewFrame();
 
 	unsigned int batchCount, primitiveCount;
-	m_pGraphics->GetDebugInfo(batchCount, primitiveCount);
 
 	std::stringstream timeStr;
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;

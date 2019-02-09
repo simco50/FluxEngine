@@ -15,7 +15,7 @@ void GraphicsObject::SetName(const std::string& name)
 {
 	if (m_pResource)
 	{
-		m_pGraphics->GetImpl()->GetDevice()->SetPrivateData(WKPDID_D3DDebugObjectName, (unsigned int)name.size(), name.data());
+		static_cast<ID3D11Resource*>(m_pResource)->SetPrivateData(WKPDID_D3DDebugObjectName, (unsigned int)name.size(), name.data());
 	}
 }
 

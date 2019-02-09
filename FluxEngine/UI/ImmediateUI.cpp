@@ -6,11 +6,13 @@
 #include "Rendering\Core\Shader.h"
 #include "Rendering\Core\ShaderVariation.h"
 #include "Rendering\Core\Texture.h"
+#include "Rendering\Core\PipelineState.h"
 #include "Input/InputEngine.h"
 #include "Rendering\Core\Texture2D.h"
 #include "FileSystem\File\PhysicalFile.h"
 
 #include <SDL_events.h>
+#include "Rendering\Core\CommandContext.h"
 
 void* ImGuiAllocate(const size_t size, void*)
 {
@@ -171,24 +173,25 @@ void ImmediateUI::Render()
 	m_pVertexBuffer->Unmap();
 	m_pIndexBuffer->Unmap();
 
-	m_pGraphics->InvalidateShaders();
-	m_pGraphics->SetShader(ShaderType::VertexShader, m_pVertexShader);
-	m_pGraphics->SetShader(ShaderType::PixelShader, m_pPixelShader);
+	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
 
-	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
-	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
+	pCommandContext->GetGraphicsPipelineState()->SetVertexShader(m_pVertexShader);
+	pCommandContext->GetGraphicsPipelineState()->SetPixelShader(m_pPixelShader);
 
-	m_pGraphics->GetPipelineState()->SetDepthEnabled(true);
-	m_pGraphics->GetPipelineState()->SetDepthTest(CompareMode::ALWAYS);
-	m_pGraphics->GetPipelineState()->SetColorWrite(ColorWrite::ALL);
-	m_pGraphics->GetPipelineState()->SetBlendMode(BlendMode::ALPHA, false);
-	m_pGraphics->GetPipelineState()->SetFillMode(FillMode::SOLID);
-	m_pGraphics->GetPipelineState()->SetCullMode(CullMode::BACK);
+	pCommandContext->SetIndexBuffer(m_pIndexBuffer.get());
+	pCommandContext->SetVertexBuffer(m_pVertexBuffer.get());
 
-	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
+	pCommandContext->GetGraphicsPipelineState()->SetDepthEnabled(true);
+	pCommandContext->GetGraphicsPipelineState()->SetDepthTest(CompareMode::ALWAYS);
+	pCommandContext->GetGraphicsPipelineState()->SetColorWrite(ColorWrite::ALL);
+	pCommandContext->GetGraphicsPipelineState()->SetBlendMode(BlendMode::ALPHA, false);
+	pCommandContext->GetGraphicsPipelineState()->SetFillMode(FillMode::SOLID);
+	pCommandContext->GetGraphicsPipelineState()->SetCullMode(CullMode::BACK);
+
+	pCommandContext->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	Matrix projectionMatrix = Math::CreateOrthographicOffCenterMatrix(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
+	pCommandContext->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -202,13 +205,13 @@ void ImmediateUI::Render()
 				pcmd->UserCallback(pCmdList, pcmd);
 			else
 			{
-				m_pGraphics->SetScissorRect(true, {
+				pCommandContext->SetScissorRect(true, {
 					(int)pcmd->ClipRect.x,
 					(int)pcmd->ClipRect.y,
 					(int)pcmd->ClipRect.z,
 					(int)pcmd->ClipRect.w });
-				m_pGraphics->SetTexture(TextureSlot::Diffuse, static_cast<Texture*>(pcmd->TextureId));
-				m_pGraphics->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
+				pCommandContext->SetTexture(TextureSlot::Diffuse, static_cast<Texture*>(pcmd->TextureId));
+				pCommandContext->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}

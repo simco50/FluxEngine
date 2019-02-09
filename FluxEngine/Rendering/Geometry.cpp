@@ -1,6 +1,7 @@
 #include "FluxEngine.h"
 #include "Geometry.h"
 #include "Rendering/Core/Graphics.h"
+#include "Core/CommandContext.h"
 
 Geometry::Geometry()
 {
@@ -15,19 +16,19 @@ Geometry::~Geometry()
 	}
 }
 
-void Geometry::Draw(Graphics* pGraphics) const
+void Geometry::Draw(GraphicsCommandContext* pContext) const
 {
 	if (m_pVertexBuffer)
 	{
-		pGraphics->SetIndexBuffer(m_pIndexBuffer);
-		pGraphics->SetVertexBuffer(m_pVertexBuffer);
+		pContext->SetIndexBuffer(m_pIndexBuffer);
+		pContext->SetVertexBuffer(m_pVertexBuffer);
 		if (m_pIndexBuffer)
 		{
-			pGraphics->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
+			pContext->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
 		}
 		else
 		{
-			pGraphics->Draw(m_PrimitiveType, 0, m_VertexCount);
+			pContext->Draw(m_PrimitiveType, 0, m_VertexCount);
 		}
 	}
 }

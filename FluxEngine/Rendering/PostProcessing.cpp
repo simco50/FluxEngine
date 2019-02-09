@@ -10,6 +10,7 @@
 #include "Scenegraph\SceneNode.h"
 #include "Renderer.h"
 #include "Geometry.h"
+#include "Core\CommandContext.h"
 
 PostProcessing::PostProcessing(Context* pContext)
 	: Component(pContext)
@@ -39,9 +40,11 @@ void PostProcessing::Draw()
 
 	AUTOPROFILE(PostProcessing_Draw);
 
-	m_pGraphics->SetViewport(m_pCamera->GetViewport());
+	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
 
-	RenderTarget* pOriginalTarget = m_pGraphics->GetRenderTarget();
+	pCommandContext->SetViewport(m_pCamera->GetViewport());
+
+	RenderTarget* pOriginalTarget = m_pGraphics->GetDefaultRenderTarget()->GetRenderTarget();
 	RenderTarget* pCurrentSource = m_pCamera->GetRenderTarget();
 	RenderTarget* pCurrentTarget = m_pRenderTexture->GetRenderTarget();
 
@@ -57,7 +60,7 @@ void PostProcessing::Draw()
 		{
 			pMaterial.second->SetShader(ShaderType::VertexShader, m_pBlitVertexShader);
 		}
-		m_pRenderer->Blit(pCurrentSource, pCurrentTarget, pMaterial.second);
+		m_pRenderer->Blit(pCommandContext, pCurrentSource, pCurrentTarget, pMaterial.second);
 
 		std::swap(pCurrentSource, pCurrentTarget);
 	}
@@ -65,7 +68,7 @@ void PostProcessing::Draw()
 	//Do an extra blit if the shader count is odd
 	if (activeMaterials % 2 == 1)
 	{
-		m_pRenderer->Blit(m_pRenderTexture->GetRenderTarget(), pOriginalTarget);
+		m_pRenderer->Blit(pCommandContext, m_pRenderTexture->GetRenderTarget(), pOriginalTarget);
 	}
 }
 
