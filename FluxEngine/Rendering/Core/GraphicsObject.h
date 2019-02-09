@@ -14,7 +14,7 @@ public:
 	explicit GraphicsObject(Graphics* pGraphics);
     void SetName(const std::string& name);
 
-#ifdef GRAPHICS_D3D11
+#if defined(GRAPHICS_D3D11) || defined(GRAPHICS_D3D12)
 	void* GetResource() const { return m_pResource; }
 #else
 	unsigned int GetResource() const { return m_Handle; }

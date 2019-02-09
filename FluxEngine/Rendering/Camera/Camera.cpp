@@ -50,7 +50,7 @@ RenderTarget* Camera::GetRenderTarget() const
 	{
 		return m_View.pRenderTarget;
 	}
-	return m_pGraphics->GetRenderTarget();
+	return m_pGraphics->GetDefaultRenderTarget()->GetRenderTarget();
 }
 
 RenderTarget* Camera::GetDepthStencil()

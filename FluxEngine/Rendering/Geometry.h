@@ -3,6 +3,7 @@
 class Graphics;
 class IndexBuffer;
 class VertexBuffer;
+class GraphicsCommandContext;
 
 class Geometry
 {
@@ -13,7 +14,7 @@ public:
 	void SetVertexBuffer(VertexBuffer* pVertexBuffer) { m_pVertexBuffer = pVertexBuffer; }
 	void SetIndexBuffer(IndexBuffer* pIndexBuffer) { m_pIndexBuffer = pIndexBuffer; }
 
-	void Draw(Graphics* pGraphics) const;
+	void Draw(GraphicsCommandContext* pContext) const;
 
 	struct VertexData
 	{

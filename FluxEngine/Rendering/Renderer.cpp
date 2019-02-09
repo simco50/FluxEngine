@@ -21,6 +21,8 @@
 #include "Model.h"
 #include "ReflectionProbe.h"
 #include "Animation/AnimatedModel.h"
+#include "Core/CommandContext.h"
+#include "Core/PipelineState.h"
 
 Renderer::Renderer(Context* pContext) :
 	Subsystem(pContext)
@@ -67,6 +69,8 @@ void Renderer::Draw()
 		m_OnPreRender.Broadcast();
 	}
 
+	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
+
 	std::vector<const View*> pViews = m_ViewQueue;
 	m_ViewQueue.clear();
 	for (Camera* pCamera : m_Cameras)
@@ -89,10 +93,10 @@ void Renderer::Draw()
 				continue;
 			}
 
-			m_pGraphics->SetRenderTarget(0, pView->pRenderTarget);
-			m_pGraphics->SetDepthStencil(pView->pDepthStencil);
-			m_pGraphics->SetViewport(pView->Viewport.Scale((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
-			m_pGraphics->Clear(pView->ClearFlags, pView->ClearColor, 1.0f, 1);
+			pCommandContext->SetRenderTarget(0, pView->pRenderTarget);
+			pCommandContext->SetDepthStencil(pView->pDepthStencil);
+			pCommandContext->SetViewport(pView->Viewport.Scale((float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
+			pCommandContext->Clear(pView->ClearFlags, pView->ClearColor, 1.0f, 1);
 
 			m_pCurrentMaterial = nullptr;
 
@@ -117,12 +121,12 @@ void Renderer::Draw()
 						continue;
 					}
 
-					SetPerMaterialParameters(batch.pMaterial);
-					SetPerBatchParameters(batch, pView);
-					SetPerFrameParameters();
-					SetPerViewParameters(pView);
+					SetPerMaterialParameters(pCommandContext, batch.pMaterial);
+					SetPerBatchParameters(pCommandContext, batch, pView);
+					SetPerFrameParameters(pCommandContext);
+					SetPerViewParameters(pCommandContext, pView);
 
-					batch.pGeometry->Draw(m_pGraphics);
+					batch.pGeometry->Draw(pCommandContext);
 				}
 			}
 		}
@@ -178,8 +182,9 @@ void Renderer::RemovePostProcessing(PostProcessing* pPostProcessing)
 	m_PostProcessing.erase(std::remove(m_PostProcessing.begin(), m_PostProcessing.end(), pPostProcessing), m_PostProcessing.end());
 }
 
-void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial /*= nullptr*/)
+void Renderer::Blit(GraphicsCommandContext* pCommandContext, RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial /*= nullptr*/)
 {
+	AUTOPROFILE(Renderer_Blit);
 	check(pSource);
 	check(pTarget);
 	check(pSource->GetParentTexture()->GetWidth() == pTarget->GetParentTexture()->GetWidth());
@@ -188,14 +193,14 @@ void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMat
 	{
 		pMaterial = m_pBlitMaterial;
 	}
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, nullptr);
-	m_pGraphics->FlushSRVChanges(false);
-	m_pGraphics->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
-	m_pGraphics->SetRenderTarget(0, pTarget);
-	SetPerMaterialParameters(pMaterial);
-	m_pGraphics->GetPipelineState()->SetDepthEnabled(false);
-	m_pGraphics->GetPipelineState()->SetDepthWrite(false);
-	GetQuadGeometry()->Draw(m_pGraphics);
+	pCommandContext->SetTexture(TextureSlot::Diffuse, nullptr);
+	pCommandContext->FlushSRVChanges(false);
+	pCommandContext->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
+	pCommandContext->SetRenderTarget(0, pTarget);
+	SetPerMaterialParameters(pCommandContext, pMaterial);
+	pCommandContext->GetGraphicsPipelineState()->SetDepthEnabled(false);
+	pCommandContext->GetGraphicsPipelineState()->SetDepthWrite(false);
+	GetQuadGeometry()->Draw(pCommandContext);
 }
 
 void Renderer::QueueView(const View* pView)
@@ -241,22 +246,22 @@ void Renderer::CreateQuadGeometry()
 	m_pQuadGeometry->SetDrawRange(PrimitiveType::TRIANGLELIST, 6, 4);
 }
 
-void Renderer::SetPerFrameParameters()
+void Renderer::SetPerFrameParameters(GraphicsCommandContext* pCommandContext)
 {
-	m_pGraphics->SetShaderParameter(ShaderConstant::cDeltaTime, GameTimer::DeltaTime());
-	m_pGraphics->SetShaderParameter(ShaderConstant::cElapsedTime, GameTimer::GameTime());
+	pCommandContext->SetShaderParameter(ShaderConstant::cDeltaTime, GameTimer::DeltaTime());
+	pCommandContext->SetShaderParameter(ShaderConstant::cElapsedTime, GameTimer::GameTime());
 }
 
-void Renderer::SetPerViewParameters(const View* pView)
+void Renderer::SetPerViewParameters(GraphicsCommandContext* pCommandContext, const View* pView)
 {
-	m_pGraphics->SetShaderParameter(ShaderConstant::cView, pView->ViewMatrix);
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, pView->ViewProjectionMatrix);
-	m_pGraphics->SetShaderParameter(ShaderConstant::cViewInverse, pView->ViewInverseMatrix);
-	m_pGraphics->SetShaderParameter(ShaderConstant::cNearClip, pView->NearPlane);
-	m_pGraphics->SetShaderParameter(ShaderConstant::cFarClip, pView->FarPlane);
+	pCommandContext->SetShaderParameter(ShaderConstant::cView, pView->ViewMatrix);
+	pCommandContext->SetShaderParameter(ShaderConstant::cViewProj, pView->ViewProjectionMatrix);
+	pCommandContext->SetShaderParameter(ShaderConstant::cViewInverse, pView->ViewInverseMatrix);
+	pCommandContext->SetShaderParameter(ShaderConstant::cNearClip, pView->NearPlane);
+	pCommandContext->SetShaderParameter(ShaderConstant::cFarClip, pView->FarPlane);
 }
 
-void Renderer::SetPerMaterialParameters(const Material* pMaterial)
+void Renderer::SetPerMaterialParameters(GraphicsCommandContext* pCommandContext, const Material* pMaterial)
 {
 	if (pMaterial == m_pCurrentMaterial)
 	{
@@ -264,21 +269,22 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	}
 	m_pCurrentMaterial = pMaterial;
 
-	for (int i = 0; i < (int)ShaderType::MAX; ++i)
-	{
-		m_pGraphics->SetShader((ShaderType)i, m_pCurrentMaterial->GetShader((ShaderType)i));
-	}
+	pCommandContext->GetGraphicsPipelineState()->SetVertexShader(m_pCurrentMaterial->GetShader(ShaderType::VertexShader));
+	pCommandContext->GetGraphicsPipelineState()->SetPixelShader(m_pCurrentMaterial->GetShader(ShaderType::PixelShader));
+	pCommandContext->GetGraphicsPipelineState()->SetGeometryShader(m_pCurrentMaterial->GetShader(ShaderType::GeometryShader));
+	pCommandContext->GetGraphicsPipelineState()->SetDomainShader(m_pCurrentMaterial->GetShader(ShaderType::DomainShader));
+	pCommandContext->GetGraphicsPipelineState()->SetHullShader(m_pCurrentMaterial->GetShader(ShaderType::HullShader));
 
 	const auto& pParameters = m_pCurrentMaterial->GetShaderParameters();
 	for (const auto& pParameter : pParameters)
 	{
-		m_pGraphics->SetShaderParameter(pParameter.first, pParameter.second.GetData());
+		pCommandContext->SetShaderParameter(pParameter.first, pParameter.second.GetData());
 	}
 
 	const auto& pTextures = m_pCurrentMaterial->GetTextures();
 	for (const auto& pTexture : pTextures)
 	{
-		m_pGraphics->SetTexture(pTexture.first, pTexture.second);
+		pCommandContext->SetTexture(pTexture.first, pTexture.second);
 	}
 
 	std::vector<Light::Data> lightData(GraphicsConstants::MAX_LIGHTS);
@@ -286,32 +292,32 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	{
 		lightData[i] = *m_Lights[i]->GetData();
 	}
-	m_pGraphics->SetShaderParameter(ShaderConstant::cLights, lightData.data());
+	pCommandContext->SetShaderParameter(ShaderConstant::cLights, lightData.data());
 
 	//Blend state
-	m_pGraphics->GetPipelineState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
+	pCommandContext->GetGraphicsPipelineState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
 
 	//Rasterizer state
-	m_pGraphics->GetPipelineState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
-	m_pGraphics->GetPipelineState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
+	pCommandContext->GetGraphicsPipelineState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
+	pCommandContext->GetGraphicsPipelineState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
 
 	//Depth stencil state
-	m_pGraphics->GetPipelineState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
-	m_pGraphics->GetPipelineState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
-	m_pGraphics->GetPipelineState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
+	pCommandContext->GetGraphicsPipelineState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
+	pCommandContext->GetGraphicsPipelineState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
+	pCommandContext->GetGraphicsPipelineState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
 }
 
-void Renderer::SetPerBatchParameters(const Batch& batch, const View* pView)
+void Renderer::SetPerBatchParameters(GraphicsCommandContext* pCommandContext, const Batch& batch, const View* pView)
 {
 	if (batch.NumSkinMatrices > 0)
 	{
-		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinMatrices, batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
-		m_pGraphics->SetShaderParameter(ShaderConstant::cSkinDualQuaternions, batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
+		pCommandContext->SetShaderParameter(ShaderConstant::cSkinMatrices, batch.pWorldMatrices, sizeof(Matrix), batch.NumSkinMatrices);
+		pCommandContext->SetShaderParameter(ShaderConstant::cSkinDualQuaternions, batch.pSkinDualQuaternions, sizeof(DualQuaternion), batch.NumSkinMatrices);
 	}
 	else
 	{
-		m_pGraphics->SetShaderParameter(ShaderConstant::cWorld, *batch.pWorldMatrices);
+		pCommandContext->SetShaderParameter(ShaderConstant::cWorld, *batch.pWorldMatrices);
 		Matrix wvp = *batch.pWorldMatrices * pView->ViewProjectionMatrix;
-		m_pGraphics->SetShaderParameter(ShaderConstant::cWorldViewProj, wvp);
+		pCommandContext->SetShaderParameter(ShaderConstant::cWorldViewProj, wvp);
 	}
 }

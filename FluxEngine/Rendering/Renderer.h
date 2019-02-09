@@ -10,9 +10,10 @@ class VertexBuffer;
 class Geometry;
 class Light;
 class RenderTarget;
+class PostProcessing;
+class GraphicsCommandContext;
 struct View;
 struct Batch;
-class PostProcessing;
 
 DECLARE_MULTICAST_DELEGATE(OnSceneUpdateDelegate);
 
@@ -35,7 +36,7 @@ public:
 	void AddPostProcessing(PostProcessing* pPostProcessing);
 	void RemovePostProcessing(PostProcessing* pPostProcessing);
 
-	void Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial = nullptr);
+	void Blit(GraphicsCommandContext* pCommandContext, RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial = nullptr);
 
 	Camera* GetCamera(int camIdx) { return m_Cameras[camIdx]; }
 
@@ -48,10 +49,10 @@ public:
 private:
 	void CreateQuadGeometry();
 
-	void SetPerFrameParameters();
-	void SetPerViewParameters(const View* pView);
-	void SetPerMaterialParameters(const Material* pMaterial);
-	void SetPerBatchParameters(const Batch& batch, const View* pView);
+	void SetPerFrameParameters(GraphicsCommandContext* pCommandContext);
+	void SetPerViewParameters(GraphicsCommandContext* pCommandContext, const View* pView);
+	void SetPerMaterialParameters(GraphicsCommandContext* pCommandContext, const Material* pMaterial);
+	void SetPerBatchParameters(GraphicsCommandContext* pCommandContext, const Batch& batch, const View* pView);
 
 	const Material* m_pCurrentMaterial = nullptr;
 

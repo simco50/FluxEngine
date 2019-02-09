@@ -183,23 +183,23 @@ void FluxCore::InitGame()
 		pLight->Rotate(45, -135, 0);
 	}
 
-	{
-		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
-		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
-		std::vector<VertexElement> cubeDesc =
-		{
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
-		};
-		pCubeMesh->CreateBuffers(cubeDesc);
-		pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
-		SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
-		Model* pCubeModel = pCubeNode->CreateComponent<Model>();
-		pCubeModel->SetMesh(pCubeMesh);
-		pCubeModel->SetMaterial(pMat);
-		pCubeNode->SetScale(50);
-	}
+	//{
+	//	Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
+	//	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
+	//	std::vector<VertexElement> cubeDesc =
+	//	{
+	//		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+	//		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+	//		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+	//	};
+	//	pCubeMesh->CreateBuffers(cubeDesc);
+	//	pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
+	//	SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
+	//	Model* pCubeModel = pCubeNode->CreateComponent<Model>();
+	//	pCubeModel->SetMesh(pCubeMesh);
+	//	pCubeModel->SetMaterial(pMat);
+	//	pCubeNode->SetScale(50);
+	//}
 
 
 	/*{
@@ -330,8 +330,8 @@ void FluxCore::RenderUI()
 	AUTOPROFILE(FluxCore_RenderUI);
 	m_pImmediateUI->NewFrame();
 
-	unsigned int batchCount, primitiveCount;
-	m_pGraphics->GetDebugInfo(batchCount, primitiveCount);
+	unsigned int batchCount = 0;
+	unsigned int primitiveCount = 0;
 
 	std::stringstream timeStr;
 	timeStr << std::setw(2) << std::setfill('0') << (int)GameTimer::GameTime() / 60 << ":" << std::setw(2) << (int)GameTimer::GameTime() % 60;

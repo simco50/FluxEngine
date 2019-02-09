@@ -93,20 +93,14 @@ bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 			type = ShaderType::VertexShader;
 		else if (shaderType == "Pixel")
 			type = ShaderType::PixelShader;
-#ifdef SHADER_GEOMETRY_ENABLE
 		else if (shaderType == "Geometry")
 			type = ShaderType::GeometryShader;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 		else if (shaderType == "Compute")
 			type = ShaderType::ComputeShader;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 		else if (shaderType == "Domain")
 			type = ShaderType::DomainShader;
 		else if (shaderType == "Hull")
 			type = ShaderType::HullShader;
-#endif
 		else
 		{
 			FLUX_LOG(Warning, "[Material::Load()] > %s : Shader type '%s' is invalid", m_Name.c_str(), shaderType.c_str());
