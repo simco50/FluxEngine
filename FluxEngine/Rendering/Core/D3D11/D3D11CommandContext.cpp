@@ -15,7 +15,13 @@
 #include "../RenderTarget.h"
 #include "../Texture2D.h"
 
-//GraphicsCommandContext
+/////////Command Context
+////////////////////////////////////////////
+
+
+/////////Graphics Command Context
+////////////////////////////////////////////
+
 void GraphicsCommandContext::PrepareDraw()
 {
 	AUTOPROFILE(Graphics_PrepareDraw);
@@ -24,6 +30,19 @@ void GraphicsCommandContext::PrepareDraw()
 	FlushSRVChanges(false);
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+
+	if (m_ScissorRectDirty)
+	{
+		AUTOPROFILE(Graphics_PrepareDraw_SetScissorRect);
+
+		D3D11_RECT rect = {
+			(LONG)m_CurrentScissorRect.Left,
+			(LONG)m_CurrentScissorRect.Top,
+			(LONG)m_CurrentScissorRect.Right,
+			(LONG)m_CurrentScissorRect.Bottom };
+		pImpl->m_pDeviceContext->RSSetScissorRects(1, &rect);
+		m_ScissorRectDirty = false;
+	}
 
 	if (pImpl->m_VertexBuffersDirty)
 	{
@@ -43,32 +62,7 @@ void GraphicsCommandContext::PrepareDraw()
 	}
 
 	GetGraphicsPipelineState()->Apply(m_CurrentVertexBuffers.data(), (int)m_CurrentVertexBuffers.size());
-
-	if (m_ScissorRectDirty)
-	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetScissorRect);
-
-		D3D11_RECT rect = {
-			(LONG)m_CurrentScissorRect.Left,
-			(LONG)m_CurrentScissorRect.Top,
-			(LONG)m_CurrentScissorRect.Right,
-			(LONG)m_CurrentScissorRect.Bottom };
-		pImpl->m_pDeviceContext->RSSetScissorRects(1, &rect);
-		m_ScissorRectDirty = false;
-	}
 }
-
-bool CommandContext::SetShaderParameter(StringHash hash, const void* pData)
-{
-	return m_pPipelineState->SetParameter(hash, pData);
-}
-
-bool CommandContext::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
-{
-	return m_pPipelineState->SetParameter(hash, pData, stride * count);
-}
-
-//GraphicsCommandContext
 
 void GraphicsCommandContext::SetRenderTarget(int index, RenderTarget* pRenderTarget)
 {
@@ -188,6 +182,7 @@ void GraphicsCommandContext::SetVertexBuffers(VertexBuffer** pBuffers, int buffe
 		if (changed)
 		{
 			pImpl->m_VertexBuffersDirty = true;
+			pImpl->m_InputLayoutDirty = true;
 			pImpl->m_FirstDirtyVertexBuffer = Math::Min((uint32)i, pImpl->m_FirstDirtyVertexBuffer);
 			pImpl->m_LastDirtyVertexBuffer = Math::Max((uint32)i, pImpl->m_LastDirtyVertexBuffer);
 		}
@@ -391,6 +386,7 @@ void GraphicsCommandContext::Clear(ClearFlags clearFlags /*= ClearFlags::All*/, 
 
 		Geometry* quadGeometry = m_pGraphics->GetSubsystem<Renderer>()->GetQuadGeometry();
 
+		GetGraphicsPipelineState()->ClearShaders();
 		GetGraphicsPipelineState()->SetVertexShader(m_pGraphics->GetShader("Shaders/ClearFrameBuffer", ShaderType::VertexShader));
 		GetGraphicsPipelineState()->SetPixelShader(m_pGraphics->GetShader("Shaders/ClearFrameBuffer", ShaderType::PixelShader));
 
@@ -403,4 +399,5 @@ void GraphicsCommandContext::Clear(ClearFlags clearFlags /*= ClearFlags::All*/, 
 	}
 }
 
-//ComputeCommandContext
+/////////Compute Command Context
+////////////////////////////////////////////

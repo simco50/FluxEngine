@@ -174,24 +174,24 @@ void ImmediateUI::Render()
 	m_pIndexBuffer->Unmap();
 
 	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
+	GraphicsPipelineState* pPipelineState = pCommandContext->GetGraphicsPipelineState();
 
-	pCommandContext->GetGraphicsPipelineState()->SetVertexShader(m_pVertexShader);
-	pCommandContext->GetGraphicsPipelineState()->SetPixelShader(m_pPixelShader);
-
-	pCommandContext->SetIndexBuffer(m_pIndexBuffer.get());
-	pCommandContext->SetVertexBuffer(m_pVertexBuffer.get());
-
-	pCommandContext->GetGraphicsPipelineState()->SetDepthEnabled(true);
-	pCommandContext->GetGraphicsPipelineState()->SetDepthTest(CompareMode::ALWAYS);
-	pCommandContext->GetGraphicsPipelineState()->SetColorWrite(ColorWrite::ALL);
-	pCommandContext->GetGraphicsPipelineState()->SetBlendMode(BlendMode::ALPHA, false);
-	pCommandContext->GetGraphicsPipelineState()->SetFillMode(FillMode::SOLID);
-	pCommandContext->GetGraphicsPipelineState()->SetCullMode(CullMode::BACK);
-
-	pCommandContext->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
+	pPipelineState->ClearShaders();
+	pPipelineState->SetVertexShader(m_pVertexShader);
+	pPipelineState->SetPixelShader(m_pPixelShader);
+	pPipelineState->SetDepthEnabled(true);
+	pPipelineState->SetDepthTest(CompareMode::ALWAYS);
+	pPipelineState->SetColorWrite(ColorWrite::ALL);
+	pPipelineState->SetBlendMode(BlendMode::ALPHA, false);
+	pPipelineState->SetFillMode(FillMode::SOLID);
+	pPipelineState->SetCullMode(CullMode::BACK);
 
 	Matrix projectionMatrix = Math::CreateOrthographicOffCenterMatrix(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	pCommandContext->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
+
+	pCommandContext->SetIndexBuffer(m_pIndexBuffer.get());
+	pCommandContext->SetVertexBuffer(m_pVertexBuffer.get());
+	pCommandContext->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

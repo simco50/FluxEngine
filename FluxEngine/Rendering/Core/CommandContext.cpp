@@ -3,6 +3,9 @@
 #include "PipelineState.h"
 #include "Graphics.h"
 
+/////////Command Context
+////////////////////////////////////////////
+
 CommandContext::CommandContext(Graphics* pGraphics, void* pCommandContext)
 	: m_pGraphics(pGraphics),
 	m_pCommandList(pCommandContext)
@@ -13,6 +16,16 @@ CommandContext::CommandContext(Graphics* pGraphics, void* pCommandContext)
 CommandContext::~CommandContext()
 {
 
+}
+
+bool CommandContext::SetShaderParameter(StringHash hash, const void* pData)
+{
+	return m_pPipelineState->SetParameter(hash, pData);
+}
+
+bool CommandContext::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
+{
+	return m_pPipelineState->SetParameter(hash, pData, stride * count);
 }
 
 bool CommandContext::SetShaderParameter(StringHash hash, float value)
@@ -50,6 +63,9 @@ bool CommandContext::SetShaderParameter(StringHash hash, const Matrix& value)
 	return SetShaderParameter(hash, &value, sizeof(Matrix), 1);
 }
 
+/////////Graphics Command Context
+////////////////////////////////////////////
+
 GraphicsCommandContext::GraphicsCommandContext(Graphics* pGraphics, void* pCommandList)
 	: CommandContext(pGraphics, pCommandList)
 {
@@ -64,6 +80,9 @@ GraphicsPipelineState* GraphicsCommandContext::GetGraphicsPipelineState() const
 {
 	return static_cast<GraphicsPipelineState*>(m_pPipelineState.get());
 }
+
+/////////Compute Command Context
+////////////////////////////////////////////
 
 ComputeCommandContext::ComputeCommandContext(Graphics* pGraphics, void* pCommandList)
 	: CommandContext(pGraphics, pCommandList)

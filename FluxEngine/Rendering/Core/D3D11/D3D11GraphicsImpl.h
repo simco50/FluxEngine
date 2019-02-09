@@ -3,8 +3,6 @@
 #include <dxgi.h>
 #include <d3d11.h>
 
-class InputLayout;
-
 class GraphicsImpl
 {
 public:
@@ -57,6 +55,7 @@ private:
 	unsigned int m_FirstDirtyVertexBuffer = UINT_MAX;
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
+	bool m_InputLayoutDirty = false;
 
 	//Pipeline state
 	bool m_RasterizerStateDirty = false;

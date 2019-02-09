@@ -8,29 +8,77 @@
 #include "D3D11GraphicsImpl.h"
 #include "D3D11Helpers.h"
 
-bool PipelineState::SetParameter(StringHash hash, const void* pData)
+/////////Pipeline State
+////////////////////////////////////////////
+
+
+
+/////////Graphics Pipeline State
+////////////////////////////////////////////
+
+class GraphicsPipelineStateImpl
 {
-	LoadShaderParameters();
-	auto pParameter = m_ShaderParameters.find(hash);
-	if (pParameter == m_ShaderParameters.end())
+	friend class GraphicsPipelineState;
+public:
+	GraphicsPipelineStateImpl()
 	{
-		return false;
+		BlendStateDesc.AlphaToCoverageEnable = false;
+		BlendStateDesc.IndependentBlendEnable = false;
+		BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(BlendMode, (unsigned char)ColorWriteMask);
+
+		RasterizerStateDesc.AntialiasedLineEnable = false;
+		RasterizerStateDesc.CullMode = D3D11_CULL_FRONT;
+		RasterizerStateDesc.DepthBias = 0;
+		RasterizerStateDesc.DepthBiasClamp = 1.0f;
+		RasterizerStateDesc.DepthClipEnable = true;
+		RasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		RasterizerStateDesc.FrontCounterClockwise = false;
+		RasterizerStateDesc.MultisampleEnable = false;
+		RasterizerStateDesc.ScissorEnable = false;
+		RasterizerStateDesc.SlopeScaledDepthBias = 0.0f;
+
+		DepthStencilStateDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		DepthStencilStateDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		DepthStencilStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_ZERO;
+		DepthStencilStateDesc.DepthEnable = true;
+		DepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		DepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		DepthStencilStateDesc.StencilEnable = false;
+		DepthStencilStateDesc.StencilReadMask = 0;
+		DepthStencilStateDesc.StencilWriteMask = 0;
 	}
-	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, pParameter->second->Size, false);
+	~GraphicsPipelineStateImpl() = default;
+
+private:
+	ID3D11BlendState* pBlendState = nullptr;
+	ID3D11DepthStencilState* pDepthStencilState = nullptr;
+	ID3D11RasterizerState* pRasterizerState = nullptr;
+	ID3D11InputLayout* pInputLayout = nullptr;
+
+	D3D11_BLEND_DESC BlendStateDesc;
+	D3D11_RASTERIZER_DESC RasterizerStateDesc;
+	D3D11_DEPTH_STENCIL_DESC DepthStencilStateDesc;
+
+	BlendMode BlendMode = BlendMode::REPLACE;
+	ColorWrite ColorWriteMask = ColorWrite::ALL;
+};
+
+GraphicsPipelineState::GraphicsPipelineState(Graphics* pGraphics)
+	: PipelineState(pGraphics), m_pImpl(std::make_unique<GraphicsPipelineStateImpl>())
+{
 }
 
-bool PipelineState::SetParameter(StringHash hash, const void* pData, int size)
+GraphicsPipelineState::~GraphicsPipelineState()
 {
-	LoadShaderParameters();
-	auto pParameter = m_ShaderParameters.find(hash);
-	if (pParameter == m_ShaderParameters.end())
-	{
-		return false;
-	}
-	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, size, false);
+
 }
 
-void GraphicsPipelineState::Finalize(bool& hasUpdated)
+void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuffers, int count)
 {
 	AUTOPROFILE(GraphicsPipelineState_Finalize);
 
@@ -44,45 +92,29 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		hasUpdated = true;
 		pImpl->m_DepthStencilStateDirty = false;
 		unsigned int stateHash =
-			(unsigned char)m_DepthEnabled << 0
-			| (unsigned char)m_DepthWrite << 1
-			| (unsigned char)m_DepthCompareMode << 2
-			| (unsigned char)m_StencilTestEnabled << 6
-			| (unsigned char)m_StencilTestMode << 7
-			| (unsigned char)m_StencilTestPassOperation << 11
-			| (unsigned char)m_StencilTestFailOperation << 15
-			| (unsigned char)m_StencilTestZFailOperation << 19
-			| (unsigned char)m_StencilCompareMask << 23
-			| (unsigned char)m_StencilWriteMask << 27;
+			(unsigned char)m_pImpl->DepthStencilStateDesc.DepthEnable<< 0
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.DepthWriteMask << 1
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.DepthFunc << 2
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.StencilEnable << 6
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.FrontFace.StencilFunc << 7
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.FrontFace.StencilPassOp << 11
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.FrontFace.StencilFailOp << 15
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.FrontFace.StencilDepthFailOp << 19
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.StencilReadMask << 23
+			| (unsigned char)m_pImpl->DepthStencilStateDesc.StencilWriteMask << 27;
 
 		auto state = pImpl->m_DepthStencilStates.find(stateHash);
 		if (state != pImpl->m_DepthStencilStates.end())
 		{
-			m_Data.pDepthStencilState = state->second.Get();
+			m_pImpl->pDepthStencilState = state->second.Get();
 		}
 		else
 		{
 			AUTOPROFILE_DESC(PipelineState_DepthStencilState_Create, Math::ToHex(stateHash));
-
-			D3D11_DEPTH_STENCIL_DESC desc = {};
-			desc.DepthEnable = m_DepthEnabled;
-			desc.DepthWriteMask = m_DepthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-			desc.DepthFunc = D3D11ComparisonFunction(m_DepthCompareMode);
-			desc.StencilEnable = m_StencilTestEnabled;
-			desc.StencilReadMask = m_StencilCompareMask;
-			desc.StencilWriteMask = m_StencilWriteMask;
-			desc.FrontFace.StencilFunc = D3D11ComparisonFunction(m_StencilTestMode);
-			desc.BackFace.StencilFunc = desc.FrontFace.StencilFunc;
-			desc.FrontFace.StencilPassOp = D3D11StencilOperation(m_StencilTestPassOperation);
-			desc.BackFace.StencilPassOp = desc.FrontFace.StencilPassOp;
-			desc.FrontFace.StencilFailOp = D3D11StencilOperation(m_StencilTestFailOperation);
-			desc.BackFace.StencilFailOp = desc.FrontFace.StencilFailOp;
-			desc.FrontFace.StencilDepthFailOp = D3D11StencilOperation(m_StencilTestZFailOperation);
-			desc.BackFace.StencilDepthFailOp = desc.FrontFace.StencilDepthFailOp;
-
+			
 			ComPtr<ID3D11DepthStencilState>& pState = pImpl->m_DepthStencilStates[stateHash];
-			HR(pImpl->GetDevice()->CreateDepthStencilState(&desc, pState.GetAddressOf()));
-			m_Data.pDepthStencilState = pState.Get();
+			HR(pImpl->GetDevice()->CreateDepthStencilState(&m_pImpl->DepthStencilStateDesc, pState.GetAddressOf()));
+			m_pImpl->pDepthStencilState = pState.Get();
 		}
 	}
 	if(pImpl->m_BlendStateDirty || m_IsCreated == false)
@@ -93,28 +125,22 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 
 		//Check if the blend state already exists in the cache
 		unsigned int stateHash =
-			(unsigned char)m_BlendMode << 0
-			| (unsigned char)m_AlphaToCoverage << 8
-			| (unsigned char)m_ColorWriteMask << 16;
+			(unsigned char)m_pImpl->BlendMode << 0
+			| (unsigned char)m_pImpl->BlendStateDesc.AlphaToCoverageEnable << 8
+			| (unsigned char)m_pImpl->ColorWriteMask << 16;
 
 		auto state = pImpl->m_BlendStates.find(stateHash);
 		if (state != pImpl->m_BlendStates.end())
 		{
-			m_Data.pBlendState = state->second.Get();
+			m_pImpl->pBlendState = state->second.Get();
 		}
 		else
 		{
 			AUTOPROFILE_DESC(PipelineState_BlendState_Create, Math::ToHex(stateHash));
 
-			D3D11_BLEND_DESC desc = {};
-			desc.AlphaToCoverageEnable = m_AlphaToCoverage;
-			//IndependentBlendEnable == false as we only use blending on one rendertarget
-			desc.IndependentBlendEnable = false;
-			desc.RenderTarget[0] = D3D11RenderTargetBlendDesc(m_BlendMode, (unsigned char)m_ColorWriteMask);
-
 			ComPtr<ID3D11BlendState>& pState = pImpl->m_BlendStates[stateHash];
-			HR(pImpl->GetDevice()->CreateBlendState(&desc, pState.GetAddressOf()));
-			m_Data.pBlendState = pState.Get();
+			HR(pImpl->GetDevice()->CreateBlendState(&m_pImpl->BlendStateDesc, pState.GetAddressOf()));
+			m_pImpl->pBlendState = pState.Get();
 		}
 	}
 	if(pImpl->m_RasterizerStateDirty || m_IsCreated == false)
@@ -124,41 +150,95 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		pImpl->m_RasterizerStateDirty = false;
 
 		unsigned int stateHash =
-			(unsigned char)m_ScissorEnabled << 0
-			| (unsigned char)m_MultisampleEnabled << 1
-			| (unsigned char)m_FillMode << 2
-			| (unsigned char)m_CullMode << 6
-			| (unsigned char)m_LineAntiAlias << 10;
+			(unsigned char)m_pImpl->RasterizerStateDesc.ScissorEnable<< 0
+			| (unsigned char)m_pImpl->RasterizerStateDesc.MultisampleEnable << 1
+			| (unsigned char)m_pImpl->RasterizerStateDesc.FillMode << 2
+			| (unsigned char)m_pImpl->RasterizerStateDesc.CullMode << 6
+			| (unsigned char)m_pImpl->RasterizerStateDesc.AntialiasedLineEnable << 10;
 
 		auto state = pImpl->m_RasterizerStates.find(stateHash);
 		if (state != pImpl->m_RasterizerStates.end())
 		{
-			m_Data.pRasterizerState = state->second.Get();
+			m_pImpl->pRasterizerState = state->second.Get();
 		}
 		else
 		{
 			AUTOPROFILE_DESC(PipelineState_RasterizerState_Create, Math::ToHex(stateHash));
 
-			D3D11_RASTERIZER_DESC desc;
-			ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
-			desc.AntialiasedLineEnable = m_LineAntiAlias;
-			desc.CullMode = D3D11CullMode(m_CullMode);
-			desc.DepthBias = 0;
-			desc.DepthBiasClamp = 0.0f;
-			desc.DepthClipEnable = true;
-			desc.FillMode = D3D11FillMode(m_FillMode);
-			desc.FrontCounterClockwise = false;
-			desc.MultisampleEnable = m_MultisampleEnabled;
-			desc.ScissorEnable = m_ScissorEnabled;
-			desc.SlopeScaledDepthBias = 0.0f;
-
 			ComPtr<ID3D11RasterizerState>& pState = pImpl->m_RasterizerStates[stateHash];
-			HR(pImpl->GetDevice()->CreateRasterizerState(&desc, pState.GetAddressOf()));
-			m_Data.pRasterizerState = pState.Get();
+			HR(pImpl->GetDevice()->CreateRasterizerState(&m_pImpl->RasterizerStateDesc, pState.GetAddressOf()));
+			m_pImpl->pRasterizerState = pState.Get();
 		}
 	}
 
-	LoadShaderParameters();
+	if (pImpl->m_InputLayoutDirty || m_IsCreated == false)
+	{
+		//Rasterizer State
+		hasUpdated = true;
+		pImpl->m_InputLayoutDirty = false;
+
+		//Calculate the input element description hash to find the correct input layout
+		unsigned long long hash = 0;
+
+		for (int i = 0; i < count; ++i)
+		{
+			if (pVertexBuffers[i])
+			{
+				hash <<= pVertexBuffers[i]->GetElements().size() * 10;
+				hash |= pVertexBuffers[i]->GetBufferHash();
+			}
+			else
+			{
+				hash <<= 1;
+			}
+		}
+
+		if (hash == 0)
+		{
+			pImpl->m_pDeviceContext->IASetInputLayout(nullptr);
+		}
+		else
+		{
+			auto pIt = pImpl->m_InputLayoutMap.find(hash);
+			if (pIt != pImpl->m_InputLayoutMap.end())
+			{
+				m_pImpl->pInputLayout = pIt->second.Get();
+			}
+			else
+			{
+				checkf(m_pVertexShader, "[GraphicsCommandContext] No vertex shader set");
+
+				std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
+
+				for (int i = 0; i < count; ++i)
+				{
+					if (pVertexBuffers[i] == nullptr)
+					{
+						continue;
+					}
+
+					for (const VertexElement& e : pVertexBuffers[i]->GetElements())
+					{
+						D3D11_INPUT_ELEMENT_DESC desc;
+						desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
+						desc.Format = D3DCommon::GetFormatOfType(e.Type);
+						desc.AlignedByteOffset = e.Offset;
+						desc.InputSlotClass = e.PerInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+						desc.InputSlot = i;
+						desc.InstanceDataStepRate = e.PerInstance ? 1 : 0;
+						desc.SemanticIndex = e.Index;
+
+						elementDesc.push_back(desc);
+					}
+				}
+				const std::vector<char>& byteCode = m_pVertexShader->GetByteCode();
+
+				ComPtr<ID3D11InputLayout>& pInputLayout = pImpl->m_InputLayoutMap[hash];
+				HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), pInputLayout.GetAddressOf()));
+				m_pImpl->pInputLayout = pInputLayout.Get();
+			}
+		}
+	}
 
 	m_IsCreated = true;
 }
@@ -248,79 +328,9 @@ void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 	}
 }
 
-void GraphicsPipelineState::ApplyInputLayout(VertexBuffer** pVertexBuffers, int count)
-{
-	AUTOPROFILE(GraphicsPipelineState_ApplyInputLayout);
-	//Calculate the input element description hash to find the correct input layout
-	unsigned long long hash = 0;
-
-	for (int i = 0; i < count; ++i)
-	{
-		if (pVertexBuffers[i])
-		{
-			hash <<= pVertexBuffers[i]->GetElements().size() * 10;
-			hash |= pVertexBuffers[i]->GetBufferHash();
-		}
-		else
-		{
-			hash <<= 1;
-		}
-	}
-
-	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-
-	if (hash == 0)
-	{
-		pImpl->m_pDeviceContext->IASetInputLayout(nullptr);
-	}
-	else
-	{
-		auto pIt = pImpl->m_InputLayoutMap.find(hash);
-		if (pIt != pImpl->m_InputLayoutMap.end())
-		{
-			pImpl->m_pDeviceContext->IASetInputLayout(pIt->second.Get());
-		}
-		else
-		{
-			checkf(m_pVertexShader, "[GraphicsCommandContext] No vertex shader set");
-		
-			std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
-
-			for (int i = 0; i < count; ++i)
-			{
-				if (pVertexBuffers[i] == nullptr)
-				{
-					continue;
-				}
-
-				for (const VertexElement& e : pVertexBuffers[i]->GetElements())
-				{
-					D3D11_INPUT_ELEMENT_DESC desc;
-					desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
-					desc.Format = D3DCommon::GetFormatOfType(e.Type);
-					desc.AlignedByteOffset = e.Offset;
-					desc.InputSlotClass = e.PerInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
-					desc.InputSlot = i;
-					desc.InstanceDataStepRate = e.PerInstance ? 1 : 0;
-					desc.SemanticIndex = e.Index;
-
-					elementDesc.push_back(desc);
-				}
-			}
-			const std::vector<char>& byteCode = m_pVertexShader->GetByteCode();
-
-			ComPtr<ID3D11InputLayout>& pInputLayout = pImpl->m_InputLayoutMap[hash];
-			HR(m_pGraphics->GetImpl()->GetDevice()->CreateInputLayout(elementDesc.data(), (UINT)elementDesc.size(), byteCode.data(), (UINT)byteCode.size(), pInputLayout.GetAddressOf()));
-			pImpl->m_pDeviceContext->IASetInputLayout(pInputLayout.Get());
-		}
-	}
-}
-
 void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 {
 	AUTOPROFILE(GraphicsPipelineState_Apply);
-
-	ApplyInputLayout(pVertexBuffers, count);
 
 	if (m_DirtyShaders.GetBit((int)ShaderType::VertexShader))
 	{
@@ -345,23 +355,191 @@ void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 	m_DirtyShaders.ClearAll();
 
 	bool pipelineStateUpdated = false;
-	Finalize(pipelineStateUpdated);
+	Finalize(pipelineStateUpdated, pVertexBuffers, count);
 
 	if (pipelineStateUpdated)
 	{
 		GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 		AUTOPROFILE(Graphics_PrepareDraw_UpdatePipelineState);
-		pImpl->m_pDeviceContext->OMSetDepthStencilState((ID3D11DepthStencilState*)m_Data.pDepthStencilState, GetStencilRef());
-		pImpl->m_pDeviceContext->RSSetState((ID3D11RasterizerState*)m_Data.pRasterizerState);
-		pImpl->m_pDeviceContext->OMSetBlendState((ID3D11BlendState*)m_Data.pBlendState, nullptr, UINT_MAX);
+		pImpl->m_pDeviceContext->OMSetDepthStencilState(m_pImpl->pDepthStencilState, GetStencilRef());
+		pImpl->m_pDeviceContext->RSSetState((m_pImpl->pRasterizerState));
+		pImpl->m_pDeviceContext->OMSetBlendState(m_pImpl->pBlendState, nullptr, UINT_MAX);
+		pImpl->m_pDeviceContext->IASetInputLayout(m_pImpl->pInputLayout);
 	}
 }
 
-//Compute Pipeline state
+void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
+{
+	if (blendMode != m_pImpl->BlendMode || alphaToCoverage != (bool)m_pImpl->BlendStateDesc.AlphaToCoverageEnable)
+	{
+		m_pImpl->BlendMode = blendMode;
+		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(blendMode, (unsigned char)m_pImpl->ColorWriteMask);
+		m_pImpl->BlendStateDesc.AlphaToCoverageEnable = alphaToCoverage;
+
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_BlendStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= ColorWrite::ALL*/)
+{
+	if (m_pImpl->ColorWriteMask != colorWriteMask)
+	{
+		m_pImpl->ColorWriteMask = colorWriteMask;
+		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(m_pImpl->BlendMode, (unsigned char)colorWriteMask);
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_BlendStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetDepthEnabled(const bool enabled)
+{
+	if (enabled != (bool)m_pImpl->DepthStencilStateDesc.DepthEnable)
+	{
+		m_pImpl->DepthStencilStateDesc.DepthEnable = enabled;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetDepthWrite(const bool enabled)
+{
+	D3D11_DEPTH_WRITE_MASK mask = enabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+	if (mask != m_pImpl->DepthStencilStateDesc.DepthWriteMask)
+	{
+		m_pImpl->DepthStencilStateDesc.DepthWriteMask = mask;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetDepthTest(const CompareMode& comparison)
+{
+	D3D11_COMPARISON_FUNC func = D3D11ComparisonFunction(comparison);
+	if (func != m_pImpl->DepthStencilStateDesc.DepthFunc)
+	{
+		m_pImpl->DepthStencilStateDesc.DepthFunc = func;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
+{
+	m_StencilRef = stencilRef;
+
+	if (stencilEnabled != (bool)m_pImpl->DepthStencilStateDesc.StencilEnable)
+	{
+		m_pImpl->DepthStencilStateDesc.StencilEnable = stencilEnabled;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+
+	D3D11_COMPARISON_FUNC testMode = D3D11ComparisonFunction(mode);
+	if (testMode != m_pImpl->DepthStencilStateDesc.FrontFace.StencilFunc)
+	{
+		m_pImpl->DepthStencilStateDesc.FrontFace.StencilFunc = testMode;
+		m_pImpl->DepthStencilStateDesc.BackFace.StencilFunc = testMode;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+
+	D3D11_STENCIL_OP passOp = D3D11StencilOperation(pass);
+	if (passOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilPassOp)
+	{
+		m_pImpl->DepthStencilStateDesc.FrontFace.StencilPassOp = passOp;
+		m_pImpl->DepthStencilStateDesc.BackFace.StencilPassOp = passOp;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+
+	D3D11_STENCIL_OP failOp = D3D11StencilOperation(fail);
+	if (failOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilFailOp)
+	{
+		m_pImpl->DepthStencilStateDesc.FrontFace.StencilFailOp = passOp;
+		m_pImpl->DepthStencilStateDesc.BackFace.StencilFailOp = passOp;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+
+	D3D11_STENCIL_OP zFailOp = D3D11StencilOperation(zFail);
+	if (zFailOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilDepthFailOp)
+	{
+		m_pImpl->DepthStencilStateDesc.FrontFace.StencilDepthFailOp = zFailOp;
+		m_pImpl->DepthStencilStateDesc.BackFace.StencilDepthFailOp = zFailOp;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+	if (compareMask != m_pImpl->DepthStencilStateDesc.StencilReadMask)
+	{
+		m_pImpl->DepthStencilStateDesc.StencilReadMask = compareMask;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+	if (writeMask != m_pImpl->DepthStencilStateDesc.StencilWriteMask)
+	{
+		m_pImpl->DepthStencilStateDesc.StencilWriteMask = writeMask;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetFillMode(FillMode fillMode)
+{
+	D3D11_FILL_MODE f = D3D11FillMode(fillMode);
+	if (f != m_pImpl->RasterizerStateDesc.FillMode)
+	{
+		m_pImpl->RasterizerStateDesc.FillMode = f;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetCullMode(CullMode cullMode)
+{
+	D3D11_CULL_MODE c = D3D11CullMode(cullMode);
+	if (c != m_pImpl->RasterizerStateDesc.CullMode)
+	{
+		m_pImpl->RasterizerStateDesc.CullMode = c;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetLineAntialias(bool lineAntiAlias)
+{
+	if (lineAntiAlias != (bool)m_pImpl->RasterizerStateDesc.AntialiasedLineEnable)
+	{
+		m_pImpl->RasterizerStateDesc.AntialiasedLineEnable = lineAntiAlias;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetScissorEnabled(bool enabled)
+{
+	if (enabled != (bool)m_pImpl->RasterizerStateDesc.ScissorEnable)
+	{
+		m_pImpl->RasterizerStateDesc.ScissorEnable = enabled;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
+	}
+}
+
+void GraphicsPipelineState::SetMultisampleEnabled(bool enabled)
+{
+	if (enabled != (bool)m_pImpl->RasterizerStateDesc.MultisampleEnable)
+	{
+		m_pImpl->RasterizerStateDesc.MultisampleEnable = enabled;
+		m_IsDirty = true;
+		m_pGraphics->GetImpl()->m_RasterizerStateDirty = true;
+	}
+}
+
+/////////Compute Pipeline State
+////////////////////////////////////////////
 
 void ComputePipelineState::Finalize(bool& hasUpdated)
 {
 	hasUpdated = true;
-	m_ShaderParameters.clear();
-	LoadShaderParametersForShader(m_pComputeShader);
 }

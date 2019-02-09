@@ -183,23 +183,23 @@ void FluxCore::InitGame()
 		pLight->Rotate(45, -135, 0);
 	}
 
-	//{
-	//	Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
-	//	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
-	//	std::vector<VertexElement> cubeDesc =
-	//	{
-	//		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
-	//		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
-	//		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
-	//	};
-	//	pCubeMesh->CreateBuffers(cubeDesc);
-	//	pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
-	//	SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
-	//	Model* pCubeModel = pCubeNode->CreateComponent<Model>();
-	//	pCubeModel->SetMesh(pCubeMesh);
-	//	pCubeModel->SetMaterial(pMat);
-	//	pCubeNode->SetScale(50);
-	//}
+	{
+		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
+		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
+		std::vector<VertexElement> cubeDesc =
+		{
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+		};
+		pCubeMesh->CreateBuffers(cubeDesc);
+		pCubeMesh->GetGeometry(0)->SetDrawRange(PrimitiveType::PATCH_CP_3, pCubeMesh->GetGeometry(0)->GetIndexCount(), pCubeMesh->GetGeometry(0)->GetVertexCount());
+		SceneNode* pCubeNode = m_pScene->CreateChild("Tessellated thing");
+		Model* pCubeModel = pCubeNode->CreateComponent<Model>();
+		pCubeModel->SetMesh(pCubeMesh);
+		pCubeModel->SetMaterial(pMat);
+		pCubeNode->SetScale(50);
+	}
 
 
 	/*{

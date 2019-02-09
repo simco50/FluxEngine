@@ -4,24 +4,13 @@ class ShaderVariation;
 class VertexBuffer;
 struct ShaderParameter;
 
-#ifdef GRAPHICS_D3D11
-struct PipelineStateData
-{
-	void* pRasterizerState = nullptr;
-	void* pDepthStencilState = nullptr;
-	void* pBlendState = nullptr;
-
-};
-#elif GRAPHICS_D3D12
-using PipelineStateData = void*;
-#endif
-
 class PipelineState
 {
 public:
 	PipelineState(Graphics* pGraphics);
 	virtual ~PipelineState();
-	const PipelineStateData& GetData() const;
+
+	virtual void ClearShaders() = 0;
 
 	bool SetParameter(const std::string& name, const void* pData);
 	bool SetParameter(StringHash hash, const void* pData);
@@ -29,18 +18,19 @@ public:
 
 protected:
 	virtual void LoadShaderParameters() = 0;
+	void LoadShaderParametersForShader(ShaderVariation* pShader);
 	void ApplyShader(ShaderType type, ShaderVariation* pShader);
 
 	Graphics* m_pGraphics = nullptr;
-	PipelineStateData m_Data;
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
 	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 
 	BitField<8, uint32> m_DirtyShaders;
 	bool m_ShaderParametersDirty = true;
-	void LoadShaderParametersForShader(ShaderVariation* pShader);
 	std::map<StringHash, const ShaderParameter*> m_ShaderParameters;
 };
+
+class GraphicsPipelineStateImpl;
 
 class GraphicsPipelineState : public PipelineState
 {
@@ -48,7 +38,7 @@ public:
 	GraphicsPipelineState(Graphics* pGraphics);
 	~GraphicsPipelineState();
 
-	void Finalize(bool& hasUpdated);
+	void Finalize(bool& hasUpdated, VertexBuffer** pVertexBuffers, int count);
 	void Apply(VertexBuffer** pVertexBuffers, int count);
 
 	//BlendState
@@ -70,6 +60,7 @@ public:
 	void SetLineAntialias(bool lineAntiAlias);
 
 	//Shaders
+	virtual void ClearShaders() override;
 	void SetVertexShader(ShaderVariation* pShader);
 	void SetPixelShader(ShaderVariation* pShader);
 	void SetGeometryShader(ShaderVariation* pShader);
@@ -82,38 +73,14 @@ public:
 	ShaderVariation* GetHullShader() const { return m_pHullShader; }
 	ShaderVariation* GetDomainShader() const { return m_pDomainShader; }
 
-	void ApplyInputLayout(VertexBuffer** pVertexBuffers, int count);
-
 private:
 	virtual void LoadShaderParameters() override;
+	std::unique_ptr<GraphicsPipelineStateImpl> m_pImpl;
 
 	bool m_IsDirty = false;
 	bool m_IsCreated = false;
 
-	//BlendState
-	BlendMode m_BlendMode = BlendMode::REPLACE;
-	bool m_AlphaToCoverage = false;
-	ColorWrite m_ColorWriteMask = ColorWrite::ALL;
-
-	//DepthStencilState
-	bool m_DepthEnabled = true;
-	bool m_DepthWrite = true;
-	CompareMode m_DepthCompareMode = CompareMode::LESS;
-	bool m_StencilTestEnabled = false;
-	CompareMode m_StencilTestMode = CompareMode::ALWAYS;
-	StencilOperation m_StencilTestPassOperation = StencilOperation::KEEP;
-	StencilOperation m_StencilTestFailOperation = StencilOperation::KEEP;
-	StencilOperation m_StencilTestZFailOperation = StencilOperation::KEEP;
 	unsigned int m_StencilRef = 0;
-	unsigned char m_StencilCompareMask = 0;
-	unsigned char m_StencilWriteMask = 0;
-
-	//RasterizerState
-	bool m_LineAntiAlias = false;
-	bool m_ScissorEnabled = false;
-	bool m_MultisampleEnabled = true;
-	FillMode m_FillMode = FillMode::SOLID;
-	CullMode m_CullMode = CullMode::BACK;
 
 	//Shaders
 	ShaderVariation* m_pVertexShader = nullptr;
@@ -129,11 +96,14 @@ public:
 	ComputePipelineState(Graphics* pGraphics);
 	~ComputePipelineState();
 	void Finalize(bool& hasUpdated);
-
+	
+	//Shaders
+	virtual void ClearShaders() override;
 	void SetComputeShader(ShaderVariation* pShader);
 
 	ShaderVariation* GetComputeShader() const { return m_pComputeShader; }
 
 private:
+	virtual void LoadShaderParameters() override;
 	ShaderVariation* m_pComputeShader = nullptr;
 };

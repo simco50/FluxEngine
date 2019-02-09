@@ -11,6 +11,7 @@
 #include "Renderer.h"
 #include "Geometry.h"
 #include "Core\CommandContext.h"
+#include "Core\PipelineState.h"
 
 PostProcessing::PostProcessing(Context* pContext)
 	: Component(pContext)
@@ -43,6 +44,7 @@ void PostProcessing::Draw()
 	GraphicsCommandContext* pCommandContext = m_pGraphics->GetGraphicsCommandContext();
 
 	pCommandContext->SetViewport(m_pCamera->GetViewport());
+	pCommandContext->GetGraphicsPipelineState()->ClearShaders();
 
 	RenderTarget* pOriginalTarget = m_pGraphics->GetDefaultRenderTarget()->GetRenderTarget();
 	RenderTarget* pCurrentSource = m_pCamera->GetRenderTarget();

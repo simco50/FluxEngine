@@ -8,6 +8,7 @@ class StructuredBuffer;
 class ShaderVariation;
 class Texture;
 class GraphicsPipelineState;
+class ComputePipelineState;
 
 class CommandContext
 {
@@ -85,4 +86,6 @@ class ComputeCommandContext : public CommandContext
 {
 public:
 	ComputeCommandContext(Graphics* pGraphics, void* pCommandList);
+
+	ComputePipelineState* GetComputePipelineState() const;
 };
