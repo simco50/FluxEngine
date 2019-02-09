@@ -64,9 +64,9 @@ void PipelineState::LoadShaderParametersForShader(ShaderVariation* pShader)
 
 void GraphicsPipelineState::LoadShaderParameters()
 {
-	AUTOPROFILE(GraphicsPipelineState_LoadShaderParameters);
 	if (m_ShaderParametersDirty)
 	{
+		AUTOPROFILE(GraphicsPipelineState_LoadShaderParameters);
 		m_ShaderParameters.clear();
 		LoadShaderParametersForShader(m_pVertexShader);
 		LoadShaderParametersForShader(m_pPixelShader);

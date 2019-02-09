@@ -33,8 +33,6 @@ bool GraphicsImpl::GetPrimitiveType(const PrimitiveType primitiveType, const uns
 
 unsigned int GraphicsImpl::GetMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const
 {
-	AUTOPROFILE(Graphics_Impl_GetMultisampleQuality);
-
 	if (sampleCount < 2)
 	{
 		return 0;
@@ -54,8 +52,6 @@ unsigned int GraphicsImpl::GetMultisampleQuality(const DXGI_FORMAT format, const
 
 bool GraphicsImpl::CheckMultisampleQuality(const DXGI_FORMAT format, const unsigned int sampleCount) const
 {
-	AUTOPROFILE(Graphics_Impl_CheckMultisampleQuality);
-
 	if (sampleCount < 2)
 	{
 		return true; // Not multisampled, should use quality 0

@@ -4,8 +4,6 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 
-class ShaderProgram;
-
 class GraphicsImpl
 {
 public:
@@ -43,7 +41,5 @@ private:
 	int m_CbvSrvDescriptorSize = -1;
 
 	//Shader programs
-	ShaderProgram* m_pCurrentShaderProgram = nullptr;
-	std::map<uint64, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
 	bool m_ShaderProgramDirty = false;
 };

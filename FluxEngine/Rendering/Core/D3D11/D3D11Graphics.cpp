@@ -204,59 +204,63 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 
 	EnumerateAdapters();
 
-	//Create the device
-	UINT createDeviceFlags = 0;
+	{
+		AUTOPROFILE(Graphics_CreateDeviceObject);
+		//Create the device
+		UINT createDeviceFlags = 0;
 #ifdef _DEBUG
-	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
-	HR(D3D11CreateDevice(
-		m_pImpl->m_pAdapter.Get(),
-		D3D_DRIVER_TYPE_UNKNOWN,
-		nullptr,
-		createDeviceFlags,
-		nullptr,
-		0,
-		D3D11_SDK_VERSION,
-		m_pImpl->m_pDevice.GetAddressOf(),
-		&featureLevel,
-		m_pImpl->m_pDeviceContext.GetAddressOf())
-	);
+		D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
+		HR(D3D11CreateDevice(
+			m_pImpl->m_pAdapter.Get(),
+			D3D_DRIVER_TYPE_UNKNOWN,
+			nullptr,
+			createDeviceFlags,
+			nullptr,
+			0,
+			D3D11_SDK_VERSION,
+			m_pImpl->m_pDevice.GetAddressOf(),
+			&featureLevel,
+			m_pImpl->m_pDeviceContext.GetAddressOf())
+		);
 
-	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
-	{
-		FLUX_LOG(Error, "[Graphics::CreateDevice()] > Feature Level 11_0 not supported!");
-		return false;
+		if (featureLevel != D3D_FEATURE_LEVEL_11_0)
+		{
+			FLUX_LOG(Error, "[Graphics::CreateDevice()] > Feature Level 11_0 not supported!");
+			return false;
+		}
+
+		if (!m_pImpl->CheckMultisampleQuality(DXGI_FORMAT_B8G8R8A8_UNORM, m_Multisample))
+			m_Multisample = 1;
 	}
 
-	if (!m_pImpl->CheckMultisampleQuality(DXGI_FORMAT_B8G8R8A8_UNORM, m_Multisample))
-		m_Multisample = 1;
+	{
+		AUTOPROFILE(Graphics_CreateSwapchain);
+		m_pImpl->m_pSwapChain.Reset();
 
-	m_pImpl->m_pSwapChain.Reset();
+		//Create swap chain desctriptor
+		DXGI_SWAP_CHAIN_DESC swapDesc;
+		swapDesc.BufferCount = 1;
+		swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapDesc.BufferDesc.Height = windowHeight;
+		swapDesc.BufferDesc.Width = windowWidth;
+		swapDesc.BufferDesc.RefreshRate.Denominator = m_RefreshRate;
+		swapDesc.BufferDesc.RefreshRate.Numerator = 1;
+		swapDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_STRETCHED;
+		swapDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+		swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		swapDesc.SampleDesc.Count = m_Multisample;
+		swapDesc.SampleDesc.Quality = m_pImpl->GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
+		swapDesc.OutputWindow = GetWindow();
+		swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		swapDesc.Windowed = m_WindowType != WindowType::FULLSCREEN;
 
-	AUTOPROFILE(Graphics_CreateSwapchain);
-
-	//Create swap chain desctriptor
-	DXGI_SWAP_CHAIN_DESC swapDesc;
-	swapDesc.BufferCount = 1;
-	swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapDesc.BufferDesc.Height = windowHeight;
-	swapDesc.BufferDesc.Width = windowWidth;
-	swapDesc.BufferDesc.RefreshRate.Denominator = m_RefreshRate;
-	swapDesc.BufferDesc.RefreshRate.Numerator = 1;
-	swapDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_STRETCHED;
-	swapDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
-	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	swapDesc.SampleDesc.Count = m_Multisample;
-	swapDesc.SampleDesc.Quality = m_pImpl->GetMultisampleQuality(DXGI_FORMAT_R8G8B8A8_UNORM, m_Multisample);
-	swapDesc.OutputWindow = GetWindow();
-	swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapDesc.Windowed = m_WindowType != WindowType::FULLSCREEN;
-
-	//Create the swap chain
-	HR(m_pImpl->m_pFactory->CreateSwapChain(m_pImpl->m_pDevice.Get(), &swapDesc, m_pImpl->m_pSwapChain.GetAddressOf()));
+		//Create the swap chain
+		HR(m_pImpl->m_pFactory->CreateSwapChain(m_pImpl->m_pDevice.Get(), &swapDesc, m_pImpl->m_pSwapChain.GetAddressOf()));
+	}
 
 	return true;
 }

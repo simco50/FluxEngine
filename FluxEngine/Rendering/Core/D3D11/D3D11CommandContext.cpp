@@ -24,7 +24,7 @@
 
 void GraphicsCommandContext::PrepareDraw()
 {
-	AUTOPROFILE(Graphics_PrepareDraw);
+	AUTOPROFILE(GraphicsCommandContext_PrepareDraw);
 
 	FlushRenderTargetChanges(false);
 	FlushSRVChanges(false);
@@ -33,7 +33,7 @@ void GraphicsCommandContext::PrepareDraw()
 
 	if (m_ScissorRectDirty)
 	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetScissorRect);
+		AUTOPROFILE(GraphicsCommandContext_PrepareDraw_SetScissorRect);
 
 		D3D11_RECT rect = {
 			(LONG)m_CurrentScissorRect.Left,
@@ -46,7 +46,7 @@ void GraphicsCommandContext::PrepareDraw()
 
 	if (pImpl->m_VertexBuffersDirty)
 	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetVertexBuffers);
+		AUTOPROFILE(GraphicsCommandContext_PrepareDraw_SetVertexBuffers);
 
 		//Set the vertex buffers
 		pImpl->m_pDeviceContext->IASetVertexBuffers(
@@ -97,6 +97,8 @@ void GraphicsCommandContext::SetDepthStencil(RenderTarget* pRenderTarget)
 
 void GraphicsCommandContext::FlushRenderTargetChanges(bool force)
 {
+	AUTOPROFILE(GraphicsCommandContext_FlushRenderTargetChanges);
+
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	if (pImpl->m_RenderTargetsDirty || force)
 	{
@@ -118,6 +120,8 @@ void GraphicsCommandContext::FlushRenderTargetChanges(bool force)
 
 void GraphicsCommandContext::FlushSRVChanges(bool force)
 {
+	AUTOPROFILE(GraphicsCommandContext_FlushSRVChanges);
+
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	if ((pImpl->m_TexturesDirty || force) && pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1 > 0)
 	{

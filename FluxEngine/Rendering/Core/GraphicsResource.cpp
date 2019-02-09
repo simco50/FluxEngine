@@ -16,7 +16,7 @@ bool GraphicsResource::SetData(const void* pData, int offset, int size, bool imm
 	checkf(size + offset <= m_Size, "[GraphicsResource::SetData] Trying to write data out of bounds");
 	check(m_pResource);
 
-	AUTOPROFILE(VertexBuffer_SetData);
+	AUTOPROFILE(GraphicsResource_SetData);
 
 	if (immediate)
 	{

@@ -37,7 +37,7 @@ private:
 	std::array<ID3D11ShaderResourceView*, (size_t)TextureSlot::MAX> m_ShaderResourceViews = {};
 
 	//InputLayouts
-	std::map<unsigned long long, ComPtr<ID3D11InputLayout>> m_InputLayoutMap;
+	std::map<uint64, ComPtr<ID3D11InputLayout>> m_InputLayoutMap;
 
 	//Render Target
 	std::array<ID3D11RenderTargetView*, GraphicsConstants::MAX_RENDERTARGETS> m_RenderTargetViews = {};
@@ -50,8 +50,8 @@ private:
 
 	//Vertex buffer
 	std::array<ID3D11Buffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
-	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentOffsets = {};
-	std::array<unsigned int, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentStrides = {};
+	std::array<uint32, GraphicsConstants::MAX_VERTEX_BUFFERS > m_CurrentOffsets = {};
+	std::array<uint32, GraphicsConstants::MAX_VERTEX_BUFFERS > m_CurrentStrides = {};
 	unsigned int m_FirstDirtyVertexBuffer = UINT_MAX;
 	unsigned int m_LastDirtyVertexBuffer = 0;
 	bool m_VertexBuffersDirty = false;
@@ -61,7 +61,7 @@ private:
 	bool m_RasterizerStateDirty = false;
 	bool m_DepthStencilStateDirty = false;
 	bool m_BlendStateDirty = false;
-	std::map<unsigned int, ComPtr<ID3D11DepthStencilState>> m_DepthStencilStates;
-	std::map<unsigned int, ComPtr<ID3D11RasterizerState>> m_RasterizerStates;
-	std::map<unsigned int, ComPtr<ID3D11BlendState>> m_BlendStates;
+	std::map<uint32, ComPtr<ID3D11DepthStencilState>> m_DepthStencilStates;
+	std::map<uint32, ComPtr<ID3D11RasterizerState>> m_RasterizerStates;
+	std::map<uint32, ComPtr<ID3D11BlendState>> m_BlendStates;
 };

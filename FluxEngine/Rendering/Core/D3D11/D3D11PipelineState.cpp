@@ -110,7 +110,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		}
 		else
 		{
-			AUTOPROFILE_DESC(PipelineState_DepthStencilState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(GraphicsPipelineState_DepthStencilState_Create, Math::ToHex(stateHash));
 			
 			ComPtr<ID3D11DepthStencilState>& pState = pImpl->m_DepthStencilStates[stateHash];
 			HR(pImpl->GetDevice()->CreateDepthStencilState(&m_pImpl->DepthStencilStateDesc, pState.GetAddressOf()));
@@ -124,7 +124,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		pImpl->m_BlendStateDirty = false;
 
 		//Check if the blend state already exists in the cache
-		unsigned int stateHash =
+		int32 stateHash =
 			(unsigned char)m_pImpl->BlendMode << 0
 			| (unsigned char)m_pImpl->BlendStateDesc.AlphaToCoverageEnable << 8
 			| (unsigned char)m_pImpl->ColorWriteMask << 16;
@@ -136,7 +136,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		}
 		else
 		{
-			AUTOPROFILE_DESC(PipelineState_BlendState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(GraphicsPipelineState_BlendState_Create, Math::ToHex(stateHash));
 
 			ComPtr<ID3D11BlendState>& pState = pImpl->m_BlendStates[stateHash];
 			HR(pImpl->GetDevice()->CreateBlendState(&m_pImpl->BlendStateDesc, pState.GetAddressOf()));
@@ -149,7 +149,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		hasUpdated = true;
 		pImpl->m_RasterizerStateDirty = false;
 
-		unsigned int stateHash =
+		int32 stateHash =
 			(unsigned char)m_pImpl->RasterizerStateDesc.ScissorEnable<< 0
 			| (unsigned char)m_pImpl->RasterizerStateDesc.MultisampleEnable << 1
 			| (unsigned char)m_pImpl->RasterizerStateDesc.FillMode << 2
@@ -163,7 +163,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		}
 		else
 		{
-			AUTOPROFILE_DESC(PipelineState_RasterizerState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(GraphicsPipelineState_RasterizerState_Create, Math::ToHex(stateHash));
 
 			ComPtr<ID3D11RasterizerState>& pState = pImpl->m_RasterizerStates[stateHash];
 			HR(pImpl->GetDevice()->CreateRasterizerState(&m_pImpl->RasterizerStateDesc, pState.GetAddressOf()));
@@ -178,7 +178,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 		pImpl->m_InputLayoutDirty = false;
 
 		//Calculate the input element description hash to find the correct input layout
-		unsigned long long hash = 0;
+		uint64 hash = 0;
 
 		for (int i = 0; i < count; ++i)
 		{
@@ -206,6 +206,8 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 			}
 			else
 			{
+				AUTOPROFILE(GraphicsPipelineState_InputLayout_Create);
+
 				checkf(m_pVertexShader, "[GraphicsCommandContext] No vertex shader set");
 
 				std::vector<D3D11_INPUT_ELEMENT_DESC> elementDesc;
@@ -246,7 +248,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 
 void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 {
-	AUTOPROFILE_DESC(PipelineState_UpdateShader, pShader ? pShader->GetName() : "None");
+	AUTOPROFILE_DESC(GraphicsPipelineState_ApplyShader, pShader ? pShader->GetName() : "None");
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 
@@ -288,7 +290,7 @@ void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 
 	if (pShader)
 	{
-		AUTOPROFILE_DESC(PipelineState_SetConstantBuffers, pShader->GetName());
+		AUTOPROFILE_DESC(GraphicsPipelineState_SetConstantBuffers, pShader->GetName());
 		bool buffersChanged = false;
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)

@@ -5,11 +5,19 @@
 
 bool GraphicsResource::Apply_Internal(const void* pData, int offset, int size)
 {
+	AUTOPROFILE(GraphicsResource_Apply_Internal);
 	if (m_Dynamic)
 	{
 		void* pTarget = Map(true);
-		memcpy(static_cast<char*>(pTarget) + offset, pData, size);
-		Unmap();
+		if (pTarget)
+		{
+			memcpy(static_cast<char*>(pTarget) + offset, pData, size);
+			Unmap();
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{

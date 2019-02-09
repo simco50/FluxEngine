@@ -7,7 +7,6 @@
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
 #include "../Texture2D.h"
-#include "../ShaderProgram.h"
 #include "../../../FileSystem/File/PhysicalFile.h"
 #include "../../../Content/Image.h"
 #include "../../Renderer.h"
@@ -24,16 +23,9 @@ const int Graphics::DEPTHSTENCIL_FORMAT = (int)DXGI_FORMAT_D24_UNORM_S8_UINT;
 Graphics::Graphics(Context* pContext)
 	: Subsystem(pContext),
 	m_WindowType(WindowType::WINDOWED),
-	m_pImpl(std::make_unique<GraphicsImpl>()),
-	m_PipelineState(this)
+	m_pImpl(std::make_unique<GraphicsImpl>())
 {
 	AUTOPROFILE(Graphics_Construct);
-
-	for (RenderTarget*& pRt : m_CurrentRenderTargets)
-	{
-		pRt = nullptr;
-	}
-
 	pContext->InitSDLSystem(SDL_INIT_VIDEO);
 }
 
@@ -87,8 +79,6 @@ bool Graphics::SetMode(const GraphicsCreateInfo& createInfo)
 		}
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
-
-	m_PipelineState.SetMultisampleEnabled(m_Multisample > 1);
 
 	FLUX_LOG(Info, "[Graphics::SetMode] Graphics initialized");
 
@@ -156,129 +146,9 @@ bool Graphics::OpenWindow()
 	return true;
 }
 
-void Graphics::SetRenderTarget(const int index, RenderTarget* pRenderTarget)
-{
-
-}
-
-void Graphics::SetDepthStencil(RenderTarget* pRenderTarget)
-{
-
-}
-
-void Graphics::SetDepthOnly(bool enable)
-{
-
-}
-
-void Graphics::SetVertexBuffer(VertexBuffer* pBuffer)
-{
-	SetVertexBuffers(&pBuffer, 1);
-}
-
-void Graphics::SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsigned int instanceOffset /*= 0*/)
-{
-	
-}
-
-void Graphics::SetIndexBuffer(IndexBuffer* pIndexBuffer)
-{
-	
-}
-
-void Graphics::UpdateShaders()
-{
-	
-}
-
-bool Graphics::SetShader(const ShaderType type, ShaderVariation* pShader)
-{
-	return false;
-}
-
-void Graphics::UpdateShaderProgram()
-{
-	
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const void* pData)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	return pParameter->pBuffer->SetData(pData, pParameter->Offset, pParameter->Size, false);
-}
-
-bool Graphics::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
-{
-	UpdateShaderProgram();
-	const ShaderParameter* pParameter = m_pImpl->m_pCurrentShaderProgram->GetShaderParameter(hash);
-	if (pParameter == nullptr)
-	{
-		return false;
-	}
-	checkf(stride * count <= pParameter->Size, "[Graphics::SetShaderParameter] Parameter input too large");
-	return pParameter->pBuffer->SetData(pData, pParameter->Offset, stride * count, false);
-}
-
-void Graphics::SetViewport(const FloatRect& rect)
-{
-	m_CurrentViewport = rect;
-}
-
-void Graphics::SetTexture(const TextureSlot slot, Texture* pTexture)
-{
-	
-}
-
-void Graphics::SetStructuredBuffer(const TextureSlot slot, const StructuredBuffer* pBuffer)
-{
-	
-}
-
-
-void Graphics::Draw(const PrimitiveType type, const int vertexStart, const int vertexCount)
-{
-	
-}
-
-void Graphics::DrawIndexed(const PrimitiveType type, const int indexCount, const int indexStart, const int minVertex)
-{
-	
-}
-
-void Graphics::DrawIndexedInstanced(const PrimitiveType type, const int indexCount, const int indexStart, const int instanceCount, const int minVertex, const int instanceStart)
-{
-	
-}
-
-void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const float depth, const unsigned char stencil)
-{
-	
-}
-
-void Graphics::FlushRenderTargetChanges(bool force)
-{
-
-}
-
-void Graphics::FlushSRVChanges(bool force)
-{
-}
-
-
-void Graphics::PrepareDraw()
-{
-}
-
 void Graphics::BeginFrame()
 {
 	PROFILER_EVENT(Graphics_BeginFrame);
-	m_BatchCount = 0;
-	m_PrimitiveCount = 0;
 }
 
 void Graphics::EndFrame()
@@ -468,12 +338,6 @@ void Graphics::UpdateSwapchain(int width, int height)
 		IID_PPV_ARGS(m_pImpl->m_pDepthStencilBuffer.GetAddressOf())));
 	m_pImpl->m_pDevice->CreateDepthStencilView(m_pImpl->m_pDepthStencilBuffer.Get(), nullptr, m_pImpl->GetDsv());
 	
-	m_CurrentViewport.Left = 0;
-	m_CurrentViewport.Top = 0;
-	m_CurrentViewport.Right = (float)width;
-	m_CurrentViewport.Bottom = (float)height;
-	m_CurrentScissorRect = m_CurrentViewport;
-
 	m_WindowWidth = width;
 	m_WindowHeight = height;
 }
