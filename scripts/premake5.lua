@@ -60,14 +60,7 @@ workspace (engineName)
 
 		filter {}
 
-		AddPhysX(false)
-		AddFmod(false)
-		AddSQLite(false)
-		AddZlib(false)
-		AddSDL2(false)
-		AddAssimp(false)
-		AddDX12(false)
-		AddWininet(false)
+		AddModules(false)
 
 	project (gameName)
 		SetupTarget(gameName, "WindowedApp")
@@ -77,11 +70,15 @@ workspace (engineName)
 		links { (engineName) }
 		includedirs { (ROOT .. engineName) }
 
-		AddPhysX(true)
-		AddFmod(true)
-		AddSQLite(true)
-		AddZlib(true)
-		AddSDL2(true)
-		AddAssimp(true)
-		AddDX12(true)
-		AddWininet(true)
+		AddModules(true)
+
+newoption {
+	trigger     = "gfxapi",
+	value       = "API",
+	description = "Choose a particular 3D API for rendering",
+	default     = "d3d11",
+	allowed = {
+		{ "d3d11", "DirectX 11" },
+		{ "d3d12", "DirectX 12" },
+	}
+}

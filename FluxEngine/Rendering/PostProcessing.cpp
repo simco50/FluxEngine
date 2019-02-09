@@ -5,14 +5,11 @@
 #include "Rendering/Core/Texture2D.h"
 #include "Core\Texture3D.h"
 #include "Material.h"
-#include "Core\DepthStencilState.h"
 #include "Input\InputEngine.h"
-#include "Core\BlendState.h"
 #include "Camera\Camera.h"
 #include "Scenegraph\SceneNode.h"
 #include "Renderer.h"
 #include "Geometry.h"
-#include "Core\RasterizerState.h"
 
 PostProcessing::PostProcessing(Context* pContext)
 	: Component(pContext)

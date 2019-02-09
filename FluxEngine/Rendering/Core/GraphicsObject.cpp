@@ -19,6 +19,18 @@ void GraphicsObject::SetName(const std::string& name)
 	}
 }
 
+#elif defined(GRAPHICS_D3D12)
+#include "D3D12/D3D12GraphicsImpl.h"
+
+void GraphicsObject::SetName(const std::string& name)
+{
+	if (m_pResource)
+	{
+		std::wstring n(name.begin(), name.end());
+		static_cast<ID3D12Resource*>(m_pResource)->SetName(n.c_str());
+	}
+}
+
 #else
 
 void GraphicsObject::SetName(const std::string& /*name*/)

@@ -3,9 +3,6 @@
 #include "Core\VertexBuffer.h"
 #include "Core\Graphics.h"
 #include "Core\Shader.h"
-#include "Core\DepthStencilState.h"
-#include "Core\BlendState.h"
-#include "Core\RasterizerState.h"
 #include "Camera\Camera.h"
 #include "Physics\PhysX\PhysicsScene.h"
 #include "Mesh.h"
@@ -78,14 +75,12 @@ void DebugRenderer::Render()
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
 	m_pGraphics->SetIndexBuffer(nullptr);
 
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
-	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::LESSEQUAL);
-
-	m_pGraphics->GetBlendState()->SetColorWrite(ColorWrite::ALL);
-	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::REPLACE, false);
-
-	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
-	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
+	m_pGraphics->GetPipelineState()->SetDepthEnabled(true);
+	m_pGraphics->GetPipelineState()->SetDepthTest(CompareMode::LESSEQUAL);
+	m_pGraphics->GetPipelineState()->SetColorWrite(ColorWrite::ALL);
+	m_pGraphics->GetPipelineState()->SetBlendMode(BlendMode::REPLACE, false);
+	m_pGraphics->GetPipelineState()->SetCullMode(CullMode::BACK);
+	m_pGraphics->GetPipelineState()->SetFillMode(FillMode::SOLID);
 
 	const Matrix& projectionMatrix = m_pView->ViewProjectionMatrix;
 	m_pGraphics->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);

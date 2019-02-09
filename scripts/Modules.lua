@@ -1,3 +1,29 @@
+function AddModules(isTarget)
+
+    if(isTarget == false) then
+        removefiles
+        {
+            (ROOT .. engineName .. "/Rendering/Core/D3DCommon/**"),
+            (ROOT .. engineName .. "/Rendering/Core/D3D11/**"),
+            (ROOT .. engineName .. "/Rendering/Core/D3D12/**"),
+            (ROOT .. engineName .. "/Physics/PhysX/**")
+        }
+    end
+
+    AddPhysX(isTarget)
+    AddFmod(isTarget)
+    AddSQLite(isTarget)
+    AddZlib(isTarget)
+    AddSDL2(isTarget)
+    AddAssimp(isTarget)
+    if(_OPTIONS["gfxapi"] == "d3d11" or _OPTIONS["gfxapi"] == nil) then
+        AddDX11(isTarget)
+    else
+        AddDX12(isTarget)
+    end
+    AddWininet(isTarget)
+end
+
 function AddPhysX(isTarget)
     defines { "MODULE_PHYSX" }
 
@@ -74,6 +100,11 @@ function AddPhysX(isTarget)
             }
             libdirs { "$(SolutionDir)Libraries/PhysX/PhysX/lib/%{cfg.platform}/Debug" }
 
+    else
+        files 
+        { 
+            (ROOT .. engineName .. "/Physics/PhysX/**")
+        }
         end
     filter {}
 end
@@ -184,8 +215,8 @@ function AddDX12(isTarget)
     else
         files 
         { 
-            (ROOT .. engineName .. "/Rendering/Core/D3D12/**"),
-            (ROOT .. engineName .. "/Rendering/Core/D3DCommon/**") 
+            (ROOT .. engineName .. "/Rendering/Core/D3DCommon/**"),
+            (ROOT .. engineName .. "/Rendering/Core/D3D12/**")
         }
     end
 end

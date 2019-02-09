@@ -10,6 +10,7 @@ class GraphicsImpl
 {
 public:
 	friend class Graphics;
+	friend class PipelineState;
 
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ComPtr<ID3D11Device>& GetDeviceCom() { return m_pDevice; }
@@ -58,4 +59,12 @@ private:
 	ShaderProgram* m_pCurrentShaderProgram = nullptr;
 	std::map<uint64, std::unique_ptr<ShaderProgram>> m_ShaderPrograms;
 	bool m_ShaderProgramDirty = false;
+
+	//Pipeline state
+	bool m_RasterizerStateDirty = false;
+	bool m_DepthStencilStateDirty = false;
+	bool m_BlendStateDirty = false;
+	std::map<unsigned int, ComPtr<ID3D11DepthStencilState>> m_DepthStencilStates;
+	std::map<unsigned int, ComPtr<ID3D11RasterizerState>> m_RasterizerStates;
+	std::map<unsigned int, ComPtr<ID3D11BlendState>> m_BlendStates;
 };

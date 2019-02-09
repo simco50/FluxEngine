@@ -1,15 +1,12 @@
 #include "FluxEngine.h"
 #include "D3D12GraphicsImpl.h"
 #include "../Graphics.h"
-#include "../RasterizerState.h"
 #include "../RenderTarget.h"
 #include "../ShaderVariation.h"
 #include "../IndexBuffer.h"
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
 #include "../Texture2D.h"
-#include "../DepthStencilState.h"
-#include "../BlendState.h"
 #include "../ShaderProgram.h"
 #include "../../../FileSystem/File/PhysicalFile.h"
 #include "../../../Content/Image.h"
@@ -27,7 +24,8 @@ const int Graphics::DEPTHSTENCIL_FORMAT = (int)DXGI_FORMAT_D24_UNORM_S8_UINT;
 Graphics::Graphics(Context* pContext)
 	: Subsystem(pContext),
 	m_WindowType(WindowType::WINDOWED),
-	m_pImpl(std::make_unique<GraphicsImpl>())
+	m_pImpl(std::make_unique<GraphicsImpl>()),
+	m_PipelineState(this)
 {
 	AUTOPROFILE(Graphics_Construct);
 
@@ -90,7 +88,7 @@ bool Graphics::SetMode(const GraphicsCreateInfo& createInfo)
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
-	m_RasterizerState.SetMultisampleEnabled(m_Multisample > 1);
+	m_PipelineState.SetMultisampleEnabled(m_Multisample > 1);
 
 	FLUX_LOG(Info, "[Graphics::SetMode] Graphics initialized");
 

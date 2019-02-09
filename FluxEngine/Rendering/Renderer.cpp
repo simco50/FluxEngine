@@ -2,11 +2,8 @@
 #include "Renderer.h"
 #include "Async/AsyncTaskQueue.h"
 #include "Camera/Camera.h"
-#include "Core/BlendState.h"
-#include "Core/DepthStencilState.h"
 #include "Core/Graphics.h"
 #include "Core/IndexBuffer.h"
-#include "Core/RasterizerState.h"
 #include "Core/VertexBuffer.h"
 #include "Drawable.h"
 #include "Geometry.h"
@@ -196,8 +193,8 @@ void Renderer::Blit(RenderTarget* pSource, RenderTarget* pTarget, Material* pMat
 	m_pGraphics->SetTexture(TextureSlot::Diffuse, pSource->GetParentTexture());
 	m_pGraphics->SetRenderTarget(0, pTarget);
 	SetPerMaterialParameters(pMaterial);
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(false);
-	m_pGraphics->GetDepthStencilState()->SetDepthWrite(false);
+	m_pGraphics->GetPipelineState()->SetDepthEnabled(false);
+	m_pGraphics->GetPipelineState()->SetDepthWrite(false);
 	GetQuadGeometry()->Draw(m_pGraphics);
 }
 
@@ -292,16 +289,16 @@ void Renderer::SetPerMaterialParameters(const Material* pMaterial)
 	m_pGraphics->SetShaderParameter(ShaderConstant::cLights, lightData.data());
 
 	//Blend state
-	m_pGraphics->GetBlendState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
+	m_pGraphics->GetPipelineState()->SetBlendMode(m_pCurrentMaterial->GetBlendMode(), m_pCurrentMaterial->GetAlphaToCoverage());
 
 	//Rasterizer state
-	m_pGraphics->GetRasterizerState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
-	m_pGraphics->GetRasterizerState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
+	m_pGraphics->GetPipelineState()->SetCullMode(m_pCurrentMaterial->GetCullMode());
+	m_pGraphics->GetPipelineState()->SetFillMode(m_pCurrentMaterial->GetFillMode());
 
 	//Depth stencil state
-	m_pGraphics->GetDepthStencilState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
-	m_pGraphics->GetDepthStencilState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
+	m_pGraphics->GetPipelineState()->SetDepthTest(m_pCurrentMaterial->GetDepthTestMode());
+	m_pGraphics->GetPipelineState()->SetDepthEnabled(m_pCurrentMaterial->GetDepthEnabled());
+	m_pGraphics->GetPipelineState()->SetDepthWrite(m_pCurrentMaterial->GetDepthWrite());
 }
 
 void Renderer::SetPerBatchParameters(const Batch& batch, const View* pView)

@@ -1,16 +1,13 @@
 #include "FluxEngine.h"
 #include "D3D11GraphicsImpl.h"
 #include "../Graphics.h"
-#include "../RasterizerState.h"
 #include "../RenderTarget.h"
 #include "../ShaderVariation.h"
 #include "../IndexBuffer.h"
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
 #include "../Texture2D.h"
-#include "../DepthStencilState.h"
 #include "../D3D11/D3D11InputLayout.h"
-#include "../BlendState.h"
 #include "../ShaderProgram.h"
 #include "../../../FileSystem/File/PhysicalFile.h"
 #include "../../../Content/Image.h"
@@ -28,7 +25,8 @@ const int Graphics::DEPTHSTENCIL_FORMAT = (int)DXGI_FORMAT_D24_UNORM_S8_UINT;
 Graphics::Graphics(Context* pContext)
 	: Subsystem(pContext),
 	m_WindowType(WindowType::WINDOWED),
-	m_pImpl(std::make_unique<GraphicsImpl>())
+	m_pImpl(std::make_unique<GraphicsImpl>()),
+	m_PipelineState(this)
 {
 	AUTOPROFILE(Graphics_Construct);
 
@@ -91,7 +89,7 @@ bool Graphics::SetMode(const GraphicsCreateInfo& createInfo)
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
-	m_RasterizerState.SetMultisampleEnabled(m_Multisample > 1);
+	m_PipelineState.SetMultisampleEnabled(m_Multisample > 1);
 
 	Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
@@ -574,10 +572,10 @@ void Graphics::Clear(const ClearFlags clearFlags, const Color& color, const floa
 	}
 	else
 	{
-		GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
-		GetDepthStencilState()->SetDepthWrite((clearFlags & ClearFlags::Depth) == ClearFlags::Depth);
-		GetBlendState()->SetColorWrite(((clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget) ? ColorWrite::ALL : ColorWrite::NONE);
-		GetDepthStencilState()->SetStencilTest((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil, CompareMode::ALWAYS, StencilOperation::REF, StencilOperation::KEEP, StencilOperation::KEEP, stencil, 0XFF, 0XFF);
+		m_PipelineState.SetDepthTest(CompareMode::ALWAYS);
+		m_PipelineState.SetDepthWrite((clearFlags & ClearFlags::Depth) == ClearFlags::Depth);
+		m_PipelineState.SetColorWrite(((clearFlags & ClearFlags::RenderTarget) == ClearFlags::RenderTarget) ? ColorWrite::ALL : ColorWrite::NONE);
+		m_PipelineState.SetStencilTest((clearFlags & ClearFlags::Stencil) == ClearFlags::Stencil, CompareMode::ALWAYS, StencilOperation::REF, StencilOperation::KEEP, StencilOperation::KEEP, stencil, 0XFF, 0XFF);
 
 		Geometry* quadGeometry = GetSubsystem<Renderer>()->GetQuadGeometry();
 
@@ -652,25 +650,16 @@ void Graphics::PrepareDraw()
 
 	UpdateShaders();
 
-	if (m_DepthStencilState.IsDirty())
-	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetDepthStencilState);
-		ID3D11DepthStencilState* pState = (ID3D11DepthStencilState*)m_DepthStencilState.GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetDepthStencilState(pState, m_DepthStencilState.GetStencilRef());
-	}
+	bool pipelineStateUpdated = false;
+	m_PipelineState.Finalize(pipelineStateUpdated);
 
-	if (m_RasterizerState.IsDirty())
+	if (pipelineStateUpdated)
 	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetRasterizerState);
-		ID3D11RasterizerState* pState = (ID3D11RasterizerState*)m_RasterizerState.GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->RSSetState(pState);
-	}
-
-	if (m_BlendState.IsDirty())
-	{
-		AUTOPROFILE(Graphics_PrepareDraw_SetBlendState);
-		ID3D11BlendState* pBlendState = (ID3D11BlendState*)m_BlendState.GetOrCreate(this);
-		m_pImpl->m_pDeviceContext->OMSetBlendState(pBlendState, nullptr, UINT_MAX);
+		AUTOPROFILE(Graphics_PrepareDraw_UpdatePipelineState);
+		const PipelineStateData& data = m_PipelineState.GetData();
+		m_pImpl->m_pDeviceContext->OMSetDepthStencilState((ID3D11DepthStencilState*)data.pDepthStencilState, m_PipelineState.GetStencilRef());
+		m_pImpl->m_pDeviceContext->RSSetState((ID3D11RasterizerState*)data.pRasterizerState);
+		m_pImpl->m_pDeviceContext->OMSetBlendState((ID3D11BlendState*)data.pBlendState, nullptr, UINT_MAX);
 	}
 
 	if (m_pImpl->m_VertexBuffersDirty)

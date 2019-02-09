@@ -6,9 +6,6 @@
 #include "ShaderVariation.h"
 #include "Texture.h"
 #include "ConstantBuffer.h"
-#include "RasterizerState.h"
-#include "DepthStencilState.h"
-#include "BlendState.h"
 #include "Shader.h"
 #include "UI/ImmediateUI.h"
 #include "ShaderProgram.h"
@@ -24,7 +21,7 @@ void Graphics::InvalidateShaders()
 
 void Graphics::SetScissorRect(const bool enabled, const IntRect& rect)
 {
-	m_RasterizerState.SetScissorEnabled(enabled);
+	m_PipelineState.SetScissorEnabled(enabled);
 
 	if (enabled && rect != m_CurrentScissorRect)
 	{

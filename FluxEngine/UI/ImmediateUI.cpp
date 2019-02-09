@@ -6,9 +6,6 @@
 #include "Rendering\Core\Shader.h"
 #include "Rendering\Core\ShaderVariation.h"
 #include "Rendering\Core\Texture.h"
-#include "Rendering\Core\DepthStencilState.h"
-#include "Rendering\Core\BlendState.h"
-#include "Rendering\Core\RasterizerState.h"
 #include "Input/InputEngine.h"
 #include "Rendering\Core\Texture2D.h"
 #include "FileSystem\File\PhysicalFile.h"
@@ -181,14 +178,12 @@ void ImmediateUI::Render()
 	m_pGraphics->SetIndexBuffer(m_pIndexBuffer.get());
 	m_pGraphics->SetVertexBuffer(m_pVertexBuffer.get());
 
-	m_pGraphics->GetDepthStencilState()->SetDepthEnabled(true);
-	m_pGraphics->GetDepthStencilState()->SetDepthTest(CompareMode::ALWAYS);
-
-	m_pGraphics->GetBlendState()->SetColorWrite(ColorWrite::ALL);
-	m_pGraphics->GetBlendState()->SetBlendMode(BlendMode::ALPHA, false);
-
-	m_pGraphics->GetRasterizerState()->SetFillMode(FillMode::SOLID);
-	m_pGraphics->GetRasterizerState()->SetCullMode(CullMode::BACK);
+	m_pGraphics->GetPipelineState()->SetDepthEnabled(true);
+	m_pGraphics->GetPipelineState()->SetDepthTest(CompareMode::ALWAYS);
+	m_pGraphics->GetPipelineState()->SetColorWrite(ColorWrite::ALL);
+	m_pGraphics->GetPipelineState()->SetBlendMode(BlendMode::ALPHA, false);
+	m_pGraphics->GetPipelineState()->SetFillMode(FillMode::SOLID);
+	m_pGraphics->GetPipelineState()->SetCullMode(CullMode::BACK);
 
 	m_pGraphics->SetViewport(FloatRect(0.0f, 0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight()));
 

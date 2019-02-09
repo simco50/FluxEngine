@@ -20,13 +20,6 @@ function AddSourceFiles(directoryPath)
         ("../" .. directoryPath .. "/**.c"),
         ("../" .. directoryPath .. "/**.natvis"),
 	}
-	
-	removefiles
-	{
-		(ROOT .. engineName .. "/Rendering/Core/D3DCommon/**"),
-		(ROOT .. engineName .. "/Rendering/Core/D3D11/**"),
-		(ROOT .. engineName .. "/Rendering/Core/D3D12/**")
-	}
 
 end
 

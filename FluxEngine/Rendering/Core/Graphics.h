@@ -1,8 +1,6 @@
 #pragma once
 #include "Core\Subsystem.h"
-#include "BlendState.h"
-#include "RasterizerState.h"
-#include "DepthStencilState.h"
+#include "PipelineState.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -109,9 +107,7 @@ public:
 
 	RenderTarget* GetRenderTarget() const;
 	RenderTarget* GetDepthStencil() const { return m_pCurrentDepthStencil; }
-	BlendState* GetBlendState() { return &m_BlendState; }
-	RasterizerState* GetRasterizerState() { return &m_RasterizerState; }
-	DepthStencilState* GetDepthStencilState() { return &m_DepthStencilState; }
+	PipelineState* GetPipelineState() { return &m_PipelineState; }
 
 	GraphicsImpl* GetImpl() const { return m_pImpl.get(); }
 
@@ -147,9 +143,7 @@ private:
 
 	std::unique_ptr<GraphicsImpl> m_pImpl;
 
-	BlendState m_BlendState;
-	RasterizerState m_RasterizerState;
-	DepthStencilState m_DepthStencilState;
+	PipelineState m_PipelineState;
 
 	//All ConstantBuffers
 	std::map<size_t, std::unique_ptr<ConstantBuffer>> m_ConstantBuffers;
