@@ -8,13 +8,9 @@
 #include "D3D11GraphicsImpl.h"
 #include "D3D11Helpers.h"
 
-bool PipelineState::SetParameter(const std::string& name, const void* pData)
-{
-	return SetParameter(StringHash(name), pData);
-}
-
 bool PipelineState::SetParameter(StringHash hash, const void* pData)
 {
+	LoadShaderParameters();
 	auto pParameter = m_ShaderParameters.find(hash);
 	if (pParameter == m_ShaderParameters.end())
 	{
@@ -23,8 +19,21 @@ bool PipelineState::SetParameter(StringHash hash, const void* pData)
 	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, pParameter->second->Size, false);
 }
 
+bool PipelineState::SetParameter(StringHash hash, const void* pData, int size)
+{
+	LoadShaderParameters();
+	auto pParameter = m_ShaderParameters.find(hash);
+	if (pParameter == m_ShaderParameters.end())
+	{
+		return false;
+	}
+	return pParameter->second->pBuffer->SetData(pData, pParameter->second->Offset, size, false);
+}
+
 void GraphicsPipelineState::Finalize(bool& hasUpdated)
 {
+	AUTOPROFILE(GraphicsPipelineState_Finalize);
+
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	m_IsDirty = false;
 	hasUpdated = false;
@@ -53,27 +62,21 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		}
 		else
 		{
-			AUTOPROFILE_DESC(DepthStencilState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(PipelineState_DepthStencilState_Create, Math::ToHex(stateHash));
 
 			D3D11_DEPTH_STENCIL_DESC desc = {};
 			desc.DepthEnable = m_DepthEnabled;
 			desc.DepthWriteMask = m_DepthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-
 			desc.DepthFunc = D3D11ComparisonFunction(m_DepthCompareMode);
-
 			desc.StencilEnable = m_StencilTestEnabled;
 			desc.StencilReadMask = m_StencilCompareMask;
 			desc.StencilWriteMask = m_StencilWriteMask;
-
 			desc.FrontFace.StencilFunc = D3D11ComparisonFunction(m_StencilTestMode);
 			desc.BackFace.StencilFunc = desc.FrontFace.StencilFunc;
-
 			desc.FrontFace.StencilPassOp = D3D11StencilOperation(m_StencilTestPassOperation);
 			desc.BackFace.StencilPassOp = desc.FrontFace.StencilPassOp;
-
 			desc.FrontFace.StencilFailOp = D3D11StencilOperation(m_StencilTestFailOperation);
 			desc.BackFace.StencilFailOp = desc.FrontFace.StencilFailOp;
-
 			desc.FrontFace.StencilDepthFailOp = D3D11StencilOperation(m_StencilTestZFailOperation);
 			desc.BackFace.StencilDepthFailOp = desc.FrontFace.StencilDepthFailOp;
 
@@ -101,7 +104,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		}
 		else
 		{
-			AUTOPROFILE_DESC(BlendState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(PipelineState_BlendState_Create, Math::ToHex(stateHash));
 
 			D3D11_BLEND_DESC desc = {};
 			desc.AlphaToCoverageEnable = m_AlphaToCoverage;
@@ -134,7 +137,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		}
 		else
 		{
-			AUTOPROFILE_DESC(RasterizerState_Create, Math::ToHex(stateHash));
+			AUTOPROFILE_DESC(PipelineState_RasterizerState_Create, Math::ToHex(stateHash));
 
 			D3D11_RASTERIZER_DESC desc;
 			ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
@@ -155,22 +158,15 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated)
 		}
 	}
 
-	m_ShaderParameters.clear();
-	LoadShaderParametersOfShader(m_pVertexShader);
-	LoadShaderParametersOfShader(m_pPixelShader);
-	LoadShaderParametersOfShader(m_pGeometryShader);
-	LoadShaderParametersOfShader(m_pHullShader);
-	LoadShaderParametersOfShader(m_pDomainShader);
+	LoadShaderParameters();
 
 	m_IsCreated = true;
 }
 
 
-void PipelineState::ApplyShader(ShaderType type)
+void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 {
-	ShaderVariation* pShader = nullptr;
-
-	AUTOPROFILE_DESC(Graphics_UpdateShader, pShader ? pShader->GetName() : "None");
+	AUTOPROFILE_DESC(PipelineState_UpdateShader, pShader ? pShader->GetName() : "None");
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 
@@ -193,25 +189,18 @@ void PipelineState::ApplyShader(ShaderType type)
 	case ShaderType::PixelShader:
 		pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		break;
-
-#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
 		pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
 		pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 	case ShaderType::DomainShader:
 		pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		break;
 	case ShaderType::HullShader:
 		pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		break;
-#endif
 	default:
 		FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
 		return;
@@ -219,7 +208,7 @@ void PipelineState::ApplyShader(ShaderType type)
 
 	if (pShader)
 	{
-		AUTOPROFILE_DESC(Graphics_SetConstantBuffers, pShader->GetName());
+		AUTOPROFILE_DESC(PipelineState_SetConstantBuffers, pShader->GetName());
 		bool buffersChanged = false;
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
@@ -240,24 +229,18 @@ void PipelineState::ApplyShader(ShaderType type)
 			case ShaderType::PixelShader:
 				pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
-#ifdef SHADER_GEOMETRY_ENABLE
 			case ShaderType::GeometryShader:
 				pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 			case ShaderType::ComputeShader:
 				pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 			case ShaderType::DomainShader:
 				pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
 			case ShaderType::HullShader:
 				pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 				break;
-#endif
 			default:
 				break;
 			}
@@ -267,6 +250,7 @@ void PipelineState::ApplyShader(ShaderType type)
 
 void GraphicsPipelineState::ApplyInputLayout(VertexBuffer** pVertexBuffers, int count)
 {
+	AUTOPROFILE(GraphicsPipelineState_ApplyInputLayout);
 	//Calculate the input element description hash to find the correct input layout
 	unsigned long long hash = 0;
 
@@ -332,44 +316,52 @@ void GraphicsPipelineState::ApplyInputLayout(VertexBuffer** pVertexBuffers, int 
 	}
 }
 
-bool GraphicsPipelineState::SetVertexShader(ShaderVariation* pShader)
+void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 {
-	m_pVertexShader = pShader;
-	m_VertexShaderDirty = true;
-	return true;
+	AUTOPROFILE(GraphicsPipelineState_Apply);
+
+	ApplyInputLayout(pVertexBuffers, count);
+
+	if (m_DirtyShaders.GetBit((int)ShaderType::VertexShader))
+	{
+		ApplyShader(ShaderType::VertexShader, m_pVertexShader);
+	}
+	if (m_DirtyShaders.GetBit((int)ShaderType::PixelShader))
+	{
+		ApplyShader(ShaderType::PixelShader, m_pPixelShader);
+	}
+	if (m_DirtyShaders.GetBit((int)ShaderType::GeometryShader))
+	{
+		ApplyShader(ShaderType::GeometryShader, m_pGeometryShader);
+	}
+	if (m_DirtyShaders.GetBit((int)ShaderType::HullShader))
+	{
+		ApplyShader(ShaderType::HullShader, m_pHullShader);
+	}
+	if (m_DirtyShaders.GetBit((int)ShaderType::DomainShader))
+	{
+		ApplyShader(ShaderType::DomainShader, m_pDomainShader);
+	}
+	m_DirtyShaders.ClearAll();
+
+	bool pipelineStateUpdated = false;
+	Finalize(pipelineStateUpdated);
+
+	if (pipelineStateUpdated)
+	{
+		GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+		AUTOPROFILE(Graphics_PrepareDraw_UpdatePipelineState);
+		pImpl->m_pDeviceContext->OMSetDepthStencilState((ID3D11DepthStencilState*)m_Data.pDepthStencilState, GetStencilRef());
+		pImpl->m_pDeviceContext->RSSetState((ID3D11RasterizerState*)m_Data.pRasterizerState);
+		pImpl->m_pDeviceContext->OMSetBlendState((ID3D11BlendState*)m_Data.pBlendState, nullptr, UINT_MAX);
+	}
 }
 
-bool GraphicsPipelineState::SetPixelShader(ShaderVariation* pShader)
-{
-	m_pPixelShader = pShader;
-	m_PixelShaderDirty = true;
-	return true;
-}
-
-bool GraphicsPipelineState::SetGeometryShader(ShaderVariation* pShader)
-{
-	m_pGeometryShader = pShader;
-	m_GeometryShaderDirty = true;
-	return true;
-}
-
-bool GraphicsPipelineState::SetHullShader(ShaderVariation* pShader)
-{
-	m_pHullShader = pShader;
-	m_HullShaderDirty = true;
-	return true;
-}
-
-bool GraphicsPipelineState::SetDomainShader(ShaderVariation* pShader)
-{
-	m_pDomainShader = pShader;
-	m_DomainShaderDirty = true;
-	return true;
-}
+//Compute Pipeline state
 
 void ComputePipelineState::Finalize(bool& hasUpdated)
 {
 	hasUpdated = true;
 	m_ShaderParameters.clear();
-	LoadShaderParametersOfShader(m_pComputeShader);
+	LoadShaderParametersForShader(m_pComputeShader);
 }

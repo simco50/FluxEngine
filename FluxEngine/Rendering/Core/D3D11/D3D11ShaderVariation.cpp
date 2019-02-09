@@ -73,19 +73,14 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		defines.emplace_back("COMPILE_PS");
 		profile = Printf("ps_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
 		defines.emplace_back("COMPILE_GS");
 		profile = Printf("gs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
 		defines.emplace_back("COMPILE_CS");
 		profile = Printf("cs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 	case ShaderType::DomainShader:
 		defines.emplace_back("COMPILE_DS");
 		profile = Printf("ds_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
@@ -94,7 +89,6 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		defines.emplace_back("COMPILE_HS");
 		profile = Printf("hs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
 	default:
 		break;
 	}
@@ -230,24 +224,18 @@ bool ShaderVariation::CreateShader(Graphics* pGraphics, const ShaderType type)
 	case ShaderType::PixelShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreatePixelShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11PixelShader**)&m_pResource));
 		break;
-#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreateGeometryShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11GeometryShader**)&m_pResource));
 		break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreateComputeShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11ComputeShader**)&m_pResource));
 		break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 	case ShaderType::DomainShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreateDomainShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11DomainShader**)&m_pResource));
 		break;
 	case ShaderType::HullShader:
 		HR(pGraphics->GetImpl()->GetDevice()->CreateHullShader(m_ShaderByteCode.data(), m_ShaderByteCode.size(), nullptr, (ID3D11HullShader**)&m_pResource));
 		break;
-#endif
 	case ShaderType::MAX:
 	default:
 		FLUX_LOG(Warning, "[ShaderVariation::CreateShader] Shader type unknown");

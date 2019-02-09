@@ -17,12 +17,17 @@ PipelineState::~PipelineState()
 
 }
 
+bool PipelineState::SetParameter(const std::string& name, const void* pData)
+{
+	return SetParameter(StringHash(name), pData);
+}
+
 const PipelineStateData& PipelineState::GetData() const
 {
 	return m_Data;
 }
 
-void PipelineState::LoadShaderParametersOfShader(ShaderVariation* pShader)
+void PipelineState::LoadShaderParametersForShader(ShaderVariation* pShader)
 {
 	if (pShader == nullptr)
 	{
@@ -46,6 +51,56 @@ GraphicsPipelineState::GraphicsPipelineState(Graphics* pGraphics)
 GraphicsPipelineState::~GraphicsPipelineState()
 {
 
+}
+
+void GraphicsPipelineState::LoadShaderParameters()
+{
+	AUTOPROFILE(GraphicsPipelineState_LoadShaderParameters);
+	if (m_ShaderParametersDirty)
+	{
+		m_ShaderParameters.clear();
+		LoadShaderParametersForShader(m_pVertexShader);
+		LoadShaderParametersForShader(m_pPixelShader);
+		LoadShaderParametersForShader(m_pGeometryShader);
+		LoadShaderParametersForShader(m_pHullShader);
+		LoadShaderParametersForShader(m_pDomainShader);
+		m_ShaderParametersDirty = false;
+	}
+}
+
+void GraphicsPipelineState::SetVertexShader(ShaderVariation* pShader)
+{
+	m_pVertexShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::VertexShader);
+	m_ShaderParametersDirty = true;
+}
+
+void GraphicsPipelineState::SetPixelShader(ShaderVariation* pShader)
+{
+	m_pPixelShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::PixelShader);
+	m_ShaderParametersDirty = true;
+}
+
+void GraphicsPipelineState::SetGeometryShader(ShaderVariation* pShader)
+{
+	m_pGeometryShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::GeometryShader);
+	m_ShaderParametersDirty = true;
+}
+
+void GraphicsPipelineState::SetHullShader(ShaderVariation* pShader)
+{
+	m_pHullShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::HullShader);
+	m_ShaderParametersDirty = true;
+}
+
+void GraphicsPipelineState::SetDomainShader(ShaderVariation* pShader)
+{
+	m_pDomainShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::DomainShader);
+	m_ShaderParametersDirty = true;
 }
 
 void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
@@ -201,6 +256,8 @@ void GraphicsPipelineState::SetMultisampleEnabled(bool enabled)
 	}
 }
 
+//Compute Pipeline State
+
 ComputePipelineState::ComputePipelineState(Graphics* pGraphics)
 	: PipelineState(pGraphics)
 {
@@ -210,4 +267,11 @@ ComputePipelineState::ComputePipelineState(Graphics* pGraphics)
 ComputePipelineState::~ComputePipelineState()
 {
 
+}
+
+void ComputePipelineState::SetComputeShader(ShaderVariation* pShader)
+{
+	m_pComputeShader = pShader;
+	m_DirtyShaders.SetBit((int)ShaderType::ComputeShader);
+	m_ShaderParametersDirty = true;
 }

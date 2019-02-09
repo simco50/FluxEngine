@@ -1,11 +1,13 @@
 #include "FluxEngine.h"
 #include "CommandContext.h"
 #include "PipelineState.h"
+#include "Graphics.h"
 
 CommandContext::CommandContext(Graphics* pGraphics, void* pCommandContext)
 	: m_pGraphics(pGraphics),
 	m_pCommandList(pCommandContext)
 {
+	
 }
 
 CommandContext::~CommandContext()
@@ -52,6 +54,10 @@ GraphicsCommandContext::GraphicsCommandContext(Graphics* pGraphics, void* pComma
 	: CommandContext(pGraphics, pCommandList)
 {
 	m_pPipelineState = std::make_unique<GraphicsPipelineState>(pGraphics);
+	m_CurrentViewport.Left = 0;
+	m_CurrentViewport.Right = (float)pGraphics->GetWindowWidth();
+	m_CurrentViewport.Top = 0;
+	m_CurrentViewport.Bottom = (float)pGraphics->GetWindowHeight();
 }
 
 GraphicsPipelineState* GraphicsCommandContext::GetGraphicsPipelineState() const

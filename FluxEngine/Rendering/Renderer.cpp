@@ -184,6 +184,7 @@ void Renderer::RemovePostProcessing(PostProcessing* pPostProcessing)
 
 void Renderer::Blit(GraphicsCommandContext* pCommandContext, RenderTarget* pSource, RenderTarget* pTarget, Material* pMaterial /*= nullptr*/)
 {
+	AUTOPROFILE(Renderer_Blit);
 	check(pSource);
 	check(pTarget);
 	check(pSource->GetParentTexture()->GetWidth() == pTarget->GetParentTexture()->GetWidth());

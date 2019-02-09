@@ -51,6 +51,7 @@ void PostProcessing::Draw()
 	int activeMaterials = 0;
 	for (const auto& pMaterial : m_Materials)
 	{
+		AUTOPROFILE(PostProcessing_Draw_Pass);
 		if (pMaterial.first == false)
 		{
 			continue;
@@ -68,6 +69,7 @@ void PostProcessing::Draw()
 	//Do an extra blit if the shader count is odd
 	if (activeMaterials % 2 == 1)
 	{
+		AUTOPROFILE(PostProcessing_Draw_FinalPass);
 		m_pRenderer->Blit(pCommandContext, m_pRenderTexture->GetRenderTarget(), pOriginalTarget);
 	}
 }

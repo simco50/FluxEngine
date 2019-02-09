@@ -12,6 +12,8 @@
 #include "../ConstantBuffer.h"
 #include "../ShaderVariation.h"
 #include "../PipelineState.h"
+#include "../RenderTarget.h"
+#include "../Texture2D.h"
 
 //GraphicsCommandContext
 void GraphicsCommandContext::PrepareDraw()
@@ -21,25 +23,7 @@ void GraphicsCommandContext::PrepareDraw()
 	FlushRenderTargetChanges(false);
 	FlushSRVChanges(false);
 
-	m_pPipelineState->ApplyShader(ShaderType::VertexShader);
-	m_pPipelineState->ApplyShader(ShaderType::PixelShader);
-	m_pPipelineState->ApplyShader(ShaderType::GeometryShader);
-	m_pPipelineState->ApplyShader(ShaderType::HullShader);
-	m_pPipelineState->ApplyShader(ShaderType::DomainShader);
-
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-
-	bool pipelineStateUpdated = false;
-	GetGraphicsPipelineState()->Finalize(pipelineStateUpdated);
-
-	if (pipelineStateUpdated)
-	{
-		AUTOPROFILE(Graphics_PrepareDraw_UpdatePipelineState);
-		const PipelineStateData& data = m_pPipelineState->GetData();
-		pImpl->m_pDeviceContext->OMSetDepthStencilState((ID3D11DepthStencilState*)data.pDepthStencilState, GetGraphicsPipelineState()->GetStencilRef());
-		pImpl->m_pDeviceContext->RSSetState((ID3D11RasterizerState*)data.pRasterizerState);
-		pImpl->m_pDeviceContext->OMSetBlendState((ID3D11BlendState*)data.pBlendState, nullptr, UINT_MAX);
-	}
 
 	if (pImpl->m_VertexBuffersDirty)
 	{
@@ -53,12 +37,12 @@ void GraphicsCommandContext::PrepareDraw()
 			&pImpl->m_CurrentStrides[pImpl->m_FirstDirtyVertexBuffer],
 			&pImpl->m_CurrentOffsets[pImpl->m_FirstDirtyVertexBuffer]);
 
-		GetGraphicsPipelineState()->ApplyInputLayout(m_CurrentVertexBuffers.data(), m_CurrentVertexBuffers.size());
-
 		pImpl->m_FirstDirtyVertexBuffer = UINT_MAX;
 		pImpl->m_LastDirtyVertexBuffer = 0;
 		pImpl->m_VertexBuffersDirty = false;
 	}
+
+	GetGraphicsPipelineState()->Apply(m_CurrentVertexBuffers.data(), (int)m_CurrentVertexBuffers.size());
 
 	if (m_ScissorRectDirty)
 	{
@@ -81,29 +65,88 @@ bool CommandContext::SetShaderParameter(StringHash hash, const void* pData)
 
 bool CommandContext::SetShaderParameter(StringHash hash, const void* pData, int stride, int count)
 {
-	return m_pPipelineState->SetParameter(hash, pData);
+	return m_pPipelineState->SetParameter(hash, pData, stride * count);
 }
 
 //GraphicsCommandContext
 
 void GraphicsCommandContext::SetRenderTarget(int index, RenderTarget* pRenderTarget)
 {
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+	if (index == 0 && pRenderTarget == nullptr)
+	{
+		m_CurrentRenderTargets[0] = nullptr;
+		pImpl->m_RenderTargetsDirty = true;
+	}
+	else if (m_CurrentRenderTargets[index] != pRenderTarget)
+	{
+		m_CurrentRenderTargets[index] = pRenderTarget;
 
+		if (pRenderTarget && pRenderTarget->GetParentTexture()->GetMultiSample() > 1)
+		{
+			pRenderTarget->GetParentTexture()->SetResolveDirty(true);
+		}
+
+		pImpl->m_RenderTargetsDirty = true;
+	}
 }
 
 void GraphicsCommandContext::SetDepthStencil(RenderTarget* pRenderTarget)
 {
-
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+	if (pRenderTarget != m_pCurrentDepthStencil)
+	{
+		m_pCurrentDepthStencil = pRenderTarget;
+		pImpl->m_RenderTargetsDirty = true;
+	}
 }
 
 void GraphicsCommandContext::FlushRenderTargetChanges(bool force)
 {
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+	if (pImpl->m_RenderTargetsDirty || force)
+	{
+		for (int i = 0; i < GraphicsConstants::MAX_RENDERTARGETS; ++i)
+		{
+			pImpl->m_RenderTargetViews[i] = m_CurrentRenderTargets[i] ? (ID3D11RenderTargetView*)m_CurrentRenderTargets[i]->GetRenderTargetView() : nullptr;
+		}
 
+		if (pImpl->m_RenderTargetViews[0] == nullptr)
+		{
+			pImpl->m_RenderTargetViews[0] = (ID3D11RenderTargetView*)m_pGraphics->GetDefaultRenderTarget()->GetRenderTarget()->GetRenderTargetView();
+		}
+
+		pImpl->m_pDepthStencilView = m_pCurrentDepthStencil ? (ID3D11DepthStencilView*)m_pCurrentDepthStencil->GetRenderTargetView() : (ID3D11DepthStencilView*)m_pGraphics->GetDefaultDepthStencil()->GetRenderTarget()->GetRenderTargetView();
+		pImpl->m_pDeviceContext->OMSetRenderTargets(GraphicsConstants::MAX_RENDERTARGETS, pImpl->m_RenderTargetViews.data(), pImpl->m_pDepthStencilView);
+		pImpl->m_RenderTargetsDirty = false;
+	}
 }
 
 void GraphicsCommandContext::FlushSRVChanges(bool force)
 {
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+	if ((pImpl->m_TexturesDirty || force) && pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1 > 0)
+	{
+		if (GetGraphicsPipelineState()->GetVertexShader())
+		{
+			pImpl->m_pDeviceContext->VSSetShaderResources(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_ShaderResourceViews.data() + pImpl->m_FirstDirtyTexture);
+			pImpl->m_pDeviceContext->VSSetSamplers(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_SamplerStates.data() + pImpl->m_FirstDirtyTexture);
+		}
+		if (GetGraphicsPipelineState()->GetPixelShader())
+		{
+			pImpl->m_pDeviceContext->PSSetShaderResources(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_ShaderResourceViews.data() + pImpl->m_FirstDirtyTexture);
+			pImpl->m_pDeviceContext->PSSetSamplers(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_SamplerStates.data() + pImpl->m_FirstDirtyTexture);
+		}
+		if (GetGraphicsPipelineState()->GetDomainShader())
+		{
+			pImpl->m_pDeviceContext->DSSetShaderResources(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_ShaderResourceViews.data() + pImpl->m_FirstDirtyTexture);
+			pImpl->m_pDeviceContext->DSSetSamplers(pImpl->m_FirstDirtyTexture, pImpl->m_LastDirtyTexture - pImpl->m_FirstDirtyTexture + 1, pImpl->m_SamplerStates.data() + pImpl->m_FirstDirtyTexture);
+		}
 
+		pImpl->m_TexturesDirty = false;
+		pImpl->m_FirstDirtyTexture = (int)TextureSlot::MAX;
+		pImpl->m_LastDirtyTexture = 0;
+	}
 }
 
 void GraphicsCommandContext::SetVertexBuffer(VertexBuffer* pBuffer)
@@ -113,6 +156,8 @@ void GraphicsCommandContext::SetVertexBuffer(VertexBuffer* pBuffer)
 
 void GraphicsCommandContext::SetVertexBuffers(VertexBuffer** pBuffers, int bufferCount, unsigned int instanceOffset /*= 0*/)
 {
+	AUTOPROFILE(GraphicsCommandContext_SetVertexBuffers);
+
 	checkf(bufferCount <= GraphicsConstants::MAX_VERTEX_BUFFERS, "Vertex buffer count exceeded");
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
@@ -151,6 +196,8 @@ void GraphicsCommandContext::SetVertexBuffers(VertexBuffer** pBuffers, int buffe
 
 void GraphicsCommandContext::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 {
+	AUTOPROFILE(GraphicsCommandContext_SetIndexBuffer);
+
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	if (m_pCurrentIndexBuffer != pIndexBuffer)
 	{
@@ -357,10 +404,3 @@ void GraphicsCommandContext::Clear(ClearFlags clearFlags /*= ClearFlags::All*/, 
 }
 
 //ComputeCommandContext
-
-bool ComputeCommandContext::SetComputeShader(ShaderVariation* pShader)
-{
-	m_pComputeShader = pShader;
-	m_ComputeShaderDirty = true;
-	return false;
-}

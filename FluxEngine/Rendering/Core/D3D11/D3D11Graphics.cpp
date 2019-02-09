@@ -13,6 +13,7 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include "../CommandContext.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 const int Graphics::RENDERTARGET_FORMAT = (int)DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -79,6 +80,7 @@ bool Graphics::SetMode(const GraphicsCreateInfo& createInfo)
 	}
 	UpdateSwapchain(m_WindowWidth, m_WindowHeight);
 
+	GetGraphicsCommandContext()->Clear();
 	m_pImpl->m_pSwapChain->Present(0, 0);
 
 	FLUX_LOG(Info, "[Graphics::SetMode] Graphics initialized");

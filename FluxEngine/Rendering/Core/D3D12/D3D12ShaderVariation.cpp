@@ -73,19 +73,14 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		defines.emplace_back("COMPILE_PS");
 		profile = Printf("ps_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#ifdef SHADER_GEOMETRY_ENABLE
 	case ShaderType::GeometryShader:
 		defines.emplace_back("COMPILE_GS");
 		profile = Printf("gs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
-#ifdef SHADER_COMPUTE_ENABLE
 	case ShaderType::ComputeShader:
 		defines.emplace_back("COMPILE_CS");
 		profile = Printf("cs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
-#ifdef SHADER_TESSELLATION_ENABLE
 	case ShaderType::DomainShader:
 		defines.emplace_back("COMPILE_DS");
 		profile = Printf("ds_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
@@ -94,7 +89,6 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 		defines.emplace_back("COMPILE_HS");
 		profile = Printf("hs_%d_%d", m_ShaderModel.MajVersion, m_ShaderModel.MinVersion);
 		break;
-#endif
 	default:
 		break;
 	}

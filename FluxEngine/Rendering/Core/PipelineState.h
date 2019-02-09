@@ -20,21 +20,25 @@ class PipelineState
 {
 public:
 	PipelineState(Graphics* pGraphics);
-	~PipelineState();
+	virtual ~PipelineState();
 	const PipelineStateData& GetData() const;
 
 	bool SetParameter(const std::string& name, const void* pData);
 	bool SetParameter(StringHash hash, const void* pData);
-
-	void ApplyShader(ShaderType type);
+	bool SetParameter(StringHash hash, const void* pData, int size);
 
 protected:
+	virtual void LoadShaderParameters() = 0;
+	void ApplyShader(ShaderType type, ShaderVariation* pShader);
+
 	Graphics* m_pGraphics = nullptr;
 	PipelineStateData m_Data;
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
 	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 
-	void LoadShaderParametersOfShader(ShaderVariation* pShader);
+	BitField<8, uint32> m_DirtyShaders;
+	bool m_ShaderParametersDirty = true;
+	void LoadShaderParametersForShader(ShaderVariation* pShader);
 	std::map<StringHash, const ShaderParameter*> m_ShaderParameters;
 };
 
@@ -45,6 +49,7 @@ public:
 	~GraphicsPipelineState();
 
 	void Finalize(bool& hasUpdated);
+	void Apply(VertexBuffer** pVertexBuffers, int count);
 
 	//BlendState
 	void SetBlendMode(const BlendMode& blendMode, bool alphaToCoverage);
@@ -65,15 +70,23 @@ public:
 	void SetLineAntialias(bool lineAntiAlias);
 
 	//Shaders
-	bool SetVertexShader(ShaderVariation* pShader);
-	bool SetPixelShader(ShaderVariation* pShader);
-	bool SetGeometryShader(ShaderVariation* pShader);
-	bool SetHullShader(ShaderVariation* pShader);
-	bool SetDomainShader(ShaderVariation* pShader);
+	void SetVertexShader(ShaderVariation* pShader);
+	void SetPixelShader(ShaderVariation* pShader);
+	void SetGeometryShader(ShaderVariation* pShader);
+	void SetHullShader(ShaderVariation* pShader);
+	void SetDomainShader(ShaderVariation* pShader);
+
+	ShaderVariation* GetVertexShader() const { return m_pVertexShader; }
+	ShaderVariation* GetPixelShader() const { return m_pPixelShader; }
+	ShaderVariation* GetGeometryShader() const { return m_pGeometryShader; }
+	ShaderVariation* GetHullShader() const { return m_pHullShader; }
+	ShaderVariation* GetDomainShader() const { return m_pDomainShader; }
 
 	void ApplyInputLayout(VertexBuffer** pVertexBuffers, int count);
 
 private:
+	virtual void LoadShaderParameters() override;
+
 	bool m_IsDirty = false;
 	bool m_IsCreated = false;
 
@@ -108,12 +121,6 @@ private:
 	ShaderVariation* m_pGeometryShader = nullptr;
 	ShaderVariation* m_pHullShader = nullptr;
 	ShaderVariation* m_pDomainShader = nullptr;
-
-	bool m_VertexShaderDirty = false;
-	bool m_PixelShaderDirty = false;
-	bool m_GeometryShaderDirty = false;
-	bool m_HullShaderDirty = false;
-	bool m_DomainShaderDirty = false;
 };
 
 class ComputePipelineState : public PipelineState
@@ -123,7 +130,10 @@ public:
 	~ComputePipelineState();
 	void Finalize(bool& hasUpdated);
 
+	void SetComputeShader(ShaderVariation* pShader);
+
+	ShaderVariation* GetComputeShader() const { return m_pComputeShader; }
+
 private:
 	ShaderVariation* m_pComputeShader = nullptr;
-	bool m_pComputeShaderDirty = false;
 };

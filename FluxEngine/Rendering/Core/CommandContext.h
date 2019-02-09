@@ -28,9 +28,6 @@ public:
 	bool SetShaderParameter(StringHash hash, const Matrix& value);
 
 protected:
-	void UpdateShaderProgram();
-	void ApplyShader(ShaderType type, ShaderVariation* pVariation);
-
 	Graphics* m_pGraphics;
 	void* m_pCommandList;
 	std::unique_ptr<PipelineState> m_pPipelineState;
@@ -79,16 +76,13 @@ private:
 
 	IndexBuffer* m_pCurrentIndexBuffer = nullptr;
 	std::array<VertexBuffer*, GraphicsConstants::MAX_VERTEX_BUFFERS> m_CurrentVertexBuffers = {};
+
+	RenderTarget* m_pCurrentDepthStencil = nullptr;
+	std::array<RenderTarget*, GraphicsConstants::MAX_RENDERTARGETS> m_CurrentRenderTargets = {};
 };
 
 class ComputeCommandContext : public CommandContext
 {
 public:
 	ComputeCommandContext(Graphics* pGraphics, void* pCommandList);
-
-	bool SetComputeShader(ShaderVariation* pShader);
-
-private:
-	ShaderVariation* m_pComputeShader = nullptr;
-	bool m_ComputeShaderDirty = false;
 };
