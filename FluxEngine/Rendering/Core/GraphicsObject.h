@@ -8,24 +8,21 @@ class Graphics;
 #define GRAPHICS_SET_NAME(name)
 #endif
 
+#if defined(GRAPHICS_D3D11) || defined(GRAPHICS_D3D12)
+using GraphicsResourceHandle = void*;
+#else
+using GraphicsResourceHandle = uint32;
+#endif
+
 class GraphicsObject
 {
 public:
 	explicit GraphicsObject(Graphics* pGraphics);
     void SetName(const std::string& name);
 
-#if defined(GRAPHICS_D3D11) || defined(GRAPHICS_D3D12)
-	void* GetResource() const { return m_pResource; }
-#else
-	unsigned int GetResource() const { return m_Handle; }
-#endif
+	GraphicsResourceHandle GetResource() const { return m_pResource; }
 
 protected:
 	Graphics* m_pGraphics;
-
-	union
-	{
-		void* m_pResource = nullptr;
-		unsigned int m_Handle;
-	};
+	GraphicsResourceHandle m_pResource{};
 };

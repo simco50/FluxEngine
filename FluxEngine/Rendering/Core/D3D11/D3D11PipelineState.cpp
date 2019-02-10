@@ -22,7 +22,7 @@ public:
 	{
 		BlendStateDesc.AlphaToCoverageEnable = false;
 		BlendStateDesc.IndependentBlendEnable = false;
-		BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(BlendMode, (unsigned char)ColorWriteMask);
+		BlendStateDesc.RenderTarget[0] = D3D11Helpers::D3D11RenderTargetBlendDesc(BlendMode, (unsigned char)ColorWriteMask);
 
 		RasterizerStateDesc.AntialiasedLineEnable = false;
 		RasterizerStateDesc.CullMode = D3D11_CULL_FRONT;
@@ -64,6 +64,7 @@ private:
 
 	BlendMode BlendMode = BlendMode::REPLACE;
 	ColorWrite ColorWriteMask = ColorWrite::ALL;
+	D3D11_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 };
 
 GraphicsPipelineState::GraphicsPipelineState(Graphics* pGraphics)
@@ -345,15 +346,26 @@ void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 	bool pipelineStateUpdated = false;
 	Finalize(pipelineStateUpdated, pVertexBuffers, count);
 
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 	if (pipelineStateUpdated)
 	{
-		GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 		AUTOPROFILE(Graphics_PrepareDraw_UpdatePipelineState);
 		pImpl->m_pDeviceContext->OMSetDepthStencilState(m_pImpl->pDepthStencilState, GetStencilRef());
 		pImpl->m_pDeviceContext->RSSetState((m_pImpl->pRasterizerState));
 		pImpl->m_pDeviceContext->OMSetBlendState(m_pImpl->pBlendState, nullptr, UINT_MAX);
 		pImpl->m_pDeviceContext->IASetInputLayout(m_pImpl->pInputLayout);
 	}
+
+	if (pImpl->m_CurrentPrimitiveType != m_pImpl->PrimitiveType)
+	{
+		pImpl->m_CurrentPrimitiveType = m_pImpl->PrimitiveType;
+		pImpl->m_pDeviceContext->IASetPrimitiveTopology(m_pImpl->PrimitiveType);
+	}
+}
+
+void GraphicsPipelineState::SetPrimitiveType(PrimitiveType type)
+{
+	m_pImpl->PrimitiveType = D3D11Helpers::GetPrimitiveType(type);
 }
 
 void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
@@ -361,7 +373,7 @@ void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool 
 	if (blendMode != m_pImpl->BlendMode || alphaToCoverage != (bool)m_pImpl->BlendStateDesc.AlphaToCoverageEnable)
 	{
 		m_pImpl->BlendMode = blendMode;
-		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(blendMode, (unsigned char)m_pImpl->ColorWriteMask);
+		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11Helpers::D3D11RenderTargetBlendDesc(blendMode, (unsigned char)m_pImpl->ColorWriteMask);
 		m_pImpl->BlendStateDesc.AlphaToCoverageEnable = alphaToCoverage;
 
 		m_IsDirty = true;
@@ -374,7 +386,7 @@ void GraphicsPipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= Co
 	if (m_pImpl->ColorWriteMask != colorWriteMask)
 	{
 		m_pImpl->ColorWriteMask = colorWriteMask;
-		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11RenderTargetBlendDesc(m_pImpl->BlendMode, (unsigned char)colorWriteMask);
+		m_pImpl->BlendStateDesc.RenderTarget[0] = D3D11Helpers::D3D11RenderTargetBlendDesc(m_pImpl->BlendMode, (unsigned char)colorWriteMask);
 		m_IsDirty = true;
 		m_pGraphics->GetImpl()->m_BlendStateDirty = true;
 	}
@@ -403,7 +415,7 @@ void GraphicsPipelineState::SetDepthWrite(const bool enabled)
 
 void GraphicsPipelineState::SetDepthTest(const CompareMode& comparison)
 {
-	D3D11_COMPARISON_FUNC func = D3D11ComparisonFunction(comparison);
+	D3D11_COMPARISON_FUNC func = D3D11Helpers::D3D11ComparisonFunction(comparison);
 	if (func != m_pImpl->DepthStencilStateDesc.DepthFunc)
 	{
 		m_pImpl->DepthStencilStateDesc.DepthFunc = func;
@@ -423,7 +435,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
 	}
 
-	D3D11_COMPARISON_FUNC testMode = D3D11ComparisonFunction(mode);
+	D3D11_COMPARISON_FUNC testMode = D3D11Helpers::D3D11ComparisonFunction(mode);
 	if (testMode != m_pImpl->DepthStencilStateDesc.FrontFace.StencilFunc)
 	{
 		m_pImpl->DepthStencilStateDesc.FrontFace.StencilFunc = testMode;
@@ -432,7 +444,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
 	}
 
-	D3D11_STENCIL_OP passOp = D3D11StencilOperation(pass);
+	D3D11_STENCIL_OP passOp = D3D11Helpers::D3D11StencilOperation(pass);
 	if (passOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilPassOp)
 	{
 		m_pImpl->DepthStencilStateDesc.FrontFace.StencilPassOp = passOp;
@@ -441,7 +453,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
 	}
 
-	D3D11_STENCIL_OP failOp = D3D11StencilOperation(fail);
+	D3D11_STENCIL_OP failOp = D3D11Helpers::D3D11StencilOperation(fail);
 	if (failOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilFailOp)
 	{
 		m_pImpl->DepthStencilStateDesc.FrontFace.StencilFailOp = passOp;
@@ -450,7 +462,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_pGraphics->GetImpl()->m_DepthStencilStateDirty = true;
 	}
 
-	D3D11_STENCIL_OP zFailOp = D3D11StencilOperation(zFail);
+	D3D11_STENCIL_OP zFailOp = D3D11Helpers::D3D11StencilOperation(zFail);
 	if (zFailOp != m_pImpl->DepthStencilStateDesc.FrontFace.StencilDepthFailOp)
 	{
 		m_pImpl->DepthStencilStateDesc.FrontFace.StencilDepthFailOp = zFailOp;
@@ -474,7 +486,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 
 void GraphicsPipelineState::SetFillMode(FillMode fillMode)
 {
-	D3D11_FILL_MODE f = D3D11FillMode(fillMode);
+	D3D11_FILL_MODE f = D3D11Helpers::D3D11FillMode(fillMode);
 	if (f != m_pImpl->RasterizerStateDesc.FillMode)
 	{
 		m_pImpl->RasterizerStateDesc.FillMode = f;
@@ -485,7 +497,7 @@ void GraphicsPipelineState::SetFillMode(FillMode fillMode)
 
 void GraphicsPipelineState::SetCullMode(CullMode cullMode)
 {
-	D3D11_CULL_MODE c = D3D11CullMode(cullMode);
+	D3D11_CULL_MODE c = D3D11Helpers::D3D11CullMode(cullMode);
 	if (c != m_pImpl->RasterizerStateDesc.CullMode)
 	{
 		m_pImpl->RasterizerStateDesc.CullMode = c;

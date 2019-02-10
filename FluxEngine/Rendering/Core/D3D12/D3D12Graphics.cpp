@@ -15,6 +15,7 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include "../CommandContext.h"
 
 std::string Graphics::m_ShaderExtension = ".hlsl";
 const int Graphics::RENDERTARGET_FORMAT = (int)DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -191,6 +192,13 @@ bool Graphics::EnumerateAdapters()
 	m_pImpl->m_pAdapter = pAdapters[bestAdapterIdx];
 
 	return true;
+}
+
+GraphicsCommandContext* Graphics::GetGraphicsCommandContext()
+{
+	//#SimonC todo: CommandContextManager
+	static GraphicsCommandContext c(this, nullptr);
+	return &c;
 }
 
 bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)

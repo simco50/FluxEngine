@@ -158,44 +158,44 @@ bool Texture2D::Create()
 			IID_PPV_ARGS((ID3D12Resource**)&m_pResource)));
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE h;
-	if (1 /*Shader Resource*/)
-	{
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = m_MipLevels;
-		srvDesc.Format = (DXGI_FORMAT)GetSRVFormat(m_TextureFormat);
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
-		m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView(
-			m_pResolvedResource ? (ID3D12Resource*)m_pResolvedResource : (ID3D12Resource*)m_pResource,
-			&srvDesc,
-			handle);
-	}
-
-	if (m_Usage == TextureUsage::RENDERTARGET)
-	{
-		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-		rtvDesc.Format = (DXGI_FORMAT)m_TextureFormat;
-		rtvDesc.ViewDimension = m_MultiSample > 1 ? D3D12_RTV_DIMENSION_TEXTURE2DMS : D3D12_RTV_DIMENSION_TEXTURE2D;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
-		m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D12Resource*)m_pResource,
-			&rtvDesc,
-			handle);
-	}
-
-	else if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
-	{
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-		dsvDesc.Format = (DXGI_FORMAT)GetDSVFormat(m_TextureFormat);
-		dsvDesc.ViewDimension = (m_MultiSample > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
-		m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D12Resource*)m_pResource, 
-			&dsvDesc, 
-			handle);
-	}
+	//D3D12_CPU_DESCRIPTOR_HANDLE h;
+	//if (1 /*Shader Resource*/)
+	//{
+	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	//	srvDesc.Texture2D.MipLevels = m_MipLevels;
+	//	srvDesc.Format = (DXGI_FORMAT)GetSRVFormat(m_TextureFormat);
+	//
+	//	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
+	//	m_pGraphics->GetImpl()->GetDevice()->CreateShaderResourceView(
+	//		m_pResolvedResource ? (ID3D12Resource*)m_pResolvedResource : (ID3D12Resource*)m_pResource,
+	//		&srvDesc,
+	//		handle);
+	//}
+	//
+	//if (m_Usage == TextureUsage::RENDERTARGET)
+	//{
+	//	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	//	rtvDesc.Format = (DXGI_FORMAT)m_TextureFormat;
+	//	rtvDesc.ViewDimension = m_MultiSample > 1 ? D3D12_RTV_DIMENSION_TEXTURE2DMS : D3D12_RTV_DIMENSION_TEXTURE2D;
+	//
+	//	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
+	//	m_pGraphics->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D12Resource*)m_pResource,
+	//		&rtvDesc,
+	//		handle);
+	//}
+	//
+	//else if (m_Usage == TextureUsage::DEPTHSTENCILBUFFER)
+	//{
+	//	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	//	dsvDesc.Format = (DXGI_FORMAT)GetDSVFormat(m_TextureFormat);
+	//	dsvDesc.ViewDimension = (m_MultiSample > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D;
+	//
+	//	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(h);
+	//	m_pGraphics->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D12Resource*)m_pResource, 
+	//		&dsvDesc, 
+	//		handle);
+	//}
 
 	return true;
 }

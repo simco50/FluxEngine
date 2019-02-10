@@ -233,7 +233,11 @@ bool Graphics::CreateDevice(const int windowWidth, const int windowHeight)
 		}
 
 		if (!m_pImpl->CheckMultisampleQuality(DXGI_FORMAT_B8G8R8A8_UNORM, m_Multisample))
+		{
 			m_Multisample = 1;
+		}
+
+		m_pImpl->m_pGraphicsCommandContext = std::make_unique<GraphicsCommandContext>(this, m_pImpl->m_pDeviceContext.Get());
 	}
 
 	{
@@ -303,6 +307,11 @@ void Graphics::OnResize(const int width, const int height)
 	{
 		UpdateSwapchain(width, height);
 	}
+}
+
+GraphicsCommandContext* Graphics::GetGraphicsCommandContext()
+{
+	return m_pImpl->m_pGraphicsCommandContext.get();
 }
 
 void Graphics::TakeScreenshot()

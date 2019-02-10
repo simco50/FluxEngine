@@ -40,6 +40,8 @@ public:
 	void Finalize(bool& hasUpdated, VertexBuffer** pVertexBuffers, int count);
 	void Apply(VertexBuffer** pVertexBuffers, int count);
 
+	void SetPrimitiveType(PrimitiveType type);
+
 	//BlendState
 	void SetBlendMode(const BlendMode& blendMode, bool alphaToCoverage);
 	void SetColorWrite(ColorWrite colorWriteMask = ColorWrite::ALL);

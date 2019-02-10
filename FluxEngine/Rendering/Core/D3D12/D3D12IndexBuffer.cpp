@@ -22,4 +22,6 @@ void IndexBuffer::Create(int indexCount, bool smallIndexStride, bool dynamic /*=
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS((ID3D12Resource**)&m_pResource)));
+
+	m_GpuHandle = static_cast<ID3D12Resource*>(m_pResource)->GetGPUVirtualAddress();
 }

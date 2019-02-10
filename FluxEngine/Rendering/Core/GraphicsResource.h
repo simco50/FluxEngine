@@ -22,11 +22,20 @@ public:
 	inline void* GetMappedData() const { return m_pMappedData; }
 	inline int GetElementStride() const { return m_ElementStride; }
 	inline int GetElementCount() const { return m_ElementCount; }
+
+#ifdef GRAPHICS_D3D11
 	inline void* GetView() const { return m_pShaderResourceView; }
+#elif defined(GRAPHICS_D3D12)
+	inline size_t GetGPUHandle() const { return m_GpuHandle; }
+#endif
 
 protected:
 	SimpleMemory m_ShadowData;
-	void* m_pShaderResourceView = nullptr;
+	union
+	{
+		void* m_pShaderResourceView = nullptr;
+		size_t m_GpuHandle;
+	};
 	void* m_pMappedData = nullptr;
 	bool m_IsDirty = false;
 	int m_Size = 0;

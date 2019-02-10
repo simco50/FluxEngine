@@ -28,4 +28,6 @@ void VertexBuffer::Create(int vertexCount, std::vector<VertexElement>& elements,
 		D3D12_RESOURCE_STATE_GENERIC_READ, 
 		nullptr, 
 		IID_PPV_ARGS((ID3D12Resource**)&m_pResource)));
+
+	m_GpuHandle = static_cast<ID3D12Resource*>(m_pResource)->GetGPUVirtualAddress();
 }

@@ -285,67 +285,31 @@ void GraphicsCommandContext::SetStructuredBuffer(TextureSlot slot, const Structu
 	pImpl->m_LastDirtyTexture = Math::Max(pImpl->m_LastDirtyTexture, (int)slot);
 }
 
-void GraphicsCommandContext::Draw(PrimitiveType type, int vertexStart, int vertexCount)
+void GraphicsCommandContext::Draw(int vertexStart, int vertexCount)
 {
 	AUTOPROFILE(Graphics_Draw);
 	PrepareDraw();
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
-	unsigned int primitiveCount = 0;
-	GraphicsImpl::GetPrimitiveType(type, vertexCount, topology, primitiveCount);
-	if (topology != pImpl->m_CurrentPrimitiveType)
-	{
-		pImpl->m_CurrentPrimitiveType = topology;
-		pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
-	}
-
 	pImpl->m_pDeviceContext->Draw(vertexCount, vertexStart);
-
-	++m_BatchCount;
-	m_PrimitiveCount += primitiveCount;
 }
 
-void GraphicsCommandContext::DrawIndexed(PrimitiveType type, int indexCount, int indexStart, int minVertex /*= 0*/)
+void GraphicsCommandContext::DrawIndexed(int indexCount, int indexStart, int minVertex /*= 0*/)
 {
 	AUTOPROFILE(Graphics_DrawIndexed);
 	PrepareDraw();
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
-	unsigned int primitiveCount = 0;
-	GraphicsImpl::GetPrimitiveType(type, indexCount, topology, primitiveCount);
-	if (topology != pImpl->m_CurrentPrimitiveType)
-	{
-		pImpl->m_CurrentPrimitiveType = topology;
-		pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
-	}
-
 	pImpl->m_pDeviceContext->DrawIndexed(indexCount, indexStart, minVertex);
-
-	++m_BatchCount;
-	m_PrimitiveCount += primitiveCount;
 }
 
-void GraphicsCommandContext::DrawIndexedInstanced(PrimitiveType type, int indexCount, int indexStart, int instanceCount, int minVertex /*= 0*/, int instanceStart /*= 0*/)
+void GraphicsCommandContext::DrawIndexedInstanced(int indexCount, int indexStart, int instanceCount, int minVertex /*= 0*/, int instanceStart /*= 0*/)
 {
 	AUTOPROFILE(Graphics_DrawIndexedInstanced);
 	PrepareDraw();
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
-	unsigned int primitiveCount = 0;
-	GraphicsImpl::GetPrimitiveType(type, instanceCount * indexCount, topology, primitiveCount);
-	if (topology != pImpl->m_CurrentPrimitiveType)
-	{
-		pImpl->m_CurrentPrimitiveType = topology;
-		pImpl->m_pDeviceContext->IASetPrimitiveTopology(topology);
-	}
-
 	pImpl->m_pDeviceContext->DrawIndexedInstanced(indexCount, instanceCount, indexStart, minVertex, instanceStart);
-
-	++m_BatchCount;
-	m_PrimitiveCount += primitiveCount;
 }
 
 void GraphicsCommandContext::Clear(ClearFlags clearFlags /*= ClearFlags::All*/, const Color& color /*= Color(0.15f, 0.15f, 0.15f, 1.0f)*/, float depth /*= 1.0f*/, unsigned char stencil /*= 0*/)

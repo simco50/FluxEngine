@@ -185,6 +185,7 @@ void ImmediateUI::Render()
 	pPipelineState->SetBlendMode(BlendMode::ALPHA, false);
 	pPipelineState->SetFillMode(FillMode::SOLID);
 	pPipelineState->SetCullMode(CullMode::BACK);
+	pPipelineState->SetPrimitiveType(PrimitiveType::TRIANGLELIST);
 
 	Matrix projectionMatrix = Math::CreateOrthographicOffCenterMatrix(0.0f, (float)m_pGraphics->GetWindowWidth(), (float)m_pGraphics->GetWindowHeight(), 0.0f, 0.0f, 1.0f);
 	pCommandContext->SetShaderParameter(ShaderConstant::cViewProj, &projectionMatrix);
@@ -211,7 +212,7 @@ void ImmediateUI::Render()
 					(int)pcmd->ClipRect.z,
 					(int)pcmd->ClipRect.w });
 				pCommandContext->SetTexture(TextureSlot::Diffuse, static_cast<Texture*>(pcmd->TextureId));
-				pCommandContext->DrawIndexed(PrimitiveType::TRIANGLELIST, pcmd->ElemCount, indexOffset, vertexOffset);
+				pCommandContext->DrawIndexed(pcmd->ElemCount, indexOffset, vertexOffset);
 			}
 			indexOffset += pcmd->ElemCount;
 		}

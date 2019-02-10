@@ -33,9 +33,8 @@ protected:
 	void* m_pCommandList;
 	std::unique_ptr<PipelineState> m_pPipelineState;
 
-	//Debug data
-	unsigned int m_BatchCount = 0;
-	unsigned int m_PrimitiveCount = 0;
+	int m_Batches = 0;
+	int m_PrimitiveCount = 0;
 };
 
 class GraphicsCommandContext : public CommandContext
@@ -57,9 +56,9 @@ public:
 	void SetTexture(TextureSlot slot, Texture* pTexture);
 	void SetStructuredBuffer(TextureSlot slot, const StructuredBuffer* pBuffer);
 
-	void Draw(PrimitiveType type, int vertexStart, int vertexCount);
-	void DrawIndexed(PrimitiveType type, int indexCount, int indexStart, int minVertex = 0);
-	void DrawIndexedInstanced(PrimitiveType type, int indexCount, int indexStart, int instanceCount, int minVertex = 0, int instanceStart = 0);
+	void Draw(int vertexStart, int vertexCount);
+	void DrawIndexed(int indexCount, int indexStart, int minVertex = 0);
+	void DrawIndexedInstanced(int indexCount, int indexStart, int instanceCount, int minVertex = 0, int instanceStart = 0);
 
 	void Clear(ClearFlags clearFlags = ClearFlags::All, const Color& color = Color(0.15f, 0.15f, 0.15f, 1.0f), float depth = 1.0f, unsigned char stencil = 0);
 

@@ -55,7 +55,7 @@ void GraphicsCommandContext::SetVertexBuffers(VertexBuffer** pBuffers, int buffe
 	{
 		D3D12_VERTEX_BUFFER_VIEW& view = vertexBufferViews[i];
 		const VertexBuffer* pVertexBuffer = pBuffers[i];
-		view.BufferLocation = (size_t)pVertexBuffer->GetView();
+		view.BufferLocation = pVertexBuffer->GetGPUHandle();
 		view.SizeInBytes = pVertexBuffer->GetSize();
 		view.StrideInBytes = pVertexBuffer->GetElementStride();
 	}
@@ -69,7 +69,7 @@ void GraphicsCommandContext::SetIndexBuffer(IndexBuffer* pIndexBuffer)
 	D3D12_INDEX_BUFFER_VIEW view = {};
 	view.SizeInBytes = pIndexBuffer->GetSize();
 	view.Format = pIndexBuffer->GetElementStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-	view.BufferLocation = (size_t)pIndexBuffer->GetView();
+	view.BufferLocation = pIndexBuffer->GetGPUHandle();
 	pCommandList->IASetIndexBuffer(&view);
 }
 
@@ -114,7 +114,7 @@ void GraphicsCommandContext::SetStructuredBuffer(TextureSlot slot, const Structu
 {
 }
 
-void GraphicsCommandContext::Draw(PrimitiveType type, int vertexStart, int vertexCount)
+void GraphicsCommandContext::Draw(int vertexStart, int vertexCount)
 {
 	AUTOPROFILE(Graphics_Draw);
 	PrepareDraw();
@@ -122,7 +122,7 @@ void GraphicsCommandContext::Draw(PrimitiveType type, int vertexStart, int verte
 	pCommandList->DrawInstanced(vertexCount, 1, vertexStart, 0);
 }
 
-void GraphicsCommandContext::DrawIndexed(PrimitiveType type, int indexCount, int indexStart, int minVertex /*= 0*/)
+void GraphicsCommandContext::DrawIndexed(int indexCount, int indexStart, int minVertex /*= 0*/)
 {
 	AUTOPROFILE(Graphics_DrawIndexed);
 	PrepareDraw();
@@ -130,7 +130,7 @@ void GraphicsCommandContext::DrawIndexed(PrimitiveType type, int indexCount, int
 	pCommandList->DrawIndexedInstanced(indexCount, 1, indexStart, minVertex, 0);
 }
 
-void GraphicsCommandContext::DrawIndexedInstanced(PrimitiveType type, int indexCount, int indexStart, int instanceCount, int minVertex /*= 0*/, int instanceStart /*= 0*/)
+void GraphicsCommandContext::DrawIndexedInstanced(int indexCount, int indexStart, int instanceCount, int minVertex /*= 0*/, int instanceStart /*= 0*/)
 {
 	AUTOPROFILE(Graphics_DrawIndexedInstanced);
 	PrepareDraw();

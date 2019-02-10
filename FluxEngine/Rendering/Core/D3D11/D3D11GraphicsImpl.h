@@ -3,6 +3,8 @@
 #include <dxgi.h>
 #include <d3d11.h>
 
+class GraphicsCommandContext;
+
 class GraphicsImpl
 {
 public:
@@ -20,15 +22,14 @@ public:
 
 	unsigned int GetMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
 	bool CheckMultisampleQuality(DXGI_FORMAT format, unsigned int sampleCount) const;
-
 private:
-	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D11_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
-
 	ComPtr<IDXGIAdapter> m_pAdapter;
 	ComPtr<ID3D11Device> m_pDevice;
 	ComPtr<ID3D11DeviceContext> m_pDeviceContext;
 	ComPtr<IDXGIFactory> m_pFactory;
 	ComPtr<IDXGISwapChain> m_pSwapChain;
+
+	std::unique_ptr<GraphicsCommandContext> m_pGraphicsCommandContext;
 
 	//Textures
 	bool m_TexturesDirty = false;

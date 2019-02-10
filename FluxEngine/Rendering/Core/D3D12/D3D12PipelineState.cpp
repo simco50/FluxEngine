@@ -161,12 +161,18 @@ void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 	Finalize(pipelineStateUpdated, pVertexBuffers, count);
 }
 
+void GraphicsPipelineState::SetPrimitiveType(PrimitiveType type)
+{
+	m_pImpl->Desc.PrimitiveTopologyType = D3D12Helpers::GetPrimitiveType(type);
+	m_IsDirty = true;
+}
+
 void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
 {
 	if (blendMode != m_pImpl->BlendMode || alphaToCoverage != (bool)m_pImpl->Desc.BlendState.AlphaToCoverageEnable)
 	{
 		m_pImpl->BlendMode = blendMode;
-		m_pImpl->Desc.BlendState.RenderTarget[0] = D3D12RenderTargetBlendDesc(blendMode, (unsigned char)m_pImpl->ColorWriteMask);
+		m_pImpl->Desc.BlendState.RenderTarget[0] = D3D12Helpers::D3D12RenderTargetBlendDesc(blendMode, (unsigned char)m_pImpl->ColorWriteMask);
 		m_pImpl->Desc.BlendState.AlphaToCoverageEnable = alphaToCoverage;
 
 		m_IsDirty = true;
@@ -178,7 +184,7 @@ void GraphicsPipelineState::SetColorWrite(const ColorWrite colorWriteMask /*= Co
 	if (m_pImpl->ColorWriteMask != colorWriteMask)
 	{
 		m_pImpl->ColorWriteMask = colorWriteMask;
-		m_pImpl->Desc.BlendState.RenderTarget[0] = D3D12RenderTargetBlendDesc(m_pImpl->BlendMode, (unsigned char)colorWriteMask);
+		m_pImpl->Desc.BlendState.RenderTarget[0] = D3D12Helpers::D3D12RenderTargetBlendDesc(m_pImpl->BlendMode, (unsigned char)colorWriteMask);
 		m_IsDirty = true;
 	}
 }
@@ -204,7 +210,7 @@ void GraphicsPipelineState::SetDepthWrite(const bool enabled)
 
 void GraphicsPipelineState::SetDepthTest(const CompareMode& comparison)
 {
-	D3D12_COMPARISON_FUNC func = D3D12ComparisonFunction(comparison);
+	D3D12_COMPARISON_FUNC func = D3D12Helpers::D3D12ComparisonFunction(comparison);
 	if (func != m_pImpl->Desc.DepthStencilState.DepthFunc)
 	{
 		m_pImpl->Desc.DepthStencilState.DepthFunc = func;
@@ -222,7 +228,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_IsDirty = true;
 	}
 
-	D3D12_COMPARISON_FUNC testMode = D3D12ComparisonFunction(mode);
+	D3D12_COMPARISON_FUNC testMode = D3D12Helpers::D3D12ComparisonFunction(mode);
 	if (testMode != m_pImpl->Desc.DepthStencilState.FrontFace.StencilFunc)
 	{
 		m_pImpl->Desc.DepthStencilState.FrontFace.StencilFunc = testMode;
@@ -230,7 +236,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_IsDirty = true;
 	}
 
-	D3D12_STENCIL_OP passOp = D3D12StencilOperation(pass);
+	D3D12_STENCIL_OP passOp = D3D12Helpers::D3D12StencilOperation(pass);
 	if (passOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilPassOp)
 	{
 		m_pImpl->Desc.DepthStencilState.FrontFace.StencilPassOp = passOp;
@@ -238,7 +244,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_IsDirty = true;
 	}
 
-	D3D12_STENCIL_OP failOp = D3D12StencilOperation(fail);
+	D3D12_STENCIL_OP failOp = D3D12Helpers::D3D12StencilOperation(fail);
 	if (failOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilFailOp)
 	{
 		m_pImpl->Desc.DepthStencilState.FrontFace.StencilFailOp = passOp;
@@ -246,7 +252,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 		m_IsDirty = true;
 	}
 
-	D3D12_STENCIL_OP zFailOp = D3D12StencilOperation(zFail);
+	D3D12_STENCIL_OP zFailOp = D3D12Helpers::D3D12StencilOperation(zFail);
 	if (zFailOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilDepthFailOp)
 	{
 		m_pImpl->Desc.DepthStencilState.FrontFace.StencilDepthFailOp = zFailOp;
@@ -267,7 +273,7 @@ void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMod
 
 void GraphicsPipelineState::SetFillMode(FillMode fillMode)
 {
-	D3D12_FILL_MODE f = D3D12FillMode(fillMode);
+	D3D12_FILL_MODE f = D3D12Helpers::D3D12FillMode(fillMode);
 	if (f != m_pImpl->Desc.RasterizerState.FillMode)
 	{
 		m_pImpl->Desc.RasterizerState.FillMode = f;
@@ -277,7 +283,7 @@ void GraphicsPipelineState::SetFillMode(FillMode fillMode)
 
 void GraphicsPipelineState::SetCullMode(CullMode cullMode)
 {
-	D3D12_CULL_MODE c = D3D12CullMode(cullMode);
+	D3D12_CULL_MODE c = D3D12Helpers::D3D12CullMode(cullMode);
 	if (c != m_pImpl->Desc.RasterizerState.CullMode)
 	{
 		m_pImpl->Desc.RasterizerState.CullMode = c;

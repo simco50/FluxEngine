@@ -91,12 +91,14 @@ void DebugRenderer::Render()
 	int start = 0;
 	if (m_LinePrimitives != 0)
 	{
-		pCommandContext->Draw(PrimitiveType::LINELIST, start, m_LinePrimitives);
+		pCommandContext->GetGraphicsPipelineState()->SetPrimitiveType(PrimitiveType::LINELIST);
+		pCommandContext->Draw(start, m_LinePrimitives);
 	}
 	start += m_LinePrimitives;
 	if (m_TrianglePrimitives != 0)
 	{
-		pCommandContext->Draw(PrimitiveType::TRIANGLELIST, start, m_TrianglePrimitives);
+		pCommandContext->GetGraphicsPipelineState()->SetPrimitiveType(PrimitiveType::TRIANGLELIST);
+		pCommandContext->Draw(start, m_TrianglePrimitives);
 	}
 }
 

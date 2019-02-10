@@ -2,6 +2,7 @@
 #include "Geometry.h"
 #include "Rendering/Core/Graphics.h"
 #include "Core/CommandContext.h"
+#include "Core/PipelineState.h"
 
 Geometry::Geometry()
 {
@@ -22,13 +23,14 @@ void Geometry::Draw(GraphicsCommandContext* pContext) const
 	{
 		pContext->SetIndexBuffer(m_pIndexBuffer);
 		pContext->SetVertexBuffer(m_pVertexBuffer);
+		pContext->GetGraphicsPipelineState()->SetPrimitiveType(m_PrimitiveType);
 		if (m_pIndexBuffer)
 		{
-			pContext->DrawIndexed(m_PrimitiveType, m_IndexCount, 0);
+			pContext->DrawIndexed(m_IndexCount, 0);
 		}
 		else
 		{
-			pContext->Draw(m_PrimitiveType, 0, m_VertexCount);
+			pContext->Draw(0, m_VertexCount);
 		}
 	}
 }

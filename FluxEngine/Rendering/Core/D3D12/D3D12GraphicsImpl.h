@@ -21,9 +21,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const { return m_pDsvHeap->GetCPUDescriptorHandleForHeapStart(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRtv(int frameIndex) const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pRtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, m_RtvDescriptorSize); }
 	int GetCurrentFrameIndex() const { return m_CurrentBackBufferIndex; }
-
 private:
-	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D12_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
 	static const int FRAME_COUNT = 2;
 
 	ComPtr<IDXGIAdapter> m_pAdapter;

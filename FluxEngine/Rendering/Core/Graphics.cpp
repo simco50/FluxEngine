@@ -25,9 +25,3 @@ ShaderVariation* Graphics::GetShader(const std::string& filePath, const ShaderTy
 	}
 	return nullptr;
 }
-
-GraphicsCommandContext* Graphics::GetGraphicsCommandContext()
-{
-	static GraphicsCommandContext context(this, nullptr);
-	return &context;
-}
