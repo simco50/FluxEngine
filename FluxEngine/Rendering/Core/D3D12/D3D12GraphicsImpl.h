@@ -8,6 +8,7 @@ class GraphicsImpl
 {
 public:
 	friend class Graphics;
+	friend class GraphicsPipelineState;
 
 	ID3D12Device* GetDevice() const { return m_pDevice.Get(); }
 	ComPtr<ID3D12Device>& GetDeviceCom() { return m_pDevice; }
@@ -17,8 +18,9 @@ public:
 
 	ID3D12GraphicsCommandList* GetTemporaryCommandList();
 
-	D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() { return m_pDsvHeap->GetCPUDescriptorHandleForHeapStart(); }
-	D3D12_CPU_DESCRIPTOR_HANDLE GetRtv(int frameIndex) { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pRtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, m_RtvDescriptorSize); }
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const { return m_pDsvHeap->GetCPUDescriptorHandleForHeapStart(); }
+	D3D12_CPU_DESCRIPTOR_HANDLE GetRtv(int frameIndex) const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pRtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, m_RtvDescriptorSize); }
+	int GetCurrentFrameIndex() const { return m_CurrentBackBufferIndex; }
 
 private:
 	static bool GetPrimitiveType(PrimitiveType primitiveType, unsigned int elementCount, D3D12_PRIMITIVE_TOPOLOGY& type, unsigned int& primitiveCount);
@@ -33,6 +35,8 @@ private:
 	ComPtr<ID3D12DescriptorHeap> m_pDsvHeap;
 	std::array<ComPtr<ID3D12Resource>, FRAME_COUNT> m_RenderTargets;
 	ComPtr<ID3D12Resource> m_pDepthStencilBuffer;
+
+	std::vector<ComPtr<ID3D12PipelineState>> m_PipelineStateCache;
 
 	int m_CurrentBackBufferIndex = 0;
 

@@ -19,7 +19,6 @@ public:
 protected:
 	virtual void LoadShaderParameters() = 0;
 	void LoadShaderParametersForShader(ShaderVariation* pShader);
-	void ApplyShader(ShaderType type, ShaderVariation* pShader);
 
 	Graphics* m_pGraphics = nullptr;
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
@@ -74,6 +73,7 @@ public:
 	ShaderVariation* GetDomainShader() const { return m_pDomainShader; }
 
 private:
+	void ApplyShader(ShaderType type, ShaderVariation* pShader);
 	virtual void LoadShaderParameters() override;
 	std::unique_ptr<GraphicsPipelineStateImpl> m_pImpl;
 
@@ -104,6 +104,7 @@ public:
 	ShaderVariation* GetComputeShader() const { return m_pComputeShader; }
 
 private:
+	void ApplyShader(ShaderType type, ShaderVariation* pShader);
 	virtual void LoadShaderParameters() override;
 	ShaderVariation* m_pComputeShader = nullptr;
 };

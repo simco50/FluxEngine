@@ -9,6 +9,7 @@ public:
 	friend class Graphics;
 	friend class PipelineState;
 	friend class GraphicsPipelineState;
+	friend class ComputePipelineState;
 	friend class CommandContext;
 	friend class GraphicsCommandContext;
 	friend class ComputeCommandContext;

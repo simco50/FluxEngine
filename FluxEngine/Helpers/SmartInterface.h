@@ -27,8 +27,18 @@ public:
 	}
 
 	ComPtr(const ComPtr& other) = delete;
-
 	ComPtr& operator=(const ComPtr& other) = delete;
+
+	ComPtr(ComPtr&& other)
+		: m_pPtr(other.m_pPtr)
+	{
+		other.m_pPtr = nullptr;
+	}
+
+	ComPtr& operator=(ComPtr&& other)
+	{
+		std::swap(m_pPtr, other.m_pPtr);
+	}
 
 	T* Get() { return m_pPtr; }
 	T* Get() const { return m_pPtr; }

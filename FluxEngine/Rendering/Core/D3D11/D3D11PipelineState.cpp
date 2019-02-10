@@ -11,8 +11,6 @@
 /////////Pipeline State
 ////////////////////////////////////////////
 
-
-
 /////////Graphics Pipeline State
 ////////////////////////////////////////////
 
@@ -246,12 +244,13 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 }
 
 
-void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
+void GraphicsPipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 {
 	AUTOPROFILE_DESC(GraphicsPipelineState_ApplyShader, pShader ? pShader->GetName() : "None");
 
 	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
 
+	bool buffersChanged = false;
 	if (pShader != nullptr)
 	{
 		for (ConstantBuffer* pBuffer : pShader->GetConstantBuffers())
@@ -261,37 +260,8 @@ void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 				pBuffer->Apply();
 			}
 		}
-	}
 
-	switch (type)
-	{
-	case ShaderType::VertexShader:
-		pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	case ShaderType::PixelShader:
-		pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	case ShaderType::GeometryShader:
-		pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	case ShaderType::ComputeShader:
-		pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	case ShaderType::DomainShader:
-		pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	case ShaderType::HullShader:
-		pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
-		break;
-	default:
-		FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
-		return;
-	}
-
-	if (pShader)
-	{
 		AUTOPROFILE_DESC(GraphicsPipelineState_SetConstantBuffers, pShader->GetName());
-		bool buffersChanged = false;
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
@@ -301,32 +271,48 @@ void PipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 				buffersChanged = true;
 			}
 		}
-		if (buffersChanged)
+	}
+
+	switch (type)
+	{
+	case ShaderType::VertexShader:
+		pImpl->m_pDeviceContext->VSSetShader(pShader ? (ID3D11VertexShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
 		{
-			switch (type)
-			{
-			case ShaderType::VertexShader:
-				pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			case ShaderType::PixelShader:
-				pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			case ShaderType::GeometryShader:
-				pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			case ShaderType::ComputeShader:
-				pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			case ShaderType::DomainShader:
-				pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			case ShaderType::HullShader:
-				pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
-				break;
-			default:
-				break;
-			}
+			pImpl->m_pDeviceContext->VSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
 		}
+		break;
+	case ShaderType::PixelShader:
+		pImpl->m_pDeviceContext->PSSetShader(pShader ? (ID3D11PixelShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
+		{
+			pImpl->m_pDeviceContext->PSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+		}
+		break;
+	case ShaderType::GeometryShader:
+		pImpl->m_pDeviceContext->GSSetShader(pShader ? (ID3D11GeometryShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
+		{
+			pImpl->m_pDeviceContext->GSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+		}
+		break;
+	case ShaderType::DomainShader:
+		pImpl->m_pDeviceContext->DSSetShader(pShader ? (ID3D11DomainShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
+		{
+			pImpl->m_pDeviceContext->DSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+		}
+		break;
+	case ShaderType::HullShader:
+		pImpl->m_pDeviceContext->HSSetShader(pShader ? (ID3D11HullShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
+		{
+			pImpl->m_pDeviceContext->HSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+		}
+		break;
+	default:
+		FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
+		return;
 	}
 }
 
@@ -544,4 +530,48 @@ void GraphicsPipelineState::SetMultisampleEnabled(bool enabled)
 void ComputePipelineState::Finalize(bool& hasUpdated)
 {
 	hasUpdated = true;
+}
+
+void ComputePipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
+{
+	AUTOPROFILE_DESC(GraphicsPipelineState_ApplyShader, pShader ? pShader->GetName() : "None");
+
+	GraphicsImpl* pImpl = m_pGraphics->GetImpl();
+
+	bool buffersChanged = false;
+	if (pShader != nullptr)
+	{
+		for (ConstantBuffer* pBuffer : pShader->GetConstantBuffers())
+		{
+			if (pBuffer)
+			{
+				pBuffer->Apply();
+			}
+		}
+
+		AUTOPROFILE_DESC(GraphicsPipelineState_SetConstantBuffers, pShader->GetName());
+		const auto& buffers = pShader->GetConstantBuffers();
+		for (unsigned int i = 0; i < buffers.size(); ++i)
+		{
+			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
+			{
+				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
+				buffersChanged = true;
+			}
+		}
+	}
+
+	switch (type)
+	{
+	case ShaderType::ComputeShader:
+		pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
+		if (pShader && buffersChanged)
+		{
+			pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+		}
+		break;
+	default:
+		FLUX_LOG(Error, "[Graphics::SetShader] > Shader type not implemented");
+		return;
+	}
 }
