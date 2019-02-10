@@ -30,11 +30,11 @@ public:
 	template<typename T>
 	bool IsTypeOf() const { return IsTypeOf(T::GetTypeInfoStatic()); }
 
-	constexpr StringHash GetType() const { return m_Type; }
-	constexpr const char* GetTypeName() const { return m_TypeName; }
-	constexpr const TypeInfo* GetBaseTypeInfo() const { return m_pBaseTypeInfo; }
-	constexpr bool IsAbstract() const { return m_IsAbstract; }
-	Object* CreateInstance(Context* pContext) const { return m_CreateFunction(pContext); }
+	constexpr inline StringHash GetType() const { return m_Type; }
+	constexpr inline const char* GetTypeName() const { return m_TypeName; }
+	constexpr inline const TypeInfo* GetBaseTypeInfo() const { return m_pBaseTypeInfo; }
+	constexpr inline bool IsAbstract() const { return m_IsAbstract; }
+	inline Object* CreateInstance(Context* pContext) const { return m_CreateFunction(pContext); }
 
 private:
 	static constexpr size_t TYPENAME_SIZE = 32;

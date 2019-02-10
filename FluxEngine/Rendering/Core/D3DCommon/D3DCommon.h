@@ -2,33 +2,10 @@
 
 namespace D3DCommon
 {
-	static constexpr const char* GetSemanticOfType(VertexElementSemantic semantic)
+	inline void D3DBlobToVector(ID3DBlob* pBlob, std::vector<char>& buffer)
 	{
-		switch (semantic)
-		{
-		case VertexElementSemantic::POSITION:
-			return "POSITION";
-		case VertexElementSemantic::NORMAL:
-			return "NORMAL";
-		case VertexElementSemantic::BINORMAL:
-			return "BINORMAL";
-		case VertexElementSemantic::TANGENT:
-			return "TANGENT";
-		case VertexElementSemantic::TEXCOORD:
-			return "TEXCOORD";
-		case VertexElementSemantic::COLOR:
-			return "COLOR";
-		case VertexElementSemantic::BLENDWEIGHTS:
-			return "BLENDWEIGHT";
-		case VertexElementSemantic::BLENDINDICES:
-			return "BLENDINDEX";
-		case VertexElementSemantic::OBJECTINDEX:
-			return "OBJECTINDEX";
-		case VertexElementSemantic::MAX_VERTEX_ELEMENT_SEMANTICS:
-		default:
-			checkf(false, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
-			return "INVALID";
-		}
+		buffer.resize(pBlob->GetBufferSize());
+		memcpy(buffer.data(), pBlob->GetBufferPointer(), buffer.size());
 	}
 
 	static constexpr DXGI_FORMAT GetFormatOfType(VertexElementType type)

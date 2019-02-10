@@ -4,6 +4,8 @@ class FluxCore;
 
 class Application
 {
+	DELETE_COPY(Application)
+
 public:
 	Application();
 	virtual ~Application();

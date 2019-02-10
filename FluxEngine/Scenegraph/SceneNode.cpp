@@ -57,6 +57,7 @@ Component* SceneNode::CreateComponent(StringHash typeHash)
 		if (!AddComponent(pComponent))
 		{
 			delete pComponent;
+			pComponent = nullptr;
 		}
 	}
 	return pComponent;

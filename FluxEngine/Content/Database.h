@@ -12,7 +12,7 @@ class Database;
 struct PreparedStatement
 {
 public:
-	PreparedStatement(const std::string& query);
+	explicit PreparedStatement(const std::string& query);
 	~PreparedStatement();
 
 	bool Step();

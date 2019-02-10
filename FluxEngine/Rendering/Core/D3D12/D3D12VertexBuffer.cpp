@@ -2,7 +2,6 @@
 #include "../VertexBuffer.h"
 #include "D3D12GraphicsImpl.h"
 #include "../Graphics.h"
-#include "../D3DCommon/D3DDefines.h"
 
 void VertexBuffer::Create(int vertexCount, std::vector<VertexElement>& elements, bool dynamic)
 {

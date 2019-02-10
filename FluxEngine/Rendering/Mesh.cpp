@@ -9,7 +9,6 @@
 #include "Core/Graphics.h"
 #include "IO/InputStream.h"
 #include "Content/AssimpHelpers.h"
-#include "Core/D3DCommon/D3DDefines.h"
 
 Mesh::Mesh(Context* pContext):
 	Resource(pContext)
@@ -315,7 +314,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	bool hasElements = true;
 	for (VertexElement& element : elementDesc)
 	{
-		const char* pSemantic = D3DCommon::GetSemanticOfType(element.Semantic);
+		const char* pSemantic = VertexElement::GetSemanticOfType(element.Semantic);
 		if (pGeometry->HasData(pSemantic) == false)
 		{
 			FLUX_LOG(Warning, "[MeshFilter::CreateBuffers()] Geometry has no %s", pSemantic);
@@ -334,7 +333,7 @@ void Mesh::CreateBuffersForGeometry(std::vector<VertexElement>& elementDesc, Geo
 	AsyncTaskQueue* pQueue = GetSubsystem<AsyncTaskQueue>();
 	for (size_t i = 0; i < elementDesc.size(); ++i)
 	{
-		const Geometry::VertexData* pData = &pGeometry->GetVertexData(D3DCommon::GetSemanticOfType(elementDesc[i].Semantic), elementDesc[i].Index);
+		const Geometry::VertexData* pData = &pGeometry->GetVertexData(VertexElement::GetSemanticOfType(elementDesc[i].Semantic), elementDesc[i].Index);
 		checkf(pData, "[Mesh::CreateBufferForGeometry] Mesh does not have the appropriate data of semantic");
 
 		int elementSize = elementDesc[i].GetSizeOfType(elementDesc[i].Type);

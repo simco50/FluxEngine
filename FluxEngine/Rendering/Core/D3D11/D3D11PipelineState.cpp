@@ -4,9 +4,9 @@
 #include "../ShaderVariation.h"
 #include "../ConstantBuffer.h"
 #include "../VertexBuffer.h"
-#include "../D3DCommon/D3DDefines.h"
 #include "D3D11GraphicsImpl.h"
 #include "D3D11Helpers.h"
+#include "../D3DCommon/D3DCommon.h"
 
 /////////Pipeline State
 ////////////////////////////////////////////
@@ -221,7 +221,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 					for (const VertexElement& e : pVertexBuffers[i]->GetElements())
 					{
 						D3D11_INPUT_ELEMENT_DESC desc;
-						desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
+						desc.SemanticName = VertexElement::GetSemanticOfType(e.Semantic);
 						desc.Format = D3DCommon::GetFormatOfType(e.Type);
 						desc.AlignedByteOffset = e.Offset;
 						desc.InputSlotClass = e.PerInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
@@ -366,6 +366,11 @@ void GraphicsPipelineState::Apply(VertexBuffer** pVertexBuffers, int count)
 void GraphicsPipelineState::SetPrimitiveType(PrimitiveType type)
 {
 	m_pImpl->PrimitiveType = D3D11Helpers::GetPrimitiveType(type);
+}
+
+void GraphicsPipelineState::OnRenderTargetsSet(Texture2D** /*pRenderTargets*/, int /*count*/, Texture2D* /*pDepthStencil*/)
+{
+	//Nop in D3D11
 }
 
 void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
@@ -565,9 +570,9 @@ void ComputePipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader
 		const auto& buffers = pShader->GetConstantBuffers();
 		for (unsigned int i = 0; i < buffers.size(); ++i)
 		{
-			if (buffers[i] != m_CurrentConstBuffers[(unsigned int)type][i])
+			if (buffers[i] != m_CurrentConstBuffers[i])
 			{
-				m_CurrentConstBuffers[(unsigned int)type][i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
+				m_CurrentConstBuffers[i] = buffers[i] ? buffers[i]->GetResource() : nullptr;
 				buffersChanged = true;
 			}
 		}
@@ -579,7 +584,7 @@ void ComputePipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader
 		pImpl->m_pDeviceContext->CSSetShader(pShader ? (ID3D11ComputeShader*)pShader->GetResource() : nullptr, nullptr, 0);
 		if (pShader && buffersChanged)
 		{
-			pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[(unsigned int)type]);
+			pImpl->m_pDeviceContext->CSSetConstantBuffers(0, (unsigned int)ShaderParameterType::MAX, (ID3D11Buffer**)&m_CurrentConstBuffers[0]);
 		}
 		break;
 	default:

@@ -4,8 +4,8 @@
 #include "../Shader.h"
 
 #include <d3dcompiler.h>
-#include "../D3DCommon/D3DHelpers.h"
 #include "D3D12GraphicsImpl.h"
+#include "../D3DCommon/D3DCommon.h"
 
 bool ShaderVariation::Create()
 {
@@ -123,11 +123,10 @@ bool ShaderVariation::Compile(Graphics* pGraphics)
 	HRESULT hr = D3DCompile(source.c_str(), source.size(), m_Name.c_str(), macros.data(), nullptr, entry.c_str(), profile.c_str(), flags, 0, pShaderCode.GetAddressOf(), pErrorBlob.GetAddressOf());
 	if (hr != S_OK)
 	{
-		std::string error = D3DBlobToString(pErrorBlob.Get());
-		FLUX_LOG(Warning, error.c_str());
+		FLUX_LOG(Warning, static_cast<char*>(pErrorBlob->GetBufferPointer()));
 		return false;
 	}
-	D3DBlobToVector(pShaderCode.Get(), m_ShaderByteCode);
+	D3DCommon::D3DBlobToVector(pShaderCode.Get(), m_ShaderByteCode);
 	ShaderReflection(m_ShaderByteCode.data(), (unsigned int)m_ShaderByteCode.size(), pGraphics);
 
 #ifndef _DEBUG

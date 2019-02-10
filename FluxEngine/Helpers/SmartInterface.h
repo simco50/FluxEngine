@@ -38,6 +38,7 @@ public:
 	ComPtr& operator=(ComPtr&& other)
 	{
 		std::swap(m_pPtr, other.m_pPtr);
+		return *this;
 	}
 
 	T* Get() { return m_pPtr; }

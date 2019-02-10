@@ -24,11 +24,13 @@ void GraphicsCommandContext::SetRenderTarget(int index, RenderTarget* pRenderTar
 {
 	ID3D12GraphicsCommandList* pCommandList = static_cast<ID3D12GraphicsCommandList*>(m_pCommandList);
 	pCommandList->OMSetRenderTargets(1, nullptr, false, nullptr);
+	GetGraphicsPipelineState()->OnRenderTargetsSet(nullptr, 0, nullptr);
 }
 
 void GraphicsCommandContext::SetDepthStencil(RenderTarget* pRenderTarget)
 {
 	ID3D12GraphicsCommandList* pCommandList = static_cast<ID3D12GraphicsCommandList*>(m_pCommandList);
+	GetGraphicsPipelineState()->OnRenderTargetsSet(nullptr, 0, nullptr);
 }
 
 void GraphicsCommandContext::FlushRenderTargetChanges(bool /*force*/)

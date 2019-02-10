@@ -1,15 +1,12 @@
 #pragma once
 #include "Core\Subsystem.h"
 
-class VertexBuffer;
-class IndexBuffer;
 class RenderTarget;
 class ShaderVariation;
 class Texture;
 class ConstantBuffer;
 class Shader;
 class Texture2D;
-class StructuredBuffer;
 class GraphicsImpl;
 class GraphicsCommandContext;
 struct SDL_Window;

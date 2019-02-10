@@ -43,9 +43,10 @@ enum class ShaderType
 	VertexShader = 0,
 	PixelShader,
 	GeometryShader,
-	ComputeShader,
 	DomainShader,
 	HullShader,
+
+	ComputeShader,
 	MAX,
 };
 

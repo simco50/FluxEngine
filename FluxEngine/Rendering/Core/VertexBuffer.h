@@ -60,6 +60,35 @@ struct VertexElement
 		return other.GetHash() == GetHash();
 	}
 
+	static constexpr const char* GetSemanticOfType(VertexElementSemantic semantic)
+	{
+		switch (semantic)
+		{
+		case VertexElementSemantic::POSITION:
+			return "POSITION";
+		case VertexElementSemantic::NORMAL:
+			return "NORMAL";
+		case VertexElementSemantic::BINORMAL:
+			return "BINORMAL";
+		case VertexElementSemantic::TANGENT:
+			return "TANGENT";
+		case VertexElementSemantic::TEXCOORD:
+			return "TEXCOORD";
+		case VertexElementSemantic::COLOR:
+			return "COLOR";
+		case VertexElementSemantic::BLENDWEIGHTS:
+			return "BLENDWEIGHT";
+		case VertexElementSemantic::BLENDINDICES:
+			return "BLENDINDEX";
+		case VertexElementSemantic::OBJECTINDEX:
+			return "OBJECTINDEX";
+		case VertexElementSemantic::MAX_VERTEX_ELEMENT_SEMANTICS:
+		default:
+			checkf(false, "[VertexElement::GetSemanticOfType()] Invalid semantic!");
+			return "INVALID";
+		}
+	}
+
 	static constexpr unsigned int GetSizeOfType(const VertexElementType type)
 	{
 		switch (type)

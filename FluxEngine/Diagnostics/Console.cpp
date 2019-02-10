@@ -242,9 +242,12 @@ void Console::InitializeConsoleWindow()
 	{
 		// Redirect the CRT standard input, output, and error handles to the console
 		FILE* pCout;
-		freopen_s(&pCout, "CONIN$", "r", stdin);
-		freopen_s(&pCout, "CONOUT$", "w", stdout);
-		freopen_s(&pCout, "CONOUT$", "w", stderr);
+		errno_t e = freopen_s(&pCout, "CONIN$", "r", stdin);
+		check(e == 0);
+		e = freopen_s(&pCout, "CONOUT$", "w", stdout);
+		check(e == 0);
+		e = freopen_s(&pCout, "CONOUT$", "w", stderr);
+		check(e == 0);
 
 		//Clear the error state for each of the C++ standard stream objects. We need to do this, as
 		//attempts to access the standard streams before they refer to a valid target will cause the

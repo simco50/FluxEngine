@@ -191,12 +191,5 @@ void AsyncTaskQueue::ParallelFor(int count, const ParallelForDelegate& function,
 
 bool AsyncTaskQueue::IsCompleted() const
 {
-	for (const AsyncTask* pItem : m_RunningTasks)
-	{
-		if (pItem->IsCompleted == false)
-		{
-			return false;
-		}
-	}
-	return true;
+	return !std::any_of(m_RunningTasks.begin(), m_RunningTasks.end(), [](const AsyncTask* pTask) { return !pTask->IsCompleted; });
 }

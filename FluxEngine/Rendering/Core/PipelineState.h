@@ -2,13 +2,16 @@
 class Graphics;
 class ShaderVariation;
 class VertexBuffer;
+class Texture2D;
 struct ShaderParameter;
 
 class PipelineState
 {
 public:
-	PipelineState(Graphics* pGraphics);
+	explicit PipelineState(Graphics* pGraphics);
 	virtual ~PipelineState();
+
+	DELETE_COPY(PipelineState);
 
 	virtual void ClearShaders() = 0;
 
@@ -20,13 +23,16 @@ protected:
 	virtual void LoadShaderParameters() = 0;
 	void LoadShaderParametersForShader(ShaderVariation* pShader);
 
-	Graphics* m_pGraphics = nullptr;
 	using ShaderConstantBuffers = std::array<void*, (size_t)ShaderParameterType::MAX>;
-	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX> m_CurrentConstBuffers = {};
 
 	BitField<8, uint32> m_DirtyShaders;
-	bool m_ShaderParametersDirty = true;
 	std::map<StringHash, const ShaderParameter*> m_ShaderParameters;
+
+	Graphics* m_pGraphics = nullptr;
+
+	bool m_IsDirty = false;
+	bool m_IsCreated = false;
+	bool m_ShaderParametersDirty = true;
 };
 
 class GraphicsPipelineStateImpl;
@@ -34,13 +40,17 @@ class GraphicsPipelineStateImpl;
 class GraphicsPipelineState : public PipelineState
 {
 public:
-	GraphicsPipelineState(Graphics* pGraphics);
+	explicit GraphicsPipelineState(Graphics* pGraphics);
 	~GraphicsPipelineState();
+
+	DELETE_COPY(GraphicsPipelineState);
 
 	void Finalize(bool& hasUpdated, VertexBuffer** pVertexBuffers, int count);
 	void Apply(VertexBuffer** pVertexBuffers, int count);
 
 	void SetPrimitiveType(PrimitiveType type);
+
+	void OnRenderTargetsSet(Texture2D** pRenderTargets, int count, Texture2D* pDepthStencil);
 
 	//BlendState
 	void SetBlendMode(const BlendMode& blendMode, bool alphaToCoverage);
@@ -79,8 +89,7 @@ private:
 	virtual void LoadShaderParameters() override;
 	std::unique_ptr<GraphicsPipelineStateImpl> m_pImpl;
 
-	bool m_IsDirty = false;
-	bool m_IsCreated = false;
+	std::array<ShaderConstantBuffers, (size_t)ShaderType::MAX - 1> m_CurrentConstBuffers = {};
 
 	unsigned int m_StencilRef = 0;
 
@@ -95,8 +104,11 @@ private:
 class ComputePipelineState : public PipelineState
 {
 public:
-	ComputePipelineState(Graphics* pGraphics);
+	explicit ComputePipelineState(Graphics* pGraphics);
 	~ComputePipelineState();
+
+	DELETE_COPY(ComputePipelineState);
+
 	void Finalize(bool& hasUpdated);
 	
 	//Shaders
@@ -106,6 +118,8 @@ public:
 	ShaderVariation* GetComputeShader() const { return m_pComputeShader; }
 
 private:
+	ShaderConstantBuffers m_CurrentConstBuffers = {};
+
 	void ApplyShader(ShaderType type, ShaderVariation* pShader);
 	virtual void LoadShaderParameters() override;
 	ShaderVariation* m_pComputeShader = nullptr;

@@ -9,7 +9,7 @@ public:
 	IOStream() = default;
 	virtual ~IOStream() = default;
 
-	IOStream(const size_t size)
+	explicit IOStream(const size_t size)
 		: InputStream(size)
 	{}
 };

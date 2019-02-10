@@ -5,7 +5,8 @@
 #include "../ShaderVariation.h"
 #include "D3D12Helpers.h"
 #include "../VertexBuffer.h"
-#include "../D3DCommon/D3DDefines.h"
+#include "../D3DCommon/D3DCommon.h"
+#include "../Texture2D.h"
 
 class GraphicsPipelineStateImpl
 {
@@ -56,10 +57,6 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 	if (m_IsDirty || m_IsCreated == false)
 	{
 		GraphicsImpl* pImpl = m_pGraphics->GetImpl();
-		ComPtr<ID3D12PipelineState> pPipelineState;
-		HR(pImpl->GetDevice()->CreateGraphicsPipelineState(&m_pImpl->Desc, IID_PPV_ARGS(pPipelineState.GetAddressOf())));
-		pImpl->m_PipelineStateCache.push_back(std::move(pPipelineState));
-		m_pImpl->pPipelineState = pImpl->m_PipelineStateCache.back().Get();
 
 		//InputLayout
 		{
@@ -78,7 +75,7 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 				for (const VertexElement& e : pVertexBuffers[i]->GetElements())
 				{
 					D3D12_INPUT_ELEMENT_DESC desc;
-					desc.SemanticName = D3DCommon::GetSemanticOfType(e.Semantic);
+					desc.SemanticName = VertexElement::GetSemanticOfType(e.Semantic);
 					desc.Format = D3DCommon::GetFormatOfType(e.Type);
 					desc.AlignedByteOffset = e.Offset;
 					desc.InputSlotClass = e.PerInstance ? D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA : D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
@@ -91,6 +88,12 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 			}
 			m_pImpl->Desc.InputLayout.NumElements = (uint32)m_pImpl->InputLayout.size();
 			m_pImpl->Desc.InputLayout.pInputElementDescs = m_pImpl->InputLayout.data();
+
+			//Create Pipeline state
+			ComPtr<ID3D12PipelineState> pPipelineState;
+			HR(pImpl->GetDevice()->CreateGraphicsPipelineState(&m_pImpl->Desc, IID_PPV_ARGS(pPipelineState.GetAddressOf())));
+			pImpl->m_PipelineStateCache.push_back(std::move(pPipelineState));
+			m_pImpl->pPipelineState = pImpl->m_PipelineStateCache.back().Get();
 		}
 		
 		m_IsDirty = false;
@@ -102,28 +105,29 @@ void GraphicsPipelineState::Finalize(bool& hasUpdated, VertexBuffer** pVertexBuf
 void GraphicsPipelineState::ApplyShader(ShaderType type, ShaderVariation* pShader)
 {
 	AUTOPROFILE_DESC(GraphicsPipelineState_ApplyShader, pShader ? pShader->GetName() : "None");
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc = m_pImpl->Desc;
 
-	switch(type)
+	switch (type)
 	{
 	case ShaderType::VertexShader:
-		m_pImpl->Desc.VS.pShaderBytecode = pShader->GetByteCode().data();
-		m_pImpl->Desc.VS.BytecodeLength = pShader->GetByteCode().size();
+		desc.VS.pShaderBytecode = pShader->GetByteCode().data();
+		desc.VS.BytecodeLength = pShader->GetByteCode().size();
 		break;
 	case ShaderType::PixelShader:
-		m_pImpl->Desc.PS.pShaderBytecode = pShader->GetByteCode().data();
-		m_pImpl->Desc.PS.BytecodeLength = pShader->GetByteCode().size();
+		desc.PS.pShaderBytecode = pShader->GetByteCode().data();
+		desc.PS.BytecodeLength = pShader->GetByteCode().size();
 		break;
 	case ShaderType::GeometryShader:
-		m_pImpl->Desc.GS.pShaderBytecode = pShader->GetByteCode().data();
-		m_pImpl->Desc.GS.BytecodeLength = pShader->GetByteCode().size();
+		desc.GS.pShaderBytecode = pShader->GetByteCode().data();
+		desc.GS.BytecodeLength = pShader->GetByteCode().size();
 		break;
 	case ShaderType::DomainShader:
-		m_pImpl->Desc.DS.pShaderBytecode = pShader->GetByteCode().data();
-		m_pImpl->Desc.DS.BytecodeLength = pShader->GetByteCode().size();
+		desc.DS.pShaderBytecode = pShader->GetByteCode().data();
+		desc.DS.BytecodeLength = pShader->GetByteCode().size();
 		break;
 	case ShaderType::HullShader:
-		m_pImpl->Desc.HS.pShaderBytecode = pShader->GetByteCode().data();
-		m_pImpl->Desc.HS.BytecodeLength = pShader->GetByteCode().size();
+		desc.HS.pShaderBytecode = pShader->GetByteCode().data();
+		desc.HS.BytecodeLength = pShader->GetByteCode().size();
 		break;
 	default:
 		FLUX_LOG(Error, "[Graphics::ApplyShader] > Shader type not implemented");
@@ -165,6 +169,31 @@ void GraphicsPipelineState::SetPrimitiveType(PrimitiveType type)
 {
 	m_pImpl->Desc.PrimitiveTopologyType = D3D12Helpers::GetPrimitiveType(type);
 	m_IsDirty = true;
+}
+
+void GraphicsPipelineState::OnRenderTargetsSet(Texture2D** pRenderTargets, int count, Texture2D* pDepthStencil)
+{
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc = m_pImpl->Desc;
+	if (desc.NumRenderTargets != (uint32)count)
+	{
+		desc.NumRenderTargets = (uint32)count;
+		m_IsDirty = true;
+	}
+	for (int i = 0; i < count; ++i)
+	{
+		DXGI_FORMAT format = (DXGI_FORMAT)pRenderTargets[i]->GetFormat();
+		if (format != desc.RTVFormats[i])
+		{
+			desc.RTVFormats[i] = desc.RTVFormats[i];
+			m_IsDirty = true;
+		}
+	}
+	DXGI_FORMAT depthFormat = (DXGI_FORMAT)pDepthStencil->GetFormat();
+	if (desc.DSVFormat != depthFormat)
+	{
+		desc.DSVFormat = depthFormat;
+		m_IsDirty = true;
+	}
 }
 
 void GraphicsPipelineState::SetBlendMode(const BlendMode& blendMode, const bool alphaToCoverage)
@@ -221,52 +250,53 @@ void GraphicsPipelineState::SetDepthTest(const CompareMode& comparison)
 void GraphicsPipelineState::SetStencilTest(bool stencilEnabled, const CompareMode mode, const StencilOperation pass, const StencilOperation fail, const StencilOperation zFail, const unsigned int stencilRef, const unsigned char compareMask, unsigned char writeMask)
 {
 	m_StencilRef = stencilRef;
+	D3D12_DEPTH_STENCIL_DESC& desc = m_pImpl->Desc.DepthStencilState;
 
-	if (stencilEnabled != (bool)m_pImpl->Desc.DepthStencilState.StencilEnable)
+	if (stencilEnabled != (bool)desc.StencilEnable)
 	{
-		m_pImpl->Desc.DepthStencilState.StencilEnable = stencilEnabled;
+		desc.StencilEnable = stencilEnabled;
 		m_IsDirty = true;
 	}
 
 	D3D12_COMPARISON_FUNC testMode = D3D12Helpers::D3D12ComparisonFunction(mode);
-	if (testMode != m_pImpl->Desc.DepthStencilState.FrontFace.StencilFunc)
+	if (testMode != desc.FrontFace.StencilFunc)
 	{
-		m_pImpl->Desc.DepthStencilState.FrontFace.StencilFunc = testMode;
-		m_pImpl->Desc.DepthStencilState.BackFace.StencilFunc = testMode;
+		desc.FrontFace.StencilFunc = testMode;
+		desc.BackFace.StencilFunc = testMode;
 		m_IsDirty = true;
 	}
 
 	D3D12_STENCIL_OP passOp = D3D12Helpers::D3D12StencilOperation(pass);
-	if (passOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilPassOp)
+	if (passOp != desc.FrontFace.StencilPassOp)
 	{
-		m_pImpl->Desc.DepthStencilState.FrontFace.StencilPassOp = passOp;
-		m_pImpl->Desc.DepthStencilState.BackFace.StencilPassOp = passOp;
+		desc.FrontFace.StencilPassOp = passOp;
+		desc.BackFace.StencilPassOp = passOp;
 		m_IsDirty = true;
 	}
 
 	D3D12_STENCIL_OP failOp = D3D12Helpers::D3D12StencilOperation(fail);
-	if (failOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilFailOp)
+	if (failOp != desc.FrontFace.StencilFailOp)
 	{
-		m_pImpl->Desc.DepthStencilState.FrontFace.StencilFailOp = passOp;
-		m_pImpl->Desc.DepthStencilState.BackFace.StencilFailOp = passOp;
+		desc.FrontFace.StencilFailOp = passOp;
+		desc.BackFace.StencilFailOp = passOp;
 		m_IsDirty = true;
 	}
 
 	D3D12_STENCIL_OP zFailOp = D3D12Helpers::D3D12StencilOperation(zFail);
-	if (zFailOp != m_pImpl->Desc.DepthStencilState.FrontFace.StencilDepthFailOp)
+	if (zFailOp != desc.FrontFace.StencilDepthFailOp)
 	{
-		m_pImpl->Desc.DepthStencilState.FrontFace.StencilDepthFailOp = zFailOp;
-		m_pImpl->Desc.DepthStencilState.BackFace.StencilDepthFailOp = zFailOp;
+		desc.FrontFace.StencilDepthFailOp = zFailOp;
+		desc.BackFace.StencilDepthFailOp = zFailOp;
 		m_IsDirty = true;
 	}
-	if (compareMask != m_pImpl->Desc.DepthStencilState.StencilReadMask)
+	if (compareMask != desc.StencilReadMask)
 	{
-		m_pImpl->Desc.DepthStencilState.StencilReadMask = compareMask;
+		desc.StencilReadMask = compareMask;
 		m_IsDirty = true;
 	}
-	if (writeMask != m_pImpl->Desc.DepthStencilState.StencilWriteMask)
+	if (writeMask != desc.StencilWriteMask)
 	{
-		m_pImpl->Desc.DepthStencilState.StencilWriteMask = writeMask;
+		desc.StencilWriteMask = writeMask;
 		m_IsDirty = true;
 	}
 }

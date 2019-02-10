@@ -12,7 +12,7 @@ inline void SafeRelease(T*& object)
 {
 	if (object)
 	{
-		((IUnknown*)object)->Release();
+		static_cast<IUnknown*>(object)->Release();
 		object = nullptr;
 	}
 }
