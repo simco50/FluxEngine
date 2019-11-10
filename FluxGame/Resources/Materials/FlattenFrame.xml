@@ -1,0 +1,17 @@
+<Material name="Default">
+	<Shaders>
+		<Shader type="Vertex" source="Shaders/Diffuse" defines=""/>
+		<Shader type="Pixel" source="Shaders/Diffuse" defines="DIFFUSEMAP"/>
+	</Shaders>
+
+	<Properties>
+		<CullMode value="Back"/>
+		<BlendMode value="Replace"/>
+		<FillMode value="Solid"/>
+	</Properties>
+
+	<Parameters>
+		<Texture slot="Diffuse" value="Textures/Painting_diff.jpg"/>
+		<Texture slot="Normal" value="Textures/Painting_norm.jpg"/>
+	</Parameters>
+</Material>

@@ -80,6 +80,11 @@ void Material::SetShader(ShaderType type, ShaderVariation* pShader)
 	m_ShaderVariations[(int)type] = pShader;
 }
 
+void Material::SetParameter(const std::string& parameterName, void* pData, size_t size)
+{
+	m_ParameterCache.GetParameter(parameterName, size).SetData(pData, size);
+}
+
 bool Material::ParseShaders(tinyxml2::XMLElement* pElement)
 {
 	namespace XML = tinyxml2;

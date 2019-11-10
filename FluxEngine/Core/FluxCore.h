@@ -12,6 +12,7 @@ class DebugRenderer;
 class Context;
 class ResourceManager;
 class AudioEngine;
+class Material;
 
 class FluxCore : public Object
 {
@@ -53,7 +54,12 @@ private:
 	ResourceManager* m_pResourceManager = nullptr;
 	AudioEngine* m_pAudioEngine = nullptr;
 
+	Material* m_pManMaterial = nullptr;
+	SceneNode* m_pFrame = nullptr;
+
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
 	int m_FramesToCapture = 1;
+
+	float m_CameraDistance = 500;
 };

@@ -63,6 +63,13 @@ private:
 			}
 			return entry;
 		}
+
+		ParameterEntry* FindParameter(const std::string& name)
+		{
+			auto it = m_Parameters.find(StringHash(name));
+			return it != m_Parameters.end() ? &it->second : nullptr;
+		}
+
 		const std::unordered_map<StringHash, ParameterEntry>& GetParameters() const { return m_Parameters; }
 
 		size_t ByteSize() const
@@ -84,6 +91,8 @@ public:
 
 	void SetTexture(TextureSlot slot, Texture* pTexture);
 	void SetShader(ShaderType type, ShaderVariation* pShader);
+
+	void SetParameter(const std::string& parameterName, void* pData, size_t size);
 
 	void SetCullMode(CullMode mode) { m_CullMode = mode; }
 	void SetBlendMode(BlendMode mode) { m_BlendMode = mode; }

@@ -15,7 +15,7 @@ workspace (engineName)
     rtti "Off"
 	characterset ("MBCS")
 	defines { "_CONSOLE", "THREADING", "PLATFORM_WINDOWS"}
-	flags {"FatalWarnings", "MultiProcessorCompile"}
+	flags {"MultiProcessorCompile"}
 	language "C++"
 	startproject (gameName)
 	systemversion "latest"

@@ -29,19 +29,13 @@ bool Shader::Load(InputStream& inputStream)
 
 	m_LastModifiedTimestamp = DateTime(0);
 
+	LoadSource(inputStream);
 	if (ReloadVariations() == false)
 	{
 		return false;
 	}
 
 	RefreshMemoryUsage();
-
-	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
-	pResourceManager->ResetDependencies(this);
-	for (const std::string& dependency : dependencies)
-	{
-		pResourceManager->AddResourceDependency(this, dependency);
-	}
 
 	return true;
 }
@@ -60,10 +54,6 @@ bool Shader::ReloadVariations()
 			if (p.second == nullptr)
 			{
 				continue;
-			}
-			if (m_ShaderSource.length() == 0)
-			{
-				LoadSource();
 			}
 			success = p.second->Create() ? success : false;
 		}
@@ -90,7 +80,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 
 	std::unique_ptr<ShaderVariation> pVariation = std::make_unique<ShaderVariation>(pGraphics, this, type);
 
-	if (TryLoadFromCache(filePath, pVariation))
+	if (!CommandLine::GetBool("NoShaderCache") && TryLoadFromCache(filePath, pVariation))
 	{
 		if (pVariation->CreateShader(pGraphics, type) == false)
 		{
@@ -100,11 +90,6 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 	}
 	else
 	{
-		if (m_ShaderSource.length() == 0)
-		{
-			LoadSource();
-		}
-
 		pVariation->SetDefines(defines);
 		if (!pVariation->Create())
 		{
@@ -112,7 +97,7 @@ ShaderVariation* Shader::GetOrCreateVariation(ShaderType type, const std::string
 			return nullptr;
 		}
 
-		if (TrySaveToCache(filePath, pVariation) == false)
+		if (!CommandLine::GetBool("NoShaderCache") && TrySaveToCache(filePath, pVariation) == false)
 		{
 			FLUX_LOG(Warning, "[Shader::GetVariation()] > Failed to save shader variation to cache");
 		}
@@ -211,27 +196,16 @@ bool Shader::ProcessSource(InputStream& inputStream, std::stringstream& output, 
 	return true;
 }
 
-bool Shader::LoadSource()
+bool Shader::LoadSource(InputStream& inputStream)
 {
 	AUTOPROFILE_DESC(Shader_LoadSource, m_Name);
 	ResourceManager* pResourceManager = GetSubsystem<ResourceManager>();
 	pResourceManager->ResetDependencies(this);
 
 	std::vector<std::string> dependencies;
-	std::unique_ptr<File> pFile = FileSystem::GetFile(m_FilePath);
-	if (pFile == nullptr)
-	{
-		FLUX_LOG(Warning, "[Shader::GetOrCreateVariation() Failed to file file at '%s']", m_FilePath.c_str());
-		return false;
-	}
-	if (!pFile->OpenRead())
-	{
-		FLUX_LOG(Warning, "[Shader::GetOrCreateVariation() Failed to open file at '%s']", m_FilePath.c_str());
-		return false;
-	}
 	std::stringstream codeStream;
 	std::vector<StringHash> processedIncludes;
-	ProcessSource(*pFile, codeStream, processedIncludes, dependencies);
+	ProcessSource(inputStream, codeStream, processedIncludes, dependencies);
 	m_ShaderSource = codeStream.str();
 
 	for (const std::string& dep : dependencies)
@@ -244,11 +218,6 @@ bool Shader::LoadSource()
 
 bool Shader::TryLoadFromCache(const std::string& path, std::unique_ptr<ShaderVariation>& pVariation)
 {
-	if (CommandLine::GetBool("NoShaderCache"))
-	{
-		return false;
-	}
-
 	DateTime shaderTime = FileSystem::GetLastModifiedTime(path);
 	if (shaderTime == DateTime(0) || shaderTime < m_LastModifiedTimestamp)
 	{

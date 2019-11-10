@@ -118,7 +118,7 @@ void FluxCore::InitGame()
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/ChromaticAberration.xml"));
 	post->AddEffect(m_pResourceManager->Load<Material>("Materials/FXAA.xml"));
 
-	/*SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
+	SceneNode* pPlaneNode = m_pScene->CreateChild("Floor");
 	Mesh* pPlaneMesh = m_pResourceManager->Load<Mesh>("Meshes/UnitPlane.flux");
 	std::vector<VertexElement> planeDesc =
 	{
@@ -147,15 +147,54 @@ void FluxCore::InitGame()
 	};
 	pManMesh->CreateBuffers(manDesc);
 
-	Material* pManMaterial = m_pResourceManager->Load<Material>("Materials/ManAnimated.xml");
-	SceneNode* pMan = m_pScene->CreateChild("Man - Matrix Skinning - DAE");
-	AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
-	pManModel->SetMesh(pManMesh);
-	pManModel->SetMaterial(pManMaterial);
-	Animator* pAnimator = pMan->CreateComponent<Animator>();
-	Animation* pAnimation = m_pResourceManager->Load<Animation>("Meshes/obj/Man_Walking.dae");
-	pAnimator->Play(pAnimation);
+	m_pManMaterial = m_pResourceManager->Load<Material>("Materials/ManAnimated_Flatten.xml");
 
+	Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/cube.flux");
+	Animation* pAnimation = m_pResourceManager->Load<Animation>("Meshes/obj/Man_Walking.dae");
+	std::vector<VertexElement> meshDesc =
+	{
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
+		VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
+		VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+	};
+	pCubeMesh->CreateBuffers(meshDesc);
+
+	Material* pFlattenMaterial = m_pResourceManager->Load<Material>("Materials/FlattenFrame.xml");
+	m_pFrame = m_pScene->CreateChild("Frame");
+	m_pFrame->Rotate(0, 200, 0, Space::World);
+	m_pFrame->Translate(40, 100, 40);
+	SceneNode* pFrameMeshNode = m_pFrame->CreateChild("Mesh");
+	Model* pFrameModel = pFrameMeshNode->CreateComponent<Model>();
+	pFrameModel->SetMesh(pCubeMesh);
+	pFrameModel->SetMaterial(pFlattenMaterial);
+	pFrameMeshNode->SetScale(150, 200, 0.001f, Space::Self);
+
+	{
+		SceneNode* pMan = m_pFrame->CreateChild("Man 1");
+		AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
+		pManModel->SetMesh(pManMesh);
+		pManModel->SetMaterial(m_pManMaterial);
+		pManModel->SetCullingEnabled(false);
+		pMan->SetPosition(-20, 0, -20);
+		pMan->SetRotation(0, -30, 0);
+		Animator* pAnimator = pMan->CreateComponent<Animator>();
+		pAnimator->Play(pAnimation);
+	}
+	{
+		SceneNode* pMan = m_pFrame->CreateChild("Man 2");
+		AnimatedModel* pManModel = pMan->CreateComponent<AnimatedModel>();
+		pManModel->SetMesh(pManMesh);
+		pManModel->SetMaterial(m_pManMaterial);
+		pManModel->SetCullingEnabled(false);
+		pMan->SetPosition(20, 100, -20);
+		pMan->SetRotation(0, 30, 0);
+		pMan->SetScale(0.5f);
+
+		Animator* pAnimator = pMan->CreateComponent<Animator>();
+		pAnimator->Play(pAnimation);
+	}
+
+	/*
 	SceneNode* pLights = m_pScene->CreateChild("Lights");
 
 	float spacing = 350.0f;
@@ -185,11 +224,11 @@ void FluxCore::InitGame()
 		pL->SetShadowCasting(true);
 		pL->SetType(Light::Type::Directional);
 		pL->SetRange(300);
-		pL->SetColor(Color(1,1,1,1));
-		pLight->Rotate(45, -135, 0);
+		pL->SetColor(Color(1, 1, 1, 1));
+		pLight->Rotate(45, 0, 0);
 	}
 
-	{
+	/*{
 		Material* pMat = m_pResourceManager->Load<Material>("Materials/TessellationExample.xml");
 		Mesh* pCubeMesh = m_pResourceManager->Load<Mesh>("Meshes/obj/plane.obj");
 		std::vector<VertexElement> cubeDesc =
@@ -205,7 +244,7 @@ void FluxCore::InitGame()
 		pCubeModel->SetMesh(pCubeMesh);
 		pCubeModel->SetMaterial(pMat);
 		pCubeNode->SetScale(50);
-	}
+	}*/
 
 
 	/*{
@@ -354,6 +393,16 @@ void FluxCore::RenderUI()
 	ImGui::Text("Primitives: %i", primitiveCount);
 	ImGui::SameLine(150);
 	ImGui::Text("Batches: %i", batchCount);
+
+	ImGui::SliderFloat("Camera Distance", &m_CameraDistance, 150, 5000);
+
+	static bool enable = 0;
+	if (ImGui::Checkbox("Enable Flatten", &enable))
+	{
+		int e = enable ? 1 : 0;
+		m_pManMaterial->SetParameter("cEnableFlatten", &e, sizeof(int32));
+	}
+
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 20.0f));
@@ -460,4 +509,39 @@ void FluxCore::GameUpdate()
 			m_pDebugRenderer->AddAxisSystem(m_pSelectedNode->GetWorldMatrix());
 		}
 	}
+
+	SceneNode* pPlaneMesh = m_pFrame->GetChildren()[0];
+	Matrix planeWorld = pPlaneMesh->GetWorldMatrix();
+	Matrix planeWorldInv;
+	planeWorld.Invert(planeWorldInv);
+
+	Matrix scale = Matrix::CreateScale(1, 1, 0.01f);
+
+	Vector3 cBounds = pPlaneMesh->GetScale() / 2;
+
+	Matrix camera = Matrix::CreateTranslation(0, 0, m_CameraDistance)
+		* Matrix::CreateFromQuaternion(pPlaneMesh->GetWorldRotation())
+		* Matrix::CreateTranslation(pPlaneMesh->GetWorldPosition());
+	Matrix cameraInv;
+	camera.Invert(cameraInv);
+
+	Matrix projection = Matrix::Identity;
+	projection._11 = -m_CameraDistance;
+	projection._22 = -m_CameraDistance;
+
+	m_pManMaterial->SetParameter("cProjection", &projection, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cCamera", &camera, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cCameraInv", &cameraInv, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cScale", &scale, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cPlane", &planeWorld, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cPlaneInv", &planeWorldInv, sizeof(Matrix));
+
+	m_pManMaterial->SetParameter("cBounds", &cBounds, sizeof(Vector3));
+	m_pManMaterial->SetParameter("cCameraDistance", &m_CameraDistance, sizeof(float));
+
+	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, 0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(0.5f, 0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, -0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, -0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddBone(camera, 4, Color(1, 0, 0, 1));
 }

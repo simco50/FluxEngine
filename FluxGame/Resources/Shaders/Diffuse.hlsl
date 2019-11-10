@@ -6,6 +6,21 @@
 #include "Skinning.hlsl"
 #endif
 
+#ifdef FLATTEN
+cbuffer extra : register(b4)
+{
+	float4x4 cScale;
+	float4x4 cPlane;
+	float4x4 cPlaneInv;
+	float4x4 cCamera;
+	float4x4 cCameraInv;
+	float4x4 cProjection;
+	float3 cBounds;
+	float cCameraDistance;
+	int cEnableFlatten;
+}
+#endif
+
 struct VS_INPUT
 {
 	float3 position : POSITION;
@@ -31,6 +46,10 @@ struct PS_INPUT
 #ifdef NORMALMAP
 	float3 tangent : TANGENT;
 #endif
+
+#if FLATTEN
+	float3 paintSpace : TEXCOORD2;
+#endif
 };
 
 #ifdef COMPILE_VS
@@ -52,8 +71,9 @@ PS_INPUT VSMain(VS_INPUT input)
 	float3 transformedTangent = mul(input.tangent, (float3x3)finalMatrix);
 #endif
 
-	output.position = mul(transformedPosition, cViewProj);
 	output.worldPosition = transformedPosition;
+
+	output.position = mul(transformedPosition, cViewProj);
 	output.normal = transformedNormal;
 
 #ifdef NORMALMAP
@@ -71,6 +91,24 @@ PS_INPUT VSMain(VS_INPUT input)
 
 #endif
 
+#ifdef FLATTEN
+	if(cEnableFlatten > 0)
+	{
+		float4 o = output.worldPosition;
+		o = mul(o, cCameraInv);
+		o = mul(o, cProjection);
+		o.xy /= o.z;
+		o = mul(o, cCamera);
+		o = mul(o, cPlaneInv);
+		output.paintSpace = o.xyz;
+		o = mul(o, cScale);
+		o = mul(o, cPlane);
+		output.worldPosition = o;
+		o = mul(o, cViewProj);
+		output.position = o;
+	}
+#endif
+
 	output.texCoord = input.texCoord;
 	return output;
 }
@@ -81,6 +119,19 @@ PS_INPUT VSMain(VS_INPUT input)
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
 	float4 output = (float4)0;
+
+#if FLATTEN
+	if(cEnableFlatten > 0)
+	{
+		if(input.paintSpace.x < -0.5f 
+		|| input.paintSpace.x > 0.5f 
+		|| input.paintSpace.y < -0.5f 
+		|| input.paintSpace.y > 0.5f)
+		{
+			discard;
+		}
+	}
+#endif
 
 	float3 normal = normalize(input.normal);
 
