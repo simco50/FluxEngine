@@ -514,7 +514,7 @@ bool Image::GetSurfaceInfo(int width, int height, int depth, int mipLevel, MipLe
 	mipLevelInfo.Height = Math::Max(1, height >> mipLevel);
 	mipLevelInfo.Depth = Math::Max(1, depth >> mipLevel);
 
-	if (m_Format == ImageFormat::RGBA || m_Format == ImageFormat::BGRA)
+	if (m_Format == ImageFormat::RGBA || m_Format == ImageFormat::BGRA || m_Format == ImageFormat::RGBA32)
 	{
 		mipLevelInfo.RowSize = mipLevelInfo.Width * m_BBP / 8;
 		mipLevelInfo.Rows = mipLevelInfo.Height;
@@ -718,6 +718,12 @@ bool Image::LoadDds(InputStream& inputStream)
 				m_Format = ImageFormat::BC5;
 				m_Components = 2;
 				m_sRgb = false;
+				break;
+			case 116: // D3DFMT_A32B32G32R32F
+				m_Format = ImageFormat::RGBA32;
+				m_Components = 4;
+				m_sRgb = false;
+				m_BBP = 128;
 				break;
 			case 0:
 				if (m_BBP == 32)
