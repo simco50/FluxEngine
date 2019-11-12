@@ -55,6 +55,8 @@ public:
 		return static_cast<T*>(GetComponent(T::GetTypeStatic()));
 	}
 
+	void GetComponentsInChildren(StringHash type, std::vector<Component*>& components) const;
+
 	Component* GetComponent(StringHash type) const;
 	const std::vector<Component*>& GetComponents() const { return m_Components; }
 	const std::vector<SceneNode*>& GetChildren() const { return m_Children; }

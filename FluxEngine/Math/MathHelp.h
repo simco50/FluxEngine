@@ -91,14 +91,6 @@ namespace Math
 		return (a + b + c) / (T)3;
 	}
 
-	template<typename T>
-	constexpr void Clamp01(T& value)
-	{
-		if (value > 1)
-			value = 1;
-		else if (value < 0)
-			value = 0;
-	}
 
 	template<typename T>
 	T Clamp01(const T value)

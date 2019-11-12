@@ -16,6 +16,7 @@ public:
 	Mesh* GetMesh() const { return m_pMesh; }
 	void SetMaterial(Material* pMaterial);
 	void SetMaterial(int index, Material* pMaterial);
+	Material* GetMaterial(int index);
 
 	virtual void CreateUI() override;
 

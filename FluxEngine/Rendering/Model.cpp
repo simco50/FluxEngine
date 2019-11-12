@@ -53,6 +53,11 @@ void Model::SetMaterial(int index, Material* pMaterial)
 	m_Batches[index].pMaterial = pMaterial;
 }
 
+Material* Model::GetMaterial(int index)
+{
+	return const_cast<Material*>(m_Batches[index].pMaterial);
+}
+
 void Model::CreateUI()
 {
 	if (m_pMesh)

@@ -13,6 +13,7 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 class Material;
+class Light;
 
 class FluxCore : public Object
 {
@@ -62,4 +63,6 @@ private:
 	int m_FramesToCapture = 1;
 
 	float m_CameraDistance = 500;
+
+	Material* m_pSHMaterial = nullptr;
 };

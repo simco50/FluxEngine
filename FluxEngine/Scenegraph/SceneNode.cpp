@@ -108,6 +108,19 @@ Component* SceneNode::GetComponent(StringHash type) const
 	return nullptr;
 }
 
+void SceneNode::GetComponentsInChildren(StringHash type, std::vector<Component*>& components) const
+{
+	Component* pComp = GetComponent(type);
+	if (pComp)
+	{
+		components.push_back(pComp);
+	}
+	for (SceneNode* pChild : m_Children)
+	{
+		pChild->GetComponentsInChildren(type, components);
+	}
+}
+
 Vector3 SceneNode::GetWorldPosition() const
 {
 	if (m_Dirty)
