@@ -536,7 +536,7 @@ void FluxCore::RenderUI()
 template<size_t order>
 struct SHVector
 {
-	std::array<float, order> V = {};
+	std::array<float, order * order> V = {};
 };
 
 template<size_t order>
@@ -650,10 +650,8 @@ void FluxCore::GameUpdate()
 			switch (lightData.Type)
 			{
 			case Light::Type::Directional:
-			{
 				XMSHEvalDirectionalLight(order, lightData.Direction, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
 				break;
-			}
 			case Light::Type::Point:
 			{
 				Vector3 pos = lightData.Position;
@@ -662,10 +660,8 @@ void FluxCore::GameUpdate()
 				break;
 			}
 			case Light::Type::Spot:
-			{
 				XMSHEvalConeLight(order, lightData.Direction, Math::ToRadians * lightData.SpotLightAngle, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
 				break;
-			}
 			}
 
 			DirectX::XMSHAdd(shValues.R.V.data(), order, output.R.V.data(), shValues.R.V.data());
