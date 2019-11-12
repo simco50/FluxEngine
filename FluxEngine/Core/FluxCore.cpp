@@ -533,6 +533,20 @@ void FluxCore::RenderUI()
 	m_pImmediateUI->Render();
 }
 
+template<size_t order>
+struct SHVector
+{
+	std::array<float, order> V = {};
+};
+
+template<size_t order>
+struct SH
+{
+	SHVector<order> R = {};
+	SHVector<order> G = {};
+	SHVector<order> B = {};
+};
+
 void FluxCore::GameUpdate()
 {
 	AUTOPROFILE(FluxCore_GameUpdate);
@@ -608,10 +622,14 @@ void FluxCore::GameUpdate()
 		m_pDebugRenderer->AddBone(camera, 4, Color(1, 0, 0, 1));
 	}
 
+
+
 	constexpr int order = 3;
 	constexpr int values = order * order;
 	constexpr int channels = 3;
-	std::array<float, values* channels> SHValues = {};
+
+	SH<3> shValues;
+
 	Vector4 mainLightColor;
 	Vector3 mainLightDirection;
 
@@ -626,29 +644,33 @@ void FluxCore::GameUpdate()
 		if(pL->GetData()->Enabled)
 		{
 			const Light::Data& lightData = *pL->GetData();
-			std::array<float, values* channels> output;
+			SH<3> output;
 
 			Vector3 lightDirection;
 			switch (lightData.Type)
 			{
 			case Light::Type::Directional:
-				XMSHEvalDirectionalLight(order, lightData.Direction, lightData.Intensity / Math::PI * lightData.Colour, &output[0 * values], &output[1 * values], &output[2 * values]);
+			{
+				XMSHEvalDirectionalLight(order, lightData.Direction, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
 				break;
+			}
 			case Light::Type::Point:
 			{
 				Vector3 pos = lightData.Position;
 				pos *= -1;
-				XMSHEvalSphericalLight(order, pos, lightData.Range / Math::PI, lightData.Intensity / Math::PI * lightData.Colour, &output[0 * values], &output[1 * values], &output[2 * values]);
+				XMSHEvalSphericalLight(order, pos, lightData.Range, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
 				break;
 			}
 			case Light::Type::Spot:
-				XMSHEvalConeLight(order, lightData.Direction, Math::ToRadians * lightData.SpotLightAngle, lightData.Intensity / Math::PI * lightData.Colour, &output[0 * values], &output[1 * values], &output[2 * values]);
+			{
+				XMSHEvalConeLight(order, lightData.Direction, Math::ToRadians * lightData.SpotLightAngle, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
 				break;
 			}
+			}
 
-			DirectX::XMSHAdd(&SHValues[0], order, SHValues.data(), output.data());
-			DirectX::XMSHAdd(&SHValues[1 * values], order, &SHValues[1 * values], &output[1 * values]);
-			DirectX::XMSHAdd(&SHValues[2 * values], order, &SHValues[2 * values], &output[2 * values]);
+			DirectX::XMSHAdd(shValues.R.V.data(), order, output.R.V.data(), shValues.R.V.data());
+			DirectX::XMSHAdd(shValues.G.V.data(), order, output.G.V.data(), shValues.G.V.data());
+			DirectX::XMSHAdd(shValues.B.V.data(), order, output.B.V.data(), shValues.B.V.data());
 
 			float dot = -lightData.Position.Dot(m_pCamera->GetForward());
 			float dotClamp = Math::Clamp01(dot);
@@ -662,15 +684,55 @@ void FluxCore::GameUpdate()
 	mainLightColor /= d;
 	mainLightDirection.Normalize();
 
-	std::array<Vector4, values> zippedValues;
-	for (int i = 0; i < values; ++i)
-	{
-		zippedValues[i].x = SHValues[i];
-		zippedValues[i].y = SHValues[i + values];
-		zippedValues[i].z = SHValues[i + values * 2];
-	}
 
-	m_pSHMaterial->SetParameter("SHValues", &zippedValues[0], zippedValues.size() * sizeof(Vector4));
+	std::array<Vector4, 7> compressedValues;
+
+	const float sqrtPi = sqrt(Math::PI);
+	const float coefficient0 = 1.0f / (2 * sqrtPi);
+	const float coefficient1 = sqrt(3) / (3 * sqrtPi);
+	const float coefficient2 = sqrt(15) / (8 * sqrtPi);
+	const float coefficient3 = sqrt(5) / (16 * sqrtPi);
+	const float coefficient4 = .5f * coefficient2;
+
+	// Pack the SH coefficients in a way that makes applying the lighting use the least shader instructions
+	// This has the diffuse convolution coefficients baked in
+	// See "Stupid Spherical Harmonics (SH) Tricks"
+	compressedValues[0].x = -coefficient1 * shValues.R.V[3];
+	compressedValues[0].y = -coefficient1 * shValues.R.V[1];
+	compressedValues[0].z = coefficient1 * shValues.R.V[2];
+	compressedValues[0].w = coefficient0 * shValues.R.V[0] - coefficient3 * shValues.R.V[6];
+
+	compressedValues[1].x = -coefficient1 * shValues.G.V[3];
+	compressedValues[1].y = -coefficient1 * shValues.G.V[1];
+	compressedValues[1].z = coefficient1 * shValues.G.V[2];
+	compressedValues[1].w = coefficient0 * shValues.G.V[0] - coefficient3 * shValues.G.V[6];
+
+	compressedValues[2].x = -coefficient1 * shValues.B.V[3];
+	compressedValues[2].y = -coefficient1 * shValues.B.V[1];
+	compressedValues[2].z = coefficient1 * shValues.B.V[2];
+	compressedValues[2].w = coefficient0 * shValues.B.V[0] - coefficient3 * shValues.B.V[6];
+
+	compressedValues[3].x = coefficient2 * shValues.R.V[4];
+	compressedValues[3].y = -coefficient2 * shValues.R.V[5];
+	compressedValues[3].z = 3 * coefficient3 * shValues.R.V[6];
+	compressedValues[3].w = -coefficient2 * shValues.R.V[7];
+
+	compressedValues[4].x = coefficient2 * shValues.G.V[4];
+	compressedValues[4].y = -coefficient2 * shValues.G.V[5];
+	compressedValues[4].z = 3 * coefficient3 * shValues.G.V[6];
+	compressedValues[4].w = -coefficient2 * shValues.G.V[7];
+
+	compressedValues[5].x = coefficient2 * shValues.B.V[4];
+	compressedValues[5].y = -coefficient2 * shValues.B.V[5];
+	compressedValues[5].z = 3 * coefficient3 * shValues.B.V[6];
+	compressedValues[5].w = -coefficient2 * shValues.B.V[7];
+
+	compressedValues[6].x = coefficient4 * shValues.R.V[8];
+	compressedValues[6].y = coefficient4 * shValues.G.V[8];
+	compressedValues[6].z = coefficient4 * shValues.B.V[8];
+	compressedValues[6].w = 1;
+
+	m_pSHMaterial->SetParameter("SHValues", compressedValues.data(), compressedValues.size() * sizeof(Vector4));
 	m_pSHMaterial->SetParameter("MainLightColor", &mainLightColor, sizeof(Vector4));
 	m_pSHMaterial->SetParameter("MainLightDir", &mainLightDirection, sizeof(Vector3));
 }

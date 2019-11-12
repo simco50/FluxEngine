@@ -7,7 +7,7 @@
 
 cbuffer SHData : register(b0)
 {
-	float4 SHValues[9];
+	float4 SHValues[7];
 	float4 MainLightColor;
 	float3 MainLightDir;
 }
@@ -62,14 +62,35 @@ float3 calcIrradiance(float3 nor, float4 sh[9]) {
     );
 }
 
+float3 GetSHDiffuse(float3 Normal)
+{
+	float4 NormalVector = float4(-Normal, 1);
+
+	float3 Intermediate0, Intermediate1, Intermediate2;
+	Intermediate0.x = dot(SHValues[0], NormalVector);
+	Intermediate0.y = dot(SHValues[1], NormalVector);
+	Intermediate0.z = dot(SHValues[2], NormalVector);
+
+	float4 vB = NormalVector.xyzz * NormalVector.yzzx;
+	Intermediate1.x = dot(SHValues[3], vB);
+	Intermediate1.y = dot(SHValues[4], vB);
+	Intermediate1.z = dot(SHValues[5], vB);
+
+	float vC = NormalVector.x * NormalVector.x - NormalVector.y * NormalVector.y;
+	Intermediate2 = SHValues[6].xyz * vC;
+
+	// max to not get negative colors
+	return max(0, Intermediate0 + Intermediate1 + Intermediate2);
+}
+
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
 	float4 output = (float4)0;
 	float3 normal = normalize(input.normal);
 	float3 viewDirection = normalize(input.worldPosition.xyz - cViewInverse[3].xyz);
 
-	float4 diffuse = max(0, float4( calcIrradiance(normal, SHValues), 1));
+	float4 diffuse = float4(GetSHDiffuse(normal), 1);
 	float4 specular = GetSpecularPhong(viewDirection, normal,-MainLightDir, 15.0f) * MainLightColor;
-	return diffuse + specular;
+	return diffuse;
 }
 #endif
