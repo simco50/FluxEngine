@@ -284,6 +284,7 @@ void FluxCore::InitGame()
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::POSITION),
 			VertexElement(VertexElementType::FLOAT2, VertexElementSemantic::TEXCOORD),
 			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::NORMAL),
+			VertexElement(VertexElementType::FLOAT3, VertexElementSemantic::TANGENT),
 		};
 		pManMesh->CreateBuffers(manDesc);
 
@@ -307,7 +308,7 @@ void FluxCore::InitGame()
 
 		{
 			SceneNode* pSphereNode = m_pScene->CreateChild("Sphere - Default");
-			Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Materials/Default.xml");
+			Material* pDefaultMaterial = m_pResourceManager->Load<Material>("Materials/Man.xml");
 			Model* pSphereModel = pSphereNode->CreateComponent<Model>();
 			pSphereModel->SetMesh(pManMesh);
 			pSphereModel->SetMaterial(pDefaultMaterial);
@@ -533,19 +534,7 @@ void FluxCore::RenderUI()
 	m_pImmediateUI->Render();
 }
 
-template<size_t order>
-struct SHVector
-{
-	std::array<float, order * order> V = {};
-};
 
-template<size_t order>
-struct SH
-{
-	SHVector<order> R = {};
-	SHVector<order> G = {};
-	SHVector<order> B = {};
-};
 
 void FluxCore::GameUpdate()
 {
@@ -622,13 +611,12 @@ void FluxCore::GameUpdate()
 		m_pDebugRenderer->AddBone(camera, 4, Color(1, 0, 0, 1));
 	}
 
-
-
 	constexpr int order = 3;
 	constexpr int values = order * order;
 	constexpr int channels = 3;
 
-	SH<3> shValues;
+	Math::SH<3> shValues;
+
 
 	Vector4 mainLightColor;
 	Vector3 mainLightDirection;
@@ -644,23 +632,30 @@ void FluxCore::GameUpdate()
 		if(pL->GetData()->Enabled)
 		{
 			const Light::Data& lightData = *pL->GetData();
-			SH<3> output;
+			Math::SH<3> output;
 
 			Vector3 lightDirection;
+			float distanceFactor = 1;
 			switch (lightData.Type)
 			{
 			case Light::Type::Directional:
 				XMSHEvalDirectionalLight(order, lightData.Direction, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
+				lightDirection = lightData.Direction;
 				break;
 			case Light::Type::Point:
 			{
 				Vector3 pos = lightData.Position;
 				pos *= -1;
 				XMSHEvalSphericalLight(order, pos, lightData.Range, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
+				lightDirection = pos;
+				lightDirection.Normalize();
+				distanceFactor = abs(lightData.Range / lightData.Position.Length());
 				break;
 			}
 			case Light::Type::Spot:
-				XMSHEvalConeLight(order, lightData.Direction, Math::ToRadians * lightData.SpotLightAngle, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
+				XMSHEvalConeLight(order, lightData.Direction, Math::ToRadians * lightData.SpotLightAngle / 2, lightData.Intensity * lightData.Colour, output.R.V.data(), output.G.V.data(), output.B.V.data());
+				lightDirection = lightData.Direction;
+				distanceFactor = abs(lightData.Range / lightData.Position.Length());
 				break;
 			}
 
@@ -668,15 +663,13 @@ void FluxCore::GameUpdate()
 			DirectX::XMSHAdd(shValues.G.V.data(), order, output.G.V.data(), shValues.G.V.data());
 			DirectX::XMSHAdd(shValues.B.V.data(), order, output.B.V.data(), shValues.B.V.data());
 
-			float dot = -lightData.Position.Dot(m_pCamera->GetForward());
-			float dotClamp = Math::Clamp01(dot);
-			mainLightColor += abs(dot) * lightData.Colour;
-			mainLightDirection += dotClamp * -lightData.Position;
-			d += abs(dot);
+			float dot = lightDirection.Dot(m_pCamera->GetForward()) + 1;
+			mainLightDirection += dot * lightDirection * lightData.Intensity * distanceFactor;
+			mainLightColor += dot * lightData.Colour * lightData.Intensity * distanceFactor;
+			d += dot * lightData.Intensity * distanceFactor;
 		}
 	}
 
-	d = Math::Max(0.001f, d);
 	mainLightColor /= d;
 	mainLightDirection.Normalize();
 

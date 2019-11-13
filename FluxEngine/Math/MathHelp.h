@@ -151,4 +151,18 @@ namespace Math
 			return output;
 		}
 	};
+
+	template<size_t order>
+	struct SHVector
+	{
+		std::array<float, order* order> V = {};
+	};
+
+	template<size_t order>
+	struct SH
+	{
+		SHVector<order> R = {};
+		SHVector<order> G = {};
+		SHVector<order> B = {};
+	};
 };

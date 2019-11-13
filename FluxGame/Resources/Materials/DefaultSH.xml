@@ -1,7 +1,7 @@
 <Material name="Default">
 	<Shaders>
-		<Shader type="Vertex" source="Shaders/DiffuseSH"/>
-		<Shader type="Pixel" source="Shaders/DiffuseSH"/>
+		<Shader type="Vertex" source="Shaders/DiffuseSH" defines="NORMALMAP"/>
+		<Shader type="Pixel" source="Shaders/DiffuseSH" defines="NORMALMAP,DIFFUSEMAP"/>
 	</Shaders>
 
 	<Properties>
@@ -9,5 +9,7 @@
 		<BlendMode value="Replace"/>
 	</Properties>
 	<Parameters>
+		<Texture slot="Diffuse" value="Textures/Peasant_Man_diffuse.dds"/>
+		<Texture slot="Normal" value="Textures/Peasant_Man_normal.dds"/>
 	</Parameters>
 </Material>
