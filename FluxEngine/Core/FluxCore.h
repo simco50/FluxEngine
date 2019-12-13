@@ -13,6 +13,7 @@ class Context;
 class ResourceManager;
 class AudioEngine;
 class Material;
+class FreeObject;
 
 class FluxCore : public Object
 {
@@ -56,10 +57,12 @@ private:
 
 	Material* m_pManMaterial = nullptr;
 	SceneNode* m_pFrame = nullptr;
+	FreeObject* m_pVirtualCamera = nullptr;
 
 	SceneNode* m_pSelectedNode = nullptr;
 	static bool m_Exiting;
 	int m_FramesToCapture = 1;
 
+	float m_VirtualFoV = 60.0f;
 	float m_CameraDistance = 500;
 };

@@ -15,6 +15,7 @@ cbuffer extra : register(b4)
 	float4x4 cCamera;
 	float4x4 cCameraInv;
 	float4x4 cProjection;
+	float4x4 cFlip;
 	float3 cBounds;
 	float cCameraDistance;
 	int cEnableFlatten;
@@ -95,14 +96,16 @@ PS_INPUT VSMain(VS_INPUT input)
 	if(cEnableFlatten > 0)
 	{
 		float4 o = output.worldPosition;
+		
 		o = mul(o, cCameraInv);
 		o = mul(o, cProjection);
 		o.xy /= o.z;
-		o = mul(o, cCamera);
-		o = mul(o, cPlaneInv);
-		output.paintSpace = o.xyz;
+		output.paintSpace = o;
+		o.xy *= cBounds;
+		o = mul(o, cFlip);
 		o = mul(o, cScale);
 		o = mul(o, cPlane);
+
 		output.worldPosition = o;
 		o = mul(o, cViewProj);
 		output.position = o;
@@ -123,10 +126,10 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
 #if FLATTEN
 	if(cEnableFlatten > 0)
 	{
-		if(input.paintSpace.x < -0.5f 
-		|| input.paintSpace.x > 0.5f 
-		|| input.paintSpace.y < -0.5f 
-		|| input.paintSpace.y > 0.5f)
+		if(input.paintSpace.x < -1.0f 
+		|| input.paintSpace.x > 1.0f 
+		|| input.paintSpace.y < -1.0f 
+		|| input.paintSpace.y > 1.0f)
 		{
 			discard;
 		}

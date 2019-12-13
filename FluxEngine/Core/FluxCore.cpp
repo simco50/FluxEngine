@@ -33,6 +33,7 @@
 #include "Rendering/Animation/Animation.h"
 #include "Rendering/Core/Shader.h"
 #include "Rendering/Geometry.h"
+#include "Rendering/Camera/FreeObject.h"
 
 bool FluxCore::m_Exiting;
 
@@ -162,12 +163,18 @@ void FluxCore::InitGame()
 	Material* pFlattenMaterial = m_pResourceManager->Load<Material>("Materials/FlattenFrame.xml");
 	m_pFrame = m_pScene->CreateChild("Frame");
 	m_pFrame->Rotate(0, 200, 0, Space::World);
-	m_pFrame->Translate(40, 100, 40);
+	m_pFrame->Translate(200, 300, 40);
 	SceneNode* pFrameMeshNode = m_pFrame->CreateChild("Mesh");
 	Model* pFrameModel = pFrameMeshNode->CreateComponent<Model>();
 	pFrameModel->SetMesh(pCubeMesh);
 	pFrameModel->SetMaterial(pFlattenMaterial);
 	pFrameMeshNode->SetScale(150, 200, 0.001f, Space::Self);
+	pFrameMeshNode->Translate(0, 0, -10.0f, Space::Self);
+
+	m_pVirtualCamera = m_pScene->CreateChild<FreeObject>("Virtual Camera");
+	m_pVirtualCamera->Translate(200, 100, 40);
+	m_pVirtualCamera->Translate(0, 0, -m_CameraDistance, Space::Self);
+	m_pVirtualCamera->UseMouseAndKeyboard(false);
 
 	{
 		SceneNode* pMan = m_pFrame->CreateChild("Man 1");
@@ -403,6 +410,8 @@ void FluxCore::RenderUI()
 		m_pManMaterial->SetParameter("cEnableFlatten", &e, sizeof(int32));
 	}
 
+	ImGui::SliderFloat("Virtual Field Of View", &m_VirtualFoV, 0.1f, 90.0f);
+
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 20.0f));
@@ -511,7 +520,7 @@ void FluxCore::GameUpdate()
 	}
 
 	SceneNode* pPlaneMesh = m_pFrame->GetChildren()[0];
-	Matrix planeWorld = pPlaneMesh->GetWorldMatrix();
+	Matrix planeWorld = m_pFrame->GetWorldMatrix();
 	Matrix planeWorldInv;
 	planeWorld.Invert(planeWorldInv);
 
@@ -519,15 +528,18 @@ void FluxCore::GameUpdate()
 
 	Vector3 cBounds = pPlaneMesh->GetScale() / 2;
 
-	Matrix camera = Matrix::CreateTranslation(0, 0, m_CameraDistance)
-		* Matrix::CreateFromQuaternion(pPlaneMesh->GetWorldRotation())
-		* Matrix::CreateTranslation(pPlaneMesh->GetWorldPosition());
+	Matrix camera = m_pVirtualCamera->GetWorldMatrix();
 	Matrix cameraInv;
 	camera.Invert(cameraInv);
 
+	float fov = m_VirtualFoV * Math::ToRadians;
+	float aspect = cBounds.x / cBounds.y;
+
 	Matrix projection = Matrix::Identity;
-	projection._11 = -m_CameraDistance;
-	projection._22 = -m_CameraDistance;
+	projection._11 = 1 / (aspect * tan(fov / 2));
+	projection._22 = 1 / (tan(fov / 2));
+
+	Matrix rotate = Matrix::CreateFromYawPitchRoll(Math::PI, 0, 0);
 
 	m_pManMaterial->SetParameter("cProjection", &projection, sizeof(Matrix));
 	m_pManMaterial->SetParameter("cCamera", &camera, sizeof(Matrix));
@@ -535,13 +547,26 @@ void FluxCore::GameUpdate()
 	m_pManMaterial->SetParameter("cScale", &scale, sizeof(Matrix));
 	m_pManMaterial->SetParameter("cPlane", &planeWorld, sizeof(Matrix));
 	m_pManMaterial->SetParameter("cPlaneInv", &planeWorldInv, sizeof(Matrix));
+	m_pManMaterial->SetParameter("cFlip", &rotate, sizeof(Matrix));
 
 	m_pManMaterial->SetParameter("cBounds", &cBounds, sizeof(Vector3));
 	m_pManMaterial->SetParameter("cCameraDistance", &m_CameraDistance, sizeof(float));
 
-	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, 0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
-	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(0.5f, 0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
-	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, -0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
-	m_pDebugRenderer->AddLine(m_pFrame->GetWorldPosition() + m_pFrame->GetForward() * m_CameraDistance, Vector3::Transform(Vector3(-0.5f, -0.5f, 0.0f), pPlaneMesh->GetWorldMatrix()), Color(1, 0, 0, 1));
+	float farPlane = 600.0f;
+	float h = tan(fov / 2);
+	float w = h * aspect;
 	m_pDebugRenderer->AddBone(camera, 4, Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pVirtualCamera->GetWorldPosition(), Vector3::Transform(Vector3(-w,h, 1.0f) * farPlane, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pVirtualCamera->GetWorldPosition(), Vector3::Transform(Vector3(w, h, 1.0f) * farPlane, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pVirtualCamera->GetWorldPosition(), Vector3::Transform(Vector3(-w, -h, 1.0f) * farPlane, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+	m_pDebugRenderer->AddLine(m_pVirtualCamera->GetWorldPosition(), Vector3::Transform(Vector3(w, -h, 1.0f) * farPlane, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+	int segments = 4;
+	for (int i = 0; i < segments; ++i)
+	{
+		float dist = farPlane / segments * (i + 1);
+		m_pDebugRenderer->AddLine(Vector3::Transform(Vector3(-w, -h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Vector3::Transform(Vector3(w, -h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+		m_pDebugRenderer->AddLine(Vector3::Transform(Vector3(-w, -h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Vector3::Transform(Vector3(-w, h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+		m_pDebugRenderer->AddLine(Vector3::Transform(Vector3(w, -h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Vector3::Transform(Vector3(w, h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+		m_pDebugRenderer->AddLine(Vector3::Transform(Vector3(w, h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Vector3::Transform(Vector3(-w, h, 1.0f) * dist, m_pVirtualCamera->GetWorldMatrix()), Color(1, 0, 0, 1));
+	}
 }
